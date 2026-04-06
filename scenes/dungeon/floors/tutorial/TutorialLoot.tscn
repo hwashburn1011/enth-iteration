@@ -1,0 +1,58 @@
+[gd_scene load_steps=4 format=3 uid="uid://tutloot001"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/floors/tutorial/tutorial_loot.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/interactables/Container.tscn" id="2_container"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(10, 10)
+
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_color = Color(0.38, 0.38, 0.35, 1)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_exit"]
+size = Vector3(2.0, 3.0, 1.0)
+
+[node name="TutorialLoot" type="Node3D"]
+script = ExtResource("1_script")
+room_name = "Loot Tutorial"
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="Geometry"]
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("Material_floor")
+
+[node name="WallNorth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
+size = Vector3(10, 3, 0.5)
+
+[node name="WallSouth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
+size = Vector3(10, 3, 0.5)
+
+[node name="WallEast" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.5, 0)
+size = Vector3(0.5, 3, 10)
+
+[node name="WallWest" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, 0)
+size = Vector3(0.5, 3, 10)
+
+[node name="EntryPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+
+[node name="ExitPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+
+[node name="SpawnPoints" type="Node3D" parent="."]
+
+[node name="Container1" parent="." instance=ExtResource("2_container")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
+
+[node name="ExitTrigger" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+collision_layer = 0
+collision_mask = 1
+
+[node name="ExitTriggerShape" type="CollisionShape3D" parent="ExitTrigger"]
+shape = SubResource("BoxShape3D_exit")
