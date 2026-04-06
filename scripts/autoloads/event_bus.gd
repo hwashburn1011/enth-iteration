@@ -28,6 +28,8 @@ signal item_collected(item: Resource)
 # Dungeon
 signal portal_reached(portal_id: StringName)
 signal floor_completed(floor_number: int)
+signal portal_used()
+signal returned_to_town()
 
 # Iteration
 signal iteration_started(iteration_number: int)
