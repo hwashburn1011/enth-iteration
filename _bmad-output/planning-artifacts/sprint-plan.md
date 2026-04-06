@@ -19,7 +19,7 @@ When executing this sprint plan:
 - [x] 1.1 Project Setup and Folder Structure — `DONE`
 - [x] 1.2 Core Autoloads — GameManager and EventBus — `DONE`
 - [x] 1.3 Input Map Configuration — `DONE`
-- [ ] 1.4 Isometric Camera System — `TODO`
+- [x] 1.4 Isometric Camera System — `DONE`
 - [ ] 1.5 Main Menu Scene — `TODO`
 - [ ] 1.6 Base State Machine Framework — `TODO`
 
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 3
-- **Remaining:** 72
+- **Completed:** 4
+- **Remaining:** 71
 - **Current Epic:** 1
