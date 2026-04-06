@@ -16,6 +16,7 @@ var _ability_manager: Node = null
 func _ready() -> void:
 	_stats_component = get_parent().get_node_or_null("StatsComponent") as StatsComponent
 	_ability_manager = get_parent().get_node_or_null("AbilityManager")
+	EventBus.item_degradation_triggered.connect(_on_degradation_triggered)
 
 
 func equip(item: ItemBase, slot_index: int = -1) -> ItemBase:
@@ -106,6 +107,19 @@ func _on_equipment_changed() -> void:
 	if _ability_manager and _ability_manager.has_method(&"refresh_abilities"):
 		_ability_manager.refresh_abilities(module_slots)
 	equipment_changed.emit()
+
+
+func _on_degradation_triggered() -> void:
+	var all_items: Array[ItemBase] = get_all_equipped_items()
+	if all_items.is_empty():
+		return
+	# Select 1-3 random items to degrade
+	var count: int = mini(randi_range(1, 3), all_items.size())
+	all_items.shuffle()
+	for i: int in count:
+		all_items[i].degrade(0.10)  # 10% of max durability
+	# Recalculate stats with degraded modifiers
+	_on_equipment_changed()
 
 
 func _first_empty_slot_index(slots: Array) -> int:

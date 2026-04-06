@@ -50,10 +50,14 @@ func recalculate_equipment_bonuses(equipped_items: Array) -> void:
 	for item: Resource in equipped_items:
 		if item == null:
 			continue
-		if &"stat_modifiers" in item:
-			var modifiers: Dictionary = item.stat_modifiers
-			for stat_name: String in modifiers:
-				equipment_bonuses[stat_name] = equipment_bonuses.get(stat_name, 0.0) + float(modifiers[stat_name])
+		# Use effective modifiers (durability-scaled) if available
+		var modifiers: Dictionary = {}
+		if item.has_method(&"get_effective_stat_modifiers"):
+			modifiers = item.get_effective_stat_modifiers()
+		elif &"stat_modifiers" in item:
+			modifiers = item.stat_modifiers
+		for stat_name: String in modifiers:
+			equipment_bonuses[stat_name] = equipment_bonuses.get(stat_name, 0.0) + float(modifiers[stat_name])
 	stats_changed.emit()
 
 

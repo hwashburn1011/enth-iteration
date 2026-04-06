@@ -55,7 +55,7 @@ When executing this sprint plan:
 - [x] 4.5 AbilityManager — Module Abilities — `DONE`
 - [x] 4.6 Loot Drop System — `DONE`
 - [x] 4.7 Item Pickup in World — `DONE`
-- [ ] 4.8 Item Degradation on Death — `TODO`
+- [x] 4.8 Item Degradation on Death — `DONE`
 - [ ] 4.9 Prompt Consumable System — `TODO`
 - [ ] 4.10 Demo Item Content — `TODO`
 
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 33
-- **Remaining:** 42
+- **Completed:** 34
+- **Remaining:** 41
 - **Current Epic:** 4
