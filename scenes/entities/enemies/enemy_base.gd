@@ -24,6 +24,7 @@ var is_invulnerable: bool = false
 
 
 func _ready() -> void:
+	add_to_group(&"enemies")
 	spawn_position = global_position
 	hitbox_component.damage_source = self
 	hurtbox_component.hit_received.connect(_on_hit_received)

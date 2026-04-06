@@ -8,6 +8,8 @@ signal floor_completed(floor_number: int)
 
 var current_room_index: int = 0
 var current_room: Node3D = null
+## Optional callable to configure rooms after instantiation: func(room, index)
+var room_configurator: Callable = Callable()
 
 const FADE_DURATION: float = 0.3
 
@@ -47,6 +49,10 @@ func _transition_to_room(index: int) -> void:
 	var room_scene: PackedScene = floor_data.room_sequence[index]
 	current_room = room_scene.instantiate() as Node3D
 	_dungeon_root.add_child(current_room)
+
+	# Apply per-floor room configuration if set
+	if room_configurator.is_valid():
+		room_configurator.call(current_room, index)
 
 	# Move player to entry point
 	var player: Player = _find_player()
