@@ -23,42 +23,84 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -250.0
-offset_top = -150.0
-offset_right = 250.0
-offset_bottom = 150.0
+offset_left = -280.0
+offset_top = -220.0
+offset_right = 280.0
+offset_bottom = 220.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 10
 
 [node name="Title" type="Label" parent="VBox"]
 layout_mode = 2
-text = "The First Cycle is Complete"
+text = "Thanks for Playing Enth: Iteration Demo!"
 horizontal_alignment = 1
 
-[node name="Message" type="RichTextLabel" parent="VBox"]
+[node name="Subtitle" type="Label" parent="VBox"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 120)
-bbcode_enabled = true
-text = "[center]Thank you for playing the Enth: Iteration demo!
+text = "The Compaction Loop continues..."
+horizontal_alignment = 1
+modulate = Color(0.6, 0.7, 0.8, 1)
 
-The Compaction Loop has been sealed... for now.
-But the corruption runs deeper than you know.
-
-The full game will feature 9 iterations, each peeling back
-another layer of the simulation's truth.[/center]"
-
-[node name="Spacer" type="Control" parent="VBox"]
+[node name="Spacer1" type="Control" parent="VBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(0, 10)
 
-[node name="MainMenuButton" type="Button" parent="VBox"]
+[node name="StatsPanel" type="PanelContainer" parent="VBox"]
 layout_mode = 2
-text = "Main Menu"
 
-[node name="QuitButton" type="Button" parent="VBox"]
+[node name="StatsVBox" type="VBoxContainer" parent="VBox/StatsPanel"]
 layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TimeLabel" type="Label" parent="VBox/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Time Played: 0:00"
+
+[node name="EnemiesLabel" type="Label" parent="VBox/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Enemies Defeated: 0"
+
+[node name="DeathsLabel" type="Label" parent="VBox/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Deaths: 0"
+
+[node name="LevelLabel" type="Label" parent="VBox/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Highest Level Reached: 1"
+
+[node name="ItemsLabel" type="Label" parent="VBox/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Items Found: 0"
+
+[node name="NPCsLabel" type="Label" parent="VBox/StatsPanel/StatsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "NPCs Recruited: 0 / 2"
+
+[node name="Spacer2" type="Control" parent="VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 10)
+
+[node name="ButtonHBox" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="ReturnButton" type="Button" parent="VBox/ButtonHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 0)
+text = "Return to Town"
+
+[node name="QuitButton" type="Button" parent="VBox/ButtonHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(140, 0)
 text = "Quit"
 
-[connection signal="pressed" from="VBox/MainMenuButton" to="." method="_on_main_menu_pressed"]
-[connection signal="pressed" from="VBox/QuitButton" to="." method="_on_quit_pressed"]
+[connection signal="pressed" from="VBox/ButtonHBox/ReturnButton" to="." method="_on_return_pressed"]
+[connection signal="pressed" from="VBox/ButtonHBox/QuitButton" to="." method="_on_quit_pressed"]

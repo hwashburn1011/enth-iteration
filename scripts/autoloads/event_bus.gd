@@ -6,6 +6,7 @@ extends Node
 signal game_state_changed(old_state: int, new_state: int)
 signal game_paused()
 signal game_unpaused()
+signal demo_completed()
 
 # Save
 signal game_saved()

@@ -25,6 +25,12 @@ var boss_defeated: bool = false
 var returned_from_first_run: bool = false
 var demo_ended: bool = false
 
+# Demo stats
+var play_time_seconds: float = 0.0
+var total_enemies_defeated: int = 0
+var total_deaths: int = 0
+var total_items_found: int = 0
+
 const AFFINITY_STRANGER: int = 0
 const AFFINITY_ACQUAINTANCE: int = 10
 const AFFINITY_ALLY: int = 25
@@ -38,6 +44,26 @@ func _ready() -> void:
 	EventBus.boss_defeated.connect(_on_boss_defeated)
 	EventBus.returned_to_town.connect(_on_returned_to_town)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended_narrative)
+	EventBus.enemy_defeated.connect(_on_enemy_defeated_stat)
+	EventBus.player_died.connect(_on_player_died_stat)
+	EventBus.item_collected.connect(_on_item_collected_stat)
+
+
+func _process(delta: float) -> void:
+	if current_state == GameState.PLAYING:
+		play_time_seconds += delta
+
+
+func _on_enemy_defeated_stat(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
+	total_enemies_defeated += 1
+
+
+func _on_player_died_stat(_pos: Vector3) -> void:
+	total_deaths += 1
+
+
+func _on_item_collected_stat(_item: Resource) -> void:
+	total_items_found += 1
 
 
 func _on_npc_recruited(npc_id: StringName) -> void:
