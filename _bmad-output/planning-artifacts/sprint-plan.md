@@ -44,7 +44,7 @@ When executing this sprint plan:
 - [x] 3.11 Enemy Type — Memory Leak — `DONE`
 - [x] 3.12 Enemy Type — Rogue Process — `DONE`
 - [x] 3.13 Enemy Spawner and Object Pool — `DONE`
-- [ ] 3.14 Status Effect System — `TODO`
+- [x] 3.14 Status Effect System — `DONE`
 - [ ] 3.15 Death and Respawn Flow — `TODO`
 
 ### Epic 4: Loot & Equipment
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 24
-- **Remaining:** 51
+- **Completed:** 25
+- **Remaining:** 50
 - **Current Epic:** 3

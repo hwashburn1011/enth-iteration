@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://enemybase001"]
+[gd_scene load_steps=17 format=3 uid="uid://enemybase001"]
 
 [ext_resource type="Script" path="res://scenes/entities/enemies/enemy_base.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_attack_state.gd" id="10_attack"]
 [ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_hurt_state.gd" id="11_hurt"]
 [ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_death_state.gd" id="12_death"]
+[ext_resource type="Script" path="res://scripts/components/status_effect_manager.gd" id="13_sem"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -74,6 +75,10 @@ script = ExtResource("6_hurtbox")
 
 [node name="HurtboxShape" type="CollisionShape3D" parent="HurtboxComponent"]
 shape = SubResource("CapsuleShape3D_hurtbox")
+
+[node name="StatusEffectManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("13_sem")
 
 [node name="StateMachine" type="Node" parent="."]
 unique_name_in_owner = true

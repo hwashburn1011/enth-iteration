@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://player00001"]
+[gd_scene load_steps=34 format=3 uid="uid://player00001"]
 
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_death_state.gd" id="12_death"]
 [ext_resource type="Script" path="res://scripts/components/hitbox_component.gd" id="13_hitbox"]
 [ext_resource type="Script" path="res://scripts/components/hurtbox_component.gd" id="14_hurtbox"]
+[ext_resource type="Script" path="res://scripts/components/status_effect_manager.gd" id="15_sem"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -234,6 +235,10 @@ unique_name_in_owner = true
 
 [node name="InteractionArea" type="Area3D" parent="."]
 unique_name_in_owner = true
+
+[node name="StatusEffectManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("15_sem")
 
 [node name="StateMachine" type="Node" parent="."]
 unique_name_in_owner = true
