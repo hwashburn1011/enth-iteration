@@ -19,7 +19,8 @@ func _ready() -> void:
 			if child.has_method(&"enter"):
 				initial_state = child
 				break
-	if initial_state:
+	# Don't enter initial state if parent is not visible (pooled/deactivated)
+	if initial_state and get_parent().visible:
 		current_state = initial_state
 		current_state.enter()
 

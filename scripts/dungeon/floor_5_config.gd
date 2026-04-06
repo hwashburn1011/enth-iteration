@@ -27,7 +27,7 @@ static func _buff_boss() -> void:
 	if tree == null:
 		return
 	for node: Node in tree.get_nodes_in_group(&"enemies"):
-		if node is EnemyBase:
+		if node.is_in_group(&"enemies"):
 			var boss: CharacterBody3D = node as CharacterBody3D
 			boss.health_component.max_health = 200.0
 			boss.health_component.current_health = 200.0

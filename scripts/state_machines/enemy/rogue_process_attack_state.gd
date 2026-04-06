@@ -38,7 +38,7 @@ func enter() -> void:
 	_current_pattern = AttackPattern.FLURRY if _current_pattern == AttackPattern.DASH_STRIKE else AttackPattern.DASH_STRIKE
 
 	# Adjust cooldown if enraged
-	if (enemy.get_script().get_global_name() == "RogueProcess") and (enemy as RogueProcess).is_enraged:
+	if enemy.get(&"is_enraged"):
 		attack_cooldown = 0.7
 
 	# Face the player
@@ -143,7 +143,7 @@ func _set_telegraph(enemy: CharacterBody3D, active: bool) -> void:
 		mesh.material_override = mat
 	else:
 		# Restore enraged glow or clear
-		if (enemy.get_script().get_global_name() == "RogueProcess") and (enemy as RogueProcess).is_enraged:
+		if enemy.get(&"is_enraged"):
 			var mat: StandardMaterial3D = StandardMaterial3D.new()
 			mat.albedo_color = Color(0.3, 0.3, 1.0)
 			mat.emission_enabled = true

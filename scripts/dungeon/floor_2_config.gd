@@ -43,8 +43,8 @@ static func _buff_elite(_spawner: Node) -> void:
 	if tree == null:
 		return
 	for node: Node in tree.get_nodes_in_group(&"enemies"):
-		if node is RogueProcess:
-			var elite: CharacterBody3D = node as RogueProcess
+		if node.get_script().get_global_name() == "RogueProcess":
+			var elite: CharacterBody3D = node
 			elite.health_component.max_health *= 3.0
 			elite.health_component.current_health = elite.health_component.max_health
 			elite.model.scale = Vector3(1.5, 1.5, 1.5)

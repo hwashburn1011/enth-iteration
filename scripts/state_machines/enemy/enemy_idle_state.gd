@@ -10,7 +10,7 @@ var _timer: float = 0.0
 func enter() -> void:
 	_timer = 0.0
 	var enemy: CharacterBody3D = player as CharacterBody3D
-	if enemy and enemy.animation_player.has_animation(&"idle"):
+	if enemy and enemy.get(&"animation_player") and enemy.animation_player.has_animation(&"idle"):
 		enemy.animation_player.play(&"idle")
 
 

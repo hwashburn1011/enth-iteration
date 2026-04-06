@@ -19,7 +19,7 @@ func _init() -> void:
 
 
 func enter() -> void:
-	var boss: CharacterBody3D = player as CorruptedCompiler
+	var boss = player
 	if boss.is_transitioning:
 		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 		return
@@ -158,7 +158,7 @@ func _do_stack_overflow(boss: CharacterBody3D) -> void:
 
 func physics_update(delta: float) -> void:
 	# Spawn Glitch Bugs periodically in phase 1+
-	var boss: CharacterBody3D = player as CorruptedCompiler
+	var boss = player
 	_spawn_timer += delta
 	if _spawn_timer >= 15.0:
 		_spawn_timer = 0.0
