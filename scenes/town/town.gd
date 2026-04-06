@@ -46,6 +46,7 @@ func _ready() -> void:
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	_populate_npcs()
+	_update_town_state()
 
 
 func _populate_npcs() -> void:
@@ -87,3 +88,16 @@ func _get_npc_slot(npc_id: String) -> Marker3D:
 			return npc_slots.get_node_or_null("CacheSpriteSlot") as Marker3D
 		_:
 			return npc_slots.get_node_or_null(npc_id + "_slot") as Marker3D
+
+
+func _update_town_state() -> void:
+	var npc_count: int = GameManager.recruited_npcs.size()
+	var expansion1: Node3D = get_node_or_null("TownExpansion1") as Node3D
+	var expansion2: Node3D = get_node_or_null("TownExpansion2") as Node3D
+	var expansion3: Node3D = get_node_or_null("TownExpansion3") as Node3D
+	if expansion1:
+		expansion1.visible = npc_count >= 1
+	if expansion2:
+		expansion2.visible = npc_count >= 2
+	if expansion3:
+		expansion3.visible = npc_count >= 3

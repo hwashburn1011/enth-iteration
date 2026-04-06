@@ -82,7 +82,7 @@ When executing this sprint plan:
 - [x] 6.6 NPC Portrait System — `DONE`
 - [x] 6.7 NPC Recruitment Flow — `DONE`
 - [x] 6.8 NPC Affinity System — `DONE`
-- [ ] 6.9 Town Expansion Triggers — `TODO`
+- [x] 6.9 Town Expansion Triggers — `DONE`
 
 ### Epic 7: Save & Persist
 - [ ] 7.1 SaveManager and Data Structure — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 56
-- **Remaining:** 19
-- **Current Epic:** 6
+- **Completed:** 57
+- **Remaining:** 18
+- **Current Epic:** 7
