@@ -69,7 +69,7 @@ When executing this sprint plan:
 - [x] 5.7 Demo Floor 1 — Tutorial — `DONE`
 - [x] 5.8 Demo Floor 2 — Combat Escalation — `DONE`
 - [x] 5.9 Demo Floor 3 — Exploration — `DONE`
-- [ ] 5.10 Demo Floor 4 — Challenge — `TODO`
+- [x] 5.10 Demo Floor 4 — Challenge — `DONE`
 - [ ] 5.11 Demo Floor 5 — Boss Floor — `TODO`
 - [ ] 5.12 Compaction Portal Interaction — `TODO`
 
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 45
-- **Remaining:** 30
+- **Completed:** 46
+- **Remaining:** 29
 - **Current Epic:** 5

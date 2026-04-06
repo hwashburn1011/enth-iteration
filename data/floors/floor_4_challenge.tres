@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FloorData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/floor_data.gd" id="1_fd"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatCorridorAmbush.tscn" id="2_ambush"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatPillars.tscn" id="3_pillars"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/corridor/CorridorTurn.tscn" id="4_turn"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatOpenArena.tscn" id="5_arena"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatElevated.tscn" id="6_elevated"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/loot/LootRoom.tscn" id="7_loot"]
+
+[resource]
+script = ExtResource("1_fd")
+floor_name = "Corrupted Cache"
+floor_number = 4
+room_sequence = [ExtResource("2_ambush"), ExtResource("3_pillars"), ExtResource("4_turn"), ExtResource("5_arena"), ExtResource("6_elevated"), ExtResource("7_loot")]
