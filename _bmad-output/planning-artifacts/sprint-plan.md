@@ -24,7 +24,7 @@ When executing this sprint plan:
 - [x] 1.6 Base State Machine Framework — `DONE`
 
 ### Epic 2: Globbler Comes Alive
-- [ ] 2.1 Player Scene Setup — `TODO`
+- [x] 2.1 Player Scene Setup — `DONE`
 - [ ] 2.2 WASD Isometric Movement — `TODO`
 - [ ] 2.3 Teleport Dash — `TODO`
 - [ ] 2.4 Player Animation State Machine — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 6
-- **Remaining:** 69
+- **Completed:** 7
+- **Remaining:** 68
 - **Current Epic:** 2
