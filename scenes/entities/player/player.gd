@@ -30,6 +30,7 @@ var can_attack: bool = true
 
 
 func _ready() -> void:
+	add_to_group(&"player")
 	dash_cooldown_timer.one_shot = true
 	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
 	attack_cooldown_timer.one_shot = true

@@ -19,6 +19,9 @@ signal enemy_defeated(enemy_type: StringName, position: Vector3, loot_table: Res
 signal damage_dealt(amount: int, source: Node, target: Node, damage_type: StringName)
 signal player_died(position: Vector3)
 
+# Death & Respawn
+signal item_degradation_triggered()
+
 # Items
 signal item_collected(item: Resource)
 
