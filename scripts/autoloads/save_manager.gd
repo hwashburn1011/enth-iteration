@@ -7,10 +7,80 @@ const BACKUP_DIR: String = "user://backups/"
 const SCHEMA_VERSION: int = 1
 
 var current_data: Dictionary = {}
+var last_save_time: float = 0.0
+var _save_queued: bool = false
+var _save_indicator: Label = null
+
+const MIN_SAVE_INTERVAL: float = 10.0
+const INDICATOR_DURATION: float = 1.5
 
 
 func _ready() -> void:
 	current_data = get_default_save_data()
+	# Auto-save triggers
+	EventBus.floor_completed.connect(_on_auto_save_trigger)
+	EventBus.returned_to_town.connect(_on_auto_save_trigger_no_arg)
+	EventBus.portal_used.connect(_on_auto_save_trigger_no_arg)
+	EventBus.dungeon_entered.connect(_on_auto_save_trigger_no_arg)
+	EventBus.game_saved.connect(_show_save_indicator)
+	_create_save_indicator()
+
+
+func _on_auto_save_trigger(_arg: Variant = null) -> void:
+	_try_auto_save()
+
+
+func _on_auto_save_trigger_no_arg() -> void:
+	_try_auto_save()
+
+
+func _try_auto_save() -> void:
+	var now: float = Time.get_ticks_msec() / 1000.0
+	if now - last_save_time < MIN_SAVE_INTERVAL:
+		return
+	# Queue if in combat
+	if GameManager.has_meta(&"is_in_combat") and GameManager.get_meta(&"is_in_combat"):
+		_save_queued = true
+		if not EventBus.enemy_defeated.is_connected(_on_combat_may_have_ended):
+			EventBus.enemy_defeated.connect(_on_combat_may_have_ended)
+		return
+	last_save_time = now
+	save_game()
+
+
+func _on_combat_may_have_ended(_t: StringName, _p: Vector3, _l: Resource) -> void:
+	if _save_queued:
+		# Check if still in combat (room not cleared) — simple heuristic
+		_save_queued = false
+		if EventBus.enemy_defeated.is_connected(_on_combat_may_have_ended):
+			EventBus.enemy_defeated.disconnect(_on_combat_may_have_ended)
+		last_save_time = Time.get_ticks_msec() / 1000.0
+		save_game()
+
+
+func _create_save_indicator() -> void:
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 90
+	_save_indicator = Label.new()
+	_save_indicator.text = "Saving..."
+	_save_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_save_indicator.anchors_preset = Control.PRESET_TOP_RIGHT
+	_save_indicator.offset_left = -120.0
+	_save_indicator.offset_top = 10.0
+	_save_indicator.offset_right = -10.0
+	_save_indicator.offset_bottom = 40.0
+	_save_indicator.modulate.a = 0.0
+	canvas.add_child(_save_indicator)
+	add_child(canvas)
+
+
+func _show_save_indicator() -> void:
+	if _save_indicator == null:
+		return
+	_save_indicator.modulate.a = 1.0
+	var tween: Tween = create_tween()
+	tween.tween_interval(INDICATOR_DURATION)
+	tween.tween_property(_save_indicator, "modulate:a", 0.0, 0.3)
 
 
 func save_game() -> bool:
