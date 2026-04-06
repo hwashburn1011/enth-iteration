@@ -52,17 +52,17 @@ func close() -> void:
 
 func _build_ui() -> void:
 	_panel = Control.new()
-	_panel.anchors_preset = Control.PRESET_FULL_RECT
+	_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# Background dim
 	var bg: ColorRect = ColorRect.new()
-	bg.anchors_preset = Control.PRESET_FULL_RECT
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0, 0, 0, 0.6)
 	_panel.add_child(bg)
 
 	var hbox: HBoxContainer = HBoxContainer.new()
-	hbox.anchors_preset = Control.PRESET_CENTER
+	hbox.set_anchors_preset(Control.PRESET_CENTER)
 	hbox.offset_left = -400.0
 	hbox.offset_top = -250.0
 	hbox.offset_right = 400.0
@@ -167,7 +167,7 @@ func _show_tooltip(item: Resource) -> void:
 	if _tooltip:
 		_tooltip.queue_free()
 	_tooltip = PanelContainer.new()
-	_tooltip.anchors_preset = Control.PRESET_CENTER_RIGHT
+	_tooltip.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
 	_tooltip.offset_left = -250.0
 	_tooltip.offset_top = -100.0
 	_tooltip.offset_right = -10.0

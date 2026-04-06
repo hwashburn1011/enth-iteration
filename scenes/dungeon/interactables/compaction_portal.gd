@@ -72,12 +72,13 @@ func _activate_portal() -> void:
 	# Emit returned_to_town BEFORE scene change so GameManager can update state
 	EventBus.returned_to_town.emit()
 
-	# Change scene — this frees the portal, but canvas is on root so it persists
-	GameManager.change_scene_to(TOWN_SCENE_PATH)
+	# Change scene — this frees the portal. Use await so the scene fully loads.
+	await GameManager.change_scene_to(TOWN_SCENE_PATH)
 
-	# Fade out the white overlay from the root canvas (runs on canvas, not portal)
-	await canvas.get_tree().create_timer(0.3).timeout
-	var tween2: Tween = canvas.create_tween()
-	tween2.tween_property(overlay, "color:a", 0.0, FLASH_DURATION)
-	await tween2.finished
-	canvas.queue_free()
+	# Fade out the white overlay (canvas is on root, so it survived the scene change)
+	if is_instance_valid(canvas):
+		await canvas.get_tree().create_timer(0.3).timeout
+		var tween2: Tween = canvas.create_tween()
+		tween2.tween_property(overlay, "color:a", 0.0, FLASH_DURATION)
+		await tween2.finished
+		canvas.queue_free()

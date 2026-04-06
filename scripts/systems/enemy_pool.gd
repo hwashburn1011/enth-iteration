@@ -39,8 +39,8 @@ func _deferred_init() -> void:
 		var scene: PackedScene = load(scene_path) as PackedScene
 		for i: int in pool_sizes[enemy_type]:
 			var enemy: CharacterBody3D = scene.instantiate() as CharacterBody3D
-			_deactivate(enemy)
 			add_child(enemy)
+			_deactivate(enemy)
 			(_pools[enemy_type] as Array).append(enemy)
 
 
@@ -106,15 +106,34 @@ func _activate(enemy: CharacterBody3D) -> void:
 	enemy.set_process_unhandled_input(true)
 	enemy.collision_layer = 2
 	enemy.collision_mask = 9
+	# Re-enable StateMachine processing
+	var sm: Node = enemy.get_node_or_null("StateMachine")
+	if sm:
+		sm.set_process(true)
+		sm.set_physics_process(true)
+		sm.set_process_unhandled_input(true)
 
 
 func _deactivate(enemy: CharacterBody3D) -> void:
+	# Clean up any active projectiles/pools owned by this enemy
+	if enemy.has_meta(&"active_projectiles"):
+		var projectiles: Array = enemy.get_meta(&"active_projectiles") as Array
+		for p: Variant in projectiles:
+			if p is Node and is_instance_valid(p):
+				(p as Node).queue_free()
+		enemy.set_meta(&"active_projectiles", [])
 	enemy.visible = false
 	enemy.set_process(false)
 	enemy.set_physics_process(false)
 	enemy.set_process_unhandled_input(false)
 	enemy.collision_layer = 0
 	enemy.collision_mask = 0
+	# Stop StateMachine child processing (doesn't inherit from parent)
+	var sm: Node = enemy.get_node_or_null("StateMachine")
+	if sm:
+		sm.set_process(false)
+		sm.set_physics_process(false)
+		sm.set_process_unhandled_input(false)
 	if enemy.is_inside_tree():
 		enemy.global_position = Vector3(9999.0, 9999.0, 9999.0)
 

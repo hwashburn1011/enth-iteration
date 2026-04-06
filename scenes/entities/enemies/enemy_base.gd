@@ -27,10 +27,15 @@ func _ready() -> void:
 	add_to_group(&"enemies")
 	spawn_position = global_position
 	hitbox_component.damage_source = self
-	hurtbox_component.hit_received.connect(_on_hit_received)
-	health_component.died.connect(_on_died)
-	detection_area.body_entered.connect(_on_detection_body_entered)
-	detection_area.body_exited.connect(_on_detection_body_exited)
+	# Guard against duplicate connections on pool reuse (_ready fires every add_child)
+	if not hurtbox_component.hit_received.is_connected(_on_hit_received):
+		hurtbox_component.hit_received.connect(_on_hit_received)
+	if not health_component.died.is_connected(_on_died):
+		health_component.died.connect(_on_died)
+	if not detection_area.body_entered.is_connected(_on_detection_body_entered):
+		detection_area.body_entered.connect(_on_detection_body_entered)
+	if not detection_area.body_exited.is_connected(_on_detection_body_exited):
+		detection_area.body_exited.connect(_on_detection_body_exited)
 
 
 func _on_detection_body_entered(body: Node3D) -> void:
@@ -65,6 +70,10 @@ func reset() -> void:
 	set_physics_process(true)
 	set_process_unhandled_input(true)
 	hitbox_component.deactivate()
+	# Ensure StateMachine processing is enabled
+	state_machine.set_process(true)
+	state_machine.set_physics_process(true)
+	state_machine.set_process_unhandled_input(true)
 	# Reset state machine to idle
 	var idle_state: Node = state_machine.get_node_or_null("EnemyIdleState") as Node
 	if idle_state:

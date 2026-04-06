@@ -46,7 +46,7 @@ func _show_confirmation() -> void:
 	# Full-screen container so anchors work correctly
 	var fullscreen: Control = Control.new()
 	fullscreen.set_anchors_preset(Control.PRESET_FULL_RECT)
-	fullscreen.mouse_filter = Control.MOUSE_FILTER_STOP
+	fullscreen.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	canvas.add_child(fullscreen)
 
 	# Dim background
@@ -96,6 +96,7 @@ func _show_confirmation() -> void:
 func _on_yes_pressed(canvas: CanvasLayer) -> void:
 	canvas.queue_free()
 	_confirm_ui = null
+	GameManager.set_state(GameManager.GameState.PLAYING)
 	EventBus.dungeon_entered.emit()
 	GameManager.change_scene_to(DUNGEON_SCENE_PATH)
 

@@ -94,7 +94,7 @@ func _create_fade_overlay() -> void:
 	_fade_overlay = ColorRect.new()
 	_fade_overlay.color = Color(0, 0, 0, 0)
 	_fade_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fade_overlay.anchors_preset = Control.PRESET_FULL_RECT
+	_fade_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 99
 	canvas.add_child(_fade_overlay)

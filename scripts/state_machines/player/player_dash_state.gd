@@ -69,9 +69,9 @@ func physics_update(delta: float) -> void:
 			&"move_left", &"move_right", &"move_forward", &"move_back"
 		)
 		if current_input.length() > 0.0:
-			state_machine.transition_to(state_machine.get_node("WalkState") as Node)
+			state_machine.force_transition_to(state_machine.get_node("WalkState") as Node)
 		else:
-			state_machine.transition_to(state_machine.get_node("IdleState") as Node)
+			state_machine.force_transition_to(state_machine.get_node("IdleState") as Node)
 
 
 func exit() -> void:

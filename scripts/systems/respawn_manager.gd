@@ -18,7 +18,7 @@ func _create_fade_overlay() -> void:
 	_fade_overlay = ColorRect.new()
 	_fade_overlay.color = Color(0, 0, 0, 0)
 	_fade_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fade_overlay.anchors_preset = Control.PRESET_FULL_RECT
+	_fade_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	# Will be added to scene tree when needed via CanvasLayer
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 100  # On top of everything
@@ -41,9 +41,8 @@ func _run_respawn_sequence() -> void:
 	EventBus.item_degradation_triggered.emit()
 
 	# 4. Load town scene
-	GameManager.change_scene_to(TOWN_SCENE_PATH)
-	# Wait a frame for scene to load
-	await get_tree().process_frame
+	await GameManager.change_scene_to(TOWN_SCENE_PATH)
+	# Extra frame for scene tree to settle
 	await get_tree().process_frame
 
 	# 5. Find player and respawn point, reset health/compute

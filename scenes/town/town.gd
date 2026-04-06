@@ -119,6 +119,8 @@ func _trigger_arrival_dialogue(npc: Node3D) -> void:
 func _auto_trigger_sage_dialogue() -> void:
 	# Wait 5 seconds so player can see the world first
 	await get_tree().create_timer(5.0).timeout
+	if not is_instance_valid(self):
+		return
 	for child: Node in get_children():
 		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
 			child._start_conversation()
@@ -128,5 +130,7 @@ func _auto_trigger_sage_dialogue() -> void:
 func _setup_demo_end_trigger() -> void:
 	# Give player a moment to see the town, then trigger demo end
 	await get_tree().create_timer(3.0).timeout
+	if not is_instance_valid(self):
+		return
 	if GameManager.should_trigger_demo_end():
 		GameManager.trigger_demo_end()

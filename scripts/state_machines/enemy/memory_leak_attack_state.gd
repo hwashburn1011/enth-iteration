@@ -60,7 +60,6 @@ func _fire_projectile(enemy: CharacterBody3D) -> void:
 	var projectile: Node = load("res://scenes/entities/enemies/memory_leak/leak_projectile.gd").new()
 	projectile.source_node = enemy
 	projectile.base_damage = base_damage
-	projectile.global_position = enemy.global_position + Vector3(0, 0.5, 0)
 	var dir: Vector3 = (enemy.target_player.global_position - enemy.global_position).normalized()
 	dir.y = 0.0
 	projectile.direction = dir
@@ -84,7 +83,13 @@ func _fire_projectile(enemy: CharacterBody3D) -> void:
 	mesh.material_override = mat
 	projectile.add_child(mesh)
 
+	# Add to tree FIRST, then set position
 	enemy.get_tree().current_scene.add_child(projectile)
+	projectile.global_position = enemy.global_position + Vector3(0, 0.5, 0)
+	# Track projectile on enemy for cleanup when pooled
+	if not enemy.has_meta(&"active_projectiles"):
+		enemy.set_meta(&"active_projectiles", [])
+	(enemy.get_meta(&"active_projectiles") as Array).append(projectile)
 
 
 func _set_glow(enemy: CharacterBody3D, glow: bool) -> void:

@@ -66,7 +66,7 @@ func _create_save_indicator() -> void:
 	_save_indicator = Label.new()
 	_save_indicator.text = "Saving..."
 	_save_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_save_indicator.anchors_preset = Control.PRESET_TOP_RIGHT
+	_save_indicator.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 	_save_indicator.offset_left = -120.0
 	_save_indicator.offset_top = 10.0
 	_save_indicator.offset_right = -10.0

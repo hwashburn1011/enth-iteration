@@ -36,16 +36,16 @@ static func is_open() -> bool:
 
 func _build_ui() -> void:
 	_panel = Control.new()
-	_panel.anchors_preset = Control.PRESET_FULL_RECT
+	_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var bg: ColorRect = ColorRect.new()
-	bg.anchors_preset = Control.PRESET_FULL_RECT
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.color = Color(0, 0, 0, 0.5)
 	_panel.add_child(bg)
 
 	var container: PanelContainer = PanelContainer.new()
-	container.anchors_preset = Control.PRESET_CENTER
+	container.set_anchors_preset(Control.PRESET_CENTER)
 	container.offset_left = -140.0
 	container.offset_top = -120.0
 	container.offset_right = 140.0
@@ -113,7 +113,7 @@ func _toggle_settings() -> void:
 		return
 
 	_settings_panel = PanelContainer.new()
-	_settings_panel.anchors_preset = Control.PRESET_CENTER
+	_settings_panel.set_anchors_preset(Control.PRESET_CENTER)
 	_settings_panel.offset_left = -180.0
 	_settings_panel.offset_top = 50.0
 	_settings_panel.offset_right = 180.0

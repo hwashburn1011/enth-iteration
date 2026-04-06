@@ -136,11 +136,22 @@ func set_state(new_state: GameState) -> void:
 
 func change_scene_to(path: String) -> void:
 	EventBus.scene_changing.emit()
-	ResourceLoader.load_threaded_request(path)
-	while ResourceLoader.load_threaded_get_status(path) != ResourceLoader.THREAD_LOAD_LOADED:
+	var err: Error = ResourceLoader.load_threaded_request(path)
+	if err != OK:
+		push_error("GameManager: failed to request scene load for '%s' (error %d)" % [path, err])
+		set_state(GameState.PLAYING)
+		return
+	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(path)
+	while status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		await get_tree().process_frame
+		status = ResourceLoader.load_threaded_get_status(path)
+	if status != ResourceLoader.THREAD_LOAD_LOADED:
+		push_error("GameManager: scene load failed for '%s' (status %d)" % [path, status])
+		set_state(GameState.PLAYING)
+		return
 	var scene: PackedScene = ResourceLoader.load_threaded_get(path)
 	get_tree().change_scene_to_packed(scene)
+	await get_tree().process_frame
 	EventBus.scene_changed.emit(path)
 
 
