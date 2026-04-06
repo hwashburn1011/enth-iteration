@@ -70,7 +70,7 @@ When executing this sprint plan:
 - [x] 5.8 Demo Floor 2 — Combat Escalation — `DONE`
 - [x] 5.9 Demo Floor 3 — Exploration — `DONE`
 - [x] 5.10 Demo Floor 4 — Challenge — `DONE`
-- [ ] 5.11 Demo Floor 5 — Boss Floor — `TODO`
+- [x] 5.11 Demo Floor 5 — Boss Floor — `DONE`
 - [ ] 5.12 Compaction Portal Interaction — `TODO`
 
 ### Epic 6: Town Hub
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 46
-- **Remaining:** 29
+- **Completed:** 47
+- **Remaining:** 28
 - **Current Epic:** 5

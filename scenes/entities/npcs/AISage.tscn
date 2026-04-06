@@ -1,0 +1,52 @@
+[gd_scene load_steps=5 format=3 uid="uid://aisage001"]
+
+[ext_resource type="Script" path="res://scenes/entities/npcs/ai_sage.gd" id="1_script"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_body"]
+top_radius = 0.3
+bottom_radius = 0.5
+height = 1.5
+
+[sub_resource type="StandardMaterial3D" id="Material_hologram"]
+albedo_color = Color(0.5, 0.8, 1.0, 0.6)
+transparency = 1
+emission_enabled = true
+emission = Color(0.4, 0.7, 1.0)
+emission_energy_multiplier = 1.0
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_detect"]
+radius = 3.0
+
+[node name="AISage" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Model" type="Node3D" parent="."]
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
+mesh = SubResource("CylinderMesh_body")
+surface_material_override/0 = SubResource("Material_hologram")
+
+[node name="DialogueLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+billboard = 1
+font_size = 18
+text = ""
+visible = false
+
+[node name="PromptLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.7, 0)
+billboard = 1
+font_size = 16
+text = "Press E to talk"
+visible = false
+
+[node name="DetectionArea" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 1
+
+[node name="DetectionShape" type="CollisionShape3D" parent="DetectionArea"]
+shape = SubResource("SphereShape3D_detect")

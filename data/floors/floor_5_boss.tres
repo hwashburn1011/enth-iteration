@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="FloorData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/floor_data.gd" id="1_fd"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/corridor/CorridorStraight.tscn" id="2_corridor"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/story/StoryRoom.tscn" id="3_story"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/loot/LootRoom.tscn" id="4_loot"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/bosses/BossArena.tscn" id="5_boss"]
+
+[resource]
+script = ExtResource("1_fd")
+floor_name = "Core Process Chamber"
+floor_number = 5
+room_sequence = [ExtResource("2_corridor"), ExtResource("3_story"), ExtResource("4_loot"), ExtResource("5_boss")]
