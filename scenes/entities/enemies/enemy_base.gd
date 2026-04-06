@@ -15,6 +15,7 @@ extends CharacterBody3D
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var navigation_agent: NavigationAgent3D = %NavigationAgent3D
 @onready var detection_area: Area3D = %DetectionArea
+@onready var loot_dropper: LootDropper = %LootDropper
 @onready var model: Node3D = %Model
 
 var target_player: Node3D = null

@@ -17,10 +17,14 @@ func enter() -> void:
 	enemy.set_physics_process(false)
 	enemy.hitbox_component.deactivate()
 
+	# Drop loot before emitting defeat
+	if enemy.loot_dropper:
+		enemy.loot_dropper.drop_loot(enemy.global_position)
+
 	EventBus.enemy_defeated.emit(
 		StringName(enemy.name),
 		enemy.global_position,
-		null  # loot_table filled in by specific enemy types
+		enemy.loot_dropper.loot_table if enemy.loot_dropper else null
 	)
 
 	# Wait for death animation then return to pool
