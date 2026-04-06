@@ -62,7 +62,7 @@ When executing this sprint plan:
 ### Epic 5: The First Dungeon
 - [x] 5.1 Room Base Scene Template — `DONE`
 - [x] 5.2 Combat Room Variants — `DONE`
-- [ ] 5.3 Loot Room — `TODO`
+- [x] 5.3 Loot Room — `DONE`
 - [ ] 5.4 Corridor Room Variants — `TODO`
 - [ ] 5.5 Story Room — `TODO`
 - [ ] 5.6 FloorManager — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 38
-- **Remaining:** 37
+- **Completed:** 39
+- **Remaining:** 36
 - **Current Epic:** 5
