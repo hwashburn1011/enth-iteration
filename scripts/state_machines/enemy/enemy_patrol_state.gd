@@ -7,7 +7,7 @@ var _arrived: bool = false
 
 func enter() -> void:
 	_arrived = false
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	if enemy and enemy.animation_player.has_animation(&"walk"):
 		enemy.animation_player.play(&"walk")
 
@@ -21,7 +21,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 
 	# Aggro if player detected
 	if enemy.target_player != null:

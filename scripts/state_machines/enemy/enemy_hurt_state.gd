@@ -10,7 +10,7 @@ var _knockback_dir: Vector3 = Vector3.ZERO
 
 
 func enter() -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	_timer = 0.0
 
 	if enemy.has_meta(&"damage_source_position"):
@@ -26,7 +26,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	_timer += delta
 
 	var factor: float = maxf(0.0, 1.0 - _timer / STUN_DURATION)

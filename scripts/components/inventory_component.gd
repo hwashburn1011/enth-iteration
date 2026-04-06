@@ -30,7 +30,7 @@ func _init_grid() -> void:
 
 func add_item(item: Resource) -> bool:
 	# Prompts go to the hotbar stack, not the grid
-	if item is PromptItem:
+	if item.get(&"item_type") == "prompt":
 		add_prompt(item as Resource)
 		item_added.emit(item)
 		return true
@@ -56,8 +56,8 @@ func has_space_for(item: Resource) -> bool:
 	return _find_space(item) != Vector2i(-1, -1)
 
 
-func get_items() -> Array[ItemBase]:
-	var items: Array[ItemBase] = []
+func get_items() -> Array[Resource]:
+	var items: Array[Resource] = []
 	for y: int in grid_height:
 		for x: int in grid_width:
 			var cell_item: Resource = grid[y][x] as Resource
@@ -123,7 +123,7 @@ func get_active_prompt() -> Dictionary:
 	return prompt_hotbar[active_prompt_index]
 
 
-func consume_active_prompt() -> PromptItem:
+func consume_active_prompt() -> Resource:
 	if prompt_hotbar.is_empty() or active_prompt_index >= prompt_hotbar.size():
 		return null
 	var entry: Dictionary = prompt_hotbar[active_prompt_index]

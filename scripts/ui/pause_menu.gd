@@ -5,7 +5,7 @@ extends CanvasLayer
 var _panel: Control = null
 var _settings_panel: PanelContainer = null
 
-static var _instance: PauseMenu = null
+static var _instance: Node = null
 
 
 func _ready() -> void:

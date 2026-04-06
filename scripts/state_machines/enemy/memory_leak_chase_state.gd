@@ -6,7 +6,7 @@ const FLEE_DISTANCE: float = 4.0
 
 
 func physics_update(delta: float) -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 
 	if enemy.target_player == null:
 		_leash_timer += delta

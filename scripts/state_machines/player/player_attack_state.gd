@@ -20,7 +20,7 @@ var _duration: float = 0.0
 
 
 func enter() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	_timer = 0.0
 	_hitbox_enabled = false
 	_has_hit.clear()
@@ -68,7 +68,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	_timer += delta
 
 	if _timer >= _active_start and _timer < _active_end:
@@ -92,7 +92,7 @@ func physics_update(delta: float) -> void:
 
 
 func exit() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	_set_hitbox_active(p, false)
 	_hitbox_enabled = false
 	# Restore default hitbox size

@@ -19,10 +19,10 @@ func _ready() -> void:
 			if child.has_method(&"enter"):
 				initial_state = child
 				break
-	# Don't enter initial state if parent is not visible (pooled/deactivated)
+	# Defer initial enter so parent's @onready vars are initialized first
 	if initial_state and get_parent().visible:
 		current_state = initial_state
-		current_state.enter()
+		current_state.enter.call_deferred()
 
 
 func _process(delta: float) -> void:

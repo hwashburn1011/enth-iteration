@@ -7,13 +7,13 @@ var _leash_timer: float = 0.0
 
 func enter() -> void:
 	_leash_timer = 0.0
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	if enemy and enemy.animation_player.has_animation(&"walk"):
 		enemy.animation_player.play(&"walk")
 
 
 func physics_update(delta: float) -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 
 	if enemy.target_player == null:
 		_leash_timer += delta

@@ -12,7 +12,7 @@ func _ready() -> void:
 
 
 func enter() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	_timer = 0.0
 
 	# Determine knockback direction from damage source metadata
@@ -29,7 +29,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	_timer += delta
 
 	# Apply decaying knockback

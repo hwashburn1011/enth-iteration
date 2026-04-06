@@ -7,7 +7,7 @@ func _ready() -> void:
 
 
 func enter() -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 
 	if enemy.animation_player.has_animation(&"death"):
 		enemy.animation_player.play(&"death")

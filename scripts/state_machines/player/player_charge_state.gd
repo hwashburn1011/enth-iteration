@@ -10,7 +10,7 @@ var _original_move_speed: float = 0.0
 
 
 func enter() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	charge_time = 0.0
 	_original_move_speed = p.move_speed
 	p.move_speed *= MOVE_SPEED_MULTIPLIER
@@ -21,7 +21,7 @@ func enter() -> void:
 
 
 func exit() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	p.move_speed = _original_move_speed
 	_set_emission(p, 0.0)
 
@@ -32,7 +32,7 @@ func handle_input(event: InputEvent) -> void:
 
 
 func physics_update(delta: float) -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	charge_time = minf(charge_time + delta, MAX_CHARGE_TIME)
 
 	# Visual charge indicator — emission intensity
@@ -55,7 +55,7 @@ func physics_update(delta: float) -> void:
 
 
 func _release_burst() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	var charge_multiplier: float = lerpf(0.5, 2.0, charge_time / MAX_CHARGE_TIME)
 	var compute_cost: float = 15.0 * charge_multiplier
 

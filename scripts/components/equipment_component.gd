@@ -84,8 +84,8 @@ func unequip(item_type: String, slot_index: int) -> Resource:
 	return removed
 
 
-func get_all_equipped_items() -> Array[ItemBase]:
-	var items: Array[ItemBase] = []
+func get_all_equipped_items() -> Array[Resource]:
+	var items: Array[Resource] = []
 	for m: Resource in module_slots:
 		if m != null:
 			items.append(m)
@@ -110,7 +110,7 @@ func _on_equipment_changed() -> void:
 
 
 func _on_degradation_triggered() -> void:
-	var all_items: Array[ItemBase] = get_all_equipped_items()
+	var all_items: Array[Resource] = get_all_equipped_items()
 	if all_items.is_empty():
 		return
 	# Select 1-3 random items to degrade

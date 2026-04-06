@@ -11,7 +11,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	_zigzag_timer += delta
 
 	if enemy.target_player == null:

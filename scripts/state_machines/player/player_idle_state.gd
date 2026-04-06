@@ -4,13 +4,13 @@ extends "res://scripts/state_machines/state.gd"
 
 
 func enter() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	if p and p.animation_player.has_animation(&"idle"):
 		p.animation_player.play(&"idle")
 
 
 func handle_input(event: InputEvent) -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	if event.is_action_pressed(&"dash") and p.can_dash:
 		state_machine.transition_to(state_machine.get_node("DashState") as Node)
 	elif event.is_action_pressed(&"attack_primary") and p.can_attack:
@@ -20,7 +20,7 @@ func handle_input(event: InputEvent) -> void:
 
 
 func physics_update(_delta: float) -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	var input_vector: Vector2 = Input.get_vector(
 		&"move_left", &"move_right", &"move_forward", &"move_back"
 	)

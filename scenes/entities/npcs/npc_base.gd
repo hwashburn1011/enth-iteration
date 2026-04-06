@@ -62,7 +62,7 @@ func _start_conversation() -> void:
 func _find_dialogue_panel() -> Node:
 	# Search for existing panel in scene tree
 	for node: Node in get_tree().root.get_children():
-		if node is DialoguePanel:
+		if node.has_method(&"start_dialogue"):
 			return node as Node
 	# Instantiate one
 	var scene: PackedScene = load("res://scenes/ui/dialogue/DialoguePanel.tscn") as PackedScene

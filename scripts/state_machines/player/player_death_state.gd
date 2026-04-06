@@ -7,7 +7,7 @@ func _ready() -> void:
 
 
 func enter() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 
 	if p.animation_player.has_animation(&"death"):
 		p.animation_player.play(&"death")
@@ -24,7 +24,7 @@ func enter() -> void:
 
 
 func exit() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	# Re-enable when respawn system transitions out of DeathState
 	p.set_physics_process(true)
 	p.set_process_unhandled_input(true)

@@ -8,7 +8,7 @@ func _ready() -> void:
 
 
 func enter() -> void:
-	var p: CharacterBody3D = player as CharacterBody3D
+	var p = player
 	var from_position: Vector3 = p.global_position
 
 	# Play dash animation

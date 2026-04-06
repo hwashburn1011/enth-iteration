@@ -125,27 +125,27 @@ func _toggle_pause() -> void:
 		return  # Let the pause menu handle its own Esc
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		return
-	var menu: PauseMenu = load("res://scripts/ui/pause_menu.gd").new()
+	var menu: Node = load("res://scripts/ui/pause_menu.gd").new()
 	get_tree().root.add_child(menu)
 
 
 func _toggle_quest_log() -> void:
 	if GameManager.current_state == GameManager.GameState.INVENTORY:
 		return
-	var log: QuestLog = load("res://scripts/ui/quest_log.gd").new()
+	var log: Node = load("res://scripts/ui/quest_log.gd").new()
 	get_tree().root.add_child(log)
 
 
 func _toggle_inventory() -> void:
 	if GameManager.current_state == GameManager.GameState.INVENTORY:
 		return  # Already open, let the screen handle closing
-	var screen: InventoryScreen = load("res://scripts/ui/inventory_screen.gd").new()
+	var screen: Node = load("res://scripts/ui/inventory_screen.gd").new()
 	get_tree().root.add_child(screen)
 	screen.open(self)
 
 
 func _on_leveled_up(new_level: int) -> void:
-	var panel: StatAllocationPanel = load("res://scripts/ui/stat_allocation_panel.gd").new()
+	var panel: Node = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)
 

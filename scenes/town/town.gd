@@ -72,7 +72,7 @@ func _populate_npcs() -> void:
 			npc.global_position = slot.global_position
 			add_child(npc)
 			# Trigger arrival dialogue for newly recruited NPCs
-			if GameManager.is_npc_newly_arrived(npc_id) and npc is NPCBase:
+			if GameManager.is_npc_newly_arrived(npc_id) and npc.has_method(&"_start_conversation"):
 				var npc_base: CharacterBody3D = npc as CharacterBody3D
 				var arrival_data: Resource = _get_arrival_dialogue(npc_id)
 				if arrival_data:
@@ -115,7 +115,7 @@ func _auto_trigger_sage_dialogue() -> void:
 	await get_tree().create_timer(2.0).timeout
 	# Find the AI Sage NPC and start conversation
 	for child: Node in get_children():
-		if child is NPCBase and (child as CharacterBody3D).npc_id == "ai_sage":
+		if child.has_method(&"_start_conversation") and child.npc_id == "ai_sage":
 			(child as CharacterBody3D)._start_conversation()
 			return
 

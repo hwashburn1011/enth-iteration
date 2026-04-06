@@ -11,7 +11,7 @@ height = 1.5
 albedo_color = Color(0.5, 0.8, 1.0, 0.6)
 transparency = 1
 emission_enabled = true
-emission = Color(0.4, 0.7, 1.0)
+emission = Color(0.4, 0.7, 1.0, 1)
 emission_energy_multiplier = 1.0
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_detect"]

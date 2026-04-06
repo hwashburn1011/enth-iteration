@@ -28,7 +28,7 @@ func _init() -> void:
 
 
 func enter() -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	_timer = 0.0
 	_hitbox_enabled = false
 	_telegraph_done = false
@@ -58,7 +58,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	_timer += delta
 
 	var telegraph_time: float = DASH_TELEGRAPH if _current_pattern == AttackPattern.DASH_STRIKE else FLURRY_TELEGRAPH
@@ -124,7 +124,7 @@ func _process_flurry(enemy: CharacterBody3D, _delta: float) -> void:
 
 
 func exit() -> void:
-	var enemy: CharacterBody3D = player as CharacterBody3D
+	var enemy = player
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false
 	_set_telegraph(enemy, false)
