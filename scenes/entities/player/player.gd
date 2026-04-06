@@ -82,7 +82,9 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"use_prompt"):
+	if event.is_action_pressed(&"pause"):
+		_toggle_pause()
+	elif event.is_action_pressed(&"use_prompt"):
 		_try_use_prompt()
 	elif event.is_action_pressed(&"inventory"):
 		_toggle_inventory()
@@ -116,6 +118,15 @@ func _try_use_prompt() -> void:
 				effect.potency = 1.0
 				sem.apply_effect(effect)
 	_prompt_cooldown = 0.5
+
+
+func _toggle_pause() -> void:
+	if PauseMenu.is_open():
+		return  # Let the pause menu handle its own Esc
+	if GameManager.current_state != GameManager.GameState.PLAYING:
+		return
+	var menu: PauseMenu = PauseMenu.new()
+	get_tree().root.add_child(menu)
 
 
 func _toggle_quest_log() -> void:

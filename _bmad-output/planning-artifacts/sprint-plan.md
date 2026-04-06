@@ -100,7 +100,7 @@ When executing this sprint plan:
 - [x] 8.5 Inventory Screen — `DONE`
 - [x] 8.6 Character Stats Panel — `DONE`
 - [x] 8.7 Quest Log UI — `DONE`
-- [ ] 8.8 Pause Menu — `TODO`
+- [x] 8.8 Pause Menu — `DONE`
 
 ### Epic 9: Demo Build
 - [ ] 9.1 First Boss — Corrupted Compiler — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 70
-- **Remaining:** 5
-- **Current Epic:** 8
+- **Completed:** 71
+- **Remaining:** 4
+- **Current Epic:** 9
