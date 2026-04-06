@@ -23,6 +23,7 @@ EnemyPool="*res://scripts/systems/enemy_pool.gd"
 RespawnManager="*res://scripts/systems/respawn_manager.gd"
 SaveManager="*res://scripts/autoloads/save_manager.gd"
 QuestManager="*res://scripts/quests/quest_manager.gd"
+TutorialManager="*res://scripts/autoloads/tutorial_manager.gd"
 
 [dotnet]
 

@@ -3,16 +3,13 @@ extends RoomBase
 
 var _markers_reached: int = 0
 var _required: int = 3
-var _overlay: TutorialOverlay = null
 
 
 func _ready() -> void:
 	room_type = "corridor"
 	is_cleared = false
 	super._ready()
-	_overlay = TutorialOverlay.new()
-	_overlay.instruction_text = "Use WASD to move — walk to the markers"
-	add_child(_overlay)
+	TutorialManager.start_movement_tracking()
 
 	for child: Node in get_node("Markers").get_children():
 		if child is Area3D:
@@ -27,5 +24,3 @@ func _on_marker_reached(body: Node3D, marker: Area3D) -> void:
 	if _markers_reached >= _required:
 		is_cleared = true
 		room_cleared.emit()
-		if _overlay:
-			_overlay.dismiss()

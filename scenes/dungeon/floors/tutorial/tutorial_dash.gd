@@ -1,16 +1,12 @@
 extends RoomBase
 ## Tutorial: dash through a hazard zone.
 
-var _overlay: TutorialOverlay = null
-
 
 func _ready() -> void:
 	room_type = "corridor"
-	is_cleared = true  # Exit always available — just need to reach it
+	is_cleared = true
 	super._ready()
-	_overlay = TutorialOverlay.new()
-	_overlay.instruction_text = "Press Space to dash through hazards"
-	add_child(_overlay)
+	TutorialManager.start_dash_hint()
 
 	var hazard: Area3D = get_node_or_null("HazardZone") as Area3D
 	if hazard:
