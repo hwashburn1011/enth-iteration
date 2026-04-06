@@ -90,7 +90,7 @@ When executing this sprint plan:
 - [x] 7.3 Load Deserialization — `DONE`
 - [x] 7.4 Auto-save Triggers — `DONE`
 - [x] 7.5 Rolling Backup System — `DONE`
-- [ ] 7.6 New Game Initialization — `TODO`
+- [x] 7.6 New Game Initialization — `DONE`
 
 ### Epic 8: HUD & Game Interface
 - [ ] 8.1 HUD Overlay Scene — `TODO`
@@ -115,5 +115,5 @@ When executing this sprint plan:
 
 - **Total Stories:** 75
 - **Completed:** 62
-- **Remaining:** 13
-- **Current Epic:** 7
+- **Remaining:** 12
+- **Current Epic:** 8

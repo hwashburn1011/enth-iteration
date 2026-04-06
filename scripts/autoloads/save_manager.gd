@@ -83,6 +83,23 @@ func _show_save_indicator() -> void:
 	tween.tween_property(_save_indicator, "modulate:a", 0.0, 0.3)
 
 
+func new_game() -> void:
+	current_data = get_default_save_data()
+	# Reset GameManager state
+	GameManager.recruited_npcs.clear()
+	GameManager.newly_recruited.clear()
+	GameManager.npc_affinity.clear()
+	GameManager._talked_this_session.clear()
+	GameManager.first_run = true
+	GameManager.set_meta(&"highest_floor", 0)
+	GameManager.set_meta(&"total_runs", 0)
+	GameManager.set_meta(&"town_entry_type", "new_game")
+	# Write initial save
+	save_game()
+	# Load town
+	GameManager.change_scene_to("res://scenes/town/Town.tscn")
+
+
 func save_game() -> bool:
 	current_data = get_default_save_data()
 	current_data["timestamp"] = Time.get_datetime_string_from_system()
