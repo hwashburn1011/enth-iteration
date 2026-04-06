@@ -51,7 +51,7 @@ When executing this sprint plan:
 - [x] 4.1 ItemBase Resource Classes — `DONE`
 - [x] 4.2 Rarity System and Affix Generation — `DONE`
 - [x] 4.3 InventoryComponent — `DONE`
-- [ ] 4.4 Equipment System — `TODO`
+- [x] 4.4 Equipment System — `DONE`
 - [ ] 4.5 AbilityManager — Module Abilities — `TODO`
 - [ ] 4.6 Loot Drop System — `TODO`
 - [ ] 4.7 Item Pickup in World — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 29
-- **Remaining:** 46
+- **Completed:** 30
+- **Remaining:** 45
 - **Current Epic:** 4
