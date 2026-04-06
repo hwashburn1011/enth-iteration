@@ -2,9 +2,12 @@ extends Node3D
 ## Town hub — persistent home base with NPC slots and spawn points.
 
 const NPC_SCENES: Dictionary = {
-	"ai_sage": "res://scenes/entities/npcs/AISage.tscn",
+	"ai_sage": "res://scenes/entities/npcs/AISageTown.tscn",
 	"cache_sprite": "res://scenes/entities/npcs/CacheSprite.tscn",
 }
+
+## NPCs that are always present in town (no recruitment needed)
+const ALWAYS_PRESENT: Array[String] = ["ai_sage"]
 
 @onready var player_spawn_point: Marker3D = %PlayerSpawnPoint
 @onready var portal_return_point: Marker3D = %PortalReturnPoint
@@ -46,21 +49,29 @@ func _ready() -> void:
 
 
 func _populate_npcs() -> void:
-	# Check which NPCs have been recruited (stored as meta on GameManager for now)
 	for npc_id: String in NPC_SCENES:
-		if GameManager.has_meta(StringName("npc_recruited_" + npc_id)):
-			var slot: Marker3D = npc_slots.get_node_or_null(npc_id + "_slot") as Marker3D
-			if slot == null:
-				# Try PascalCase slot names
-				match npc_id:
-					"ai_sage":
-						slot = npc_slots.get_node_or_null("AISageSlot") as Marker3D
-					"cache_sprite":
-						slot = npc_slots.get_node_or_null("CacheSpriteSlot") as Marker3D
-			if slot == null:
-				continue
-			var scene: PackedScene = load(NPC_SCENES[npc_id]) as PackedScene
-			if scene:
-				var npc: Node3D = scene.instantiate() as Node3D
-				npc.global_position = slot.global_position
-				add_child(npc)
+		# Always-present NPCs spawn regardless of recruitment
+		var should_spawn: bool = npc_id in ALWAYS_PRESENT
+		# Recruited NPCs spawn if flagged
+		if not should_spawn and GameManager.has_meta(StringName("npc_recruited_" + npc_id)):
+			should_spawn = true
+		if not should_spawn:
+			continue
+		var slot: Marker3D = _get_npc_slot(npc_id)
+		if slot == null:
+			continue
+		var scene: PackedScene = load(NPC_SCENES[npc_id]) as PackedScene
+		if scene:
+			var npc: Node3D = scene.instantiate() as Node3D
+			npc.global_position = slot.global_position
+			add_child(npc)
+
+
+func _get_npc_slot(npc_id: String) -> Marker3D:
+	match npc_id:
+		"ai_sage":
+			return npc_slots.get_node_or_null("AISageSlot") as Marker3D
+		"cache_sprite":
+			return npc_slots.get_node_or_null("CacheSpriteSlot") as Marker3D
+		_:
+			return npc_slots.get_node_or_null(npc_id + "_slot") as Marker3D
