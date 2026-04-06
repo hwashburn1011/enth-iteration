@@ -40,9 +40,17 @@ func _spawn_dropped_item(item: ItemBase, pos: Vector3, parent: Node) -> void:
 	var dist: float = randf_range(SCATTER_MIN, SCATTER_MAX)
 	var offset: Vector3 = Vector3(cos(angle) * dist, 0.0, sin(angle) * dist)
 
-	var dropped: Node3D = _create_dropped_item_node(item)
-	dropped.global_position = pos + offset
-	parent.add_child(dropped)
+	# Use DroppedItem scene if available, else fallback to manual creation
+	var dropped_scene: PackedScene = load("res://scenes/items/DroppedItem.tscn") as PackedScene
+	if dropped_scene:
+		var dropped: DroppedItem = dropped_scene.instantiate() as DroppedItem
+		dropped.item = item
+		dropped.global_position = pos + offset
+		parent.add_child(dropped)
+	else:
+		var dropped: Node3D = _create_dropped_item_node(item)
+		dropped.global_position = pos + offset
+		parent.add_child(dropped)
 
 
 func _create_dropped_item_node(item: ItemBase) -> Node3D:
