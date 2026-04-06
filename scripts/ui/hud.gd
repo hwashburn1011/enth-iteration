@@ -10,6 +10,9 @@ const TWEEN_DURATION: float = 0.2
 @onready var compute_label: Label = %ComputeLabel
 @onready var _container: Control = %HUDContainer
 @onready var _ability_slots_container: HBoxContainer = %AbilitySlots
+@onready var _prompt_icon: ColorRect = %PromptIcon
+@onready var _prompt_quantity: Label = %PromptQuantity
+@onready var _prompt_key: Label = %PromptKey
 
 var _health_tween: Tween = null
 var _compute_tween: Tween = null
@@ -49,6 +52,10 @@ func _connect_player() -> void:
 	player.ability_manager.ability_ready.connect(_on_ability_ready)
 	player.equipment_component.equipment_changed.connect(_on_equipment_changed.bind(player))
 	_refresh_ability_icons(player)
+	# Prompt hotbar connections
+	player.inventory_component.prompt_used.connect(_on_prompt_used)
+	player.inventory_component.inventory_changed.connect(_on_inventory_changed.bind(player))
+	_update_prompt_display(player)
 
 
 func _on_health_changed(current: float, max_val: float) -> void:
@@ -98,3 +105,40 @@ func _refresh_ability_icons(player: Player) -> void:
 			_ability_slot_uis[i].set_module(module, i + 1)
 		else:
 			_ability_slot_uis[i].set_empty(i + 1)
+
+
+func _on_prompt_used(_prompt_type: String, _remaining: int) -> void:
+	# Flash icon
+	var tween: Tween = create_tween()
+	tween.tween_property(_prompt_icon, "color", Color.WHITE, 0.1)
+	tween.tween_callback(_refresh_prompt_from_tree)
+
+
+func _on_inventory_changed(player: Player) -> void:
+	_update_prompt_display(player)
+
+
+func _update_prompt_display(player: Player) -> void:
+	var active: Dictionary = player.inventory_component.get_active_prompt()
+	if active.is_empty():
+		_prompt_icon.color = Color(0.3, 0.3, 0.3, 0.5)
+		_prompt_quantity.text = "x0"
+		return
+	var prompt: PromptItem = active["item"] as PromptItem
+	var qty: int = int(active["quantity"])
+	match prompt.prompt_type:
+		"health":
+			_prompt_icon.color = Color(0.9, 0.2, 0.2)
+		"compute":
+			_prompt_icon.color = Color(0.2, 0.4, 0.9)
+		"buff":
+			_prompt_icon.color = Color(0.9, 0.8, 0.2)
+		_:
+			_prompt_icon.color = Color(0.5, 0.5, 0.5)
+	_prompt_quantity.text = "x%d" % qty
+
+
+func _refresh_prompt_from_tree() -> void:
+	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if nodes.size() > 0:
+		_update_prompt_display(nodes[0] as Player)

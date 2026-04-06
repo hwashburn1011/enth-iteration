@@ -88,3 +88,40 @@ layout_mode = 2
 
 [node name="Slot4" parent="HUDContainer/AbilitySlots" instance=ExtResource("2_slot")]
 layout_mode = 2
+
+[node name="PromptDisplay" type="PanelContainer" parent="HUDContainer"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -60.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="HBox" type="HBoxContainer" parent="HUDContainer/PromptDisplay"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PromptIcon" type="ColorRect" parent="HUDContainer/PromptDisplay/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(32, 32)
+color = Color(0.3, 0.3, 0.3, 0.5)
+
+[node name="VBox" type="VBoxContainer" parent="HUDContainer/PromptDisplay/HBox"]
+layout_mode = 2
+
+[node name="PromptQuantity" type="Label" parent="HUDContainer/PromptDisplay/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "x0"
+
+[node name="PromptKey" type="Label" parent="HUDContainer/PromptDisplay/HBox/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Q"

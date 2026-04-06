@@ -95,7 +95,7 @@ When executing this sprint plan:
 ### Epic 8: HUD & Game Interface
 - [x] 8.1 HUD Overlay Scene — `DONE`
 - [x] 8.2 Module Cooldown Display — `DONE`
-- [ ] 8.3 Prompt Hotbar Display — `TODO`
+- [x] 8.3 Prompt Hotbar Display — `DONE`
 - [ ] 8.4 XP and Level-up System — `TODO`
 - [ ] 8.5 Inventory Screen — `TODO`
 - [ ] 8.6 Character Stats Panel — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 65
-- **Remaining:** 10
+- **Completed:** 66
+- **Remaining:** 9
 - **Current Epic:** 8
