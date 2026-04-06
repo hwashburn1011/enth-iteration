@@ -1,0 +1,98 @@
+[gd_resource type="Resource" script_class="AffixDatabase" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/affix_database.gd" id="1_db"]
+[ext_resource type="Script" path="res://scripts/items/affix_definition.gd" id="2_def"]
+
+[sub_resource type="Resource" id="affix_processing_minor"]
+script = ExtResource("2_def")
+affix_name = "Minor Processing Boost"
+stat_name = "processing"
+min_value = 1.0
+max_value = 3.0
+min_rarity = 0
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_processing_major"]
+script = ExtResource("2_def")
+affix_name = "Major Processing Boost"
+stat_name = "processing"
+min_value = 4.0
+max_value = 8.0
+min_rarity = 2
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_bandwidth_minor"]
+script = ExtResource("2_def")
+affix_name = "Minor Bandwidth Boost"
+stat_name = "bandwidth"
+min_value = 1.0
+max_value = 3.0
+min_rarity = 0
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_bandwidth_major"]
+script = ExtResource("2_def")
+affix_name = "Major Bandwidth Boost"
+stat_name = "bandwidth"
+min_value = 4.0
+max_value = 8.0
+min_rarity = 2
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_memory_minor"]
+script = ExtResource("2_def")
+affix_name = "Minor Memory Boost"
+stat_name = "memory"
+min_value = 1.0
+max_value = 3.0
+min_rarity = 0
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_memory_major"]
+script = ExtResource("2_def")
+affix_name = "Major Memory Boost"
+stat_name = "memory"
+min_value = 4.0
+max_value = 8.0
+min_rarity = 2
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_integrity_minor"]
+script = ExtResource("2_def")
+affix_name = "Minor Integrity Boost"
+stat_name = "integrity"
+min_value = 1.0
+max_value = 3.0
+min_rarity = 0
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_integrity_major"]
+script = ExtResource("2_def")
+affix_name = "Major Integrity Boost"
+stat_name = "integrity"
+min_value = 4.0
+max_value = 8.0
+min_rarity = 2
+allowed_item_types = []
+
+[sub_resource type="Resource" id="affix_cooldown_reduction"]
+script = ExtResource("2_def")
+affix_name = "Cooldown Reduction"
+stat_name = "cooldown_reduction"
+min_value = 0.5
+max_value = 2.0
+min_rarity = 1
+allowed_item_types = ["module"]
+
+[sub_resource type="Resource" id="affix_regen_rate"]
+script = ExtResource("2_def")
+affix_name = "Compute Regen"
+stat_name = "regen_rate"
+min_value = 0.5
+max_value = 3.0
+min_rarity = 1
+allowed_item_types = ["chip", "core"]
+
+[resource]
+script = ExtResource("1_db")
+affixes = [SubResource("affix_processing_minor"), SubResource("affix_processing_major"), SubResource("affix_bandwidth_minor"), SubResource("affix_bandwidth_major"), SubResource("affix_memory_minor"), SubResource("affix_memory_major"), SubResource("affix_integrity_minor"), SubResource("affix_integrity_major"), SubResource("affix_cooldown_reduction"), SubResource("affix_regen_rate")]

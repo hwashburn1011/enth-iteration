@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FloorData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/floor_data.gd" id="1_fd"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/floors/tutorial/TutorialMovement.tscn" id="2_move"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/floors/tutorial/TutorialCombat.tscn" id="3_combat"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/floors/tutorial/TutorialDash.tscn" id="4_dash"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/floors/tutorial/TutorialLoot.tscn" id="5_loot"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/floors/tutorial/TutorialPrompt.tscn" id="6_prompt"]
+
+[resource]
+script = ExtResource("1_fd")
+floor_name = "Tutorial"
+floor_number = 1
+room_sequence = [ExtResource("2_move"), ExtResource("3_combat"), ExtResource("4_dash"), ExtResource("5_loot"), ExtResource("6_prompt")]

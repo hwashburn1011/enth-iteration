@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FloorData" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/floor_data.gd" id="1_fd"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatOpenArena.tscn" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/corridor/CorridorStraight.tscn" id="3_corridor"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatPillars.tscn" id="4_pillars"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatCorridorAmbush.tscn" id="5_ambush"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatElevated.tscn" id="6_elevated"]
+
+[resource]
+script = ExtResource("1_fd")
+floor_name = "Data Sector Alpha"
+floor_number = 2
+room_sequence = [ExtResource("2_arena"), ExtResource("3_corridor"), ExtResource("4_pillars"), ExtResource("5_ambush"), ExtResource("6_elevated")]

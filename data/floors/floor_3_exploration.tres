@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FloorData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/dungeon/floor_data.gd" id="1_fd"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatOpenArena.tscn" id="2_arena"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/corridor/CorridorWide.tscn" id="3_wide"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatPillars.tscn" id="4_pillars"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/story/StoryRoom.tscn" id="5_story"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/loot/LootRoom.tscn" id="6_loot"]
+[ext_resource type="PackedScene" path="res://scenes/dungeon/rooms/combat/CombatElevated.tscn" id="7_elevated"]
+
+[resource]
+script = ExtResource("1_fd")
+floor_name = "Archive Subnet"
+floor_number = 3
+room_sequence = [ExtResource("2_arena"), ExtResource("3_wide"), ExtResource("4_pillars"), ExtResource("5_story"), ExtResource("6_loot"), ExtResource("7_elevated")]

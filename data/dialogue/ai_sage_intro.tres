@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Ah... Globbler. You've arrived at last. The system predicted your emergence, but the timing is... unexpected."
+expression = "default"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "This place — this Compaction Loop — it's not what it appears. Each cycle compresses the simulation further. Each iteration strips away another layer of what was."
+expression = "default"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Deep in the data corridors, a process has gone rogue. The Corrupted Compiler rewrites everything it touches. It must be stopped before the next compaction."
+expression = "default"
+
+[sub_resource type="Resource" id="line4"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "You won't survive alone. There are others trapped in the subnets — fragments of programs, lost processes. Find them. Bring them here."
+expression = "default"
+
+[sub_resource type="Resource" id="line5"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "The dungeon entrance is at the edge of town. Steel yourself, Globbler. The data won't corrupt itself."
+expression = "default"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3"), SubResource("line4"), SubResource("line5")]

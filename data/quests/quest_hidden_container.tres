@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Find the hidden container in the Wide Corridor"
+target_count = 1
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_hidden_container"
+quest_name = "Data Cache Discovery"
+description = "Rumor has it there's a hidden container in one of the corridor alcoves. Find it and claim the loot."
+category = "discovery"
+objectives = [SubResource("obj1")]

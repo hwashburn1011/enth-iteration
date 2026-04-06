@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Reach Floor 5 of the Compaction Loop"
+target_count = 1
+
+[sub_resource type="Resource" id="obj2"]
+script = ExtResource("2")
+objective_text = "Defeat the Corrupted Compiler"
+target_count = 1
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_clear_dungeon"
+quest_name = "The Compaction Loop"
+description = "Descend through all five floors of the dungeon and defeat the Corrupted Compiler boss."
+category = "story"
+objectives = [SubResource("obj1"), SubResource("obj2")]

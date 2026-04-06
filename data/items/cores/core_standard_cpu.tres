@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Standard CPU"
+item_id = "core_standard_cpu"
+description = "A balanced processing core with modest stat gains."
+rarity = 0
+item_type = "core"
+core_passive = "Balanced performance"
+core_bonus_stats = {"processing": 2.0, "integrity": 2.0}

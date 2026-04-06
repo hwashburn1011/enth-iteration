@@ -1,0 +1,105 @@
+[gd_scene load_steps=4 format=3 uid="uid://tutmove001"]
+
+[ext_resource type="Script" path="res://scenes/dungeon/floors/tutorial/tutorial_movement.gd" id="1_script"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(14, 14)
+
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_color = Color(0.35, 0.38, 0.4, 1)
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_marker"]
+radius = 1.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_exit"]
+size = Vector3(2.0, 3.0, 1.0)
+
+[sub_resource type="SphereMesh" id="SphereMesh_marker"]
+radius = 0.3
+height = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Material_marker"]
+albedo_color = Color(0.2, 0.9, 0.4, 1)
+emission_enabled = true
+emission = Color(0.2, 0.9, 0.4, 1)
+emission_energy_multiplier = 0.5
+
+[node name="TutorialMovement" type="Node3D"]
+script = ExtResource("1_script")
+room_name = "Movement Tutorial"
+
+[node name="Geometry" type="Node3D" parent="."]
+
+[node name="Floor" type="MeshInstance3D" parent="Geometry"]
+mesh = SubResource("PlaneMesh_floor")
+surface_material_override/0 = SubResource("Material_floor")
+
+[node name="WallNorth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -7)
+size = Vector3(14, 3, 0.5)
+
+[node name="WallSouth" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 7)
+size = Vector3(14, 3, 0.5)
+
+[node name="WallEast" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 1.5, 0)
+size = Vector3(0.5, 3, 14)
+
+[node name="WallWest" type="CSGBox3D" parent="Geometry"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 1.5, 0)
+size = Vector3(0.5, 3, 14)
+
+[node name="EntryPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6)
+
+[node name="ExitPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6)
+
+[node name="SpawnPoints" type="Node3D" parent="."]
+
+[node name="Markers" type="Node3D" parent="."]
+
+[node name="Marker1" type="Area3D" parent="Markers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 0)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Shape" type="CollisionShape3D" parent="Markers/Marker1"]
+shape = SubResource("SphereShape3D_marker")
+
+[node name="Visual" type="MeshInstance3D" parent="Markers/Marker1"]
+mesh = SubResource("SphereMesh_marker")
+surface_material_override/0 = SubResource("Material_marker")
+
+[node name="Marker2" type="Area3D" parent="Markers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -2)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Shape" type="CollisionShape3D" parent="Markers/Marker2"]
+shape = SubResource("SphereShape3D_marker")
+
+[node name="Visual" type="MeshInstance3D" parent="Markers/Marker2"]
+mesh = SubResource("SphereMesh_marker")
+surface_material_override/0 = SubResource("Material_marker")
+
+[node name="Marker3" type="Area3D" parent="Markers"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+collision_layer = 0
+collision_mask = 1
+
+[node name="Shape" type="CollisionShape3D" parent="Markers/Marker3"]
+shape = SubResource("SphereShape3D_marker")
+
+[node name="Visual" type="MeshInstance3D" parent="Markers/Marker3"]
+mesh = SubResource("SphereMesh_marker")
+surface_material_override/0 = SubResource("Material_marker")
+
+[node name="ExitTrigger" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6)
+collision_layer = 0
+collision_mask = 1
+
+[node name="ExitTriggerShape" type="CollisionShape3D" parent="ExitTrigger"]
+shape = SubResource("BoxShape3D_exit")

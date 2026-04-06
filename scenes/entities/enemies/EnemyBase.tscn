@@ -1,0 +1,122 @@
+[gd_scene load_steps=18 format=3 uid="uid://enemybase001"]
+
+[ext_resource type="Script" path="res://scenes/entities/enemies/enemy_base.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="3_health"]
+[ext_resource type="Script" path="res://scripts/components/stats_component.gd" id="4_stats"]
+[ext_resource type="Script" path="res://scripts/components/hitbox_component.gd" id="5_hitbox"]
+[ext_resource type="Script" path="res://scripts/components/hurtbox_component.gd" id="6_hurtbox"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_idle_state.gd" id="7_idle"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_patrol_state.gd" id="8_patrol"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_chase_state.gd" id="9_chase"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_attack_state.gd" id="10_attack"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_hurt_state.gd" id="11_hurt"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/enemy_death_state.gd" id="12_death"]
+[ext_resource type="Script" path="res://scripts/components/status_effect_manager.gd" id="13_sem"]
+[ext_resource type="Script" path="res://scripts/components/loot_dropper.gd" id="14_loot"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
+radius = 0.4
+height = 1.4
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_vis"]
+radius = 0.4
+height = 1.4
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_detect"]
+radius = 10.0
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
+size = Vector3(1.2, 1.0, 1.2)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hurtbox"]
+radius = 0.4
+height = 1.4
+
+[node name="EnemyBase" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 9
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CapsuleShape3D_col")
+
+[node name="Model" type="Node3D" parent="."]
+unique_name_in_owner = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Model"]
+mesh = SubResource("CapsuleMesh_vis")
+
+[node name="HealthComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_health")
+
+[node name="StatsComponent" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("4_stats")
+
+[node name="HitboxComponent" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 32
+collision_mask = 64
+monitoring = false
+monitorable = false
+script = ExtResource("5_hitbox")
+
+[node name="HitboxShape" type="CollisionShape3D" parent="HitboxComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.8)
+shape = SubResource("BoxShape3D_hitbox")
+disabled = true
+
+[node name="HurtboxComponent" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 64
+collision_mask = 0
+script = ExtResource("6_hurtbox")
+
+[node name="HurtboxShape" type="CollisionShape3D" parent="HurtboxComponent"]
+shape = SubResource("CapsuleShape3D_hurtbox")
+
+[node name="StatusEffectManager" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("13_sem")
+
+[node name="StateMachine" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_sm")
+
+[node name="EnemyIdleState" type="Node" parent="StateMachine"]
+script = ExtResource("7_idle")
+
+[node name="EnemyPatrolState" type="Node" parent="StateMachine"]
+script = ExtResource("8_patrol")
+
+[node name="EnemyChaseState" type="Node" parent="StateMachine"]
+script = ExtResource("9_chase")
+
+[node name="EnemyAttackState" type="Node" parent="StateMachine"]
+script = ExtResource("10_attack")
+
+[node name="EnemyHurtState" type="Node" parent="StateMachine"]
+script = ExtResource("11_hurt")
+
+[node name="EnemyDeathState" type="Node" parent="StateMachine"]
+script = ExtResource("12_death")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+unique_name_in_owner = true
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+unique_name_in_owner = true
+
+[node name="LootDropper" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("14_loot")
+
+[node name="DetectionArea" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 1
+
+[node name="DetectionShape" type="CollisionShape3D" parent="DetectionArea"]
+shape = SubResource("SphereShape3D_detect")

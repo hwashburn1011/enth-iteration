@@ -1,0 +1,42 @@
+Enth: Iteration Demo — Known Issues
+=====================================
+Version: 0.1.0-demo
+Date: 2026-04-06
+
+PLACEHOLDER CONTENT
+- All 3D models are primitive shapes (capsules, boxes, spheres) — final art TBD
+- All textures are solid colors — final textures TBD
+- Audio files are placeholder stubs — real music and SFX to be composed
+- NPC portraits are not yet created — dialogue panel shows empty portrait slot
+- Item icons are not yet created — inventory shows text abbreviations
+
+GAMEPLAY
+- Navigation mesh is not baked — enemies may not pathfind correctly in all rooms
+- Dungeon rooms reuse the same scenes — spawner configs vary per floor but geometry repeats
+- Wave spawner timing may overlap with room transition in edge cases
+- Boss attack patterns use await timers — interrupting during phase transition may cause state issues
+- Item durability UI (colored bar) is tracked but not visually displayed on inventory grid cells
+- Protocol items (on_hit, on_kill, on_dash triggers) are defined but not yet functionally wired
+- Quest objectives do not auto-update from gameplay events yet — tracking is manual via QuestManager API
+
+UI
+- Inventory grid shows 2-letter abbreviations instead of item icons
+- Equipment slots show 3-letter abbreviations instead of item icons
+- No tooltip comparison panel for equipped vs selected item stats
+- Stat allocation panel does not auto-close when all points are spent
+- Quest log J key may conflict with other input if remapped
+
+SAVE SYSTEM
+- Save schema is v1 — loading saves from future versions is not yet handled
+- Equipment and inventory serialization stores item_id only — generated affixes are saved but re-generation on load uses saved values
+- Tutorial completion state is not yet persisted in save data
+
+PERFORMANCE
+- Object pool pre-instantiates enemies on game start — may cause brief stutter
+- No LOD or culling optimization on placeholder geometry
+- GPUParticles3D VFX may impact low-end hardware
+
+BUILD
+- Windows x86_64 only — no macOS or Linux export configured
+- No gamepad/controller input mapping — keyboard + mouse only
+- No input rebinding UI — uses hardcoded Input Map defaults

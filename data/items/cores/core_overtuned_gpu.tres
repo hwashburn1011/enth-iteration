@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Overtuned GPU"
+item_id = "core_overtuned_gpu"
+description = "Cranked to the max — massive processing and memory at the edge of stability."
+rarity = 2
+item_type = "core"
+core_passive = "10% critical hit bonus"
+core_bonus_stats = {"processing": 6.0, "memory": 4.0}

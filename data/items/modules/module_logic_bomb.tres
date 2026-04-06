@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Logic Bomb"
+item_id = "module_logic_bomb"
+description = "Deploys an area-of-effect explosion at target location."
+rarity = 2
+item_type = "module"
+compute_cost = 20.0
+cooldown = 5.0
+ability_name = "Logic Bomb"
+ability_description = "AoE explosion dealing heavy damage."

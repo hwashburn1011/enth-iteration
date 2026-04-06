@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PromptItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/prompt_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Health Prompt"
+item_id = "prompt_health_small"
+description = "Restores 30 health when consumed."
+rarity = 0
+item_type = "prompt"
+prompt_type = "health"
+restore_amount = 30.0
+max_stack = 10
+is_consumable = true
