@@ -15,6 +15,8 @@ func handle_input(event: InputEvent) -> void:
 		state_machine.transition_to(state_machine.get_node("DashState") as State)
 	elif event.is_action_pressed(&"attack_primary") and p.can_attack:
 		state_machine.transition_to(state_machine.get_node("AttackState") as State)
+	elif event.is_action_pressed(&"attack_secondary") and p.can_attack:
+		state_machine.transition_to(state_machine.get_node("ChargeState") as State)
 
 
 func physics_update(_delta: float) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://player00001"]
+[gd_scene load_steps=24 format=3 uid="uid://player00001"]
 
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" path="res://scripts/components/compute_component.gd" id="7_compute"]
 [ext_resource type="Script" path="res://scripts/components/stats_component.gd" id="8_stats"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_attack_state.gd" id="9_attack"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_charge_state.gd" id="10_charge"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -89,12 +90,48 @@ tracks/0/keys = {
 [sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
 size = Vector3(1.5, 1.0, 1.5)
 
+[sub_resource type="Animation" id="Animation_charge"]
+resource_name = "charge"
+length = 2.0
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1.0, 2.0),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.1, 1.1, 1.1), Vector3(1.2, 1.2, 1.2)]
+}
+
+[sub_resource type="Animation" id="Animation_energy_burst"]
+resource_name = "energy_burst"
+length = 0.5
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.35, 0.5),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(1.2, 1.2, 1.2), Vector3(1.5, 0.8, 1.5), Vector3(1.1, 1.1, 1.1), Vector3(1, 1, 1)]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
 _data = {
 &"idle": SubResource("Animation_idle"),
 &"walk": SubResource("Animation_walk"),
 &"dash": SubResource("Animation_dash"),
-&"attack_primary": SubResource("Animation_attack_primary")
+&"attack_primary": SubResource("Animation_attack_primary"),
+&"charge": SubResource("Animation_charge"),
+&"energy_burst": SubResource("Animation_energy_burst")
 }
 
 [node name="Player" type="CharacterBody3D"]
@@ -161,6 +198,9 @@ script = ExtResource("5_dash")
 
 [node name="AttackState" type="Node" parent="StateMachine"]
 script = ExtResource("9_attack")
+
+[node name="ChargeState" type="Node" parent="StateMachine"]
+script = ExtResource("10_charge")
 
 [node name="DashCooldownTimer" type="Timer" parent="."]
 unique_name_in_owner = true

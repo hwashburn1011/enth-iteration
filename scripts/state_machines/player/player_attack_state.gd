@@ -1,14 +1,22 @@
 class_name PlayerAttackState
 extends State
-## Data Pulse basic attack — quick melee in mouse direction.
+## Handles both Data Pulse (basic) and Energy Burst (charged) attacks.
 
-const ACTIVE_FRAME_START: float = 0.1
-const ACTIVE_FRAME_END: float = 0.3
-const ATTACK_DURATION: float = 0.4
+const DATA_PULSE_ACTIVE_START: float = 0.1
+const DATA_PULSE_ACTIVE_END: float = 0.3
+const DATA_PULSE_DURATION: float = 0.4
+const ENERGY_BURST_ACTIVE_START: float = 0.05
+const ENERGY_BURST_ACTIVE_END: float = 0.25
+const ENERGY_BURST_DURATION: float = 0.5
 
 var _timer: float = 0.0
 var _hitbox_enabled: bool = false
 var _has_hit: Dictionary = {}
+var _is_energy_burst: bool = false
+var _burst_damage: float = 0.0
+var _active_start: float = 0.0
+var _active_end: float = 0.0
+var _duration: float = 0.0
 
 
 func enter() -> void:
@@ -17,6 +25,38 @@ func enter() -> void:
 	_hitbox_enabled = false
 	_has_hit.clear()
 
+	# Check attack type
+	_is_energy_burst = p.has_meta(&"attack_type") and p.get_meta(&"attack_type") == &"energy_burst"
+
+	if _is_energy_burst:
+		_burst_damage = p.get_meta(&"energy_burst_damage", 10.0) as float
+		_active_start = ENERGY_BURST_ACTIVE_START
+		_active_end = ENERGY_BURST_ACTIVE_END
+		_duration = ENERGY_BURST_DURATION
+		# Scale hitbox larger for burst
+		_set_hitbox_size(p, Vector3(2.5, 1.0, 2.5))
+		p.remove_meta(&"attack_type")
+		p.remove_meta(&"energy_burst_damage")
+		p.remove_meta(&"energy_burst_charge_multiplier")
+		# Cooldown 1.5s for energy burst
+		p.can_attack = false
+		p.attack_cooldown_timer.start(1.5)
+		if p.animation_player.has_animation(&"energy_burst"):
+			p.animation_player.play(&"energy_burst")
+		elif p.animation_player.has_animation(&"attack_primary"):
+			p.animation_player.play(&"attack_primary")
+	else:
+		_burst_damage = 0.0
+		_active_start = DATA_PULSE_ACTIVE_START
+		_active_end = DATA_PULSE_ACTIVE_END
+		_duration = DATA_PULSE_DURATION
+		# Restore default hitbox size
+		_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
+		p.can_attack = false
+		p.attack_cooldown_timer.start(0.5)
+		if p.animation_player.has_animation(&"attack_primary"):
+			p.animation_player.play(&"attack_primary")
+
 	# Face the mouse cursor
 	var attack_dir: Vector3 = _get_mouse_world_direction(p)
 	if attack_dir.length() > 0.0:
@@ -24,15 +64,6 @@ func enter() -> void:
 		var target_angle: float = atan2(attack_dir.x, attack_dir.z)
 		p.model.rotation.y = target_angle
 
-	# Play attack animation
-	if p.animation_player.has_animation(&"attack_primary"):
-		p.animation_player.play(&"attack_primary")
-
-	# Start attack cooldown
-	p.can_attack = false
-	p.attack_cooldown_timer.start(0.5)
-
-	# Disable hitbox initially
 	_set_hitbox_active(p, false)
 
 
@@ -40,19 +71,16 @@ func physics_update(delta: float) -> void:
 	var p: Player = player as Player
 	_timer += delta
 
-	# Enable hitbox during active frames
-	if _timer >= ACTIVE_FRAME_START and _timer < ACTIVE_FRAME_END:
+	if _timer >= _active_start and _timer < _active_end:
 		if not _hitbox_enabled:
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
-		# Check for overlapping hurtboxes
 		_check_hits(p)
 	elif _hitbox_enabled:
 		_set_hitbox_active(p, false)
 		_hitbox_enabled = false
 
-	# End attack after duration
-	if _timer >= ATTACK_DURATION:
+	if _timer >= _duration:
 		_set_hitbox_active(p, false)
 		var input_vector: Vector2 = Input.get_vector(
 			&"move_left", &"move_right", &"move_forward", &"move_back"
@@ -67,6 +95,8 @@ func exit() -> void:
 	var p: Player = player as Player
 	_set_hitbox_active(p, false)
 	_hitbox_enabled = false
+	# Restore default hitbox size
+	_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
 
 
 func _check_hits(p: Player) -> void:
@@ -80,8 +110,12 @@ func _check_hits(p: Player) -> void:
 		_has_hit[area_id] = true
 		var info: DamageInfo = DamageInfo.new()
 		info.source = p
-		info.base_damage = 5.0 + p.stats_component.get_stat("processing") * 1.5
-		info.damage_type = &"data"
+		if _is_energy_burst:
+			info.base_damage = _burst_damage
+			info.damage_type = &"energy"
+		else:
+			info.base_damage = 5.0 + p.stats_component.get_stat("processing") * 1.5
+			info.damage_type = &"data"
 		if area.has_method(&"receive_damage"):
 			area.receive_damage(info)
 
@@ -95,6 +129,14 @@ func _set_hitbox_active(p: Player, active: bool) -> void:
 			child.disabled = not active
 
 
+func _set_hitbox_size(p: Player, size: Vector3) -> void:
+	for child: Node in p.hitbox_component.get_children():
+		if child is CollisionShape3D:
+			var box: BoxShape3D = child.shape as BoxShape3D
+			if box:
+				box.size = size
+
+
 func _get_mouse_world_direction(p: Player) -> Vector3:
 	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	if camera == null:
@@ -102,7 +144,6 @@ func _get_mouse_world_direction(p: Player) -> Vector3:
 	var mouse_pos: Vector2 = p.get_viewport().get_mouse_position()
 	var ray_origin: Vector3 = camera.project_ray_origin(mouse_pos)
 	var ray_dir: Vector3 = camera.project_ray_normal(mouse_pos)
-	# Intersect with ground plane (Y=0)
 	if absf(ray_dir.y) < 0.001:
 		return p.facing_direction
 	var t: float = -ray_origin.y / ray_dir.y

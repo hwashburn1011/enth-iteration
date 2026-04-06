@@ -35,7 +35,7 @@ When executing this sprint plan:
 - [x] 3.2 ComputeComponent Implementation — `DONE`
 - [x] 3.3 StatsComponent Implementation — `DONE`
 - [x] 3.4 Data Pulse Attack — `DONE`
-- [ ] 3.5 Energy Burst Charged Attack — `TODO`
+- [x] 3.5 Energy Burst Charged Attack — `DONE`
 - [ ] 3.6 Combat State Machine States — `TODO`
 - [ ] 3.7 Damage Calculation Pipeline — `TODO`
 - [ ] 3.8 Hitbox and Hurtbox Components — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 15
-- **Remaining:** 60
+- **Completed:** 16
+- **Remaining:** 59
 - **Current Epic:** 3
