@@ -52,7 +52,7 @@ When executing this sprint plan:
 - [x] 4.2 Rarity System and Affix Generation — `DONE`
 - [x] 4.3 InventoryComponent — `DONE`
 - [x] 4.4 Equipment System — `DONE`
-- [ ] 4.5 AbilityManager — Module Abilities — `TODO`
+- [x] 4.5 AbilityManager — Module Abilities — `DONE`
 - [ ] 4.6 Loot Drop System — `TODO`
 - [ ] 4.7 Item Pickup in World — `TODO`
 - [ ] 4.8 Item Degradation on Death — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 30
-- **Remaining:** 45
+- **Completed:** 31
+- **Remaining:** 44
 - **Current Epic:** 4
