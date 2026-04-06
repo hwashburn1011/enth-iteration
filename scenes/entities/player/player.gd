@@ -86,6 +86,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_use_prompt()
 	elif event.is_action_pressed(&"inventory"):
 		_toggle_inventory()
+	elif event.is_action_pressed(&"toggle_quest_log"):
+		_toggle_quest_log()
 
 
 func _try_use_prompt() -> void:
@@ -114,6 +116,13 @@ func _try_use_prompt() -> void:
 				effect.potency = 1.0
 				sem.apply_effect(effect)
 	_prompt_cooldown = 0.5
+
+
+func _toggle_quest_log() -> void:
+	if GameManager.current_state == GameManager.GameState.INVENTORY:
+		return
+	var log: QuestLog = QuestLog.new()
+	get_tree().root.add_child(log)
 
 
 func _toggle_inventory() -> void:

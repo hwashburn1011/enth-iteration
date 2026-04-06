@@ -99,7 +99,7 @@ When executing this sprint plan:
 - [x] 8.4 XP and Level-up System — `DONE`
 - [x] 8.5 Inventory Screen — `DONE`
 - [x] 8.6 Character Stats Panel — `DONE`
-- [ ] 8.7 Quest Log UI — `TODO`
+- [x] 8.7 Quest Log UI — `DONE`
 - [ ] 8.8 Pause Menu — `TODO`
 
 ### Epic 9: Demo Build
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 69
-- **Remaining:** 6
+- **Completed:** 70
+- **Remaining:** 5
 - **Current Epic:** 8

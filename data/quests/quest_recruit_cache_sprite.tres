@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Find the Cache Sprite in the Archive Subnet"
+target_count = 1
+
+[sub_resource type="Resource" id="obj2"]
+script = ExtResource("2")
+objective_text = "Talk to the Cache Sprite in town"
+target_count = 1
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_recruit_cache_sprite"
+quest_name = "Lost in the Cache"
+description = "A trapped program needs rescuing from the dungeon depths. Find and recruit the Cache Sprite."
+category = "character"
+objectives = [SubResource("obj1"), SubResource("obj2")]
