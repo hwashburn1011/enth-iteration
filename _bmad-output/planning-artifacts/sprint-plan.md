@@ -77,7 +77,7 @@ When executing this sprint plan:
 - [x] 6.1 Town Scene Layout — `DONE`
 - [x] 6.2 Dungeon Entrance Interaction — `DONE`
 - [x] 6.3 Dialogue System — `DONE`
-- [ ] 6.4 NPC Base Scene — `TODO`
+- [x] 6.4 NPC Base Scene — `DONE`
 - [ ] 6.5 AI Sage NPC — `TODO`
 - [ ] 6.6 NPC Portrait System — `TODO`
 - [ ] 6.7 NPC Recruitment Flow — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 51
-- **Remaining:** 24
+- **Completed:** 52
+- **Remaining:** 23
 - **Current Epic:** 6

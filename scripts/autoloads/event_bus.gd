@@ -38,6 +38,7 @@ signal iteration_reset()
 
 # NPCs
 signal npc_recruited(npc_id: StringName)
+signal npc_talked(npc_id: StringName)
 signal dialogue_started(npc_id: StringName)
 signal dialogue_ended()
 
