@@ -64,7 +64,7 @@ func _show_confirmation() -> void:
 
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.theme_override_constants_separation = 12
+	vbox.add_theme_constant_override(&"separation", 12)
 
 	var label: Label = Label.new()
 	label.text = "Enter the Compaction Loop?"
@@ -73,7 +73,7 @@ func _show_confirmation() -> void:
 
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.theme_override_constants_separation = 20
+	hbox.add_theme_constant_override(&"separation", 20)
 
 	var yes_btn: Button = Button.new()
 	yes_btn.text = "Yes"

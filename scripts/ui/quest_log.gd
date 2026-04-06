@@ -41,12 +41,12 @@ func _build_ui() -> void:
 	hbox.offset_top = -200.0
 	hbox.offset_right = 300.0
 	hbox.offset_bottom = 200.0
-	hbox.theme_override_constants_separation = 12
+	hbox.add_theme_constant_override(&"separation", 12)
 
 	# Left: category tabs
 	var tabs: VBoxContainer = VBoxContainer.new()
 	tabs.custom_minimum_size = Vector2(120, 0)
-	tabs.theme_override_constants_separation = 8
+	tabs.add_theme_constant_override(&"separation", 8)
 	var title: Label = Label.new()
 	title.text = "Quest Log"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -63,7 +63,7 @@ func _build_ui() -> void:
 	list_panel.custom_minimum_size = Vector2(400, 0)
 	var scroll: ScrollContainer = ScrollContainer.new()
 	_quest_list = VBoxContainer.new()
-	_quest_list.theme_override_constants_separation = 8
+	_quest_list.add_theme_constant_override(&"separation", 8)
 	scroll.add_child(_quest_list)
 	list_panel.add_child(scroll)
 	hbox.add_child(list_panel)

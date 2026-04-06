@@ -38,7 +38,7 @@ func _build_ui() -> void:
 	_panel.offset_bottom = 140.0
 
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.theme_override_constants_separation = 8
+	vbox.add_theme_constant_override(&"separation", 8)
 
 	var title: Label = Label.new()
 	title.text = "Level Up! Allocate Stat Points"

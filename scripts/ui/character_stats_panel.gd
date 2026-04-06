@@ -14,7 +14,7 @@ const STATS: Array[String] = ["processing", "bandwidth", "memory", "integrity"]
 
 func populate(player: CharacterBody3D) -> void:
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.theme_override_constants_separation = 6
+	vbox.add_theme_constant_override(&"separation", 6)
 
 	var title: Label = Label.new()
 	title.text = "Character Stats"

@@ -52,7 +52,7 @@ func _build_ui() -> void:
 	container.offset_bottom = 120.0
 
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.theme_override_constants_separation = 16
+	vbox.add_theme_constant_override(&"separation", 16)
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 
 	var title: Label = Label.new()
@@ -120,7 +120,7 @@ func _toggle_settings() -> void:
 	_settings_panel.offset_bottom = 250.0
 
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.theme_override_constants_separation = 10
+	vbox.add_theme_constant_override(&"separation", 10)
 
 	var stitle: Label = Label.new()
 	stitle.text = "Settings"

@@ -67,7 +67,7 @@ func _build_ui() -> void:
 	hbox.offset_top = -250.0
 	hbox.offset_right = 400.0
 	hbox.offset_bottom = 250.0
-	hbox.theme_override_constants_separation = 16
+	hbox.add_theme_constant_override(&"separation", 16)
 
 	# Left: Equipment
 	var equip_panel: PanelContainer = PanelContainer.new()
@@ -113,7 +113,7 @@ func _build_equipment_slots(parent: VBoxContainer) -> void:
 		label.text = section[0] as String
 		parent.add_child(label)
 		var hbox: HBoxContainer = HBoxContainer.new()
-		hbox.theme_override_constants_separation = 4
+		hbox.add_theme_constant_override(&"separation", 4)
 		var count: int = section[2] as int
 		for i: int in count:
 			var slot: Button = Button.new()
