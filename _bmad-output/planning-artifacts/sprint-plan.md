@@ -105,7 +105,7 @@ When executing this sprint plan:
 ### Epic 9: Demo Build
 - [x] 9.1 First Boss — Corrupted Compiler — `DONE`
 - [x] 9.2 Tutorial Flow Integration — `DONE`
-- [ ] 9.3 Demo Narrative Flow — `TODO`
+- [x] 9.3 Demo Narrative Flow — `DONE`
 - [ ] 9.4 Audio Placeholder Integration — `TODO`
 - [ ] 9.5 Demo End Screen — `TODO`
 - [ ] 9.6 Visual Polish Pass — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 73
-- **Remaining:** 2
+- **Completed:** 74
+- **Remaining:** 1
 - **Current Epic:** 9

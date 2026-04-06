@@ -47,6 +47,13 @@ func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	_populate_npcs()
 	_update_town_state()
+	# Narrative: demo end check after returning from boss
+	if GameManager.should_trigger_demo_end():
+		# Give player a moment to look around, then trigger
+		_setup_demo_end_trigger()
+	# Narrative: auto-trigger AI Sage on first visit
+	elif GameManager.first_run and not GameManager.first_sage_dialogue_complete:
+		_auto_trigger_sage_dialogue.call_deferred()
 
 
 func _populate_npcs() -> void:
@@ -101,3 +108,32 @@ func _update_town_state() -> void:
 		expansion2.visible = npc_count >= 2
 	if expansion3:
 		expansion3.visible = npc_count >= 3
+
+
+func _auto_trigger_sage_dialogue() -> void:
+	# Wait a moment for the scene to settle
+	await get_tree().create_timer(2.0).timeout
+	# Find the AI Sage NPC and start conversation
+	for child: Node in get_children():
+		if child is NPCBase and (child as NPCBase).npc_id == "ai_sage":
+			(child as NPCBase)._start_conversation()
+			return
+
+
+func _setup_demo_end_trigger() -> void:
+	# Create a trigger zone in town center — when player enters after boss, triggers demo end
+	var trigger: Area3D = Area3D.new()
+	trigger.collision_layer = 0
+	trigger.collision_mask = 1
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var sphere: SphereShape3D = SphereShape3D.new()
+	sphere.radius = 5.0
+	shape.shape = sphere
+	trigger.add_child(shape)
+	trigger.global_position = Vector3.ZERO
+	add_child(trigger)
+
+	# Wait for player to talk to an NPC or enter the trigger after a delay
+	await get_tree().create_timer(5.0).timeout
+	if GameManager.should_trigger_demo_end():
+		GameManager.trigger_demo_end()

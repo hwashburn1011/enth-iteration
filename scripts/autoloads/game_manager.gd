@@ -17,6 +17,14 @@ var npc_affinity: Dictionary = {}  # npc_id -> int
 var _talked_this_session: Dictionary = {}  # npc_id -> bool (per-session first-talk tracking)
 var first_run: bool = true
 
+# Narrative checkpoints
+var first_sage_dialogue_complete: bool = false
+var first_dungeon_entered: bool = false
+var cache_sprite_recruited: bool = false
+var boss_defeated: bool = false
+var returned_from_first_run: bool = false
+var demo_ended: bool = false
+
 const AFFINITY_STRANGER: int = 0
 const AFFINITY_ACQUAINTANCE: int = 10
 const AFFINITY_ALLY: int = 25
@@ -26,6 +34,10 @@ const AFFINITY_TRUSTED: int = 50
 func _ready() -> void:
 	EventBus.npc_recruited.connect(_on_npc_recruited)
 	EventBus.npc_talked.connect(_on_npc_talked)
+	EventBus.dungeon_entered.connect(_on_dungeon_entered)
+	EventBus.boss_defeated.connect(_on_boss_defeated)
+	EventBus.returned_to_town.connect(_on_returned_to_town)
+	EventBus.dialogue_ended.connect(_on_dialogue_ended_narrative)
 
 
 func _on_npc_recruited(npc_id: StringName) -> void:
@@ -104,3 +116,36 @@ func change_scene_to(path: String) -> void:
 	var scene: PackedScene = ResourceLoader.load_threaded_get(path)
 	get_tree().change_scene_to_packed(scene)
 	EventBus.scene_changed.emit(path)
+
+
+# --- Narrative checkpoint handlers ---
+
+func _on_dungeon_entered() -> void:
+	first_dungeon_entered = true
+
+
+func _on_boss_defeated(boss_id: StringName) -> void:
+	if boss_id == &"corrupted_compiler":
+		boss_defeated = true
+
+
+func _on_returned_to_town() -> void:
+	if boss_defeated and not returned_from_first_run:
+		returned_from_first_run = true
+
+
+func _on_dialogue_ended_narrative() -> void:
+	# Check if AI Sage intro was just completed
+	if not first_sage_dialogue_complete and is_npc_recruited("ai_sage") == false:
+		# Sage is always present, so check if we talked to sage
+		if _talked_this_session.has("ai_sage"):
+			first_sage_dialogue_complete = true
+
+
+func should_trigger_demo_end() -> bool:
+	return returned_from_first_run and not demo_ended
+
+
+func trigger_demo_end() -> void:
+	demo_ended = true
+	change_scene_to("res://scenes/main/DemoEndScreen.tscn")
