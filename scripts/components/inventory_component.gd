@@ -5,11 +5,14 @@ extends Node
 signal inventory_changed
 signal item_added(item: ItemBase)
 signal item_removed(item: ItemBase)
+signal prompt_used(prompt_type: String, remaining: int)
 
 @export var grid_width: int = 10
 @export var grid_height: int = 6
 
 var grid: Array = []  # 2D array: grid[y][x] = ItemBase or null
+var prompt_hotbar: Array[Dictionary] = []  # [{item: PromptItem, quantity: int}, ...]
+var active_prompt_index: int = 0
 
 
 func _ready() -> void:
@@ -26,6 +29,11 @@ func _init_grid() -> void:
 
 
 func add_item(item: ItemBase) -> bool:
+	# Prompts go to the hotbar stack, not the grid
+	if item is PromptItem:
+		add_prompt(item as PromptItem)
+		item_added.emit(item)
+		return true
 	var pos: Vector2i = _find_space(item)
 	if pos == Vector2i(-1, -1):
 		return false
@@ -88,3 +96,43 @@ func _place_item(item: ItemBase, pos: Vector2i) -> void:
 	for dy: int in item.grid_size.y:
 		for dx: int in item.grid_size.x:
 			grid[pos.y + dy][pos.x + dx] = item
+
+
+## Prompt hotbar management
+
+func add_prompt(prompt: PromptItem) -> void:
+	for entry: Dictionary in prompt_hotbar:
+		var existing: PromptItem = entry["item"] as PromptItem
+		if existing.item_id == prompt.item_id:
+			entry["quantity"] = int(entry["quantity"]) + 1
+			inventory_changed.emit()
+			return
+	prompt_hotbar.append({"item": prompt, "quantity": 1})
+	inventory_changed.emit()
+
+
+func cycle_active_prompt() -> void:
+	if prompt_hotbar.is_empty():
+		return
+	active_prompt_index = (active_prompt_index + 1) % prompt_hotbar.size()
+
+
+func get_active_prompt() -> Dictionary:
+	if prompt_hotbar.is_empty() or active_prompt_index >= prompt_hotbar.size():
+		return {}
+	return prompt_hotbar[active_prompt_index]
+
+
+func consume_active_prompt() -> PromptItem:
+	if prompt_hotbar.is_empty() or active_prompt_index >= prompt_hotbar.size():
+		return null
+	var entry: Dictionary = prompt_hotbar[active_prompt_index]
+	var prompt: PromptItem = entry["item"] as PromptItem
+	entry["quantity"] = int(entry["quantity"]) - 1
+	prompt_used.emit(prompt.prompt_type, int(entry["quantity"]))
+	if int(entry["quantity"]) <= 0:
+		prompt_hotbar.remove_at(active_prompt_index)
+		if active_prompt_index >= prompt_hotbar.size() and prompt_hotbar.size() > 0:
+			active_prompt_index = 0
+	inventory_changed.emit()
+	return prompt

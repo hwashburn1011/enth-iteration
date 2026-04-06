@@ -28,6 +28,7 @@ var facing_direction: Vector3 = Vector3.FORWARD
 var is_invulnerable: bool = false
 var can_dash: bool = true
 var can_attack: bool = true
+var _prompt_cooldown: float = 0.0
 
 
 func _ready() -> void:
@@ -71,6 +72,46 @@ func _on_died() -> void:
 	var death_state: State = state_machine.get_node_or_null("DeathState") as State
 	if death_state:
 		state_machine.force_transition_to(death_state)
+
+
+func _process(delta: float) -> void:
+	if _prompt_cooldown > 0.0:
+		_prompt_cooldown -= delta
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"use_prompt"):
+		_try_use_prompt()
+	elif event.is_action_pressed(&"inventory"):
+		inventory_component.cycle_active_prompt()
+
+
+func _try_use_prompt() -> void:
+	if _prompt_cooldown > 0.0:
+		return
+	# Block during dash or death
+	var current: State = state_machine.current_state
+	if current is PlayerDashState or current is PlayerDeathState:
+		return
+	var prompt: PromptItem = inventory_component.consume_active_prompt()
+	if prompt == null:
+		return
+	match prompt.prompt_type:
+		"health":
+			health_component.heal(prompt.restore_amount)
+		"compute":
+			compute_component.restore(prompt.restore_amount)
+		"buff":
+			var sem: StatusEffectManager = get_node_or_null("StatusEffectManager") as StatusEffectManager
+			if sem:
+				var effect: StatusEffect = StatusEffect.new()
+				effect.effect_name = "Overclocked"
+				effect.effect_type = "overclocked"
+				effect.duration = prompt.buff_duration
+				effect.tick_rate = 1.0
+				effect.potency = 1.0
+				sem.apply_effect(effect)
+	_prompt_cooldown = 0.5
 
 
 func _on_dash_cooldown_timeout() -> void:
