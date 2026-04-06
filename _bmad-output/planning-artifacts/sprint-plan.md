@@ -28,7 +28,7 @@ When executing this sprint plan:
 - [x] 2.2 WASD Isometric Movement — `DONE`
 - [x] 2.3 Teleport Dash — `DONE`
 - [x] 2.4 Player Animation State Machine — `DONE`
-- [ ] 2.5 Component Scaffolding — `TODO`
+- [x] 2.5 Component Scaffolding — `DONE`
 
 ### Epic 3: Combat Fundamentals
 - [ ] 3.1 HealthComponent Implementation — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 10
-- **Remaining:** 65
-- **Current Epic:** 2
+- **Completed:** 11
+- **Remaining:** 64
+- **Current Epic:** 3

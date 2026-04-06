@@ -10,9 +10,9 @@ extends CharacterBody3D
 @export var iframe_duration: float = 0.3
 
 @onready var state_machine: StateMachine = %StateMachine
-@onready var health_component: Node = %HealthComponent
-@onready var compute_component: Node = %ComputeComponent
-@onready var stats_component: Node = %StatsComponent
+@onready var health_component: HealthComponent = %HealthComponent
+@onready var compute_component: ComputeComponent = %ComputeComponent
+@onready var stats_component: StatsComponent = %StatsComponent
 @onready var hitbox_component: Area3D = %HitboxComponent
 @onready var hurtbox_component: Area3D = %HurtboxComponent
 @onready var inventory_component: Node = %InventoryComponent

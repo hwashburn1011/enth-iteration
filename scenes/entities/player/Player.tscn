@@ -1,10 +1,13 @@
-[gd_scene load_steps=13 format=3 uid="uid://player00001"]
+[gd_scene load_steps=16 format=3 uid="uid://player00001"]
 
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_idle_state.gd" id="3_idle"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_walk_state.gd" id="4_walk"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_dash_state.gd" id="5_dash"]
+[ext_resource type="Script" path="res://scripts/components/health_component.gd" id="6_health"]
+[ext_resource type="Script" path="res://scripts/components/compute_component.gd" id="7_compute"]
+[ext_resource type="Script" path="res://scripts/components/stats_component.gd" id="8_stats"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -88,12 +91,15 @@ mesh = SubResource("CapsuleMesh_vis")
 
 [node name="HealthComponent" type="Node" parent="."]
 unique_name_in_owner = true
+script = ExtResource("6_health")
 
 [node name="ComputeComponent" type="Node" parent="."]
 unique_name_in_owner = true
+script = ExtResource("7_compute")
 
 [node name="StatsComponent" type="Node" parent="."]
 unique_name_in_owner = true
+script = ExtResource("8_stats")
 
 [node name="HitboxComponent" type="Area3D" parent="."]
 unique_name_in_owner = true
