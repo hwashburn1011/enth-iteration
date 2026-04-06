@@ -11,6 +11,9 @@ enum GameState {
 }
 
 var current_state: GameState = GameState.MAIN_MENU
+var recruited_npcs: Array[String] = []
+var newly_recruited: Array[String] = []  # NPCs recruited this run, not yet seen in town
+var first_run: bool = true
 
 
 func _ready() -> void:
@@ -18,7 +21,22 @@ func _ready() -> void:
 
 
 func _on_npc_recruited(npc_id: StringName) -> void:
-	set_meta(StringName("npc_recruited_" + String(npc_id)), true)
+	var id: String = String(npc_id)
+	if id not in recruited_npcs:
+		recruited_npcs.append(id)
+		newly_recruited.append(id)
+
+
+func is_npc_recruited(npc_id: String) -> bool:
+	return npc_id in recruited_npcs
+
+
+func is_npc_newly_arrived(npc_id: String) -> bool:
+	return npc_id in newly_recruited
+
+
+func acknowledge_npc_arrival(npc_id: String) -> void:
+	newly_recruited.erase(npc_id)
 
 
 func pause_game() -> void:

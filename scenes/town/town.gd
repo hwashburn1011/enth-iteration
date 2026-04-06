@@ -50,10 +50,8 @@ func _ready() -> void:
 
 func _populate_npcs() -> void:
 	for npc_id: String in NPC_SCENES:
-		# Always-present NPCs spawn regardless of recruitment
 		var should_spawn: bool = npc_id in ALWAYS_PRESENT
-		# Recruited NPCs spawn if flagged
-		if not should_spawn and GameManager.has_meta(StringName("npc_recruited_" + npc_id)):
+		if not should_spawn and GameManager.is_npc_recruited(npc_id):
 			should_spawn = true
 		if not should_spawn:
 			continue
@@ -65,6 +63,20 @@ func _populate_npcs() -> void:
 			var npc: Node3D = scene.instantiate() as Node3D
 			npc.global_position = slot.global_position
 			add_child(npc)
+			# Trigger arrival dialogue for newly recruited NPCs
+			if GameManager.is_npc_newly_arrived(npc_id) and npc is NPCBase:
+				var npc_base: NPCBase = npc as NPCBase
+				var arrival_data: DialogueData = _get_arrival_dialogue(npc_id)
+				if arrival_data:
+					npc_base.dialogue_resource = arrival_data
+				GameManager.acknowledge_npc_arrival(npc_id)
+
+
+func _get_arrival_dialogue(npc_id: String) -> DialogueData:
+	var path: String = "res://data/dialogue/%s_arrival.tres" % npc_id
+	if ResourceLoader.exists(path):
+		return load(path) as DialogueData
+	return null
 
 
 func _get_npc_slot(npc_id: String) -> Marker3D:
