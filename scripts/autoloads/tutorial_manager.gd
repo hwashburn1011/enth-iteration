@@ -120,15 +120,25 @@ func start_prompt_hint() -> void:
 	if is_completed("prompt"):
 		return
 	show_hint("Press Q to use Health Prompt")
+	# Connect to player's prompt_used signal
+	var player: Node = _find_player()
+	if player and player.inventory_component.has_signal(&"prompt_used"):
+		if not player.inventory_component.prompt_used.is_connected(_on_prompt_used):
+			player.inventory_component.prompt_used.connect(_on_prompt_used)
+
+
+func _on_prompt_used(_type: String, _remaining: int) -> void:
+	if not is_completed("prompt"):
+		complete_tutorial("prompt")
 
 
 func _on_enemy_defeated(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
-	if not is_completed("basic_attack") and _active_hint != null:
+	if not is_completed("basic_attack"):
 		complete_tutorial("basic_attack")
 
 
 func _on_item_collected(_item: Resource) -> void:
-	if not is_completed("loot") and _active_hint != null:
+	if not is_completed("loot"):
 		complete_tutorial("loot")
 
 

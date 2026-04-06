@@ -57,6 +57,8 @@ func reset() -> void:
 
 
 func get_compute_percentage() -> float:
+	if max_compute <= 0.0:
+		return 0.0
 	return current_compute / max_compute
 
 

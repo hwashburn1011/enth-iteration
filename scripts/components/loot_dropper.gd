@@ -45,12 +45,12 @@ func _spawn_dropped_item(item: Resource, pos: Vector3, parent: Node) -> void:
 	if dropped_scene:
 		var dropped: Node = dropped_scene.instantiate() as Node
 		dropped.item = item
-		dropped.global_position = pos + offset
 		parent.add_child(dropped)
+		dropped.global_position = pos + offset
 	else:
 		var dropped: Node3D = _create_dropped_item_node(item)
-		dropped.global_position = pos + offset
 		parent.add_child(dropped)
+		dropped.global_position = pos + offset
 
 
 func _create_dropped_item_node(item: Resource) -> Node3D:

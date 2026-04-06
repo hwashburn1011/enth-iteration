@@ -5,6 +5,7 @@ extends Node
 	"glitch_bug": 10,
 	"memory_leak": 5,
 	"rogue_process": 5,
+	"corrupted_compiler": 1,
 }
 
 const ENEMY_SCENES: Dictionary = {
@@ -114,7 +115,8 @@ func _deactivate(enemy: CharacterBody3D) -> void:
 	enemy.set_process_unhandled_input(false)
 	enemy.collision_layer = 0
 	enemy.collision_mask = 0
-	enemy.global_position = Vector3(9999.0, 9999.0, 9999.0)
+	if enemy.is_inside_tree():
+		enemy.global_position = Vector3(9999.0, 9999.0, 9999.0)
 
 
 func _get_type(enemy: CharacterBody3D) -> String:

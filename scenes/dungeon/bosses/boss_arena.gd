@@ -9,7 +9,7 @@ func _ready() -> void:
 	room_type = "combat"
 	is_cleared = false
 	super._ready()
-	EventBus.enemy_defeated.connect(_on_boss_defeated)
+	EventBus.boss_defeated.connect(_on_boss_defeated)
 
 
 func _on_boss_defeated(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
@@ -26,4 +26,4 @@ func _on_boss_defeated(_type: StringName, _pos: Vector3, _loot: Resource) -> voi
 		portal.global_position = global_position
 		add_child(portal)
 
-	EventBus.enemy_defeated.disconnect(_on_boss_defeated)
+	EventBus.boss_defeated.disconnect(_on_boss_defeated)

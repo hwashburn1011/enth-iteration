@@ -59,7 +59,14 @@ func start_dialogue(data: Array[Resource]) -> void:
 		if line.min_affinity <= affinity:
 			dialogue_data.append(line)
 	if dialogue_data.is_empty():
-		return
+		# Fallback: show all lines with min_affinity 0, or first line if none qualify
+		for line: Resource in data:
+			if line.min_affinity == 0:
+				dialogue_data.append(line)
+		if dialogue_data.is_empty() and data.size() > 0:
+			dialogue_data.append(data[0])
+		if dialogue_data.is_empty():
+			return
 	_current_index = 0
 	_panel.visible = true
 	get_tree().paused = true

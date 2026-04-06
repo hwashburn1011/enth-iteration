@@ -73,9 +73,15 @@ func physics_update(delta: float) -> void:
 
 	if _timer >= _active_start and _timer < _active_end:
 		if not _hitbox_enabled:
+			# Set metadata on the hitbox so HurtboxComponent can read damage values
+			if _is_energy_burst:
+				p.hitbox_component.set_meta(&"base_damage", _burst_damage)
+				p.hitbox_component.set_meta(&"damage_type", &"energy")
+			else:
+				p.hitbox_component.set_meta(&"base_damage", 5.0 + p.stats_component.get_stat("processing") * 1.5)
+				p.hitbox_component.set_meta(&"damage_type", &"data")
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
-		_check_hits(p)
 	elif _hitbox_enabled:
 		_set_hitbox_active(p, false)
 		_hitbox_enabled = false
@@ -97,27 +103,6 @@ func exit() -> void:
 	_hitbox_enabled = false
 	# Restore default hitbox size
 	_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
-
-
-func _check_hits(p: CharacterBody3D) -> void:
-	var hitbox: Area3D = p.hitbox_component
-	for area: Area3D in hitbox.get_overlapping_areas():
-		if area == p.hurtbox_component:
-			continue
-		var area_id: int = area.get_instance_id()
-		if area_id in _has_hit:
-			continue
-		_has_hit[area_id] = true
-		var info: Resource = load("res://scripts/resources/damage_info.gd").new()
-		info.source = p
-		if _is_energy_burst:
-			info.base_damage = _burst_damage
-			info.damage_type = &"energy"
-		else:
-			info.base_damage = 5.0 + p.stats_component.get_stat("processing") * 1.5
-			info.damage_type = &"data"
-		if area.has_method(&"receive_damage"):
-			area.receive_damage(info)
 
 
 func _set_hitbox_active(p: CharacterBody3D, active: bool) -> void:

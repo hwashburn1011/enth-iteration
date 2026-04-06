@@ -26,7 +26,8 @@ func take_damage(amount: float) -> void:
 	if current_health <= 0.0 and not is_dead:
 		is_dead = true
 		died.emit()
-		EventBus.player_died.emit(parent.global_position if parent is Node3D else Vector3.ZERO)
+		if parent.is_in_group(&"player"):
+			EventBus.player_died.emit(parent.global_position if parent is Node3D else Vector3.ZERO)
 
 
 func heal(amount: float) -> void:
@@ -43,4 +44,6 @@ func reset() -> void:
 
 
 func get_health_percentage() -> float:
+	if max_health <= 0.0:
+		return 0.0
 	return current_health / max_health

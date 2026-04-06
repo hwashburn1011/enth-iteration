@@ -40,7 +40,7 @@ func physics_update(delta: float) -> void:
 	if _timer >= STUN_DURATION:
 		# Check if player died during stun
 		if p.health_component.is_dead:
-			state_machine.transition_to(state_machine.get_node("DeathState") as Node)
+			state_machine.force_transition_to(state_machine.get_node("DeathState") as Node)
 			return
 		var input_vector: Vector2 = Input.get_vector(
 			&"move_left", &"move_right", &"move_forward", &"move_back"

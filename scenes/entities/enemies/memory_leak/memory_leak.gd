@@ -17,11 +17,6 @@ func _ready() -> void:
 
 
 func _on_died() -> void:
-	EventBus.enemy_defeated.emit(
-		&"memory_leak",
-		global_position,
-		null
-	)
 	var death_state: Node = state_machine.get_node_or_null("EnemyDeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)

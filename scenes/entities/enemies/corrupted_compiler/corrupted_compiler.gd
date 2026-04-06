@@ -95,7 +95,7 @@ func _transition_to_phase(new_phase: int) -> void:
 
 
 func _on_died() -> void:
-	EventBus.enemy_defeated.emit(&"corrupted_compiler", global_position, null)
+	EventBus.boss_defeated.emit(&"corrupted_compiler", global_position, null)
 	# Drop guaranteed loot
 	_drop_boss_loot()
 	var death_state: Node = state_machine.get_node_or_null("EnemyDeathState") as Node
@@ -133,5 +133,5 @@ func _spawn_drop(item: Resource, parent: Node) -> void:
 	var dropped: Node = scene.instantiate() as Node
 	dropped.item = item
 	var offset: Vector3 = Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
-	dropped.global_position = global_position + offset
 	parent.add_child(dropped)
+	dropped.global_position = global_position + offset

@@ -39,11 +39,6 @@ func _on_health_changed(current: float, maximum: float) -> void:
 
 
 func _on_died() -> void:
-	EventBus.enemy_defeated.emit(
-		&"rogue_process",
-		global_position,
-		null
-	)
 	var death_state: Node = state_machine.get_node_or_null("EnemyDeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)

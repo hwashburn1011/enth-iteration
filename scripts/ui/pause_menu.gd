@@ -17,6 +17,11 @@ func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PAUSED)
 
 
+func _exit_tree() -> void:
+	if _instance == self:
+		_instance = null
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if _panel == null:
 		return
@@ -65,6 +70,11 @@ func _build_ui() -> void:
 	settings_btn.pressed.connect(_toggle_settings)
 	vbox.add_child(settings_btn)
 
+	var menu_btn: Button = Button.new()
+	menu_btn.text = "Quit to Main Menu"
+	menu_btn.pressed.connect(_quit_to_menu)
+	vbox.add_child(menu_btn)
+
 	var quit_btn: Button = Button.new()
 	quit_btn.text = "Quit to Desktop"
 	quit_btn.pressed.connect(_quit)
@@ -80,6 +90,14 @@ func _resume() -> void:
 	get_tree().paused = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	_instance = null
+	queue_free()
+
+
+func _quit_to_menu() -> void:
+	SaveManager.save_game()
+	get_tree().paused = false
+	_instance = null
+	GameManager.change_scene_to("res://scenes/main/MainMenu.tscn")
 	queue_free()
 
 

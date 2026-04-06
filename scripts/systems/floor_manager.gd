@@ -56,12 +56,12 @@ func _transition_to_room(index: int) -> void:
 
 	# Move player to entry point
 	var player: CharacterBody3D = _find_player()
-	if player and current_(room.has_method(&"get_entry_point")):
-		player.global_position = (current_room as Node3D).get_entry_point()
+	if player and current_room.has_method(&"get_entry_point"):
+		player.global_position = current_room.get_entry_point()
 
 	# Connect exit signal
-	if current_(room.has_method(&"get_entry_point")):
-		(current_room as Node3D).player_at_exit.connect(_on_room_exit)
+	if current_room.has_signal(&"player_at_exit"):
+		current_room.player_at_exit.connect(_on_room_exit)
 
 	# Start combat if applicable
 	if current_room.has_method(&"start_encounter"):

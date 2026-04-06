@@ -11,8 +11,10 @@ static func calculate(info: Resource) -> Resource:
 	var damage: float = info.base_damage
 
 	# 1. Apply stat multiplier from source Processing
+	# Note: base_damage from attack states may already include processing scaling.
+	# Only apply the multiplier for enemies (whose base_damage is raw).
 	var source_stats: Node = _get_stats(info.source)
-	if source_stats:
+	if source_stats and not info.source.is_in_group(&"player"):
 		info.stat_multiplier = source_stats.get_stat("processing") * 0.1
 		damage *= (1.0 + info.stat_multiplier)
 

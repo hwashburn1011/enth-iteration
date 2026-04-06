@@ -41,7 +41,12 @@ func _connect_player() -> void:
 
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.is_empty():
-		return
+		# Retry after a short delay — player may not be spawned yet
+		await get_tree().create_timer(0.5).timeout
+		nodes = get_tree().get_nodes_in_group(&"player")
+		if nodes.is_empty():
+			push_warning("HUD: no player found after retry")
+			return
 	var player: CharacterBody3D = nodes[0] as CharacterBody3D
 	if player == null:
 		return

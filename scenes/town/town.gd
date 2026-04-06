@@ -29,11 +29,13 @@ func _ready() -> void:
 		if GameManager.has_meta(&"town_entry_type") and GameManager.get_meta(&"town_entry_type") == "portal_return":
 			player_node.global_position = portal_return_point.global_position
 			GameManager.remove_meta(&"town_entry_type")
+			# Reset health/compute after dungeon return
+			player_node.health_component.reset()
+			player_node.compute_component.reset()
 		else:
 			player_node.global_position = player_spawn_point.global_position
 
 	# Spawn isometric camera targeting player
-	var cam_scene: PackedScene = load("res://scenes/entities/player/Player.tscn")  # not used, create manually
 	var cam_script: GDScript = load("res://scripts/components/isometric_camera.gd") as GDScript
 	var camera: Camera3D = Camera3D.new()
 	camera.set_script(cam_script)
@@ -74,6 +76,8 @@ func _populate_npcs() -> void:
 				if arrival_data:
 					npc.set(&"dialogue_resource", arrival_data)
 				GameManager.acknowledge_npc_arrival(npc_id)
+				# Trigger arrival dialogue after a delay
+				_trigger_arrival_dialogue.call_deferred(npc)
 
 
 func _get_arrival_dialogue(npc_id: String) -> Resource:
@@ -106,6 +110,12 @@ func _update_town_state() -> void:
 		expansion3.visible = npc_count >= 3
 
 
+func _trigger_arrival_dialogue(npc: Node3D) -> void:
+	await get_tree().create_timer(2.0).timeout
+	if npc and is_instance_valid(npc) and npc.has_method(&"_start_conversation"):
+		npc._start_conversation()
+
+
 func _auto_trigger_sage_dialogue() -> void:
 	# Wait 5 seconds so player can see the world first
 	await get_tree().create_timer(5.0).timeout
@@ -116,17 +126,7 @@ func _auto_trigger_sage_dialogue() -> void:
 
 
 func _setup_demo_end_trigger() -> void:
-	var trigger: Area3D = Area3D.new()
-	trigger.collision_layer = 0
-	trigger.collision_mask = 1
-	var shape: CollisionShape3D = CollisionShape3D.new()
-	var sphere: SphereShape3D = SphereShape3D.new()
-	sphere.radius = 5.0
-	shape.shape = sphere
-	trigger.add_child(shape)
-	trigger.global_position = Vector3.ZERO
-	add_child(trigger)
-
-	await get_tree().create_timer(5.0).timeout
+	# Give player a moment to see the town, then trigger demo end
+	await get_tree().create_timer(3.0).timeout
 	if GameManager.should_trigger_demo_end():
 		GameManager.trigger_demo_end()

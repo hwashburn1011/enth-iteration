@@ -82,15 +82,19 @@ func _release_burst() -> void:
 	state_machine.transition_to(attack_state)
 
 
+var _charge_material: StandardMaterial3D = null
+
 func _set_emission(p: CharacterBody3D, intensity: float) -> void:
 	var mesh: MeshInstance3D = p.model.get_child(0) as MeshInstance3D
 	if mesh == null:
 		return
 	if intensity > 0.0:
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.emission_enabled = true
-		mat.emission = Color(0.4, 0.7, 1.0)
-		mat.emission_energy_multiplier = intensity
-		mesh.material_override = mat
+		if _charge_material == null:
+			_charge_material = StandardMaterial3D.new()
+			_charge_material.emission_enabled = true
+			_charge_material.emission = Color(0.4, 0.7, 1.0)
+		_charge_material.emission_energy_multiplier = intensity
+		mesh.material_override = _charge_material
 	else:
 		mesh.material_override = null
+		_charge_material = null

@@ -190,7 +190,7 @@ func _show_tooltip(item: Resource) -> void:
 		vbox.add_child(stat_label)
 
 	var dur_label: Label = Label.new()
-	dur_label.text = "Durability: %d%%" % int(item.current_durability / item.max_durability * 100.0)
+	dur_label.text = "Durability: %d%%" % (int(item.current_durability / item.max_durability * 100.0) if item.max_durability > 0.0 else 100)
 	vbox.add_child(dur_label)
 
 	if not item.description.is_empty():
@@ -217,10 +217,14 @@ func _show_tooltip(item: Resource) -> void:
 
 
 func _on_equip_item(item: Resource) -> void:
-	_player.inventory_component.remove_item(item)
 	var previous: Resource = _player.equipment_component.equip(item)
+	_player.inventory_component.remove_item(item)
 	if previous:
-		_player.inventory_component.add_item(previous)
+		if not _player.inventory_component.add_item(previous):
+			# Inventory full — re-equip the old item and put new one back
+			_player.equipment_component.equip(previous)
+			_player.inventory_component.add_item(item)
+			push_warning("Inventory full — cannot swap equipment")
 	_rebuild()
 
 

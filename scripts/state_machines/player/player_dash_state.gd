@@ -2,6 +2,9 @@ class_name PlayerDashState
 extends "res://scripts/state_machines/state.gd"
 ## Teleport dash with i-frames. Instantly moves the player in facing direction.
 
+var _iframe_timer: float = 0.0
+var _iframe_active: bool = false
+
 
 func _ready() -> void:
 	can_be_interrupted = false
@@ -43,25 +46,38 @@ func enter() -> void:
 
 	# Start i-frames
 	p.is_invulnerable = true
+	_iframe_active = true
+	_iframe_timer = 0.0
 	_flash_transparent(p, true)
 
 	# Start cooldown timer
 	p.can_dash = false
 	p.dash_cooldown_timer.start(p.dash_cooldown)
 
-	# End i-frames after duration
-	await p.get_tree().create_timer(p.iframe_duration).timeout
-	p.is_invulnerable = false
-	_flash_transparent(p, false)
 
-	# Transition back based on input
-	var current_input: Vector2 = Input.get_vector(
-		&"move_left", &"move_right", &"move_forward", &"move_back"
-	)
-	if current_input.length() > 0.0:
-		state_machine.transition_to(state_machine.get_node("WalkState") as Node)
-	else:
-		state_machine.transition_to(state_machine.get_node("IdleState") as Node)
+func physics_update(delta: float) -> void:
+	if not _iframe_active:
+		return
+	var p = player
+	_iframe_timer += delta
+	if _iframe_timer >= p.iframe_duration:
+		_iframe_active = false
+		p.is_invulnerable = false
+		_flash_transparent(p, false)
+		# Transition back based on input
+		var current_input: Vector2 = Input.get_vector(
+			&"move_left", &"move_right", &"move_forward", &"move_back"
+		)
+		if current_input.length() > 0.0:
+			state_machine.transition_to(state_machine.get_node("WalkState") as Node)
+		else:
+			state_machine.transition_to(state_machine.get_node("IdleState") as Node)
+
+
+func exit() -> void:
+	_iframe_active = false
+	player.is_invulnerable = false
+	_flash_transparent(player, false)
 
 
 func _flash_transparent(p: CharacterBody3D, transparent: bool) -> void:

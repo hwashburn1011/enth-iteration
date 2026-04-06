@@ -82,5 +82,5 @@ func _spawn_item(item: Resource) -> void:
 	dropped.item = item
 	var angle: float = randf() * TAU
 	var dist: float = randf_range(0.5, 1.5)
-	dropped.global_position = global_position + Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)
 	get_tree().current_scene.add_child(dropped)
+	dropped.global_position = global_position + Vector3(cos(angle) * dist, 0.5, sin(angle) * dist)

@@ -44,20 +44,6 @@ func _ready() -> void:
 	level_component.leveled_up.connect(_on_leveled_up)
 
 
-func receive_hit(damage_info: Resource) -> void:
-	if is_invulnerable:
-		return
-	health_component.take_damage(damage_info.base_damage)
-	if health_component.is_dead:
-		return  # _on_died handles death transition
-	# Store source position for knockback direction
-	if damage_info.source is Node3D:
-		set_meta(&"damage_source_position", (damage_info.source as Node3D).global_position)
-	var hurt_state: Node = state_machine.get_node_or_null("HurtState") as Node
-	if hurt_state:
-		state_machine.force_transition_to(hurt_state)
-
-
 func _on_hit_received(damage_info: Resource) -> void:
 	# HurtboxComponent already applied damage via HealthComponent and pipeline.
 	# We just need to trigger the hurt state for knockback/stun.
