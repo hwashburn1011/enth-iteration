@@ -57,8 +57,12 @@ func complete_tutorial(tutorial_id: String) -> void:
 
 func show_hint(text: String, auto_dismiss_time: float = 0.0) -> void:
 	_dismiss_hint()
+	var wrapper: Control = Control.new()
+	wrapper.set_anchors_preset(Control.PRESET_FULL_RECT)
+	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	var panel: PanelContainer = PanelContainer.new()
-	panel.anchors_preset = Control.PRESET_CENTER_TOP
+	panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	panel.offset_left = -250.0
 	panel.offset_top = 60.0
 	panel.offset_right = 250.0
@@ -70,9 +74,10 @@ func show_hint(text: String, auto_dismiss_time: float = 0.0) -> void:
 	label.fit_content = true
 	label.custom_minimum_size = Vector2(480, 30)
 	panel.add_child(label)
+	wrapper.add_child(panel)
 
-	_canvas.add_child(panel)
-	_active_hint = panel
+	_canvas.add_child(wrapper)
+	_active_hint = wrapper
 
 	if auto_dismiss_time > 0.0:
 		await get_tree().create_timer(auto_dismiss_time).timeout

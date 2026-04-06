@@ -21,8 +21,17 @@ func _build_ui() -> void:
 	layer = 60
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
+	var fullscreen: Control = Control.new()
+	fullscreen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fullscreen.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(fullscreen)
+	var dim: ColorRect = ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0, 0, 0, 0.5)
+	fullscreen.add_child(dim)
+
 	_panel = PanelContainer.new()
-	_panel.anchors_preset = Control.PRESET_CENTER
+	_panel.set_anchors_preset(Control.PRESET_CENTER)
 	_panel.offset_left = -180.0
 	_panel.offset_top = -140.0
 	_panel.offset_right = 180.0
@@ -73,7 +82,7 @@ func _build_ui() -> void:
 	vbox.add_child(confirm)
 
 	_panel.add_child(vbox)
-	add_child(_panel)
+	fullscreen.add_child(_panel)
 
 
 func _on_allocate(stat_name: String) -> void:

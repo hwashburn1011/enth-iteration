@@ -43,47 +43,53 @@ func _show_confirmation() -> void:
 	canvas.layer = 50
 	add_child(canvas)
 
+	# Full-screen container so anchors work correctly
+	var fullscreen: Control = Control.new()
+	fullscreen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fullscreen.mouse_filter = Control.MOUSE_FILTER_STOP
+	canvas.add_child(fullscreen)
+
+	# Dim background
+	var dim: ColorRect = ColorRect.new()
+	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.color = Color(0, 0, 0, 0.5)
+	fullscreen.add_child(dim)
+
 	_confirm_ui = PanelContainer.new()
-	_confirm_ui.anchors_preset = Control.PRESET_CENTER
-	_confirm_ui.offset_left = -150
-	_confirm_ui.offset_top = -60
-	_confirm_ui.offset_right = 150
-	_confirm_ui.offset_bottom = 60
+	_confirm_ui.set_anchors_preset(Control.PRESET_CENTER)
+	_confirm_ui.offset_left = -160
+	_confirm_ui.offset_top = -70
+	_confirm_ui.offset_right = 160
+	_confirm_ui.offset_bottom = 70
 
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.theme_override_constants_separation = 12
 
 	var label: Label = Label.new()
 	label.text = "Enter the Compaction Loop?"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(label)
 
-	var spacer: Control = Control.new()
-	spacer.custom_minimum_size = Vector2(0, 10)
-	vbox.add_child(spacer)
-
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.theme_override_constants_separation = 20
 
 	var yes_btn: Button = Button.new()
 	yes_btn.text = "Yes"
-	yes_btn.custom_minimum_size = Vector2(80, 30)
+	yes_btn.custom_minimum_size = Vector2(100, 36)
 	yes_btn.pressed.connect(_on_yes_pressed.bind(canvas))
 	hbox.add_child(yes_btn)
 
-	var gap: Control = Control.new()
-	gap.custom_minimum_size = Vector2(20, 0)
-	hbox.add_child(gap)
-
 	var no_btn: Button = Button.new()
 	no_btn.text = "No"
-	no_btn.custom_minimum_size = Vector2(80, 30)
+	no_btn.custom_minimum_size = Vector2(100, 36)
 	no_btn.pressed.connect(_on_no_pressed.bind(canvas))
 	hbox.add_child(no_btn)
 
 	vbox.add_child(hbox)
 	_confirm_ui.add_child(vbox)
-	canvas.add_child(_confirm_ui)
+	fullscreen.add_child(_confirm_ui)
 	yes_btn.grab_focus()
 
 
