@@ -18,6 +18,14 @@ func _ready() -> void:
 	portal_return_point.add_to_group(&"portal_return_point")
 	player_spawn_point.add_to_group(&"respawn_point")
 
+	# --- Lighting and Environment ---
+	_setup_environment()
+
+	# Spawn HUD
+	var hud_scene: PackedScene = load("res://scenes/ui/hud/HUD.tscn") as PackedScene
+	if hud_scene:
+		add_child(hud_scene.instantiate())
+
 	# Spawn player
 	var player_scene: PackedScene = load("res://scenes/entities/player/Player.tscn") as PackedScene
 	var player_node: CharacterBody3D = null
@@ -125,6 +133,51 @@ func _auto_trigger_sage_dialogue() -> void:
 		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
 			child._start_conversation()
 			return
+
+
+func _setup_environment() -> void:
+	# Skip if scene already has lighting (Town.tscn has it in the scene file)
+	if get_node_or_null("DirectionalLight3D") or get_node_or_null("WorldEnvironment"):
+		return
+	# Warm directional light — top-left per visual style guide
+	var sun: DirectionalLight3D = DirectionalLight3D.new()
+	sun.rotation_degrees = Vector3(-50, -30, 0)
+	sun.light_energy = 1.0
+	sun.light_color = Color(1.0, 0.95, 0.85)  # Warm sunlight
+	sun.shadow_enabled = true
+	sun.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	add_child(sun)
+
+	# Soft fill light
+	var fill: DirectionalLight3D = DirectionalLight3D.new()
+	fill.rotation_degrees = Vector3(-35, 150, 0)
+	fill.light_energy = 0.35
+	fill.light_color = Color(0.8, 0.85, 1.0)
+	fill.shadow_enabled = false
+	add_child(fill)
+
+	# World environment — cozy warm town atmosphere
+	var env: Environment = Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color(0.45, 0.65, 0.85)  # Light sky blue
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.5, 0.48, 0.42)  # Warm ambient
+	env.ambient_light_energy = 0.6
+	# Light fog for depth
+	env.fog_enabled = true
+	env.fog_light_color = Color(0.6, 0.65, 0.75)
+	env.fog_density = 0.005
+	# Tonemap
+	env.tonemap_mode = Environment.TONE_MAP_ACES
+	env.tonemap_white = 6.0
+	# Subtle glow
+	env.glow_enabled = true
+	env.glow_intensity = 0.2
+	env.glow_bloom = 0.05
+
+	var world_env: WorldEnvironment = WorldEnvironment.new()
+	world_env.environment = env
+	add_child(world_env)
 
 
 func _setup_demo_end_trigger() -> void:
