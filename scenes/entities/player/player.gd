@@ -5,6 +5,9 @@ extends CharacterBody3D
 @export var move_speed: float = 6.0
 @export var friction: float = 0.2
 @export var turn_speed: float = 10.0
+@export var dash_distance: float = 4.0
+@export var dash_cooldown: float = 1.0
+@export var iframe_duration: float = 0.3
 
 @onready var state_machine: StateMachine = %StateMachine
 @onready var health_component: Node = %HealthComponent
@@ -17,30 +20,17 @@ extends CharacterBody3D
 @onready var interaction_area: Area3D = %InteractionArea
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var model: Node3D = %Model
+@onready var dash_cooldown_timer: Timer = %DashCooldownTimer
 
 var facing_direction: Vector3 = Vector3.FORWARD
+var is_invulnerable: bool = false
+var can_dash: bool = true
 
 
-func _physics_process(delta: float) -> void:
-	var input_vector: Vector2 = Input.get_vector(
-		&"move_left", &"move_right", &"move_forward", &"move_back"
-	)
+func _ready() -> void:
+	dash_cooldown_timer.one_shot = true
+	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
 
-	var direction: Vector3 = Vector3.ZERO
-	if input_vector.length() > 0.0:
-		# Rotate input by camera Y rotation to get world-space direction
-		var camera: Camera3D = get_viewport().get_camera_3d()
-		var camera_basis: Basis = Basis(Vector3.UP, camera.global_rotation.y) if camera else Basis.IDENTITY
-		direction = camera_basis * Vector3(input_vector.x, 0.0, input_vector.y)
-		direction = direction.normalized()
 
-	if direction.length() > 0.0:
-		velocity = direction * move_speed
-		facing_direction = direction
-		# Smooth model rotation toward movement direction
-		var target_angle: float = atan2(direction.x, direction.z)
-		model.rotation.y = lerp_angle(model.rotation.y, target_angle, turn_speed * delta)
-	else:
-		velocity = velocity.lerp(Vector3.ZERO, friction)
-
-	move_and_slide()
+func _on_dash_cooldown_timeout() -> void:
+	can_dash = true

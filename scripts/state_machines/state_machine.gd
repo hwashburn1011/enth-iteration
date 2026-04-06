@@ -11,6 +11,12 @@ func _ready() -> void:
 	for child: Node in get_children():
 		if child is State:
 			child.state_machine = self
+	# Use exported initial_state, or fall back to first State child
+	if initial_state == null:
+		for child: Node in get_children():
+			if child is State:
+				initial_state = child as State
+				break
 	if initial_state:
 		current_state = initial_state
 		current_state.enter()

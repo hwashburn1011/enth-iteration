@@ -1,7 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://player00001"]
+[gd_scene load_steps=9 format=3 uid="uid://player00001"]
 
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_idle_state.gd" id="3_idle"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_walk_state.gd" id="4_walk"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_dash_state.gd" id="5_dash"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -52,6 +55,20 @@ unique_name_in_owner = true
 [node name="StateMachine" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("2_sm")
+initial_state = NodePath("IdleState")
+
+[node name="IdleState" type="Node" parent="StateMachine"]
+script = ExtResource("3_idle")
+
+[node name="WalkState" type="Node" parent="StateMachine"]
+script = ExtResource("4_walk")
+
+[node name="DashState" type="Node" parent="StateMachine"]
+script = ExtResource("5_dash")
+
+[node name="DashCooldownTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 unique_name_in_owner = true

@@ -11,6 +11,9 @@ signal game_unpaused()
 signal scene_changing()
 signal scene_changed(path: String)
 
+# Player
+signal player_dashed(from_position: Vector3, to_position: Vector3)
+
 # Combat
 signal enemy_defeated(enemy_type: StringName, position: Vector3, loot_table: Resource)
 signal damage_dealt(amount: int, source: Node, target: Node, damage_type: StringName)
