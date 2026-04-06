@@ -13,6 +13,8 @@ const TWEEN_DURATION: float = 0.2
 @onready var _prompt_icon: ColorRect = %PromptIcon
 @onready var _prompt_quantity: Label = %PromptQuantity
 @onready var _prompt_key: Label = %PromptKey
+@onready var _xp_bar: ProgressBar = %XPBar
+@onready var _level_label: Label = %LevelLabel
 
 var _health_tween: Tween = null
 var _compute_tween: Tween = null
@@ -56,6 +58,10 @@ func _connect_player() -> void:
 	player.inventory_component.prompt_used.connect(_on_prompt_used)
 	player.inventory_component.inventory_changed.connect(_on_inventory_changed.bind(player))
 	_update_prompt_display(player)
+	# XP/Level connections
+	player.level_component.xp_changed.connect(_on_xp_changed)
+	player.level_component.leveled_up.connect(_on_leveled_up_hud)
+	_update_xp_display(player.level_component)
 
 
 func _on_health_changed(current: float, max_val: float) -> void:
@@ -142,3 +148,20 @@ func _refresh_prompt_from_tree() -> void:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
 		_update_prompt_display(nodes[0] as Player)
+
+
+func _on_xp_changed(current_xp: int, xp_to_next: int) -> void:
+	_xp_bar.max_value = xp_to_next
+	var tween: Tween = create_tween()
+	tween.tween_property(_xp_bar, "value", float(current_xp), TWEEN_DURATION).set_ease(Tween.EASE_OUT)
+
+
+func _on_leveled_up_hud(new_level: int) -> void:
+	_level_label.text = "Lv. %d" % new_level
+	_xp_bar.value = 0
+
+
+func _update_xp_display(lc: LevelComponent) -> void:
+	_level_label.text = "Lv. %d" % lc.current_level
+	_xp_bar.max_value = lc.xp_to_next_level
+	_xp_bar.value = lc.current_xp

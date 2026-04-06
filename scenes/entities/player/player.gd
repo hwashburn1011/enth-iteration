@@ -18,6 +18,7 @@ extends CharacterBody3D
 @onready var inventory_component: InventoryComponent = %InventoryComponent
 @onready var equipment_component: EquipmentComponent = %EquipmentComponent
 @onready var ability_manager: AbilityManager = %AbilityManager
+@onready var level_component: LevelComponent = %LevelComponent
 @onready var interaction_area: Area3D = %InteractionArea
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var model: Node3D = %Model
@@ -40,6 +41,7 @@ func _ready() -> void:
 	health_component.died.connect(_on_died)
 	hitbox_component.damage_source = self
 	hurtbox_component.hit_received.connect(_on_hit_received)
+	level_component.leveled_up.connect(_on_leveled_up)
 
 
 func receive_hit(damage_info: DamageInfo) -> void:
@@ -112,6 +114,12 @@ func _try_use_prompt() -> void:
 				effect.potency = 1.0
 				sem.apply_effect(effect)
 	_prompt_cooldown = 0.5
+
+
+func _on_leveled_up(new_level: int) -> void:
+	var panel: StatAllocationPanel = StatAllocationPanel.new()
+	get_tree().root.add_child(panel)
+	panel.show_panel(self)
 
 
 func _on_dash_cooldown_timeout() -> void:

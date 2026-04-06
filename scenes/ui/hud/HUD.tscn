@@ -62,6 +62,24 @@ custom_minimum_size = Vector2(80, 0)
 text = "50 / 50"
 horizontal_alignment = 2
 
+[node name="XPBarContainer" type="HBoxContainer" parent="HUDContainer/BarsContainer"]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="HUDContainer/BarsContainer/XPBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(50, 0)
+text = "Lv. 1"
+
+[node name="XPBar" type="ProgressBar" parent="HUDContainer/BarsContainer/XPBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(150, 14)
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
 [node name="AbilitySlots" type="HBoxContainer" parent="HUDContainer"]
 unique_name_in_owner = true
 layout_mode = 1

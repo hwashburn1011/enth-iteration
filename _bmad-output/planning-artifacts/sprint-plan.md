@@ -96,7 +96,7 @@ When executing this sprint plan:
 - [x] 8.1 HUD Overlay Scene — `DONE`
 - [x] 8.2 Module Cooldown Display — `DONE`
 - [x] 8.3 Prompt Hotbar Display — `DONE`
-- [ ] 8.4 XP and Level-up System — `TODO`
+- [x] 8.4 XP and Level-up System — `DONE`
 - [ ] 8.5 Inventory Screen — `TODO`
 - [ ] 8.6 Character Stats Panel — `TODO`
 - [ ] 8.7 Quest Log UI — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 66
-- **Remaining:** 9
+- **Completed:** 67
+- **Remaining:** 8
 - **Current Epic:** 8
