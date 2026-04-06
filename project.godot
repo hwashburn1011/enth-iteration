@@ -13,6 +13,7 @@ config_version=5
 config/name="Enth:Iteration"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
+run/main_scene="res://scenes/main/MainMenu.tscn"
 
 [autoload]
 

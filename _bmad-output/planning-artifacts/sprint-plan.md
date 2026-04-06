@@ -20,7 +20,7 @@ When executing this sprint plan:
 - [x] 1.2 Core Autoloads — GameManager and EventBus — `DONE`
 - [x] 1.3 Input Map Configuration — `DONE`
 - [x] 1.4 Isometric Camera System — `DONE`
-- [ ] 1.5 Main Menu Scene — `TODO`
+- [x] 1.5 Main Menu Scene — `DONE`
 - [ ] 1.6 Base State Machine Framework — `TODO`
 
 ### Epic 2: Globbler Comes Alive
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 4
-- **Remaining:** 71
+- **Completed:** 5
+- **Remaining:** 70
 - **Current Epic:** 1
