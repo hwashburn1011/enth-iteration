@@ -64,7 +64,7 @@ When executing this sprint plan:
 - [x] 5.2 Combat Room Variants — `DONE`
 - [x] 5.3 Loot Room — `DONE`
 - [x] 5.4 Corridor Room Variants — `DONE`
-- [ ] 5.5 Story Room — `TODO`
+- [x] 5.5 Story Room — `DONE`
 - [ ] 5.6 FloorManager — `TODO`
 - [ ] 5.7 Demo Floor 1 — Tutorial — `TODO`
 - [ ] 5.8 Demo Floor 2 — Combat Escalation — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 40
-- **Remaining:** 35
+- **Completed:** 41
+- **Remaining:** 34
 - **Current Epic:** 5
