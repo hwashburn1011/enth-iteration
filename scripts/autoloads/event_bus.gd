@@ -1,0 +1,35 @@
+class_name EventBusClass
+extends Node
+## Global signal hub — all cross-system events route through here.
+
+# Game state
+signal game_state_changed(old_state: int, new_state: int)
+signal game_paused()
+signal game_unpaused()
+
+# Scene management
+signal scene_changing()
+signal scene_changed(path: String)
+
+# Combat
+signal enemy_defeated(enemy_type: StringName, position: Vector3, loot_table: Resource)
+signal damage_dealt(amount: int, source: Node, target: Node, damage_type: StringName)
+signal player_died(position: Vector3)
+
+# Items
+signal item_collected(item: Resource)
+
+# Dungeon
+signal portal_reached(portal_id: StringName)
+
+# Iteration
+signal iteration_started(iteration_number: int)
+signal iteration_reset()
+
+# NPCs
+signal npc_recruited(npc_id: StringName)
+signal dialogue_started(npc_id: StringName)
+signal dialogue_ended()
+
+# Quests
+signal quest_updated(quest_id: StringName, status: StringName)
