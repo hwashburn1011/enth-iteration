@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ProtocolItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/protocol_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Siphon Protocol"
+item_id = "protocol_on_kill_heal"
+description = "Absorbs residual data from defeated enemies to restore health."
+rarity = 1
+item_type = "protocol"
+protocol_trigger = "on_kill"
+protocol_effect = "heal 5% max health"

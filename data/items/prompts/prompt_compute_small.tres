@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PromptItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/prompt_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Compute Prompt"
+item_id = "prompt_compute_small"
+description = "Restores 20 compute when consumed."
+rarity = 0
+item_type = "prompt"
+prompt_type = "compute"
+restore_amount = 20.0
+max_stack = 10
+is_consumable = true

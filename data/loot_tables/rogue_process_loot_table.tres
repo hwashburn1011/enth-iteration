@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="LootTable" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/loot_table.gd" id="1_lt"]
+[ext_resource type="Script" path="res://scripts/items/loot_table_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://data/items/cores/core_standard_cpu.tres" id="3_core"]
+[ext_resource type="Resource" path="res://data/items/chips/chip_bandwidth_booster.tres" id="4_chip"]
+
+[sub_resource type="Resource" id="entry_cpu"]
+script = ExtResource("2_entry")
+item_base = ExtResource("3_core")
+drop_chance = 0.08
+min_quantity = 1
+max_quantity = 1
+
+[sub_resource type="Resource" id="entry_bandwidth"]
+script = ExtResource("2_entry")
+item_base = ExtResource("4_chip")
+drop_chance = 0.12
+min_quantity = 1
+max_quantity = 1
+
+[resource]
+script = ExtResource("1_lt")
+entries = [SubResource("entry_cpu"), SubResource("entry_bandwidth")]

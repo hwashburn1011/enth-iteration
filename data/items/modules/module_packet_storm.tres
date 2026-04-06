@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Packet Storm"
+item_id = "module_packet_storm"
+description = "Unleashes a rapid burst of data projectiles."
+rarity = 1
+item_type = "module"
+compute_cost = 12.0
+cooldown = 3.0
+ability_name = "Packet Storm"
+ability_description = "Rapid-fire projectiles in a cone."

@@ -57,7 +57,7 @@ When executing this sprint plan:
 - [x] 4.7 Item Pickup in World — `DONE`
 - [x] 4.8 Item Degradation on Death — `DONE`
 - [x] 4.9 Prompt Consumable System — `DONE`
-- [ ] 4.10 Demo Item Content — `TODO`
+- [x] 4.10 Demo Item Content — `DONE`
 
 ### Epic 5: The First Dungeon
 - [ ] 5.1 Room Base Scene Template — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 35
-- **Remaining:** 40
-- **Current Epic:** 4
+- **Completed:** 36
+- **Remaining:** 39
+- **Current Epic:** 5
