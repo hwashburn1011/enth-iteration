@@ -24,6 +24,9 @@ var _player: CharacterBody3D = null
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
 
+	# --- Lighting and Environment ---
+	_setup_environment()
+
 	# Spawn player
 	var player_scene: PackedScene = load("res://scenes/entities/player/Player.tscn") as PackedScene
 	if player_scene:
@@ -57,6 +60,48 @@ func _ready() -> void:
 	_load_floor(_current_floor_index)
 
 
+func _setup_environment() -> void:
+	# Directional light — warm, top-left per visual style guide
+	var dir_light: DirectionalLight3D = DirectionalLight3D.new()
+	dir_light.rotation_degrees = Vector3(-55, -35, 0)
+	dir_light.light_energy = 0.8
+	dir_light.light_color = Color(1.0, 0.95, 0.85)  # Slightly warm
+	dir_light.shadow_enabled = true
+	dir_light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	add_child(dir_light)
+
+	# Fill light from opposite side (softer, cooler)
+	var fill_light: DirectionalLight3D = DirectionalLight3D.new()
+	fill_light.rotation_degrees = Vector3(-40, 145, 0)
+	fill_light.light_energy = 0.3
+	fill_light.light_color = Color(0.7, 0.8, 1.0)  # Cool blue fill
+	fill_light.shadow_enabled = false
+	add_child(fill_light)
+
+	# World environment — dungeon atmosphere
+	var env: Environment = Environment.new()
+	env.background_mode = Environment.BG_COLOR
+	env.background_color = Color(0.06, 0.06, 0.1)  # Very dark blue-black
+	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	env.ambient_light_color = Color(0.2, 0.22, 0.3)  # Cool ambient
+	env.ambient_light_energy = 0.5
+	# Fog for atmosphere
+	env.fog_enabled = true
+	env.fog_light_color = Color(0.1, 0.12, 0.18)
+	env.fog_density = 0.015
+	# Tonemap for better contrast
+	env.tonemap_mode = Environment.TONE_MAP_ACES
+	env.tonemap_white = 6.0
+	# Glow for emission effects
+	env.glow_enabled = true
+	env.glow_intensity = 0.3
+	env.glow_bloom = 0.1
+
+	var world_env: WorldEnvironment = WorldEnvironment.new()
+	world_env.environment = env
+	add_child(world_env)
+
+
 func _load_floor(index: int) -> void:
 	if index >= FLOOR_DATA_PATHS.size():
 		push_warning("Dungeon: all floors completed")
@@ -87,3 +132,6 @@ func _on_floor_completed(floor_number: int) -> void:
 		_load_floor(_current_floor_index)
 	else:
 		push_warning("Dungeon: all floors cleared — returning to town")
+		EventBus.returned_to_town.emit()
+		GameManager.set_meta(&"town_entry_type", "portal_return")
+		GameManager.change_scene_to("res://scenes/town/Town.tscn")

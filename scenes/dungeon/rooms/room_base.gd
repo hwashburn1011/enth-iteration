@@ -20,6 +20,9 @@ func _ready() -> void:
 	if exit_trigger:
 		exit_trigger.body_entered.connect(_on_exit_trigger_body_entered)
 
+	# Ensure floor has collision (visual PlaneMesh doesn't provide physics)
+	_ensure_floor_collision()
+
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
 	if body.is_in_group(&"player") and is_cleared:
@@ -43,3 +46,31 @@ func get_exit_point() -> Vector3:
 	if marker:
 		return marker.global_position
 	return global_position
+
+
+func _ensure_floor_collision() -> void:
+	# Check if there's already a StaticBody3D floor
+	if find_child("FloorBody", true, false) != null:
+		return
+	# Find the floor mesh to match its size
+	var floor_mesh: MeshInstance3D = null
+	var geom: Node = get_node_or_null("Geometry")
+	if geom:
+		floor_mesh = geom.get_node_or_null("Floor") as MeshInstance3D
+	if floor_mesh == null:
+		return
+	# Create a StaticBody3D with a flat collision box matching the floor
+	var body: StaticBody3D = StaticBody3D.new()
+	body.name = "FloorBody"
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	# PlaneMesh size is in X/Z — get it from the mesh
+	var plane: PlaneMesh = floor_mesh.mesh as PlaneMesh
+	if plane:
+		box.size = Vector3(plane.size.x, 0.1, plane.size.y)
+	else:
+		box.size = Vector3(20.0, 0.1, 20.0)
+	shape.shape = box
+	shape.position = Vector3(0, -0.05, 0)
+	body.add_child(shape)
+	add_child(body)
