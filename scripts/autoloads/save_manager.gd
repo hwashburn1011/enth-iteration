@@ -153,6 +153,9 @@ func save_game() -> bool:
 	current_data["dungeon"]["highest_floor_reached"] = GameManager.get_meta(&"highest_floor", 0) as int
 	current_data["dungeon"]["total_runs"] = GameManager.get_meta(&"total_runs", 0) as int
 
+	# Create backup before writing
+	_create_backup()
+
 	# Write to file
 	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
@@ -167,8 +170,12 @@ func save_game() -> bool:
 func load_game() -> bool:
 	var data: Dictionary = _read_save_file(SAVE_PATH)
 	if data.is_empty():
-		# Try most recent backup
-		data = _try_load_backup()
+		# Try backups sequentially
+		for i: int in range(1, 4):
+			push_warning("SaveManager: trying backup %d..." % i)
+			data = _read_save_file(_backup_path(i))
+			if not data.is_empty():
+				break
 		if data.is_empty():
 			push_error("SaveManager: no valid save file or backup found")
 			return false
@@ -219,22 +226,47 @@ func _migrate_save(data: Dictionary, from_version: int, to_version: int) -> Dict
 	return migrated
 
 
-func _try_load_backup() -> Dictionary:
-	if not DirAccess.dir_exists_absolute(BACKUP_DIR):
-		return {}
-	var dir: DirAccess = DirAccess.open(BACKUP_DIR)
-	if dir == null:
-		return {}
-	var files: PackedStringArray = dir.get_files()
-	if files.is_empty():
-		return {}
-	# Try most recent backup (last alphabetically — timestamped names)
-	files.sort()
-	for i: int in range(files.size() - 1, -1, -1):
-		var data: Dictionary = _read_save_file(BACKUP_DIR + files[i])
+func _backup_path(index: int) -> String:
+	return BACKUP_DIR + "save_backup_%d.json" % index
+
+
+func _create_backup() -> void:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return
+	DirAccess.make_dir_recursive_absolute(BACKUP_DIR)
+	# Rotate: 2→3, 1→2
+	if FileAccess.file_exists(_backup_path(2)):
+		DirAccess.copy_absolute(_backup_path(2), _backup_path(3))
+	if FileAccess.file_exists(_backup_path(1)):
+		DirAccess.copy_absolute(_backup_path(1), _backup_path(2))
+	# Current save → backup 1
+	DirAccess.copy_absolute(SAVE_PATH, _backup_path(1))
+
+
+func load_backup(index: int = 1) -> bool:
+	var data: Dictionary = _read_save_file(_backup_path(index))
+	if data.is_empty():
+		return false
+	var version: int = data.get("schema_version", 0) as int
+	if version < SCHEMA_VERSION:
+		data = _migrate_save(data, version, SCHEMA_VERSION)
+	current_data = data
+	_apply_loaded_data(data)
+	EventBus.game_loaded.emit()
+	return true
+
+
+func has_valid_save() -> bool:
+	if FileAccess.file_exists(SAVE_PATH):
+		var data: Dictionary = _read_save_file(SAVE_PATH)
 		if not data.is_empty():
-			return data
-	return {}
+			return true
+	for i: int in range(1, 4):
+		if FileAccess.file_exists(_backup_path(i)):
+			var data: Dictionary = _read_save_file(_backup_path(i))
+			if not data.is_empty():
+				return true
+	return false
 
 
 func _apply_loaded_data(data: Dictionary) -> void:
