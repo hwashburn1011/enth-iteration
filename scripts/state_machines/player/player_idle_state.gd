@@ -3,8 +3,21 @@ extends State
 ## Player is standing still, waiting for input.
 
 
+func enter() -> void:
+	var p: Player = player as Player
+	if p and p.animation_player.has_animation(&"idle"):
+		p.animation_player.play(&"idle")
+
+
+func handle_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"dash"):
+		var p: Player = player as Player
+		if p and p.can_dash:
+			state_machine.transition_to(state_machine.get_node("DashState") as State)
+
+
 func physics_update(_delta: float) -> void:
-	var player: Player = state_machine.get_parent() as Player
+	var p: Player = player as Player
 	var input_vector: Vector2 = Input.get_vector(
 		&"move_left", &"move_right", &"move_forward", &"move_back"
 	)
@@ -13,9 +26,5 @@ func physics_update(_delta: float) -> void:
 		state_machine.transition_to(state_machine.get_node("WalkState") as State)
 		return
 
-	if Input.is_action_just_pressed(&"dash") and player.can_dash:
-		state_machine.transition_to(state_machine.get_node("DashState") as State)
-		return
-
-	player.velocity = player.velocity.lerp(Vector3.ZERO, player.friction)
-	player.move_and_slide()
+	p.velocity = p.velocity.lerp(Vector3.ZERO, p.friction)
+	p.move_and_slide()

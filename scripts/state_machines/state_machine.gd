@@ -8,9 +8,11 @@ var current_state: State
 
 
 func _ready() -> void:
+	var parent_body: CharacterBody3D = get_parent() as CharacterBody3D
 	for child: Node in get_children():
 		if child is State:
 			child.state_machine = self
+			child.player = parent_body
 	# Use exported initial_state, or fall back to first State child
 	if initial_state == null:
 		for child: Node in get_children():
@@ -30,6 +32,11 @@ func _process(delta: float) -> void:
 func _physics_process(delta: float) -> void:
 	if current_state:
 		current_state.physics_update(delta)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if current_state:
+		current_state.handle_input(event)
 
 
 func transition_to(target_state: State) -> void:

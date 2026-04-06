@@ -3,8 +3,21 @@ extends State
 ## Player is moving via WASD input.
 
 
+func enter() -> void:
+	var p: Player = player as Player
+	if p and p.animation_player.has_animation(&"walk"):
+		p.animation_player.play(&"walk")
+
+
+func handle_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"dash"):
+		var p: Player = player as Player
+		if p and p.can_dash:
+			state_machine.transition_to(state_machine.get_node("DashState") as State)
+
+
 func physics_update(delta: float) -> void:
-	var player: Player = state_machine.get_parent() as Player
+	var p: Player = player as Player
 	var input_vector: Vector2 = Input.get_vector(
 		&"move_left", &"move_right", &"move_forward", &"move_back"
 	)
@@ -13,19 +26,15 @@ func physics_update(delta: float) -> void:
 		state_machine.transition_to(state_machine.get_node("IdleState") as State)
 		return
 
-	if Input.is_action_just_pressed(&"dash") and player.can_dash:
-		state_machine.transition_to(state_machine.get_node("DashState") as State)
-		return
-
-	var camera: Camera3D = player.get_viewport().get_camera_3d()
+	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	var camera_basis: Basis = Basis(Vector3.UP, camera.global_rotation.y) if camera else Basis.IDENTITY
 	var direction: Vector3 = camera_basis * Vector3(input_vector.x, 0.0, input_vector.y)
 	direction = direction.normalized()
 
-	player.velocity = direction * player.move_speed
-	player.facing_direction = direction
+	p.velocity = direction * p.move_speed
+	p.facing_direction = direction
 
 	var target_angle: float = atan2(direction.x, direction.z)
-	player.model.rotation.y = lerp_angle(player.model.rotation.y, target_angle, player.turn_speed * delta)
+	p.model.rotation.y = lerp_angle(p.model.rotation.y, target_angle, p.turn_speed * delta)
 
-	player.move_and_slide()
+	p.move_and_slide()

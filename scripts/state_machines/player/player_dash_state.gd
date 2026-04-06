@@ -4,49 +4,51 @@ extends State
 
 
 func enter() -> void:
-	var player: Player = state_machine.get_parent() as Player
-	var from_position: Vector3 = player.global_position
+	var p: Player = player as Player
+	var from_position: Vector3 = p.global_position
+
+	# Play dash animation
+	if p.animation_player.has_animation(&"dash"):
+		p.animation_player.play(&"dash")
 
 	# Determine dash direction — movement input or current facing
 	var input_vector: Vector2 = Input.get_vector(
 		&"move_left", &"move_right", &"move_forward", &"move_back"
 	)
-	var dash_dir: Vector3 = player.facing_direction
+	var dash_dir: Vector3 = p.facing_direction
 	if input_vector.length() > 0.0:
-		var camera: Camera3D = player.get_viewport().get_camera_3d()
+		var camera: Camera3D = p.get_viewport().get_camera_3d()
 		var camera_basis: Basis = Basis(Vector3.UP, camera.global_rotation.y) if camera else Basis.IDENTITY
 		dash_dir = (camera_basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
 
 	# Wall collision check — test motion to find valid dash endpoint
-	var target_offset: Vector3 = dash_dir * player.dash_distance
+	var target_offset: Vector3 = dash_dir * p.dash_distance
 	var params := PhysicsTestMotionParameters3D.new()
-	params.from = player.global_transform
+	params.from = p.global_transform
 	params.motion = target_offset
 	var result := PhysicsTestMotionResult3D.new()
 
-	if PhysicsServer3D.body_test_motion(player.get_rid(), params, result):
-		# Hit something — stop at last safe position
-		target_offset = dash_dir * (player.dash_distance * result.get_collision_safe_fraction())
+	if PhysicsServer3D.body_test_motion(p.get_rid(), params, result):
+		target_offset = dash_dir * (p.dash_distance * result.get_collision_safe_fraction())
 
-	player.global_position += target_offset
-	player.facing_direction = dash_dir
+	p.global_position += target_offset
+	p.facing_direction = dash_dir
 
 	# Emit event
-	EventBus.player_dashed.emit(from_position, player.global_position)
+	EventBus.player_dashed.emit(from_position, p.global_position)
 
 	# Start i-frames
-	player.is_invulnerable = true
-	_flash_transparent(player, true)
+	p.is_invulnerable = true
+	_flash_transparent(p, true)
 
 	# Start cooldown timer
-	player.can_dash = false
-	player.dash_cooldown_timer.start(player.dash_cooldown)
+	p.can_dash = false
+	p.dash_cooldown_timer.start(p.dash_cooldown)
 
 	# End i-frames after duration
-	var tree: SceneTree = player.get_tree()
-	await tree.create_timer(player.iframe_duration).timeout
-	player.is_invulnerable = false
-	_flash_transparent(player, false)
+	await p.get_tree().create_timer(p.iframe_duration).timeout
+	p.is_invulnerable = false
+	_flash_transparent(p, false)
 
 	# Transition back based on input
 	var current_input: Vector2 = Input.get_vector(
@@ -58,8 +60,8 @@ func enter() -> void:
 		state_machine.transition_to(state_machine.get_node("IdleState") as State)
 
 
-func _flash_transparent(player: Player, transparent: bool) -> void:
-	var mesh: MeshInstance3D = player.model.get_child(0) as MeshInstance3D
+func _flash_transparent(p: Player, transparent: bool) -> void:
+	var mesh: MeshInstance3D = p.model.get_child(0) as MeshInstance3D
 	if mesh == null:
 		return
 	if transparent:
