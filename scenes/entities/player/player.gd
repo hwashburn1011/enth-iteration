@@ -13,8 +13,8 @@ extends CharacterBody3D
 @onready var health_component: HealthComponent = %HealthComponent
 @onready var compute_component: ComputeComponent = %ComputeComponent
 @onready var stats_component: StatsComponent = %StatsComponent
-@onready var hitbox_component: Area3D = %HitboxComponent
-@onready var hurtbox_component: Area3D = %HurtboxComponent
+@onready var hitbox_component: HitboxComponent = %HitboxComponent
+@onready var hurtbox_component: HurtboxComponent = %HurtboxComponent
 @onready var inventory_component: Node = %InventoryComponent
 @onready var ability_manager: Node = %AbilityManager
 @onready var interaction_area: Area3D = %InteractionArea
@@ -35,6 +35,8 @@ func _ready() -> void:
 	attack_cooldown_timer.one_shot = true
 	attack_cooldown_timer.timeout.connect(_on_attack_cooldown_timeout)
 	health_component.died.connect(_on_died)
+	hitbox_component.damage_source = self
+	hurtbox_component.hit_received.connect(_on_hit_received)
 
 
 func receive_hit(damage_info: DamageInfo) -> void:
@@ -44,6 +46,18 @@ func receive_hit(damage_info: DamageInfo) -> void:
 	if health_component.is_dead:
 		return  # _on_died handles death transition
 	# Store source position for knockback direction
+	if damage_info.source is Node3D:
+		set_meta(&"damage_source_position", (damage_info.source as Node3D).global_position)
+	var hurt_state: State = state_machine.get_node_or_null("HurtState") as State
+	if hurt_state:
+		state_machine.force_transition_to(hurt_state)
+
+
+func _on_hit_received(damage_info: DamageInfo) -> void:
+	# HurtboxComponent already applied damage via HealthComponent and pipeline.
+	# We just need to trigger the hurt state for knockback/stun.
+	if is_invulnerable or health_component.is_dead:
+		return
 	if damage_info.source is Node3D:
 		set_meta(&"damage_source_position", (damage_info.source as Node3D).global_position)
 	var hurt_state: State = state_machine.get_node_or_null("HurtState") as State

@@ -38,7 +38,7 @@ When executing this sprint plan:
 - [x] 3.5 Energy Burst Charged Attack — `DONE`
 - [x] 3.6 Combat State Machine States — `DONE`
 - [x] 3.7 Damage Calculation Pipeline — `DONE`
-- [ ] 3.8 Hitbox and Hurtbox Components — `TODO`
+- [x] 3.8 Hitbox and Hurtbox Components — `DONE`
 - [ ] 3.9 Enemy Base Scene with AI State Machine — `TODO`
 - [ ] 3.10 Enemy Type — Glitch Bug — `TODO`
 - [ ] 3.11 Enemy Type — Memory Leak — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 18
-- **Remaining:** 57
+- **Completed:** 19
+- **Remaining:** 56
 - **Current Epic:** 3
