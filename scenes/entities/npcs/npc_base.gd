@@ -6,6 +6,7 @@ extends CharacterBody3D
 @export var npc_name: String = ""
 @export var dialogue_resource: DialogueData
 @export var portrait_default: Texture2D
+@export var portraits: Dictionary = {}  # expression name -> Texture2D
 
 var has_been_talked_to: bool = false
 var _player_in_range: bool = false
@@ -53,6 +54,7 @@ func _start_conversation() -> void:
 	# Find or create DialoguePanel
 	var panel: DialoguePanel = _find_dialogue_panel()
 	if panel:
+		panel.speaker_portraits = portraits
 		panel.start_dialogue(dialogue_resource.lines)
 
 

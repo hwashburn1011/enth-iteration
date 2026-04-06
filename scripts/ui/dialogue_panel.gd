@@ -5,8 +5,12 @@ extends CanvasLayer
 signal dialogue_finished
 
 const CHARS_PER_SECOND: float = 30.0
+const PORTRAIT_CROSSFADE: float = 0.15
 
 var dialogue_data: Array[DialogueLine] = []
+## Portrait dictionary from current speaker NPC: expression name -> Texture2D
+var speaker_portraits: Dictionary = {}
+
 var _current_index: int = 0
 var _typing: bool = false
 var _visible_chars: int = 0
@@ -57,11 +61,22 @@ func start_dialogue(data: Array[DialogueLine]) -> void:
 
 func _display_line(line: DialogueLine) -> void:
 	_name_label.text = line.speaker_name
+
+	# Portrait lookup: line.portrait > speaker_portraits[expression] > speaker_portraits["default"]
+	var new_portrait: Texture2D = null
 	if line.portrait:
-		_portrait_rect.texture = line.portrait
+		new_portrait = line.portrait
+	elif speaker_portraits.has(line.expression):
+		new_portrait = speaker_portraits[line.expression] as Texture2D
+	elif speaker_portraits.has("default"):
+		new_portrait = speaker_portraits["default"] as Texture2D
+
+	if new_portrait:
+		_crossfade_portrait(new_portrait)
 		_portrait_rect.visible = true
 	else:
 		_portrait_rect.visible = false
+
 	_full_text = line.text
 	_dialogue_label.text = _full_text
 	_dialogue_label.visible_characters = 0
@@ -72,7 +87,6 @@ func _display_line(line: DialogueLine) -> void:
 
 func _advance() -> void:
 	if _typing:
-		# Instantly show full text
 		_typing = false
 		_dialogue_label.visible_characters = -1
 		return
@@ -86,7 +100,19 @@ func _advance() -> void:
 
 func _close() -> void:
 	_panel.visible = false
+	speaker_portraits = {}
 	get_tree().paused = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	EventBus.dialogue_ended.emit()
 	dialogue_finished.emit()
+
+
+func _crossfade_portrait(new_texture: Texture2D) -> void:
+	if _portrait_rect.texture == new_texture:
+		return
+	# Crossfade: fade out, swap, fade in
+	var tween: Tween = create_tween()
+	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tween.tween_property(_portrait_rect, "modulate:a", 0.0, PORTRAIT_CROSSFADE)
+	tween.tween_callback(func() -> void: _portrait_rect.texture = new_texture)
+	tween.tween_property(_portrait_rect, "modulate:a", 1.0, PORTRAIT_CROSSFADE)
