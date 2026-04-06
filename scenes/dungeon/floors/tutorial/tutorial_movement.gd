@@ -1,4 +1,4 @@
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Tutorial: walk to 3 markers to unlock exit.
 
 var _markers_reached: int = 0
@@ -17,7 +17,7 @@ func _ready() -> void:
 
 
 func _on_marker_reached(body: Node3D, marker: Area3D) -> void:
-	if not body is Player:
+	if not body.is_in_group(&"player"):
 		return
 	marker.queue_free()
 	_markers_reached += 1

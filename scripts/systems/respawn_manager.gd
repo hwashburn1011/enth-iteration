@@ -47,7 +47,7 @@ func _run_respawn_sequence() -> void:
 	await get_tree().process_frame
 
 	# 5. Find player and respawn point, reset health/compute
-	var player: Player = _find_player()
+	var player: Node = _find_player()
 	if player:
 		var spawn_point: Marker3D = _find_respawn_point()
 		if spawn_point:
@@ -59,7 +59,7 @@ func _run_respawn_sequence() -> void:
 		player.set_process_unhandled_input(true)
 		player.collision_layer = 1
 		player.collision_mask = 138
-		var idle_state: State = player.state_machine.get_node_or_null("IdleState") as State
+		var idle_state: Node = player.state_machine.get_node_or_null("IdleState") as Node
 		if idle_state:
 			player.state_machine.force_transition_to(idle_state)
 
@@ -76,14 +76,14 @@ func _fade(from: float, to: float, duration: float) -> void:
 	await tween.finished
 
 
-func _find_player() -> Player:
+func _find_player() -> Node:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		return nodes[0] as Player
+		return nodes[0]
 	# Fallback: search scene tree
 	for node: Node in get_tree().current_scene.get_children():
-		if node is Player:
-			return node as Player
+		if node.is_in_group(&"player"):
+			return node
 	return null
 
 

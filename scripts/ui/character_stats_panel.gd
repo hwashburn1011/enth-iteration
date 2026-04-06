@@ -12,7 +12,7 @@ const STAT_DESCRIPTIONS: Dictionary = {
 const STATS: Array[String] = ["processing", "bandwidth", "memory", "integrity"]
 
 
-func populate(player: Player) -> void:
+func populate(player: CharacterBody3D) -> void:
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.theme_override_constants_separation = 6
 
@@ -24,7 +24,7 @@ func populate(player: Player) -> void:
 	var sep: HSeparator = HSeparator.new()
 	vbox.add_child(sep)
 
-	var stats_comp: StatsComponent = player.stats_component
+	var stats_comp: Node = player.stats_component
 	var equip_bonuses: Dictionary = stats_comp.equipment_bonuses
 
 	for stat_name: String in STATS:

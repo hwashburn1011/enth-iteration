@@ -1,5 +1,5 @@
 class_name BossArena
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Boss arena — large room with destructible pillars. Spawns portal on boss defeat.
 
 var _boss_defeated: bool = false

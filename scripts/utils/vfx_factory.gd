@@ -54,7 +54,7 @@ static func spawn_death_dissolve(target: Node3D) -> void:
 
 static func spawn_item_sparkle(position: Vector3, rarity: int, parent: Node) -> void:
 	## Rarity-colored sparkle on item drop
-	var color: Color = ColorPalette.rarity_color(rarity)
+	var color: Color = load("res://scripts/utils/color_palette.gd").rarity_color(rarity)
 	var particles: GPUParticles3D = GPUParticles3D.new()
 	particles.amount = 8
 	particles.lifetime = 0.6

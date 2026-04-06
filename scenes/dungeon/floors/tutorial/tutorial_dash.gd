@@ -1,4 +1,4 @@
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Tutorial: dash through a hazard zone.
 
 
@@ -14,7 +14,7 @@ func _ready() -> void:
 
 
 func _on_hazard_body_entered(body: Node3D) -> void:
-	if body is Player:
-		var p: Player = body as Player
+	if body.is_in_group(&"player"):
+		var p: CharacterBody3D = body as CharacterBody3D
 		if not p.is_invulnerable:
 			p.health_component.take_damage(5.0)

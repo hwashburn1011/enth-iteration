@@ -5,12 +5,12 @@ extends RefCounted
 static func configure_room(room: Node3D, room_index: int) -> void:
 	match room_index:
 		1:  # Story Room — set AI Sage NPC
-			if room is StoryRoom:
+			if (room.has_method(&"get_entry_point") and room.get(&"npc_id") != null):
 				var sage_scene: PackedScene = load("res://scenes/entities/npcs/AISage.tscn") as PackedScene
-				(room as StoryRoom).npc_scene = sage_scene
-				(room as StoryRoom).npc_id = &"ai_sage"
+				(room as Node3D).npc_scene = sage_scene
+				(room as Node3D).npc_id = &"ai_sage"
 		3:  # Boss Arena — configure boss spawner as placeholder boss
-			var spawner: EnemySpawner = room.get_node_or_null("EnemySpawner") as EnemySpawner
+			var spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 			if spawner:
 				# Placeholder: use a heavily buffed Rogue Process until Story 9.1 creates the real boss
 				spawner.enemy_types = ["rogue_process"]
@@ -28,7 +28,7 @@ static func _buff_boss() -> void:
 		return
 	for node: Node in tree.get_nodes_in_group(&"enemies"):
 		if node is EnemyBase:
-			var boss: EnemyBase = node as EnemyBase
+			var boss: CharacterBody3D = node as CharacterBody3D
 			boss.health_component.max_health = 200.0
 			boss.health_component.current_health = 200.0
 			boss.stats_component.base_processing = 15.0

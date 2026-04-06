@@ -1,5 +1,5 @@
 class_name ModuleItem
-extends ItemBase
+extends "res://scripts/items/item_base.gd"
 ## Equippable ability module — grants an active skill in slots 1-4.
 
 @export var ability_scene: PackedScene

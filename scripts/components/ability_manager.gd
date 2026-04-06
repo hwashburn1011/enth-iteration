@@ -2,18 +2,18 @@ class_name AbilityManager
 extends Node
 ## Manages module abilities bound to keys 1-4. Handles cooldowns and compute costs.
 
-signal ability_used(slot_index: int, module: ModuleItem)
+signal ability_used(slot_index: int, module: Resource)
 signal ability_ready(slot_index: int)
 
 var ability_slots: Array[Dictionary] = [{}, {}, {}, {}]
 
-var _compute_component: ComputeComponent = null
+var _compute_component: Node = null
 var _player: Node = null
 
 
 func _ready() -> void:
 	_player = get_parent()
-	_compute_component = _player.get_node_or_null("ComputeComponent") as ComputeComponent
+	_compute_component = _player.get_node_or_null("ComputeComponent") as Node
 	for i: int in 4:
 		ability_slots[i] = {"module": null, "cooldown_timer": 0.0, "is_ready": true}
 
@@ -37,9 +37,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 
-func refresh_abilities(modules: Array[ModuleItem]) -> void:
+func refresh_abilities(modules: Array[Resource]) -> void:
 	for i: int in 4:
-		var module: ModuleItem = modules[i] if i < modules.size() else null
+		var module: Resource = modules[i] if i < modules.size() else null
 		ability_slots[i]["module"] = module
 		if module == null:
 			ability_slots[i]["cooldown_timer"] = 0.0
@@ -48,7 +48,7 @@ func refresh_abilities(modules: Array[ModuleItem]) -> void:
 
 func _try_use_ability(slot_index: int) -> void:
 	var slot: Dictionary = ability_slots[slot_index]
-	var module: ModuleItem = slot.get("module") as ModuleItem
+	var module: Resource = slot.get("module") as Resource
 	if module == null:
 		return
 	if not slot.get("is_ready", true):

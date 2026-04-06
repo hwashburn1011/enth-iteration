@@ -36,13 +36,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = true
 		_label.visible = true
 
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = false
 		_label.visible = false
 
@@ -72,7 +72,7 @@ func _activate_portal() -> void:
 	await get_tree().process_frame
 
 	# Find player and position at portal return point
-	var player: Player = _find_player()
+	var player: CharacterBody3D = _find_player()
 	if player:
 		var return_point: Marker3D = _find_return_point()
 		if return_point:
@@ -90,10 +90,10 @@ func _activate_portal() -> void:
 	canvas.queue_free()
 
 
-func _find_player() -> Player:
+func _find_player() -> CharacterBody3D:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		return nodes[0] as Player
+		return nodes[0] as CharacterBody3D
 	return null
 
 

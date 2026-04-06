@@ -1,5 +1,5 @@
 class_name MemoryLeakAttackState
-extends EnemyAttackState
+extends "res://scripts/state_machines/enemy/enemy_attack_state.gd"
 ## Memory Leak ranged attack — telegraph then fire projectile.
 
 const TELEGRAPH_DURATION: float = 0.5
@@ -14,7 +14,7 @@ func _init() -> void:
 
 
 func enter() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 	_hitbox_enabled = false
 	_telegraph_done = false
@@ -34,7 +34,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	if _timer < TELEGRAPH_DURATION:
@@ -46,18 +46,18 @@ func physics_update(delta: float) -> void:
 		_fire_projectile(enemy)
 
 	if _timer >= ML_ATTACK_DURATION:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 
 func exit() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_set_glow(enemy, false)
 
 
-func _fire_projectile(enemy: EnemyBase) -> void:
+func _fire_projectile(enemy: CharacterBody3D) -> void:
 	if enemy.target_player == null:
 		return
-	var projectile: LeakProjectile = LeakProjectile.new()
+	var projectile: Node = load("res://scenes/entities/enemies/memory_leak/leak_projectile.gd").new()
 	projectile.source_node = enemy
 	projectile.base_damage = base_damage
 	projectile.global_position = enemy.global_position + Vector3(0, 0.5, 0)
@@ -87,7 +87,7 @@ func _fire_projectile(enemy: EnemyBase) -> void:
 	enemy.get_tree().current_scene.add_child(projectile)
 
 
-func _set_glow(enemy: EnemyBase, glow: bool) -> void:
+func _set_glow(enemy: CharacterBody3D, glow: bool) -> void:
 	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
 	if mesh == null:
 		return

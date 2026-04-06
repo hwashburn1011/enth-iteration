@@ -4,7 +4,7 @@ extends CharacterBody3D
 
 @export var npc_id: String = ""
 @export var npc_name: String = ""
-@export var dialogue_resource: DialogueData
+@export var dialogue_resource: Resource
 @export var portrait_default: Texture2D
 @export var portraits: Dictionary = {}  # expression name -> Texture2D
 
@@ -32,14 +32,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = true
 		_prompt_label.text = "Press E to talk"
 		_prompt_label.visible = true
 
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = false
 		_prompt_label.visible = false
 
@@ -52,22 +52,22 @@ func _start_conversation() -> void:
 	EventBus.npc_talked.emit(StringName(npc_id))
 
 	# Find or create DialoguePanel
-	var panel: DialoguePanel = _find_dialogue_panel()
+	var panel: Node = _find_dialogue_panel()
 	if panel:
 		panel.speaker_portraits = portraits
 		panel.speaker_npc_id = npc_id
 		panel.start_dialogue(dialogue_resource.lines)
 
 
-func _find_dialogue_panel() -> DialoguePanel:
+func _find_dialogue_panel() -> Node:
 	# Search for existing panel in scene tree
 	for node: Node in get_tree().root.get_children():
 		if node is DialoguePanel:
-			return node as DialoguePanel
+			return node as Node
 	# Instantiate one
 	var scene: PackedScene = load("res://scenes/ui/dialogue/DialoguePanel.tscn") as PackedScene
 	if scene:
-		var panel: DialoguePanel = scene.instantiate() as DialoguePanel
+		var panel: Node = scene.instantiate() as Node
 		get_tree().root.add_child(panel)
 		return panel
 	return null

@@ -42,7 +42,7 @@ func _connect_player() -> void:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.is_empty():
 		return
-	var player: Player = nodes[0] as Player
+	var player: CharacterBody3D = nodes[0] as CharacterBody3D
 	if player == null:
 		return
 	player.health_component.health_changed.connect(_on_health_changed)
@@ -90,7 +90,7 @@ func _on_dialogue_ended() -> void:
 	_container.visible = true
 
 
-func _on_ability_used(slot_index: int, module: ModuleItem) -> void:
+func _on_ability_used(slot_index: int, module: Resource) -> void:
 	if slot_index >= 0 and slot_index < _ability_slot_uis.size():
 		_ability_slot_uis[slot_index].start_cooldown(module.cooldown)
 
@@ -100,13 +100,13 @@ func _on_ability_ready(slot_index: int) -> void:
 		_ability_slot_uis[slot_index].set_ready()
 
 
-func _on_equipment_changed(player: Player) -> void:
+func _on_equipment_changed(player: CharacterBody3D) -> void:
 	_refresh_ability_icons(player)
 
 
-func _refresh_ability_icons(player: Player) -> void:
+func _refresh_ability_icons(player: CharacterBody3D) -> void:
 	for i: int in _ability_slot_uis.size():
-		var module: ModuleItem = player.equipment_component.module_slots[i] if i < player.equipment_component.module_slots.size() else null
+		var module: Resource = player.equipment_component.module_slots[i] if i < player.equipment_component.module_slots.size() else null
 		if module:
 			_ability_slot_uis[i].set_module(module, i + 1)
 		else:
@@ -120,17 +120,17 @@ func _on_prompt_used(_prompt_type: String, _remaining: int) -> void:
 	tween.tween_callback(_refresh_prompt_from_tree)
 
 
-func _on_inventory_changed(player: Player) -> void:
+func _on_inventory_changed(player: CharacterBody3D) -> void:
 	_update_prompt_display(player)
 
 
-func _update_prompt_display(player: Player) -> void:
+func _update_prompt_display(player: CharacterBody3D) -> void:
 	var active: Dictionary = player.inventory_component.get_active_prompt()
 	if active.is_empty():
 		_prompt_icon.color = Color(0.3, 0.3, 0.3, 0.5)
 		_prompt_quantity.text = "x0"
 		return
-	var prompt: PromptItem = active["item"] as PromptItem
+	var prompt: Resource = active["item"] as Resource
 	var qty: int = int(active["quantity"])
 	match prompt.prompt_type:
 		"health":
@@ -147,7 +147,7 @@ func _update_prompt_display(player: Player) -> void:
 func _refresh_prompt_from_tree() -> void:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		_update_prompt_display(nodes[0] as Player)
+		_update_prompt_display(nodes[0] as CharacterBody3D)
 
 
 func _on_xp_changed(current_xp: int, xp_to_next: int) -> void:
@@ -161,7 +161,7 @@ func _on_leveled_up_hud(new_level: int) -> void:
 	_xp_bar.value = 0
 
 
-func _update_xp_display(lc: LevelComponent) -> void:
+func _update_xp_display(lc: Node) -> void:
 	_level_label.text = "Lv. %d" % lc.current_level
 	_xp_bar.max_value = lc.xp_to_next_level
 	_xp_bar.value = lc.current_xp

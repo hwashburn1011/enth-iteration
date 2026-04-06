@@ -3,7 +3,7 @@ extends RefCounted
 ## Configures rooms for Floor 4 — Corrupted Cache. Status effects on enemies.
 
 static func configure_room(room: Node3D, room_index: int) -> void:
-	var spawner: EnemySpawner = room.get_node_or_null("EnemySpawner") as EnemySpawner
+	var spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 
 	match room_index:
 		0:  # Corridor Ambush — 3 Glitch Bugs + 2 Rogue Processes
@@ -16,10 +16,10 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 				spawner.spawn_count = 5
 		3:  # Open Arena — Wave encounter
 			if spawner:
-				var wave1: SpawnWave = SpawnWave.new()
+				var wave1: Resource = load("res://scripts/systems/spawn_wave.gd").new()
 				wave1.enemy_types = ["glitch_bug"]
 				wave1.spawn_count = 3
-				var wave2: SpawnWave = SpawnWave.new()
+				var wave2: Resource = load("res://scripts/systems/spawn_wave.gd").new()
 				wave2.enemy_types = ["rogue_process", "rogue_process", "memory_leak"]
 				wave2.spawn_count = 3
 				spawner.waves = [wave1, wave2]

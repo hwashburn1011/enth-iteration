@@ -2,11 +2,11 @@ class_name InventoryScreen
 extends CanvasLayer
 ## Full inventory and equipment management screen. Pauses game while open.
 
-var _player: Player = null
+var _player: CharacterBody3D = null
 var _panel: Control = null
 var _grid_cells: Array[Control] = []
 var _equip_slots: Dictionary = {}  # slot_key -> Control
-var _selected_item: ItemBase = null
+var _selected_item: Resource = null
 var _tooltip: PanelContainer = null
 
 const CELL_SIZE: int = 48
@@ -23,7 +23,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func open(player: Player) -> void:
+func open(player: CharacterBody3D) -> void:
 	_player = player
 	get_tree().paused = true
 	GameManager.set_state(GameManager.GameState.INVENTORY)
@@ -119,7 +119,7 @@ func _build_equipment_slots(parent: VBoxContainer) -> void:
 			var slot: Button = Button.new()
 			slot.custom_minimum_size = Vector2(CELL_SIZE, CELL_SIZE)
 			var slot_key: String = "%s_%d" % [section[1], i]
-			var item: ItemBase = _get_equipped_item(section[1] as String, i)
+			var item: Resource = _get_equipped_item(section[1] as String, i)
 			slot.text = item.item_name.substr(0, 3) if item else "--"
 			slot.tooltip_text = item.item_name if item else "Empty"
 			slot.pressed.connect(_on_equip_slot_clicked.bind(section[1] as String, i))
@@ -136,7 +136,7 @@ func _build_grid(parent: VBoxContainer) -> void:
 		for x: int in _player.inventory_component.grid_width:
 			var cell: Button = Button.new()
 			cell.custom_minimum_size = Vector2(CELL_SIZE, CELL_SIZE)
-			var item: ItemBase = _player.inventory_component.get_item_at(Vector2i(x, y))
+			var item: Resource = _player.inventory_component.get_item_at(Vector2i(x, y))
 			if item:
 				cell.text = item.item_name.substr(0, 2)
 				cell.modulate = RARITY_COLORS[clampi(item.rarity, 0, 3)]
@@ -150,20 +150,20 @@ func _build_grid(parent: VBoxContainer) -> void:
 
 
 func _on_grid_cell_clicked(x: int, y: int) -> void:
-	var item: ItemBase = _player.inventory_component.get_item_at(Vector2i(x, y))
+	var item: Resource = _player.inventory_component.get_item_at(Vector2i(x, y))
 	if item:
 		_selected_item = item
 		_show_tooltip(item)
 
 
 func _on_equip_slot_clicked(item_type: String, slot_index: int) -> void:
-	var removed: ItemBase = _player.equipment_component.unequip(item_type, slot_index)
+	var removed: Resource = _player.equipment_component.unequip(item_type, slot_index)
 	if removed:
 		_player.inventory_component.add_item(removed)
 	_rebuild()
 
 
-func _show_tooltip(item: ItemBase) -> void:
+func _show_tooltip(item: Resource) -> void:
 	if _tooltip:
 		_tooltip.queue_free()
 	_tooltip = PanelContainer.new()
@@ -216,19 +216,19 @@ func _show_tooltip(item: ItemBase) -> void:
 	_panel.add_child(_tooltip)
 
 
-func _on_equip_item(item: ItemBase) -> void:
+func _on_equip_item(item: Resource) -> void:
 	_player.inventory_component.remove_item(item)
-	var previous: ItemBase = _player.equipment_component.equip(item)
+	var previous: Resource = _player.equipment_component.equip(item)
 	if previous:
 		_player.inventory_component.add_item(previous)
 	_rebuild()
 
 
-func _on_drop_item(item: ItemBase) -> void:
+func _on_drop_item(item: Resource) -> void:
 	_player.inventory_component.remove_item(item)
 	var dropped_scene: PackedScene = load("res://scenes/items/DroppedItem.tscn") as PackedScene
 	if dropped_scene:
-		var dropped: DroppedItem = dropped_scene.instantiate() as DroppedItem
+		var dropped: Node = dropped_scene.instantiate() as Node
 		dropped.item = item
 		dropped.global_position = _player.global_position + Vector3(randf_range(-1.0, 1.0), 0, randf_range(-1.0, 1.0))
 		get_tree().current_scene.add_child(dropped)
@@ -244,7 +244,7 @@ func _rebuild() -> void:
 	_build_ui()
 
 
-func _get_equipped_item(item_type: String, index: int) -> ItemBase:
+func _get_equipped_item(item_type: String, index: int) -> Resource:
 	match item_type:
 		"module":
 			return _player.equipment_component.module_slots[index] if index < 4 else null

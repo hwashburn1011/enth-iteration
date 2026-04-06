@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bn7rfx7jigyh1"
+
+[deps]
+
+files=["res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.signals.translation", "res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.complexity.translation", "res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.suggested.translation", "res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.web.translation"]
+
+source_file="res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.csv"
+dest_files=["res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.signals.translation", "res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.complexity.translation", "res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.suggested.translation", "res://_bmad/bmm/3-solutioning/bmad-create-architecture/data/domain-complexity.web.translation"]
+
+[params]
+
+compress=true
+delimiter=0

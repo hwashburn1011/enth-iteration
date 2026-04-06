@@ -1,5 +1,5 @@
 class_name PlayerDashState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Teleport dash with i-frames. Instantly moves the player in facing direction.
 
 
@@ -8,7 +8,7 @@ func _ready() -> void:
 
 
 func enter() -> void:
-	var p: Player = player as Player
+	var p: CharacterBody3D = player as CharacterBody3D
 	var from_position: Vector3 = p.global_position
 
 	# Play dash animation
@@ -59,12 +59,12 @@ func enter() -> void:
 		&"move_left", &"move_right", &"move_forward", &"move_back"
 	)
 	if current_input.length() > 0.0:
-		state_machine.transition_to(state_machine.get_node("WalkState") as State)
+		state_machine.transition_to(state_machine.get_node("WalkState") as Node)
 	else:
-		state_machine.transition_to(state_machine.get_node("IdleState") as State)
+		state_machine.transition_to(state_machine.get_node("IdleState") as Node)
 
 
-func _flash_transparent(p: Player, transparent: bool) -> void:
+func _flash_transparent(p: CharacterBody3D, transparent: bool) -> void:
 	var mesh: MeshInstance3D = p.model.get_child(0) as MeshInstance3D
 	if mesh == null:
 		return

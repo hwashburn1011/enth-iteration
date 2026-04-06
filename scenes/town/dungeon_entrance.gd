@@ -25,13 +25,13 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = true
 		_label.visible = true
 
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = false
 		_label.visible = false
 

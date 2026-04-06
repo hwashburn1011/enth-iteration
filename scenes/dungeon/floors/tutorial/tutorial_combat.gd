@@ -1,4 +1,4 @@
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Tutorial: kill a single weak Glitch Bug.
 
 
@@ -15,8 +15,8 @@ func _ready() -> void:
 		enemy.get_node("HealthComponent").current_health = 10.0
 		var spawn: Marker3D = get_node_or_null("SpawnPoints/Spawn1") as Marker3D
 		enemy.global_position = spawn.global_position if spawn else global_position + Vector3(0, 0, -3)
-		if enemy is EnemyBase:
-			(enemy as EnemyBase).spawn_position = enemy.global_position
+		if enemy.is_in_group(&"enemies"):
+			(enemy as CharacterBody3D).spawn_position = enemy.global_position
 		enemy.reparent(get_tree().current_scene)
 
 

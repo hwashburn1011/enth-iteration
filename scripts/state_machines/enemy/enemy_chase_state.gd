@@ -1,5 +1,5 @@
 class_name EnemyChaseState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Enemy chases the player until within attack range or leash expires.
 
 var _leash_timer: float = 0.0
@@ -7,18 +7,18 @@ var _leash_timer: float = 0.0
 
 func enter() -> void:
 	_leash_timer = 0.0
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	if enemy and enemy.animation_player.has_animation(&"walk"):
 		enemy.animation_player.play(&"walk")
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 
 	if enemy.target_player == null:
 		_leash_timer += delta
 		if _leash_timer >= enemy.leash_time:
-			state_machine.transition_to(state_machine.get_node("EnemyPatrolState") as State)
+			state_machine.transition_to(state_machine.get_node("EnemyPatrolState") as Node)
 			return
 	else:
 		_leash_timer = 0.0
@@ -27,7 +27,7 @@ func physics_update(delta: float) -> void:
 		# Check attack range
 		var dist: float = enemy.global_position.distance_to(enemy.target_player.global_position)
 		if dist <= enemy.attack_range:
-			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as State)
+			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as Node)
 			return
 
 	if enemy.navigation_agent.is_navigation_finished():

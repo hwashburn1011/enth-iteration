@@ -1,5 +1,5 @@
 class_name ChipItem
-extends ItemBase
+extends "res://scripts/items/item_base.gd"
 ## Passive stat-boosting chip — slotted for permanent bonuses.
 
 @export var chip_slot_type: String = "passive"  # "offense", "defense", "utility", "passive"

@@ -4,7 +4,7 @@ extends Area3D
 
 signal opened
 
-@export var loot_table: LootTable
+@export var loot_table: Resource
 @export var drop_count_min: int = 1
 @export var drop_count_max: int = 3
 
@@ -29,14 +29,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player and not is_opened:
+	if body.is_in_group(&"player") and not is_opened:
 		_player_in_range = true
 		_tooltip.text = "Press E to open"
 		_tooltip.visible = true
 
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = false
 		_tooltip.visible = false
 
@@ -52,10 +52,10 @@ func _open() -> void:
 	# Spawn loot
 	var drop_count: int = randi_range(drop_count_min, drop_count_max)
 	if loot_table:
-		for entry: LootTableEntry in loot_table.entries:
+		for entry: Resource in loot_table.entries:
 			if randf() > entry.drop_chance:
 				continue
-			var item: ItemBase = ItemGenerator.generate_item(entry.item_base)
+			var item: Resource = load("res://scripts/items/item_generator.gd").generate_item(entry.item_base)
 			_spawn_item(item)
 			drop_count -= 1
 			if drop_count <= 0:
@@ -63,7 +63,7 @@ func _open() -> void:
 
 	# If loot table didn't produce enough, spawn prompt drops
 	for i: int in maxi(0, drop_count):
-		var prompt: PromptItem = PromptItem.new()
+		var prompt: Resource = load("res://scripts/items/prompt_item.gd").new()
 		prompt.item_name = "Health Prompt" if randf() < 0.5 else "Compute Prompt"
 		prompt.item_id = "prompt_health_small" if prompt.item_name == "Health Prompt" else "prompt_compute_small"
 		prompt.prompt_type = "health" if prompt.item_name == "Health Prompt" else "compute"
@@ -74,11 +74,11 @@ func _open() -> void:
 	opened.emit()
 
 
-func _spawn_item(item: ItemBase) -> void:
+func _spawn_item(item: Resource) -> void:
 	var dropped_scene: PackedScene = load("res://scenes/items/DroppedItem.tscn") as PackedScene
 	if dropped_scene == null:
 		return
-	var dropped: DroppedItem = dropped_scene.instantiate() as DroppedItem
+	var dropped: Node = dropped_scene.instantiate() as Node
 	dropped.item = item
 	var angle: float = randf() * TAU
 	var dist: float = randf_range(0.5, 1.5)

@@ -48,13 +48,13 @@ func _process(delta: float) -> void:
 	if _damage_timer >= 1.0:
 		_damage_timer = 0.0
 		for area: Area3D in get_overlapping_areas():
-			if not area is HurtboxComponent:
+			if not area.has_method(&"hit_received"):
 				continue
-			var hurtbox: HurtboxComponent = area as HurtboxComponent
+			var hurtbox: Node = area as Node
 			if hurtbox.owner_entity == source_node:
 				continue
 			if &"is_invulnerable" in hurtbox.owner_entity and hurtbox.owner_entity.is_invulnerable:
 				continue
-			var health: HealthComponent = hurtbox.owner_entity.get_node_or_null("HealthComponent") as HealthComponent
+			var health: Node = hurtbox.owner_entity.get_node_or_null("HealthComponent") as Node
 			if health:
 				health.take_damage(POOL_DPS)

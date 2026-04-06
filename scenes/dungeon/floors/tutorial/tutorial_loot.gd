@@ -1,4 +1,4 @@
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Tutorial: open a container and pick up loot.
 
 

@@ -1,5 +1,5 @@
 class_name CorruptedCompiler
-extends EnemyBase
+extends "res://scenes/entities/enemies/enemy_base.gd"
 ## First boss — multi-phase encounter with escalating attack patterns.
 
 signal phase_changed(new_phase: int)
@@ -89,8 +89,8 @@ func _transition_to_phase(new_phase: int) -> void:
 			var enemy: CharacterBody3D = EnemyPool.get_enemy("rogue_process")
 			if enemy:
 				enemy.global_position = global_position + Vector3(randf_range(-4, 4), 0, randf_range(-4, 4))
-				if enemy is EnemyBase:
-					(enemy as EnemyBase).spawn_position = enemy.global_position
+				if enemy.is_in_group(&"enemies"):
+					(enemy as CharacterBody3D).spawn_position = enemy.global_position
 				enemy.reparent(get_tree().current_scene)
 
 
@@ -98,7 +98,7 @@ func _on_died() -> void:
 	EventBus.enemy_defeated.emit(&"corrupted_compiler", global_position, null)
 	# Drop guaranteed loot
 	_drop_boss_loot()
-	var death_state: State = state_machine.get_node_or_null("EnemyDeathState") as State
+	var death_state: Node = state_machine.get_node_or_null("EnemyDeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)
 
@@ -106,18 +106,18 @@ func _on_died() -> void:
 func _drop_boss_loot() -> void:
 	var scene_root: Node = get_tree().current_scene
 	# 1. Rare or Legendary item
-	var chip: ItemBase = ItemRegistry.get_base_item("chip_bandwidth_booster")
+	var chip: Resource = load("res://scripts/items/item_registry.gd").get_base_item("chip_bandwidth_booster")
 	if chip:
-		var item: ItemBase = ItemGenerator.generate_item(chip, 3 if randf() < 0.1 else 2)
+		var item: Resource = load("res://scripts/items/item_generator.gd").generate_item(chip, 3 if randf() < 0.1 else 2)
 		_spawn_drop(item, scene_root)
 	# 2. Uncommon Module
-	var module: ItemBase = ItemRegistry.get_base_item("module_packet_storm")
+	var module: Resource = load("res://scripts/items/item_registry.gd").get_base_item("module_packet_storm")
 	if module:
-		var item: ItemBase = ItemGenerator.generate_item(module, 1)
+		var item: Resource = load("res://scripts/items/item_generator.gd").generate_item(module, 1)
 		_spawn_drop(item, scene_root)
 	# 3. 5 Health Prompts
 	for i: int in 5:
-		var prompt: PromptItem = PromptItem.new()
+		var prompt: Resource = load("res://scripts/items/prompt_item.gd").new()
 		prompt.item_name = "Health Prompt"
 		prompt.item_id = "prompt_health_small"
 		prompt.prompt_type = "health"
@@ -126,11 +126,11 @@ func _drop_boss_loot() -> void:
 		_spawn_drop(prompt, scene_root)
 
 
-func _spawn_drop(item: ItemBase, parent: Node) -> void:
+func _spawn_drop(item: Resource, parent: Node) -> void:
 	var scene: PackedScene = load("res://scenes/items/DroppedItem.tscn") as PackedScene
 	if scene == null:
 		return
-	var dropped: DroppedItem = scene.instantiate() as DroppedItem
+	var dropped: Node = scene.instantiate() as Node
 	dropped.item = item
 	var offset: Vector3 = Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
 	dropped.global_position = global_position + offset

@@ -33,7 +33,7 @@ func _populate_stats() -> void:
 	var level: int = 1
 	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if players.size() > 0:
-		var player: Player = players[0] as Player
+		var player: CharacterBody3D = players[0] as CharacterBody3D
 		if player and player.level_component:
 			level = player.level_component.current_level
 	_level_label.text = "Highest Level Reached: %d" % level

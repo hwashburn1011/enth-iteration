@@ -1,5 +1,5 @@
 class_name EnemyPatrolState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Enemy wanders to a random point within patrol_radius.
 
 var _arrived: bool = false
@@ -7,7 +7,7 @@ var _arrived: bool = false
 
 func enter() -> void:
 	_arrived = false
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	if enemy and enemy.animation_player.has_animation(&"walk"):
 		enemy.animation_player.play(&"walk")
 
@@ -21,15 +21,15 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 
 	# Aggro if player detected
 	if enemy.target_player != null:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 		return
 
 	if enemy.navigation_agent.is_navigation_finished():
-		state_machine.transition_to(state_machine.get_node("EnemyIdleState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyIdleState") as Node)
 		return
 
 	var next_pos: Vector3 = enemy.navigation_agent.get_next_path_position()

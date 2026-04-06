@@ -1,5 +1,5 @@
 class_name ProtocolItem
-extends ItemBase
+extends "res://scripts/items/item_base.gd"
 ## Conditional trigger protocol — fires an effect on specific events.
 
 @export var protocol_effect: String = ""

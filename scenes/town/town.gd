@@ -21,7 +21,7 @@ func _ready() -> void:
 	# Spawn player
 	var player_scene: PackedScene = load("res://scenes/entities/player/Player.tscn") as PackedScene
 	if player_scene:
-		var player: Player = player_scene.instantiate() as Player
+		var player: CharacterBody3D = player_scene.instantiate() as CharacterBody3D
 		add_child(player)
 
 		# Determine spawn position based on entry type
@@ -73,17 +73,17 @@ func _populate_npcs() -> void:
 			add_child(npc)
 			# Trigger arrival dialogue for newly recruited NPCs
 			if GameManager.is_npc_newly_arrived(npc_id) and npc is NPCBase:
-				var npc_base: NPCBase = npc as NPCBase
-				var arrival_data: DialogueData = _get_arrival_dialogue(npc_id)
+				var npc_base: CharacterBody3D = npc as CharacterBody3D
+				var arrival_data: Resource = _get_arrival_dialogue(npc_id)
 				if arrival_data:
 					npc_base.dialogue_resource = arrival_data
 				GameManager.acknowledge_npc_arrival(npc_id)
 
 
-func _get_arrival_dialogue(npc_id: String) -> DialogueData:
+func _get_arrival_dialogue(npc_id: String) -> Resource:
 	var path: String = "res://data/dialogue/%s_arrival.tres" % npc_id
 	if ResourceLoader.exists(path):
-		return load(path) as DialogueData
+		return load(path) as Resource
 	return null
 
 
@@ -115,8 +115,8 @@ func _auto_trigger_sage_dialogue() -> void:
 	await get_tree().create_timer(2.0).timeout
 	# Find the AI Sage NPC and start conversation
 	for child: Node in get_children():
-		if child is NPCBase and (child as NPCBase).npc_id == "ai_sage":
-			(child as NPCBase)._start_conversation()
+		if child is NPCBase and (child as CharacterBody3D).npc_id == "ai_sage":
+			(child as CharacterBody3D)._start_conversation()
 			return
 
 

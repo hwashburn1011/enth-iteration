@@ -1,5 +1,5 @@
 class_name EnemyHurtState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Enemy was hit — brief stun with knockback.
 
 const STUN_DURATION: float = 0.3
@@ -10,7 +10,7 @@ var _knockback_dir: Vector3 = Vector3.ZERO
 
 
 func enter() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 
 	if enemy.has_meta(&"damage_source_position"):
@@ -26,7 +26,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	var factor: float = maxf(0.0, 1.0 - _timer / STUN_DURATION)
@@ -34,4 +34,4 @@ func physics_update(delta: float) -> void:
 	enemy.move_and_slide()
 
 	if _timer >= STUN_DURATION:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)

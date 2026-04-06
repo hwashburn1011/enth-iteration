@@ -4,7 +4,7 @@ extends Node
 
 signal floor_completed(floor_number: int)
 
-@export var floor_data: FloorData
+@export var floor_data: Resource
 
 var current_room_index: int = 0
 var current_room: Node3D = null
@@ -22,7 +22,7 @@ func _ready() -> void:
 	_create_fade_overlay()
 
 
-func load_floor(data: FloorData) -> void:
+func load_floor(data: Resource) -> void:
 	floor_data = data
 	current_room_index = 0
 	load_room(0)
@@ -55,13 +55,13 @@ func _transition_to_room(index: int) -> void:
 		room_configurator.call(current_room, index)
 
 	# Move player to entry point
-	var player: Player = _find_player()
-	if player and current_room is RoomBase:
-		player.global_position = (current_room as RoomBase).get_entry_point()
+	var player: CharacterBody3D = _find_player()
+	if player and current_(room.has_method(&"get_entry_point")):
+		player.global_position = (current_room as Node3D).get_entry_point()
 
 	# Connect exit signal
-	if current_room is RoomBase:
-		(current_room as RoomBase).player_at_exit.connect(_on_room_exit)
+	if current_(room.has_method(&"get_entry_point")):
+		(current_room as Node3D).player_at_exit.connect(_on_room_exit)
 
 	# Start combat if applicable
 	if current_room.has_method(&"start_encounter"):
@@ -83,10 +83,10 @@ func _on_room_exit() -> void:
 		EventBus.portal_reached.emit(StringName("floor_%d_complete" % floor_data.floor_number))
 
 
-func _find_player() -> Player:
+func _find_player() -> CharacterBody3D:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		return nodes[0] as Player
+		return nodes[0] as CharacterBody3D
 	return null
 
 

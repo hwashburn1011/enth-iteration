@@ -1,12 +1,13 @@
 class_name EnemyDeathState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Enemy dies — play animation, emit event, queue_free.
 
-var can_be_interrupted: bool = false
+func _ready() -> void:
+	can_be_interrupted = false
 
 
 func enter() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 
 	if enemy.animation_player.has_animation(&"death"):
 		enemy.animation_player.play(&"death")

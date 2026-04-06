@@ -4,7 +4,7 @@ extends RefCounted
 ## Called by FloorManager after room instantiation.
 
 static func configure_room(room: Node3D, room_index: int) -> void:
-	var spawner: EnemySpawner = room.get_node_or_null("EnemySpawner") as EnemySpawner
+	var spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 	if spawner == null:
 		return
 
@@ -26,7 +26,7 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 			_setup_elite_after_spawn(spawner)
 
 
-static func _setup_elite_after_spawn(spawner: EnemySpawner) -> void:
+static func _setup_elite_after_spawn(spawner: Node) -> void:
 	# We need to buff the elite after spawn_wave is called.
 	# Connect to the spawner's tree to do this after spawn.
 	# Since spawn_wave is called by FloorManager/CombatRoomBase,
@@ -37,14 +37,14 @@ static func _setup_elite_after_spawn(spawner: EnemySpawner) -> void:
 		)
 
 
-static func _buff_elite(_spawner: EnemySpawner) -> void:
+static func _buff_elite(_spawner: Node) -> void:
 	# Find rogue processes in the scene and buff the first one as elite
 	var tree: SceneTree = Engine.get_main_loop() as SceneTree
 	if tree == null:
 		return
 	for node: Node in tree.get_nodes_in_group(&"enemies"):
 		if node is RogueProcess:
-			var elite: RogueProcess = node as RogueProcess
+			var elite: CharacterBody3D = node as RogueProcess
 			elite.health_component.max_health *= 3.0
 			elite.health_component.current_health = elite.health_component.max_health
 			elite.model.scale = Vector3(1.5, 1.5, 1.5)

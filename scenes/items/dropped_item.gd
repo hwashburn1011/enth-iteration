@@ -7,12 +7,12 @@ const BOB_AMPLITUDE: float = 0.1
 const BOB_FREQUENCY: float = 2.0
 const FADE_DURATION: float = 1.0
 
-var item: ItemBase = null
+var item: Resource = null
 
 var _timer: float = 0.0
 var _base_y: float = 0.0
 var _player_in_range: bool = false
-var _nearby_player: Player = null
+var _nearby_player: CharacterBody3D = null
 
 @onready var _mesh: MeshInstance3D = %ItemMesh
 @onready var _label: Label3D = %ItemLabel
@@ -56,15 +56,15 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = true
-		_nearby_player = body as Player
+		_nearby_player = body as CharacterBody3D
 		_tooltip.text = "%s [%s]\nPress E to pick up" % [item.item_name, _rarity_name(item.rarity)]
 		_tooltip.visible = true
 
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player and body == _nearby_player:
+	if body.is_in_group(&"player") and body == _nearby_player:
 		_player_in_range = false
 		_nearby_player = null
 		_tooltip.visible = false

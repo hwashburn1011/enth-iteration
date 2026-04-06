@@ -1,5 +1,5 @@
 class_name GlitchBugAttackState
-extends EnemyAttackState
+extends "res://scripts/state_machines/enemy/enemy_attack_state.gd"
 ## Glitch Bug lunge attack with 0.3s telegraph (red flash), 0.2s hitbox window.
 
 const TELEGRAPH_DURATION: float = 0.3
@@ -18,7 +18,7 @@ func _init() -> void:
 
 
 func enter() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 	_hitbox_enabled = false
 	_telegraph_done = false
@@ -42,7 +42,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	# Telegraph phase
@@ -73,17 +73,17 @@ func physics_update(delta: float) -> void:
 
 	if _timer >= GB_ATTACK_DURATION:
 		enemy.hitbox_component.deactivate()
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 
 func exit() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false
 	_set_telegraph_flash(enemy, false)
 
 
-func _set_telegraph_flash(enemy: EnemyBase, flash: bool) -> void:
+func _set_telegraph_flash(enemy: CharacterBody3D, flash: bool) -> void:
 	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
 	if mesh == null:
 		return

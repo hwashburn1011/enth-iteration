@@ -1,5 +1,5 @@
 class_name BossAttackState
-extends EnemyAttackState
+extends "res://scripts/state_machines/enemy/enemy_attack_state.gd"
 ## Corrupted Compiler boss attack — phase-aware multi-pattern attacks.
 
 const COMPILE_ERROR_TELEGRAPH: float = 0.8
@@ -19,9 +19,9 @@ func _init() -> void:
 
 
 func enter() -> void:
-	var boss: CorruptedCompiler = player as CorruptedCompiler
+	var boss: CharacterBody3D = player as CorruptedCompiler
 	if boss.is_transitioning:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 		return
 
 	_timer = 0.0
@@ -47,7 +47,7 @@ func enter() -> void:
 		_do_compile_error(boss)
 
 
-func _do_compile_error(boss: CorruptedCompiler) -> void:
+func _do_compile_error(boss: CharacterBody3D) -> void:
 	# Telegraph
 	boss.hitbox_component.set_meta(&"base_damage", COMPILE_ERROR_DAMAGE)
 	boss.hitbox_component.set_meta(&"damage_type", &"physical")
@@ -79,12 +79,12 @@ func _do_compile_error(boss: CorruptedCompiler) -> void:
 
 	await boss.get_tree().create_timer(0.5).timeout
 	if is_instance_valid(boss) and not boss.is_transitioning:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 
-func _do_memory_overflow(boss: CorruptedCompiler) -> void:
+func _do_memory_overflow(boss: CharacterBody3D) -> void:
 	if boss.target_player == null:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 		return
 
 	var base_dir: Vector3 = (boss.target_player.global_position - boss.global_position).normalized()
@@ -93,7 +93,7 @@ func _do_memory_overflow(boss: CorruptedCompiler) -> void:
 	for i: int in OVERFLOW_PROJECTILE_COUNT:
 		var angle_offset: float = (float(i) - 1.0) * 0.3
 		var dir: Vector3 = base_dir.rotated(Vector3.UP, angle_offset)
-		var projectile: LeakProjectile = LeakProjectile.new()
+		var projectile: Node = load("res://scenes/entities/enemies/memory_leak/leak_projectile.gd").new()
 		projectile.source_node = boss
 		projectile.base_damage = 15.0
 		projectile.direction = dir
@@ -108,10 +108,10 @@ func _do_memory_overflow(boss: CorruptedCompiler) -> void:
 
 	await boss.get_tree().create_timer(1.0).timeout
 	if is_instance_valid(boss) and not boss.is_transitioning:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 
-func _do_stack_overflow(boss: CorruptedCompiler) -> void:
+func _do_stack_overflow(boss: CharacterBody3D) -> void:
 	# Arena-wide telegraph — flash warning
 	# Safe zone in a random corner
 	var corners: Array[Vector3] = [
@@ -140,12 +140,12 @@ func _do_stack_overflow(boss: CorruptedCompiler) -> void:
 	# Deal damage to player if not in safe zone
 	var nodes: Array[Node] = boss.get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		var p: Player = nodes[0] as Player
+		var p: CharacterBody3D = nodes[0] as CharacterBody3D
 		if p.global_position.distance_to(safe_corner) > 4.0:
 			p.health_component.take_damage(STACK_OVERFLOW_DAMAGE)
 			if p.has_meta(&"damage_source_position") == false:
 				p.set_meta(&"damage_source_position", boss.global_position)
-			var hurt: State = p.state_machine.get_node_or_null("HurtState") as State
+			var hurt: Node = p.state_machine.get_node_or_null("HurtState") as Node
 			if hurt and not p.health_component.is_dead:
 				p.state_machine.force_transition_to(hurt)
 
@@ -153,12 +153,12 @@ func _do_stack_overflow(boss: CorruptedCompiler) -> void:
 
 	await boss.get_tree().create_timer(0.5).timeout
 	if is_instance_valid(boss) and not boss.is_transitioning:
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 
 func physics_update(delta: float) -> void:
 	# Spawn Glitch Bugs periodically in phase 1+
-	var boss: CorruptedCompiler = player as CorruptedCompiler
+	var boss: CharacterBody3D = player as CorruptedCompiler
 	_spawn_timer += delta
 	if _spawn_timer >= 15.0:
 		_spawn_timer = 0.0
@@ -166,6 +166,6 @@ func physics_update(delta: float) -> void:
 			var enemy: CharacterBody3D = EnemyPool.get_enemy("glitch_bug")
 			if enemy:
 				enemy.global_position = boss.global_position + Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))
-				if enemy is EnemyBase:
-					(enemy as EnemyBase).spawn_position = enemy.global_position
+				if enemy.is_in_group(&"enemies"):
+					(enemy as CharacterBody3D).spawn_position = enemy.global_position
 				enemy.reparent(boss.get_tree().current_scene)

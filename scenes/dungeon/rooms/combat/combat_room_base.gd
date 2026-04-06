@@ -1,9 +1,9 @@
 class_name CombatRoomBase
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Combat room that blocks exit until enemies are cleared.
 
-@onready var exit_barrier: ExitBarrier = get_node_or_null("ExitBarrier") as ExitBarrier
-@onready var enemy_spawner: EnemySpawner = get_node_or_null("EnemySpawner") as EnemySpawner
+@onready var exit_barrier: Node = get_node_or_null("ExitBarrier") as Node
+@onready var enemy_spawner: Node = get_node_or_null("EnemySpawner") as Node
 
 
 func _ready() -> void:

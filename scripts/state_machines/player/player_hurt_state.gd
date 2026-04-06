@@ -1,5 +1,5 @@
 class_name PlayerHurtState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Player was hit — brief stun with knockback, then recover or die.
 
 const STUN_DURATION: float = 0.3
@@ -7,11 +7,12 @@ const KNOCKBACK_SPEED: float = 8.0
 
 var _timer: float = 0.0
 var _knockback_dir: Vector3 = Vector3.ZERO
-var can_be_interrupted: bool = false  # only DeathState can interrupt
+func _ready() -> void:
+	can_be_interrupted = false
 
 
 func enter() -> void:
-	var p: Player = player as Player
+	var p: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 
 	# Determine knockback direction from damage source metadata
@@ -28,7 +29,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var p: Player = player as Player
+	var p: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	# Apply decaying knockback
@@ -39,12 +40,12 @@ func physics_update(delta: float) -> void:
 	if _timer >= STUN_DURATION:
 		# Check if player died during stun
 		if p.health_component.is_dead:
-			state_machine.transition_to(state_machine.get_node("DeathState") as State)
+			state_machine.transition_to(state_machine.get_node("DeathState") as Node)
 			return
 		var input_vector: Vector2 = Input.get_vector(
 			&"move_left", &"move_right", &"move_forward", &"move_back"
 		)
 		if input_vector.length() > 0.0:
-			state_machine.transition_to(state_machine.get_node("WalkState") as State)
+			state_machine.transition_to(state_machine.get_node("WalkState") as Node)
 		else:
-			state_machine.transition_to(state_machine.get_node("IdleState") as State)
+			state_machine.transition_to(state_machine.get_node("IdleState") as Node)

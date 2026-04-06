@@ -22,7 +22,7 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if _tracking_movement:
-		var player: Player = _find_player()
+		var player: Node = _find_player()
 		if player:
 			var dist: float = player.global_position.distance_to(_last_player_pos)
 			if dist > 0.01:
@@ -82,7 +82,7 @@ func show_hint(text: String, auto_dismiss_time: float = 0.0) -> void:
 func start_movement_tracking() -> void:
 	if is_completed("movement"):
 		return
-	var player: Player = _find_player()
+	var player: Node = _find_player()
 	if player:
 		_last_player_pos = player.global_position
 	_movement_distance = 0.0
@@ -140,8 +140,8 @@ func _dismiss_hint() -> void:
 		_active_hint = null
 
 
-func _find_player() -> Player:
+func _find_player() -> Node:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		return nodes[0] as Player
+		return nodes[0]
 	return null

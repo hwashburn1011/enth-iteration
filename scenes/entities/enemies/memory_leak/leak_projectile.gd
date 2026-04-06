@@ -30,24 +30,24 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_area_entered(area: Area3D) -> void:
-	if not area is HurtboxComponent:
+	if not area.has_method(&"hit_received"):
 		return
-	var hurtbox: HurtboxComponent = area as HurtboxComponent
+	var hurtbox: Node = area as Node
 	# Skip self-damage
 	if hurtbox.owner_entity == source_node:
 		return
 	if &"is_invulnerable" in hurtbox.owner_entity and hurtbox.owner_entity.is_invulnerable:
 		return
 
-	var info: DamageInfo = DamageInfo.new()
+	var info: Resource = load("res://scripts/resources/damage_info.gd").new()
 	info.source = source_node
 	info.target = hurtbox.owner_entity
 	info.base_damage = base_damage
 	info.damage_type = &"energy"
-	info = DamageCalculator.calculate(info)
+	info = load("res://scripts/combat/damage_calculator.gd").calculate(info)
 	hurtbox.hit_received.emit(info)
 
-	var health: HealthComponent = hurtbox.owner_entity.get_node_or_null("HealthComponent") as HealthComponent
+	var health: Node = hurtbox.owner_entity.get_node_or_null("HealthComponent") as Node
 	if health:
 		health.take_damage(info.final_damage)
 
@@ -56,7 +56,7 @@ func _on_area_entered(area: Area3D) -> void:
 
 
 func _spawn_pool() -> void:
-	var pool: LeakPool = LeakPool.new()
+	var pool: Node = load("res://scenes/entities/enemies/memory_leak/leak_pool.gd").new()
 	pool.source_node = source_node
 	pool.global_position = global_position
 	get_tree().current_scene.add_child(pool)

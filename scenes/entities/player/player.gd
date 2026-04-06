@@ -9,16 +9,16 @@ extends CharacterBody3D
 @export var dash_cooldown: float = 1.0
 @export var iframe_duration: float = 0.3
 
-@onready var state_machine: StateMachine = %StateMachine
-@onready var health_component: HealthComponent = %HealthComponent
-@onready var compute_component: ComputeComponent = %ComputeComponent
-@onready var stats_component: StatsComponent = %StatsComponent
-@onready var hitbox_component: HitboxComponent = %HitboxComponent
-@onready var hurtbox_component: HurtboxComponent = %HurtboxComponent
-@onready var inventory_component: InventoryComponent = %InventoryComponent
-@onready var equipment_component: EquipmentComponent = %EquipmentComponent
-@onready var ability_manager: AbilityManager = %AbilityManager
-@onready var level_component: LevelComponent = %LevelComponent
+@onready var state_machine: Node = %StateMachine
+@onready var health_component: Node = %HealthComponent
+@onready var compute_component: Node = %ComputeComponent
+@onready var stats_component: Node = %StatsComponent
+@onready var hitbox_component: Node = %HitboxComponent
+@onready var hurtbox_component: Node = %HurtboxComponent
+@onready var inventory_component: Node = %InventoryComponent
+@onready var equipment_component: Node = %EquipmentComponent
+@onready var ability_manager: Node = %AbilityManager
+@onready var level_component: Node = %LevelComponent
 @onready var interaction_area: Area3D = %InteractionArea
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var model: Node3D = %Model
@@ -44,7 +44,7 @@ func _ready() -> void:
 	level_component.leveled_up.connect(_on_leveled_up)
 
 
-func receive_hit(damage_info: DamageInfo) -> void:
+func receive_hit(damage_info: Resource) -> void:
 	if is_invulnerable:
 		return
 	health_component.take_damage(damage_info.base_damage)
@@ -53,25 +53,25 @@ func receive_hit(damage_info: DamageInfo) -> void:
 	# Store source position for knockback direction
 	if damage_info.source is Node3D:
 		set_meta(&"damage_source_position", (damage_info.source as Node3D).global_position)
-	var hurt_state: State = state_machine.get_node_or_null("HurtState") as State
+	var hurt_state: Node = state_machine.get_node_or_null("HurtState") as Node
 	if hurt_state:
 		state_machine.force_transition_to(hurt_state)
 
 
-func _on_hit_received(damage_info: DamageInfo) -> void:
+func _on_hit_received(damage_info: Resource) -> void:
 	# HurtboxComponent already applied damage via HealthComponent and pipeline.
 	# We just need to trigger the hurt state for knockback/stun.
 	if is_invulnerable or health_component.is_dead:
 		return
 	if damage_info.source is Node3D:
 		set_meta(&"damage_source_position", (damage_info.source as Node3D).global_position)
-	var hurt_state: State = state_machine.get_node_or_null("HurtState") as State
+	var hurt_state: Node = state_machine.get_node_or_null("HurtState") as Node
 	if hurt_state:
 		state_machine.force_transition_to(hurt_state)
 
 
 func _on_died() -> void:
-	var death_state: State = state_machine.get_node_or_null("DeathState") as State
+	var death_state: Node = state_machine.get_node_or_null("DeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)
 
@@ -96,10 +96,10 @@ func _try_use_prompt() -> void:
 	if _prompt_cooldown > 0.0:
 		return
 	# Block during dash or death
-	var current: State = state_machine.current_state
-	if current is PlayerDashState or current is PlayerDeathState:
+	var current: Node = state_machine.current_state
+	if current.has_method(&"_flash_transparent") or (current.has_method(&"enter") and not current.can_be_interrupted):
 		return
-	var prompt: PromptItem = inventory_component.consume_active_prompt()
+	var prompt: Resource = inventory_component.consume_active_prompt()
 	if prompt == null:
 		return
 	match prompt.prompt_type:
@@ -108,9 +108,9 @@ func _try_use_prompt() -> void:
 		"compute":
 			compute_component.restore(prompt.restore_amount)
 		"buff":
-			var sem: StatusEffectManager = get_node_or_null("StatusEffectManager") as StatusEffectManager
+			var sem: Node = get_node_or_null("StatusEffectManager") as Node
 			if sem:
-				var effect: StatusEffect = StatusEffect.new()
+				var effect: Resource = load("res://scripts/combat/status_effect.gd").new()
 				effect.effect_name = "Overclocked"
 				effect.effect_type = "overclocked"
 				effect.duration = prompt.buff_duration
@@ -121,31 +121,31 @@ func _try_use_prompt() -> void:
 
 
 func _toggle_pause() -> void:
-	if PauseMenu.is_open():
+	if load("res://scripts/ui/pause_menu.gd").is_open():
 		return  # Let the pause menu handle its own Esc
 	if GameManager.current_state != GameManager.GameState.PLAYING:
 		return
-	var menu: PauseMenu = PauseMenu.new()
+	var menu: PauseMenu = load("res://scripts/ui/pause_menu.gd").new()
 	get_tree().root.add_child(menu)
 
 
 func _toggle_quest_log() -> void:
 	if GameManager.current_state == GameManager.GameState.INVENTORY:
 		return
-	var log: QuestLog = QuestLog.new()
+	var log: QuestLog = load("res://scripts/ui/quest_log.gd").new()
 	get_tree().root.add_child(log)
 
 
 func _toggle_inventory() -> void:
 	if GameManager.current_state == GameManager.GameState.INVENTORY:
 		return  # Already open, let the screen handle closing
-	var screen: InventoryScreen = InventoryScreen.new()
+	var screen: InventoryScreen = load("res://scripts/ui/inventory_screen.gd").new()
 	get_tree().root.add_child(screen)
 	screen.open(self)
 
 
 func _on_leveled_up(new_level: int) -> void:
-	var panel: StatAllocationPanel = StatAllocationPanel.new()
+	var panel: StatAllocationPanel = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)
 

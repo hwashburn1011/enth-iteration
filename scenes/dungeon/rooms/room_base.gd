@@ -21,13 +21,13 @@ func _ready() -> void:
 		exit_trigger.body_entered.connect(_on_exit_trigger_body_entered)
 
 	# Connect enemy spawner if present (combat rooms)
-	var spawner: EnemySpawner = get_node_or_null("EnemySpawner") as EnemySpawner
+	var spawner: Node = get_node_or_null("EnemySpawner") as Node
 	if spawner:
 		spawner.all_enemies_defeated.connect(_on_all_enemies_defeated)
 
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
-	if body is Player and is_cleared:
+	if body.is_in_group(&"player") and is_cleared:
 		player_at_exit.emit()
 
 

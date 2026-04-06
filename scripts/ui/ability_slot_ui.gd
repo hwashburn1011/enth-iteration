@@ -24,7 +24,7 @@ func _process(delta: float) -> void:
 	_cooldown_overlay.visible = true
 
 
-func set_module(module: ModuleItem, key_number: int) -> void:
+func set_module(module: Resource, key_number: int) -> void:
 	_key_label.text = str(key_number)
 	_name_label.text = module.ability_name
 	_icon_bg.color = Color(0.3, 0.4, 0.6, 1.0)

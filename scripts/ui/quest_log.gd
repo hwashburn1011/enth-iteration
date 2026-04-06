@@ -82,7 +82,7 @@ func _populate_quests() -> void:
 	for child: Node in _quest_list.get_children():
 		child.queue_free()
 
-	var quests: Array[QuestData] = QuestManager.get_quests_by_category(_active_category)
+	var quests: Array[Resource] = QuestManager.get_quests_by_category(_active_category)
 	if quests.is_empty():
 		var empty_lbl: Label = Label.new()
 		empty_lbl.text = "No quests in this category."
@@ -91,8 +91,8 @@ func _populate_quests() -> void:
 		return
 
 	# Active first, completed at bottom
-	var active: Array[QuestData] = []
-	var completed: Array[QuestData] = []
+	var active: Array[Resource] = []
+	var completed: Array[Resource] = []
 	for q: QuestData in quests:
 		if q.is_completed:
 			completed.append(q)

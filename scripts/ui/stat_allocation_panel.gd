@@ -2,7 +2,7 @@ class_name StatAllocationPanel
 extends CanvasLayer
 ## Panel for allocating stat points on level-up. Pauses game while open.
 
-var _player: Player = null
+var _player: CharacterBody3D = null
 var _panel: PanelContainer = null
 var _points_label: Label = null
 var _stat_labels: Dictionary = {}
@@ -10,7 +10,7 @@ var _stat_labels: Dictionary = {}
 const STATS: Array[String] = ["processing", "bandwidth", "memory", "integrity"]
 
 
-func show_panel(player: Player) -> void:
+func show_panel(player: CharacterBody3D) -> void:
 	_player = player
 	get_tree().paused = true
 	GameManager.set_state(GameManager.GameState.INVENTORY)
@@ -77,7 +77,7 @@ func _build_ui() -> void:
 
 
 func _on_allocate(stat_name: String) -> void:
-	var level_comp: LevelComponent = _player.get_node_or_null("LevelComponent") as LevelComponent
+	var level_comp: Node = _player.get_node_or_null("LevelComponent") as Node
 	if level_comp == null or level_comp.unspent_stat_points <= 0:
 		return
 	_player.stats_component.allocate_point(stat_name)
@@ -93,6 +93,6 @@ func _on_confirm() -> void:
 
 
 func _update_points_label() -> void:
-	var level_comp: LevelComponent = _player.get_node_or_null("LevelComponent") as LevelComponent
+	var level_comp: Node = _player.get_node_or_null("LevelComponent") as Node
 	var pts: int = level_comp.unspent_stat_points if level_comp else 0
 	_points_label.text = "Unspent Points: %d" % pts

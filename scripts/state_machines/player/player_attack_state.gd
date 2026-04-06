@@ -1,5 +1,5 @@
 class_name PlayerAttackState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Handles both Data Pulse (basic) and Energy Burst (charged) attacks.
 
 const DATA_PULSE_ACTIVE_START: float = 0.1
@@ -20,7 +20,7 @@ var _duration: float = 0.0
 
 
 func enter() -> void:
-	var p: Player = player as Player
+	var p: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 	_hitbox_enabled = false
 	_has_hit.clear()
@@ -68,7 +68,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var p: Player = player as Player
+	var p: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	if _timer >= _active_start and _timer < _active_end:
@@ -86,20 +86,20 @@ func physics_update(delta: float) -> void:
 			&"move_left", &"move_right", &"move_forward", &"move_back"
 		)
 		if input_vector.length() > 0.0:
-			state_machine.transition_to(state_machine.get_node("WalkState") as State)
+			state_machine.transition_to(state_machine.get_node("WalkState") as Node)
 		else:
-			state_machine.transition_to(state_machine.get_node("IdleState") as State)
+			state_machine.transition_to(state_machine.get_node("IdleState") as Node)
 
 
 func exit() -> void:
-	var p: Player = player as Player
+	var p: CharacterBody3D = player as CharacterBody3D
 	_set_hitbox_active(p, false)
 	_hitbox_enabled = false
 	# Restore default hitbox size
 	_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
 
 
-func _check_hits(p: Player) -> void:
+func _check_hits(p: CharacterBody3D) -> void:
 	var hitbox: Area3D = p.hitbox_component
 	for area: Area3D in hitbox.get_overlapping_areas():
 		if area == p.hurtbox_component:
@@ -108,7 +108,7 @@ func _check_hits(p: Player) -> void:
 		if area_id in _has_hit:
 			continue
 		_has_hit[area_id] = true
-		var info: DamageInfo = DamageInfo.new()
+		var info: Resource = load("res://scripts/resources/damage_info.gd").new()
 		info.source = p
 		if _is_energy_burst:
 			info.base_damage = _burst_damage
@@ -120,7 +120,7 @@ func _check_hits(p: Player) -> void:
 			area.receive_damage(info)
 
 
-func _set_hitbox_active(p: Player, active: bool) -> void:
+func _set_hitbox_active(p: CharacterBody3D, active: bool) -> void:
 	var hitbox: Area3D = p.hitbox_component
 	hitbox.monitoring = active
 	hitbox.monitorable = active
@@ -129,7 +129,7 @@ func _set_hitbox_active(p: Player, active: bool) -> void:
 			child.disabled = not active
 
 
-func _set_hitbox_size(p: Player, size: Vector3) -> void:
+func _set_hitbox_size(p: CharacterBody3D, size: Vector3) -> void:
 	for child: Node in p.hitbox_component.get_children():
 		if child is CollisionShape3D:
 			var box: BoxShape3D = child.shape as BoxShape3D
@@ -137,7 +137,7 @@ func _set_hitbox_size(p: Player, size: Vector3) -> void:
 				box.size = size
 
 
-func _get_mouse_world_direction(p: Player) -> Vector3:
+func _get_mouse_world_direction(p: CharacterBody3D) -> Vector3:
 	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	if camera == null:
 		return p.facing_direction

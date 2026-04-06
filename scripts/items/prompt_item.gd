@@ -1,5 +1,5 @@
 class_name PromptItem
-extends ItemBase
+extends "res://scripts/items/item_base.gd"
 ## Consumable item — heals, restores compute, or applies a buff.
 
 @export var prompt_type: String = "health"  # "health", "compute", "buff"

@@ -7,11 +7,11 @@ const CRIT_MULTIPLIER: float = 2.0
 const MIN_DAMAGE: float = 1.0
 
 
-static func calculate(info: DamageInfo) -> DamageInfo:
+static func calculate(info: Resource) -> Resource:
 	var damage: float = info.base_damage
 
 	# 1. Apply stat multiplier from source Processing
-	var source_stats: StatsComponent = _get_stats(info.source)
+	var source_stats: Node = _get_stats(info.source)
 	if source_stats:
 		info.stat_multiplier = source_stats.get_stat("processing") * 0.1
 		damage *= (1.0 + info.stat_multiplier)
@@ -20,7 +20,7 @@ static func calculate(info: DamageInfo) -> DamageInfo:
 	damage *= (1.0 + info.equipment_modifier)
 
 	# 3. Apply defense from target Integrity
-	var target_stats: StatsComponent = _get_stats(info.target)
+	var target_stats: Node = _get_stats(info.target)
 	if target_stats:
 		var defense: float = target_stats.get_stat("integrity") * 0.5
 		damage = maxf(MIN_DAMAGE, damage - defense)
@@ -45,13 +45,13 @@ static func calculate(info: DamageInfo) -> DamageInfo:
 	return info
 
 
-static func _get_stats(node: Node) -> StatsComponent:
+static func _get_stats(node: Node) -> Node:
 	if node == null:
 		return null
-	return node.get_node_or_null("StatsComponent") as StatsComponent
+	return node.get_node_or_null("StatsComponent") as Node
 
 
-static func _apply_status_modifiers(damage: float, info: DamageInfo) -> float:
+static func _apply_status_modifiers(damage: float, info: Resource) -> float:
 	var result: float = damage
 	# Check if target has Fragmented status (takes 30% more damage)
 	if info.target and info.target.has_meta(&"status_fragmented"):

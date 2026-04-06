@@ -2,7 +2,7 @@ class_name State
 extends Node
 ## Base class for all states. Override virtual methods to define behavior.
 
-var state_machine: StateMachine
+var state_machine: Node  # StateMachine — untyped to avoid circular dependency
 var player: CharacterBody3D
 ## If false, this state cannot be interrupted by lower-priority transitions.
 var can_be_interrupted: bool = true

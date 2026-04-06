@@ -7,7 +7,7 @@ signal all_enemies_defeated
 @export var enemy_types: Array[String] = []
 @export var spawn_count: int = 3
 @export var spawn_points: Array[Marker3D] = []
-@export var waves: Array[SpawnWave] = []
+@export var waves: Array[Resource] = []
 
 var _alive_count: int = 0
 var _current_wave: int = 0
@@ -39,8 +39,8 @@ func _spawn_from_config(types: Array[String], count: int) -> void:
 		else:
 			enemy.global_position = global_position + Vector3(randf_range(-3.0, 3.0), 0.0, randf_range(-3.0, 3.0))
 
-		if enemy is EnemyBase:
-			(enemy as EnemyBase).spawn_position = enemy.global_position
+		if enemy.is_in_group(&"enemies"):
+			(enemy as CharacterBody3D).spawn_position = enemy.global_position
 
 		if enemy.get_parent() != get_tree().current_scene:
 			enemy.reparent(get_tree().current_scene)
@@ -51,7 +51,7 @@ func _spawn_from_config(types: Array[String], count: int) -> void:
 		EventBus.enemy_defeated.connect(_on_enemy_defeated)
 
 
-func _spawn_wave_data(wave: SpawnWave) -> void:
+func _spawn_wave_data(wave: Resource) -> void:
 	var types: Array[String] = []
 	for t: String in wave.enemy_types:
 		types.append(t)

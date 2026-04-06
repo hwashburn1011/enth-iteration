@@ -25,7 +25,7 @@ func _process(delta: float) -> void:
 
 	for i: int in active_effects.size():
 		var entry: Dictionary = active_effects[i]
-		var effect: StatusEffect = entry["effect"] as StatusEffect
+		var effect: Resource = entry["effect"] as Resource
 		entry["remaining_duration"] -= delta
 		entry["tick_timer"] -= delta
 
@@ -39,7 +39,7 @@ func _process(delta: float) -> void:
 	# Remove expired (reverse order)
 	for i: int in range(to_remove.size() - 1, -1, -1):
 		var entry: Dictionary = active_effects[to_remove[i]]
-		var effect: StatusEffect = entry["effect"] as StatusEffect
+		var effect: Resource = entry["effect"] as Resource
 		_on_effect_expire(effect, owner_entity)
 		active_effects.remove_at(to_remove[i])
 		effect_removed.emit(effect.effect_name)
@@ -47,11 +47,11 @@ func _process(delta: float) -> void:
 	_update_label()
 
 
-func apply_effect(effect: StatusEffect) -> void:
+func apply_effect(effect: Resource) -> void:
 	var owner_entity: Node = get_parent()
 	# Refresh if same effect already active
 	for entry: Dictionary in active_effects:
-		var existing: StatusEffect = entry["effect"] as StatusEffect
+		var existing: Resource = entry["effect"] as Resource
 		if existing.effect_name == effect.effect_name:
 			entry["remaining_duration"] = effect.duration
 			return
@@ -71,7 +71,7 @@ func remove_effect(effect_name: String) -> void:
 	var owner_entity: Node = get_parent()
 	for i: int in active_effects.size():
 		var entry: Dictionary = active_effects[i]
-		var effect: StatusEffect = entry["effect"] as StatusEffect
+		var effect: Resource = entry["effect"] as Resource
 		if effect.effect_name == effect_name:
 			_on_effect_expire(effect, owner_entity)
 			active_effects.remove_at(i)
@@ -82,29 +82,29 @@ func remove_effect(effect_name: String) -> void:
 
 func has_effect(effect_name: String) -> bool:
 	for entry: Dictionary in active_effects:
-		var effect: StatusEffect = entry["effect"] as StatusEffect
+		var effect: Resource = entry["effect"] as Resource
 		if effect.effect_name == effect_name:
 			return true
 	return false
 
 
-func _apply_tick(effect: StatusEffect, owner_entity: Node) -> void:
+func _apply_tick(effect: Resource, owner_entity: Node) -> void:
 	match effect.effect_type:
 		"corrupted":
 			# DOT — deal potency damage per tick
-			var health: HealthComponent = owner_entity.get_node_or_null("HealthComponent") as HealthComponent
+			var health: Node = owner_entity.get_node_or_null("HealthComponent") as Node
 			if health:
 				health.take_damage(effect.potency)
 		"overclocked":
 			# Self-damage per tick
-			var health: HealthComponent = owner_entity.get_node_or_null("HealthComponent") as HealthComponent
+			var health: Node = owner_entity.get_node_or_null("HealthComponent") as Node
 			if health:
 				health.take_damage(effect.potency * 0.5)
 		_:
 			pass  # fragmented, throttled, segfault are passive flags
 
 
-func _on_effect_start(effect: StatusEffect, owner_entity: Node) -> void:
+func _on_effect_start(effect: Resource, owner_entity: Node) -> void:
 	match effect.effect_type:
 		"fragmented":
 			owner_entity.set_meta(&"status_fragmented", effect.potency)
@@ -116,7 +116,7 @@ func _on_effect_start(effect: StatusEffect, owner_entity: Node) -> void:
 			owner_entity.set_meta(&"status_segfault", true)
 
 
-func _on_effect_expire(effect: StatusEffect, owner_entity: Node) -> void:
+func _on_effect_expire(effect: Resource, owner_entity: Node) -> void:
 	match effect.effect_type:
 		"fragmented":
 			owner_entity.remove_meta(&"status_fragmented")
@@ -136,7 +136,7 @@ func _update_label() -> void:
 		return
 	var names: PackedStringArray = PackedStringArray()
 	for entry: Dictionary in active_effects:
-		var effect: StatusEffect = entry["effect"] as StatusEffect
+		var effect: Resource = entry["effect"] as Resource
 		names.append(effect.effect_name)
 	_label.text = " | ".join(names)
 	_label.visible = true

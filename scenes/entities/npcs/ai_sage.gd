@@ -33,7 +33,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = true
 		if not _has_talked:
 			_prompt_label.text = "Press E to talk"
@@ -41,7 +41,7 @@ func _on_body_entered(body: Node3D) -> void:
 
 
 func _on_body_exited(body: Node3D) -> void:
-	if body is Player:
+	if body.is_in_group(&"player"):
 		_player_in_range = false
 		_prompt_label.visible = false
 		_label.visible = false

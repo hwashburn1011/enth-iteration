@@ -1,5 +1,5 @@
 class_name RogueProcessChaseState
-extends EnemyChaseState
+extends "res://scripts/state_machines/enemy/enemy_chase_state.gd"
 ## Rogue Process chases with erratic zigzag movement.
 
 var _zigzag_timer: float = 0.0
@@ -11,13 +11,13 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_zigzag_timer += delta
 
 	if enemy.target_player == null:
 		_leash_timer += delta
 		if _leash_timer >= enemy.leash_time:
-			state_machine.transition_to(state_machine.get_node("EnemyPatrolState") as State)
+			state_machine.transition_to(state_machine.get_node("EnemyPatrolState") as Node)
 			return
 	else:
 		_leash_timer = 0.0
@@ -25,7 +25,7 @@ func physics_update(delta: float) -> void:
 
 		var dist: float = enemy.global_position.distance_to(enemy.target_player.global_position)
 		if dist <= enemy.attack_range:
-			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as State)
+			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as Node)
 			return
 
 	if enemy.navigation_agent.is_navigation_finished():

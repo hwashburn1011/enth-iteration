@@ -2,15 +2,15 @@ class_name LootDropper
 extends Node
 ## Reads from a loot table and spawns DroppedItem scenes in the world.
 
-@export var loot_table: LootTable
+@export var loot_table: Resource
 
 const PROMPT_DROP_CHANCE: float = 0.30
 const SCATTER_MIN: float = 1.0
 const SCATTER_MAX: float = 2.0
 
 ## Preloaded prompt base items for universal prompt sub-table
-static var _health_prompt: PromptItem = null
-static var _compute_prompt: PromptItem = null
+static var _health_prompt: Resource = null
+static var _compute_prompt: Resource = null
 
 
 func drop_loot(global_pos: Vector3) -> void:
@@ -20,21 +20,21 @@ func drop_loot(global_pos: Vector3) -> void:
 
 	# Drop from loot table entries
 	if loot_table:
-		for entry: LootTableEntry in loot_table.entries:
+		for entry: Resource in loot_table.entries:
 			if randf() > entry.drop_chance:
 				continue
 			var quantity: int = randi_range(entry.min_quantity, entry.max_quantity)
 			for i: int in quantity:
-				var item: ItemBase = ItemGenerator.generate_item(entry.item_base)
+				var item: Resource = load("res://scripts/items/item_generator.gd").generate_item(entry.item_base)
 				_spawn_dropped_item(item, global_pos, scene_root)
 
 	# Universal prompt sub-table (30% chance)
 	if randf() < PROMPT_DROP_CHANCE:
-		var prompt: PromptItem = _create_random_prompt()
+		var prompt: Resource = _create_random_prompt()
 		_spawn_dropped_item(prompt, global_pos, scene_root)
 
 
-func _spawn_dropped_item(item: ItemBase, pos: Vector3, parent: Node) -> void:
+func _spawn_dropped_item(item: Resource, pos: Vector3, parent: Node) -> void:
 	# Scatter offset
 	var angle: float = randf() * TAU
 	var dist: float = randf_range(SCATTER_MIN, SCATTER_MAX)
@@ -43,7 +43,7 @@ func _spawn_dropped_item(item: ItemBase, pos: Vector3, parent: Node) -> void:
 	# Use DroppedItem scene if available, else fallback to manual creation
 	var dropped_scene: PackedScene = load("res://scenes/items/DroppedItem.tscn") as PackedScene
 	if dropped_scene:
-		var dropped: DroppedItem = dropped_scene.instantiate() as DroppedItem
+		var dropped: Node = dropped_scene.instantiate() as Node
 		dropped.item = item
 		dropped.global_position = pos + offset
 		parent.add_child(dropped)
@@ -53,7 +53,7 @@ func _spawn_dropped_item(item: ItemBase, pos: Vector3, parent: Node) -> void:
 		parent.add_child(dropped)
 
 
-func _create_dropped_item_node(item: ItemBase) -> Node3D:
+func _create_dropped_item_node(item: Resource) -> Node3D:
 	# Create a simple Area3D placeholder (DroppedItem scene will be used in story 4.7)
 	var node: Area3D = Area3D.new()
 	node.name = "DroppedItem"
@@ -97,8 +97,8 @@ func _rarity_color(rarity: int) -> Color:
 		_: return Color.WHITE
 
 
-func _create_random_prompt() -> PromptItem:
-	var prompt: PromptItem = PromptItem.new()
+func _create_random_prompt() -> Resource:
+	var prompt: Resource = load("res://scripts/items/prompt_item.gd").new()
 	if randf() < 0.5:
 		prompt.item_name = "Health Prompt"
 		prompt.item_id = "prompt_health_small"

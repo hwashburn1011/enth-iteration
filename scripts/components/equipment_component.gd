@@ -4,27 +4,27 @@ extends Node
 
 signal equipment_changed
 
-var module_slots: Array[ModuleItem] = [null, null, null, null]
-var core_slot: CoreItem = null
-var chip_slots: Array[ChipItem] = [null, null, null, null]
-var protocol_slots: Array[ProtocolItem] = [null, null, null]
+var module_slots: Array[Resource] = [null, null, null, null]
+var core_slot: Resource = null
+var chip_slots: Array[Resource] = [null, null, null, null]
+var protocol_slots: Array[Resource] = [null, null, null]
 
-var _stats_component: StatsComponent = null
+var _stats_component: Node = null
 var _ability_manager: Node = null
 
 
 func _ready() -> void:
-	_stats_component = get_parent().get_node_or_null("StatsComponent") as StatsComponent
+	_stats_component = get_parent().get_node_or_null("StatsComponent") as Node
 	_ability_manager = get_parent().get_node_or_null("AbilityManager")
 	EventBus.item_degradation_triggered.connect(_on_degradation_triggered)
 
 
-func equip(item: ItemBase, slot_index: int = -1) -> ItemBase:
-	var previous: ItemBase = null
+func equip(item: Resource, slot_index: int = -1) -> Resource:
+	var previous: Resource = null
 
 	match item.item_type:
 		"module":
-			var module: ModuleItem = item as ModuleItem
+			var module: Resource = item as Resource
 			var idx: int = slot_index if slot_index >= 0 and slot_index < 4 else _first_empty_slot_index(module_slots)
 			if idx < 0:
 				idx = 0
@@ -33,10 +33,10 @@ func equip(item: ItemBase, slot_index: int = -1) -> ItemBase:
 
 		"core":
 			previous = core_slot
-			core_slot = item as CoreItem
+			core_slot = item as Resource
 
 		"chip":
-			var chip: ChipItem = item as ChipItem
+			var chip: Resource = item as Resource
 			var idx: int = slot_index if slot_index >= 0 and slot_index < 4 else _first_empty_slot_index(chip_slots)
 			if idx < 0:
 				idx = 0
@@ -44,7 +44,7 @@ func equip(item: ItemBase, slot_index: int = -1) -> ItemBase:
 			chip_slots[idx] = chip
 
 		"protocol":
-			var protocol: ProtocolItem = item as ProtocolItem
+			var protocol: Resource = item as Resource
 			var idx: int = slot_index if slot_index >= 0 and slot_index < 3 else _first_empty_slot_index(protocol_slots)
 			if idx < 0:
 				idx = 0
@@ -59,8 +59,8 @@ func equip(item: ItemBase, slot_index: int = -1) -> ItemBase:
 	return previous
 
 
-func unequip(item_type: String, slot_index: int) -> ItemBase:
-	var removed: ItemBase = null
+func unequip(item_type: String, slot_index: int) -> Resource:
+	var removed: Resource = null
 
 	match item_type:
 		"module":
@@ -86,15 +86,15 @@ func unequip(item_type: String, slot_index: int) -> ItemBase:
 
 func get_all_equipped_items() -> Array[ItemBase]:
 	var items: Array[ItemBase] = []
-	for m: ModuleItem in module_slots:
+	for m: Resource in module_slots:
 		if m != null:
 			items.append(m)
 	if core_slot != null:
 		items.append(core_slot)
-	for c: ChipItem in chip_slots:
+	for c: Resource in chip_slots:
 		if c != null:
 			items.append(c)
-	for p: ProtocolItem in protocol_slots:
+	for p: Resource in protocol_slots:
 		if p != null:
 			items.append(p)
 	return items

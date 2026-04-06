@@ -11,12 +11,12 @@ const AFFIX_COUNTS: Array[Vector2i] = [
 	Vector2i(3, 4),  # Legendary: 3-4
 ]
 
-static var _affix_db: AffixDatabase = null
+static var _affix_db: Resource = null
 
 
-static func generate_item(base_item: ItemBase, rarity_override: int = -1) -> ItemBase:
+static func generate_item(base_item: Resource, rarity_override: int = -1) -> Resource:
 	# 1. Duplicate the base item
-	var item: ItemBase = base_item.duplicate(true) as ItemBase
+	var item: Resource = base_item.duplicate(true) as Resource
 
 	# 2. Determine rarity
 	if rarity_override >= 0 and rarity_override <= 3:
@@ -31,13 +31,13 @@ static func generate_item(base_item: ItemBase, rarity_override: int = -1) -> Ite
 	if _affix_db:
 		var affix_range: Vector2i = AFFIX_COUNTS[item.rarity]
 		var affix_count: int = randi_range(affix_range.x, affix_range.y)
-		var eligible: Array[AffixDefinition] = _affix_db.get_eligible_affixes(item.rarity, item.item_type)
+		var eligible: Array = _affix_db.get_eligible_affixes(item.rarity, item.item_type)
 
 		var used_names: Array[String] = []
 		for i: int in affix_count:
 			if eligible.is_empty():
 				break
-			var affix: AffixDefinition = eligible[randi() % eligible.size()]
+			var affix: Resource = eligible[randi() % eligible.size()]
 			# Prevent duplicate affixes
 			if affix.affix_name in used_names:
 				continue
@@ -69,4 +69,4 @@ static func _roll_rarity() -> int:
 
 static func _ensure_affix_db() -> void:
 	if _affix_db == null:
-		_affix_db = load("res://data/items/affix_database.tres") as AffixDatabase
+		_affix_db = load("res://data/items/affix_database.tres") as Resource

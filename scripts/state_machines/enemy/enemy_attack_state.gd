@@ -1,5 +1,5 @@
 class_name EnemyAttackState
-extends State
+extends "res://scripts/state_machines/state.gd"
 ## Enemy performs an attack, then returns to chase.
 
 const ATTACK_DURATION: float = 0.6
@@ -14,7 +14,7 @@ var _hitbox_enabled: bool = false
 
 
 func enter() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 	_hitbox_enabled = false
 
@@ -34,7 +34,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	if _timer >= HITBOX_START and _timer < HITBOX_END:
@@ -47,10 +47,10 @@ func physics_update(delta: float) -> void:
 
 	if _timer >= ATTACK_DURATION:
 		enemy.hitbox_component.deactivate()
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 
 func exit() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false

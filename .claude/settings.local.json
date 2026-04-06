@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/hwash/.claude/projects/C--Users-hwash-Documents-enth-iteration/388793f3-ab7c-403f-8e3a-1b2cba49d52a/tool-results/**)",
+      "Bash(python3 -c ':*)",
+      "Bash(node -e ':*)",
+      "Bash(cp /tmp/epics_full.md \"/c/Users/hwash/Documents/enth-iteration/_bmad-output/planning-artifacts/epics.md\")"
+    ]
+  }
+}

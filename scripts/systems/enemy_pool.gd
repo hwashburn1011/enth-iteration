@@ -1,4 +1,3 @@
-class_name EnemyPool
 extends Node
 ## Object pool for enemies — pre-instantiates and recycles to avoid allocation spikes.
 
@@ -17,9 +16,18 @@ const ENEMY_SCENES: Dictionary = {
 
 var _pools: Dictionary = {}  # type -> Array[CharacterBody3D]
 var _active: Dictionary = {}  # type -> Array[CharacterBody3D]
+var _initialized: bool = false
 
 
 func _ready() -> void:
+	# Defer initialization to avoid loading scenes before class_names are registered
+	call_deferred(&"_deferred_init")
+
+
+func _deferred_init() -> void:
+	if _initialized:
+		return
+	_initialized = true
 	for enemy_type: String in pool_sizes:
 		_pools[enemy_type] = [] as Array[CharacterBody3D]
 		_active[enemy_type] = [] as Array[CharacterBody3D]
@@ -35,7 +43,13 @@ func _ready() -> void:
 			(_pools[enemy_type] as Array).append(enemy)
 
 
+func _ensure_init() -> void:
+	if not _initialized:
+		_deferred_init()
+
+
 func get_enemy(type: String) -> CharacterBody3D:
+	_ensure_init()
 	if type not in _pools:
 		_pools[type] = []
 		_active[type] = []
@@ -62,13 +76,15 @@ func get_enemy(type: String) -> CharacterBody3D:
 	if enemy.has_method(&"reset"):
 		enemy.reset()
 	elif enemy.has_node("HealthComponent"):
-		var health: HealthComponent = enemy.get_node("HealthComponent") as HealthComponent
-		health.reset()
+		var health: Node = enemy.get_node("HealthComponent")
+		if health.has_method(&"reset"):
+			health.reset()
 
 	return enemy
 
 
 func return_enemy(enemy: CharacterBody3D) -> void:
+	_ensure_init()
 	var enemy_type: String = _get_type(enemy)
 	if enemy_type.is_empty():
 		enemy.queue_free()
@@ -102,10 +118,14 @@ func _deactivate(enemy: CharacterBody3D) -> void:
 
 
 func _get_type(enemy: CharacterBody3D) -> String:
-	if enemy is GlitchBug:
-		return "glitch_bug"
-	elif enemy is MemoryLeak:
-		return "memory_leak"
-	elif enemy is RogueProcess:
-		return "rogue_process"
-	return ""
+	# Use script class name to determine type without direct class references
+	var script: Script = enemy.get_script() as Script
+	if script == null:
+		return ""
+	var class_name_str: String = script.get_global_name()
+	match class_name_str:
+		"GlitchBug": return "glitch_bug"
+		"MemoryLeak": return "memory_leak"
+		"RogueProcess": return "rogue_process"
+		"CorruptedCompiler": return "corrupted_compiler"
+		_: return ""

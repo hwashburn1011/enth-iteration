@@ -2,11 +2,11 @@ class_name AffixDatabase
 extends Resource
 ## Collection of all possible affixes that can roll on items.
 
-@export var affixes: Array[AffixDefinition] = []
+@export var affixes: Array[Resource] = []
 
 
-func get_eligible_affixes(rarity: int, item_type: String) -> Array[AffixDefinition]:
-	var eligible: Array[AffixDefinition] = []
+func get_eligible_affixes(rarity: int, item_type: String) -> Array[Resource]:
+	var eligible: Array[Resource] = []
 	for affix: AffixDefinition in affixes:
 		if affix.min_rarity > rarity:
 			continue

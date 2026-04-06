@@ -1,5 +1,5 @@
 class_name RogueProcessAttackState
-extends EnemyAttackState
+extends "res://scripts/state_machines/enemy/enemy_attack_state.gd"
 ## Alternates between dash strike and flurry attacks.
 
 enum AttackPattern { DASH_STRIKE, FLURRY }
@@ -28,7 +28,7 @@ func _init() -> void:
 
 
 func enter() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer = 0.0
 	_hitbox_enabled = false
 	_telegraph_done = false
@@ -38,7 +38,7 @@ func enter() -> void:
 	_current_pattern = AttackPattern.FLURRY if _current_pattern == AttackPattern.DASH_STRIKE else AttackPattern.DASH_STRIKE
 
 	# Adjust cooldown if enraged
-	if enemy is RogueProcess and (enemy as RogueProcess).is_enraged:
+	if (enemy.get_script().get_global_name() == "RogueProcess") and (enemy as RogueProcess).is_enraged:
 		attack_cooldown = 0.7
 
 	# Face the player
@@ -58,7 +58,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	_timer += delta
 
 	var telegraph_time: float = DASH_TELEGRAPH if _current_pattern == AttackPattern.DASH_STRIKE else FLURRY_TELEGRAPH
@@ -82,7 +82,7 @@ func physics_update(delta: float) -> void:
 			_process_flurry(enemy, delta)
 
 
-func _process_dash_strike(enemy: EnemyBase, _delta: float) -> void:
+func _process_dash_strike(enemy: CharacterBody3D, _delta: float) -> void:
 	var action_time: float = _timer - DASH_TELEGRAPH
 
 	# Teleport on first frame after telegraph
@@ -99,13 +99,13 @@ func _process_dash_strike(enemy: EnemyBase, _delta: float) -> void:
 
 	if _timer >= DASH_DURATION:
 		enemy.hitbox_component.deactivate()
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 	enemy.velocity = Vector3.ZERO
 	enemy.move_and_slide()
 
 
-func _process_flurry(enemy: EnemyBase, _delta: float) -> void:
+func _process_flurry(enemy: CharacterBody3D, _delta: float) -> void:
 	if _strike_count < FLURRY_STRIKES and _timer >= _next_strike_time:
 		_strike_count += 1
 		_next_strike_time = _timer + FLURRY_STRIKE_INTERVAL
@@ -117,20 +117,20 @@ func _process_flurry(enemy: EnemyBase, _delta: float) -> void:
 
 	if _timer >= FLURRY_DURATION:
 		enemy.hitbox_component.deactivate()
-		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as State)
+		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
 
 	enemy.velocity = Vector3.ZERO
 	enemy.move_and_slide()
 
 
 func exit() -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false
 	_set_telegraph(enemy, false)
 
 
-func _set_telegraph(enemy: EnemyBase, active: bool) -> void:
+func _set_telegraph(enemy: CharacterBody3D, active: bool) -> void:
 	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
 	if mesh == null:
 		return
@@ -143,7 +143,7 @@ func _set_telegraph(enemy: EnemyBase, active: bool) -> void:
 		mesh.material_override = mat
 	else:
 		# Restore enraged glow or clear
-		if enemy is RogueProcess and (enemy as RogueProcess).is_enraged:
+		if (enemy.get_script().get_global_name() == "RogueProcess") and (enemy as RogueProcess).is_enraged:
 			var mat: StandardMaterial3D = StandardMaterial3D.new()
 			mat.albedo_color = Color(0.3, 0.3, 1.0)
 			mat.emission_enabled = true

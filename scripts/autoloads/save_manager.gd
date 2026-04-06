@@ -10,6 +10,7 @@ var current_data: Dictionary = {}
 var last_save_time: float = 0.0
 var _save_queued: bool = false
 var _save_indicator: Label = null
+var _item_registry: Script = null
 
 const MIN_SAVE_INTERVAL: float = 10.0
 const INDICATOR_DURATION: float = 1.5
@@ -17,6 +18,7 @@ const INDICATOR_DURATION: float = 1.5
 
 func _ready() -> void:
 	current_data = get_default_save_data()
+	_item_registry = load("res://scripts/items/item_registry.gd")
 	# Auto-save triggers
 	EventBus.floor_completed.connect(_on_auto_save_trigger)
 	EventBus.returned_to_town.connect(_on_auto_save_trigger_no_arg)
@@ -105,7 +107,7 @@ func save_game() -> bool:
 	current_data["timestamp"] = Time.get_datetime_string_from_system()
 
 	# 1. Player data
-	var player: Player = _find_player()
+	var player: Node = _find_player()
 	if player:
 		current_data["player"]["health"] = player.health_component.current_health
 		current_data["player"]["compute"] = player.compute_component.current_compute
@@ -121,7 +123,7 @@ func save_game() -> bool:
 		var grid_items: Array = []
 		for y: int in player.inventory_component.grid_height:
 			for x: int in player.inventory_component.grid_width:
-				var item: ItemBase = player.inventory_component.grid[y][x] as ItemBase
+				var item: Resource = player.inventory_component.grid[y][x] as Resource
 				if item != null:
 					# Avoid duplicates (multi-cell items)
 					var already: bool = false
@@ -140,24 +142,24 @@ func save_game() -> bool:
 		current_data["inventory"]["grid_items"] = grid_items
 		var hotbar: Array = []
 		for entry: Dictionary in player.inventory_component.prompt_hotbar:
-			var prompt: PromptItem = entry["item"] as PromptItem
+			var prompt: Resource = entry["item"] as Resource
 			hotbar.append({"item_id": prompt.item_id, "quantity": int(entry["quantity"])})
 		current_data["inventory"]["prompt_hotbar"] = hotbar
 
 	# 3. Equipment data
 	if player and player.equipment_component:
-		var eq: EquipmentComponent = player.equipment_component
+		var eq: Node = player.equipment_component
 		var modules: Array = []
-		for m: ModuleItem in eq.module_slots:
+		for m: Variant in eq.module_slots:
 			modules.append(m.item_id if m else null)
 		current_data["equipment"]["modules"] = modules
 		current_data["equipment"]["core"] = eq.core_slot.item_id if eq.core_slot else null
 		var chips: Array = []
-		for c: ChipItem in eq.chip_slots:
+		for c: Variant in eq.chip_slots:
 			chips.append(c.item_id if c else null)
 		current_data["equipment"]["chips"] = chips
 		var protocols: Array = []
-		for p: ProtocolItem in eq.protocol_slots:
+		for p: Variant in eq.protocol_slots:
 			protocols.append(p.item_id if p else null)
 		current_data["equipment"]["protocols"] = protocols
 
@@ -311,7 +313,7 @@ func _apply_loaded_data(data: Dictionary) -> void:
 	set_meta(&"pending_equipment_data", data.get("equipment", defaults["equipment"]))
 
 
-func apply_to_player(player: Player) -> void:
+func apply_to_player(player: Node) -> void:
 	## Called after player is instantiated to restore saved state.
 	if not has_meta(&"pending_player_data"):
 		return
@@ -334,7 +336,7 @@ func apply_to_player(player: Player) -> void:
 	var grid_items: Array = inv_data.get("grid_items", []) as Array
 	for entry: Variant in grid_items:
 		var e: Dictionary = entry as Dictionary
-		var item: ItemBase = ItemRegistry.create_item(
+		var item: Resource = _item_registry.create_item(
 			str(e.get("item_id", "")),
 			float(e.get("durability", 100.0)),
 			e.get("stat_modifiers", {}) as Dictionary,
@@ -345,34 +347,34 @@ func apply_to_player(player: Player) -> void:
 	var hotbar: Array = inv_data.get("prompt_hotbar", []) as Array
 	for entry: Variant in hotbar:
 		var e: Dictionary = entry as Dictionary
-		var prompt: ItemBase = ItemRegistry.create_item(str(e.get("item_id", "")))
-		if prompt is PromptItem:
+		var prompt: Resource = _item_registry.create_item(str(e.get("item_id", "")))
+		if prompt and prompt.get("item_type") == "prompt":
 			for i: int in int(e.get("quantity", 1)):
-				player.inventory_component.add_prompt(prompt as PromptItem)
+				player.inventory_component.add_prompt(prompt)
 
 	# Equipment
 	var eq_data: Dictionary = get_meta(&"pending_equipment_data", {}) as Dictionary
 	var modules: Array = eq_data.get("modules", []) as Array
 	for i: int in modules.size():
 		if modules[i] != null:
-			var item: ItemBase = ItemRegistry.create_item(str(modules[i]))
+			var item: Resource = _item_registry.create_item(str(modules[i]))
 			if item:
 				player.equipment_component.equip(item, i)
 	var core_id: Variant = eq_data.get("core")
 	if core_id != null:
-		var item: ItemBase = ItemRegistry.create_item(str(core_id))
+		var item: Resource = _item_registry.create_item(str(core_id))
 		if item:
 			player.equipment_component.equip(item)
 	var chips: Array = eq_data.get("chips", []) as Array
 	for i: int in chips.size():
 		if chips[i] != null:
-			var item: ItemBase = ItemRegistry.create_item(str(chips[i]))
+			var item: Resource = _item_registry.create_item(str(chips[i]))
 			if item:
 				player.equipment_component.equip(item, i)
 	var protocols: Array = eq_data.get("protocols", []) as Array
 	for i: int in protocols.size():
 		if protocols[i] != null:
-			var item: ItemBase = ItemRegistry.create_item(str(protocols[i]))
+			var item: Resource = _item_registry.create_item(str(protocols[i]))
 			if item:
 				player.equipment_component.equip(item, i)
 
@@ -382,10 +384,10 @@ func apply_to_player(player: Player) -> void:
 	remove_meta(&"pending_equipment_data")
 
 
-func _find_player() -> Player:
+func _find_player() -> Node:
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.size() > 0:
-		return nodes[0] as Player
+		return nodes[0]
 	return null
 
 

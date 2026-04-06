@@ -1,5 +1,5 @@
 class_name StoryRoom
-extends RoomBase
+extends "res://scenes/dungeon/rooms/room_base.gd"
 ## Dungeon story room — contains an NPC that must be talked to before exit unlocks.
 
 @export var npc_scene: PackedScene

@@ -18,7 +18,7 @@ func _ready() -> void:
 	current_compute = max_compute
 	_last_emitted_compute = current_compute
 	# Listen for stat changes to recalculate max_compute
-	var stats: StatsComponent = get_parent().get_node_or_null("StatsComponent") as StatsComponent
+	var stats: Node = get_parent().get_node_or_null("StatsComponent") as Node
 	if stats:
 		stats.stats_changed.connect(_on_stats_changed.bind(stats))
 
@@ -60,7 +60,7 @@ func get_compute_percentage() -> float:
 	return current_compute / max_compute
 
 
-func _on_stats_changed(stats: StatsComponent) -> void:
+func _on_stats_changed(stats: Node) -> void:
 	max_compute = base_max_compute + stats.get_stat("memory") * 5.0
 	current_compute = minf(current_compute, max_compute)
 	_last_emitted_compute = current_compute

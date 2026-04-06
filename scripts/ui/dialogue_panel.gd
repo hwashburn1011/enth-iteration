@@ -7,7 +7,7 @@ signal dialogue_finished
 const CHARS_PER_SECOND: float = 30.0
 const PORTRAIT_CROSSFADE: float = 0.15
 
-var dialogue_data: Array[DialogueLine] = []
+var dialogue_data: Array[Resource] = []
 ## Portrait dictionary from current speaker NPC: expression name -> Texture2D
 var speaker_portraits: Dictionary = {}
 ## NPC id for affinity-based line filtering
@@ -51,11 +51,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 
-func start_dialogue(data: Array[DialogueLine]) -> void:
+func start_dialogue(data: Array[Resource]) -> void:
 	# Filter lines by affinity requirement
 	var affinity: int = GameManager.get_affinity(speaker_npc_id) if not speaker_npc_id.is_empty() else 0
 	dialogue_data = []
-	for line: DialogueLine in data:
+	for line: Resource in data:
 		if line.min_affinity <= affinity:
 			dialogue_data.append(line)
 	if dialogue_data.is_empty():
@@ -68,7 +68,7 @@ func start_dialogue(data: Array[DialogueLine]) -> void:
 	_display_line(dialogue_data[0])
 
 
-func _display_line(line: DialogueLine) -> void:
+func _display_line(line: Resource) -> void:
 	_name_label.text = line.speaker_name
 
 	# Portrait lookup: line.portrait > speaker_portraits[expression] > speaker_portraits["default"]

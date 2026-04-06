@@ -4,7 +4,7 @@ extends CanvasLayer
 
 var _bar: ProgressBar = null
 var _name_label: Label = null
-var _boss: CorruptedCompiler = null
+var _boss: CharacterBody3D = null
 
 
 func _ready() -> void:
@@ -34,7 +34,7 @@ func _ready() -> void:
 	add_child(container)
 
 
-func track_boss(boss: CorruptedCompiler) -> void:
+func track_boss(boss: CharacterBody3D) -> void:
 	_boss = boss
 	_bar.max_value = boss.health_component.max_health
 	_bar.value = boss.health_component.current_health

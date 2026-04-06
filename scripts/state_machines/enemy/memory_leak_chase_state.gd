@@ -1,17 +1,17 @@
 class_name MemoryLeakChaseState
-extends EnemyChaseState
+extends "res://scripts/state_machines/enemy/enemy_chase_state.gd"
 ## Memory Leak flees if player is too close (< 4.0 units).
 
 const FLEE_DISTANCE: float = 4.0
 
 
 func physics_update(delta: float) -> void:
-	var enemy: EnemyBase = player as EnemyBase
+	var enemy: CharacterBody3D = player as CharacterBody3D
 
 	if enemy.target_player == null:
 		_leash_timer += delta
 		if _leash_timer >= enemy.leash_time:
-			state_machine.transition_to(state_machine.get_node("EnemyPatrolState") as State)
+			state_machine.transition_to(state_machine.get_node("EnemyPatrolState") as Node)
 			return
 	else:
 		_leash_timer = 0.0
@@ -19,7 +19,7 @@ func physics_update(delta: float) -> void:
 
 		# Attack if in range
 		if dist <= enemy.attack_range:
-			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as State)
+			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as Node)
 			return
 
 		# Flee if too close

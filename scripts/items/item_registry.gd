@@ -1,6 +1,6 @@
 class_name ItemRegistry
 extends RefCounted
-## Maps item_id strings to base ItemBase resources for deserialization.
+## Maps item_id strings to base item resources for deserialization.
 
 static var _registry: Dictionary = {}
 static var _initialized: bool = false
@@ -26,7 +26,7 @@ static func _ensure_initialized() -> void:
 	if _initialized:
 		return
 	for item_id: String in ITEM_PATHS:
-		var res: ItemBase = load(ITEM_PATHS[item_id]) as ItemBase
+		var res: Resource = load(ITEM_PATHS[item_id])
 		if res:
 			_registry[item_id] = res
 		else:
@@ -34,21 +34,21 @@ static func _ensure_initialized() -> void:
 	_initialized = true
 
 
-static func get_base_item(item_id: String) -> ItemBase:
+static func get_base_item(item_id: String) -> Resource:
 	_ensure_initialized()
-	return _registry.get(item_id) as ItemBase
+	return _registry.get(item_id)
 
 
-static func create_item(item_id: String, durability: float = -1.0, stat_mods: Dictionary = {}, rarity: int = -1) -> ItemBase:
-	var base: ItemBase = get_base_item(item_id)
+static func create_item(item_id: String, durability: float = -1.0, stat_mods: Dictionary = {}, rarity: int = -1) -> Resource:
+	var base: Resource = get_base_item(item_id)
 	if base == null:
 		push_error("ItemRegistry: unknown item_id '%s'" % item_id)
 		return null
-	var item: ItemBase = base.duplicate(true) as ItemBase
+	var item: Resource = base.duplicate(true)
 	if durability >= 0.0:
-		item.current_durability = durability
+		item.set(&"current_durability", durability)
 	if not stat_mods.is_empty():
-		item.stat_modifiers = stat_mods
+		item.set(&"stat_modifiers", stat_mods)
 	if rarity >= 0:
-		item.rarity = rarity
+		item.set(&"rarity", rarity)
 	return item
