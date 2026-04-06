@@ -13,6 +13,14 @@ enum GameState {
 var current_state: GameState = GameState.MAIN_MENU
 
 
+func _ready() -> void:
+	EventBus.npc_recruited.connect(_on_npc_recruited)
+
+
+func _on_npc_recruited(npc_id: StringName) -> void:
+	set_meta(StringName("npc_recruited_" + String(npc_id)), true)
+
+
 func pause_game() -> void:
 	if current_state == GameState.PLAYING:
 		current_state = GameState.PAUSED

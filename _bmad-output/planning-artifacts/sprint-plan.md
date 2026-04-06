@@ -74,7 +74,7 @@ When executing this sprint plan:
 - [x] 5.12 Compaction Portal Interaction — `DONE`
 
 ### Epic 6: Town Hub
-- [ ] 6.1 Town Scene Layout — `TODO`
+- [x] 6.1 Town Scene Layout — `DONE`
 - [ ] 6.2 Dungeon Entrance Interaction — `TODO`
 - [ ] 6.3 Dialogue System — `TODO`
 - [ ] 6.4 NPC Base Scene — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 48
-- **Remaining:** 27
+- **Completed:** 49
+- **Remaining:** 26
 - **Current Epic:** 6
