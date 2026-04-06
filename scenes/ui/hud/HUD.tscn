@@ -1,0 +1,62 @@
+[gd_scene load_steps=2 format=3 uid="uid://hud001"]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_script"]
+
+[node name="HUD" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_script")
+
+[node name="HUDContainer" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="BarsContainer" type="VBoxContainer" parent="HUDContainer"]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 250.0
+offset_bottom = 80.0
+theme_override_constants/separation = 4
+
+[node name="HealthBarContainer" type="HBoxContainer" parent="HUDContainer/BarsContainer"]
+layout_mode = 2
+
+[node name="HealthBar" type="ProgressBar" parent="HUDContainer/BarsContainer/HealthBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(200, 20)
+max_value = 100.0
+value = 100.0
+show_percentage = false
+
+[node name="HealthLabel" type="Label" parent="HUDContainer/BarsContainer/HealthBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "100 / 100"
+horizontal_alignment = 2
+
+[node name="ComputeBarContainer" type="HBoxContainer" parent="HUDContainer/BarsContainer"]
+layout_mode = 2
+
+[node name="ComputeBar" type="ProgressBar" parent="HUDContainer/BarsContainer/ComputeBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(200, 20)
+max_value = 50.0
+value = 50.0
+show_percentage = false
+
+[node name="ComputeLabel" type="Label" parent="HUDContainer/BarsContainer/ComputeBarContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(80, 0)
+text = "50 / 50"
+horizontal_alignment = 2
