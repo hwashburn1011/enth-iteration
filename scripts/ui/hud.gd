@@ -9,9 +9,11 @@ const TWEEN_DURATION: float = 0.2
 @onready var compute_bar: ProgressBar = %ComputeBar
 @onready var compute_label: Label = %ComputeLabel
 @onready var _container: Control = %HUDContainer
+@onready var _ability_slots_container: HBoxContainer = %AbilitySlots
 
 var _health_tween: Tween = null
 var _compute_tween: Tween = null
+var _ability_slot_uis: Array[AbilitySlotUI] = []
 
 
 func _ready() -> void:
@@ -23,6 +25,15 @@ func _ready() -> void:
 
 
 func _connect_player() -> void:
+	# Gather ability slot UIs
+	_ability_slot_uis.clear()
+	for child: Node in _ability_slots_container.get_children():
+		if child is AbilitySlotUI:
+			_ability_slot_uis.append(child as AbilitySlotUI)
+	# Initialize slots as empty
+	for i: int in _ability_slot_uis.size():
+		_ability_slot_uis[i].set_empty(i + 1)
+
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.is_empty():
 		return
@@ -31,9 +42,13 @@ func _connect_player() -> void:
 		return
 	player.health_component.health_changed.connect(_on_health_changed)
 	player.compute_component.compute_changed.connect(_on_compute_changed)
-	# Initialize bars
 	_on_health_changed(player.health_component.current_health, player.health_component.max_health)
 	_on_compute_changed(player.compute_component.current_compute, player.compute_component.max_compute)
+	# Ability manager connections
+	player.ability_manager.ability_used.connect(_on_ability_used)
+	player.ability_manager.ability_ready.connect(_on_ability_ready)
+	player.equipment_component.equipment_changed.connect(_on_equipment_changed.bind(player))
+	_refresh_ability_icons(player)
 
 
 func _on_health_changed(current: float, max_val: float) -> void:
@@ -60,3 +75,26 @@ func _on_dialogue_started(_npc_id: StringName) -> void:
 
 func _on_dialogue_ended() -> void:
 	_container.visible = true
+
+
+func _on_ability_used(slot_index: int, module: ModuleItem) -> void:
+	if slot_index >= 0 and slot_index < _ability_slot_uis.size():
+		_ability_slot_uis[slot_index].start_cooldown(module.cooldown)
+
+
+func _on_ability_ready(slot_index: int) -> void:
+	if slot_index >= 0 and slot_index < _ability_slot_uis.size():
+		_ability_slot_uis[slot_index].set_ready()
+
+
+func _on_equipment_changed(player: Player) -> void:
+	_refresh_ability_icons(player)
+
+
+func _refresh_ability_icons(player: Player) -> void:
+	for i: int in _ability_slot_uis.size():
+		var module: ModuleItem = player.equipment_component.module_slots[i] if i < player.equipment_component.module_slots.size() else null
+		if module:
+			_ability_slot_uis[i].set_module(module, i + 1)
+		else:
+			_ability_slot_uis[i].set_empty(i + 1)
