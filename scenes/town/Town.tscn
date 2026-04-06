@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://town001"]
+[gd_scene load_steps=5 format=3 uid="uid://town001"]
 
 [ext_resource type="Script" path="res://scenes/town/town.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/town/DungeonEntrance.tscn" id="2_entrance"]
+[ext_resource type="Environment" path="res://assets/placeholders/town_environment.tres" id="3_env"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(40, 40)
@@ -125,6 +126,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 2, -4)
 size = Vector3(0.2, 4, 1.5)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("3_env")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.707, 0.707, 0, -0.707, 0.707, 0, 10, 0)

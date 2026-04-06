@@ -108,12 +108,12 @@ When executing this sprint plan:
 - [x] 9.3 Demo Narrative Flow — `DONE`
 - [x] 9.4 Audio Placeholder Integration — `DONE`
 - [x] 9.5 Demo End Screen — `DONE`
-- [ ] 9.6 Visual Polish Pass — `TODO`
+- [x] 9.6 Visual Polish Pass — `DONE`
 - [ ] 9.7 Demo Standalone Build — `TODO`
 
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 73
-- **Remaining:** 2
+- **Completed:** 74
+- **Remaining:** 1
 - **Current Epic:** 9
