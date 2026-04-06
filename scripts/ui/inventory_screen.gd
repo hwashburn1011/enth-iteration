@@ -91,6 +91,12 @@ func _build_ui() -> void:
 	inv_panel.add_child(inv_vbox)
 	hbox.add_child(inv_panel)
 
+	# Far right: Stats panel
+	var stats_panel: CharacterStatsPanel = CharacterStatsPanel.new()
+	stats_panel.custom_minimum_size = Vector2(280, 0)
+	stats_panel.populate(_player)
+	hbox.add_child(stats_panel)
+
 	_panel.add_child(hbox)
 	add_child(_panel)
 
