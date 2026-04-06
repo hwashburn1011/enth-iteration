@@ -1,0 +1,28 @@
+[gd_scene load_steps=6 format=3 uid="uid://rogueproc001"]
+
+[ext_resource type="PackedScene" path="res://scenes/entities/enemies/EnemyBase.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/entities/enemies/rogue_process/rogue_process.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/rogue_process_attack_state.gd" id="3_rp_attack"]
+[ext_resource type="Script" path="res://scripts/state_machines/enemy/rogue_process_chase_state.gd" id="4_rp_chase"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_elongated"]
+size = Vector3(0.4, 1.2, 0.8)
+
+[sub_resource type="StandardMaterial3D" id="Material_blue"]
+albedo_color = Color(0.2, 0.3, 0.9, 1)
+
+[node name="RogueProcess" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+move_speed = 6.0
+patrol_radius = 6.0
+attack_range = 2.0
+
+[node name="MeshInstance3D" parent="Model" index="0"]
+mesh = SubResource("BoxMesh_elongated")
+surface_material_override/0 = SubResource("Material_blue")
+
+[node name="EnemyAttackState" parent="StateMachine" index="3"]
+script = ExtResource("3_rp_attack")
+
+[node name="EnemyChaseState" parent="StateMachine" index="2"]
+script = ExtResource("4_rp_chase")
