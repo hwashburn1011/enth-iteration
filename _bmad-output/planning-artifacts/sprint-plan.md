@@ -40,7 +40,7 @@ When executing this sprint plan:
 - [x] 3.7 Damage Calculation Pipeline — `DONE`
 - [x] 3.8 Hitbox and Hurtbox Components — `DONE`
 - [x] 3.9 Enemy Base Scene with AI State Machine — `DONE`
-- [ ] 3.10 Enemy Type — Glitch Bug — `TODO`
+- [x] 3.10 Enemy Type — Glitch Bug — `DONE`
 - [ ] 3.11 Enemy Type — Memory Leak — `TODO`
 - [ ] 3.12 Enemy Type — Rogue Process — `TODO`
 - [ ] 3.13 Enemy Spawner and Object Pool — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 20
-- **Remaining:** 55
+- **Completed:** 21
+- **Remaining:** 54
 - **Current Epic:** 3
