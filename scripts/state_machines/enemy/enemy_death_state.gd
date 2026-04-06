@@ -23,7 +23,7 @@ func enter() -> void:
 		null  # loot_table filled in by specific enemy types
 	)
 
-	# Wait for death animation then free
+	# Wait for death animation then return to pool
 	if enemy.animation_player.has_animation(&"death"):
 		await enemy.animation_player.animation_finished
-	enemy.queue_free()
+	EnemyPool.return_enemy(enemy)

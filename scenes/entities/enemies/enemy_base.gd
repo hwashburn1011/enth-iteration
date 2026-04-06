@@ -54,6 +54,21 @@ func _on_hit_received(damage_info: DamageInfo) -> void:
 		state_machine.force_transition_to(hurt_state)
 
 
+func reset() -> void:
+	health_component.reset()
+	is_invulnerable = false
+	target_player = null
+	collision_layer = 2
+	collision_mask = 9
+	set_physics_process(true)
+	set_process_unhandled_input(true)
+	hitbox_component.deactivate()
+	# Reset state machine to idle
+	var idle_state: State = state_machine.get_node_or_null("EnemyIdleState") as State
+	if idle_state:
+		state_machine.force_transition_to(idle_state)
+
+
 func _on_died() -> void:
 	var death_state: State = state_machine.get_node_or_null("EnemyDeathState") as State
 	if death_state:

@@ -43,7 +43,7 @@ When executing this sprint plan:
 - [x] 3.10 Enemy Type — Glitch Bug — `DONE`
 - [x] 3.11 Enemy Type — Memory Leak — `DONE`
 - [x] 3.12 Enemy Type — Rogue Process — `DONE`
-- [ ] 3.13 Enemy Spawner and Object Pool — `TODO`
+- [x] 3.13 Enemy Spawner and Object Pool — `DONE`
 - [ ] 3.14 Status Effect System — `TODO`
 - [ ] 3.15 Death and Respawn Flow — `TODO`
 
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 23
-- **Remaining:** 52
+- **Completed:** 24
+- **Remaining:** 51
 - **Current Epic:** 3
