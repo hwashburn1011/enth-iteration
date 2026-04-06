@@ -4,6 +4,8 @@ extends Node
 
 var state_machine: StateMachine
 var player: CharacterBody3D
+## If false, this state cannot be interrupted by lower-priority transitions.
+var can_be_interrupted: bool = true
 
 
 func enter() -> void:

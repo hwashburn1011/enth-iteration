@@ -41,6 +41,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func transition_to(target_state: State) -> void:
 	if current_state:
+		if not current_state.can_be_interrupted and target_state != current_state:
+			# Only allow forced transitions (death overrides everything)
+			return
+		current_state.exit()
+	current_state = target_state
+	current_state.enter()
+
+
+## Force a transition regardless of can_be_interrupted (for death, hurt).
+func force_transition_to(target_state: State) -> void:
+	if current_state:
 		current_state.exit()
 	current_state = target_state
 	current_state.enter()

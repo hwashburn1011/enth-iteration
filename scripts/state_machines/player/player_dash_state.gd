@@ -3,6 +3,10 @@ extends State
 ## Teleport dash with i-frames. Instantly moves the player in facing direction.
 
 
+func _ready() -> void:
+	can_be_interrupted = false
+
+
 func enter() -> void:
 	var p: Player = player as Player
 	var from_position: Vector3 = p.global_position

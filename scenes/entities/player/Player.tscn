@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://player00001"]
+[gd_scene load_steps=30 format=3 uid="uid://player00001"]
 
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
@@ -10,6 +10,8 @@
 [ext_resource type="Script" path="res://scripts/components/stats_component.gd" id="8_stats"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_attack_state.gd" id="9_attack"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_charge_state.gd" id="10_charge"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_hurt_state.gd" id="11_hurt"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_death_state.gd" id="12_death"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -124,6 +126,40 @@ tracks/0/keys = {
 "values": [Vector3(1.2, 1.2, 1.2), Vector3(1.5, 0.8, 1.5), Vector3(1.1, 1.1, 1.1), Vector3(1, 1, 1)]
 }
 
+[sub_resource type="Animation" id="Animation_hurt"]
+resource_name = "hurt"
+length = 0.3
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.1, 0.2, 0.3),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(0.8, 1.2, 0.8), Vector3(1.1, 0.9, 1.1), Vector3(1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_death"]
+resource_name = "death"
+length = 1.0
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5, 1.0),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector3(1, 1, 1), Vector3(1.3, 0.3, 1.3), Vector3(0, 0, 0)]
+}
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
 _data = {
 &"idle": SubResource("Animation_idle"),
@@ -131,7 +167,9 @@ _data = {
 &"dash": SubResource("Animation_dash"),
 &"attack_primary": SubResource("Animation_attack_primary"),
 &"charge": SubResource("Animation_charge"),
-&"energy_burst": SubResource("Animation_energy_burst")
+&"energy_burst": SubResource("Animation_energy_burst"),
+&"hurt": SubResource("Animation_hurt"),
+&"death": SubResource("Animation_death")
 }
 
 [node name="Player" type="CharacterBody3D"]
@@ -201,6 +239,12 @@ script = ExtResource("9_attack")
 
 [node name="ChargeState" type="Node" parent="StateMachine"]
 script = ExtResource("10_charge")
+
+[node name="HurtState" type="Node" parent="StateMachine"]
+script = ExtResource("11_hurt")
+
+[node name="DeathState" type="Node" parent="StateMachine"]
+script = ExtResource("12_death")
 
 [node name="DashCooldownTimer" type="Timer" parent="."]
 unique_name_in_owner = true
