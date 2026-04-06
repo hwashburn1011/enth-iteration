@@ -10,7 +10,8 @@ config_version=5
 
 [application]
 
-config/name="Enth:Iteration"
+config/name="Enth: Iteration"
+config/version="0.1.0-demo"
 config/features=PackedStringArray("4.4", "Forward Plus")
 config/icon="res://icon.svg"
 run/main_scene="res://scenes/main/MainMenu.tscn"

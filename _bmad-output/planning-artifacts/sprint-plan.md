@@ -109,11 +109,11 @@ When executing this sprint plan:
 - [x] 9.4 Audio Placeholder Integration — `DONE`
 - [x] 9.5 Demo End Screen — `DONE`
 - [x] 9.6 Visual Polish Pass — `DONE`
-- [ ] 9.7 Demo Standalone Build — `TODO`
+- [x] 9.7 Demo Standalone Build — `DONE`
 
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 74
-- **Remaining:** 1
+- **Completed:** 75
+- **Remaining:** 0
 - **Current Epic:** 9
