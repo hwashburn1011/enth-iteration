@@ -24,6 +24,7 @@ RespawnManager="*res://scripts/systems/respawn_manager.gd"
 SaveManager="*res://scripts/autoloads/save_manager.gd"
 QuestManager="*res://scripts/quests/quest_manager.gd"
 TutorialManager="*res://scripts/autoloads/tutorial_manager.gd"
+AudioManager="*res://scripts/autoloads/audio_manager.gd"
 
 [dotnet]
 
