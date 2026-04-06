@@ -85,7 +85,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"use_prompt"):
 		_try_use_prompt()
 	elif event.is_action_pressed(&"inventory"):
-		inventory_component.cycle_active_prompt()
+		_toggle_inventory()
 
 
 func _try_use_prompt() -> void:
@@ -114,6 +114,14 @@ func _try_use_prompt() -> void:
 				effect.potency = 1.0
 				sem.apply_effect(effect)
 	_prompt_cooldown = 0.5
+
+
+func _toggle_inventory() -> void:
+	if GameManager.current_state == GameManager.GameState.INVENTORY:
+		return  # Already open, let the screen handle closing
+	var screen: InventoryScreen = InventoryScreen.new()
+	get_tree().root.add_child(screen)
+	screen.open(self)
 
 
 func _on_leveled_up(new_level: int) -> void:
