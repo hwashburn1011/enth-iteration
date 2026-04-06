@@ -21,16 +21,24 @@ extends CharacterBody3D
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 @onready var model: Node3D = %Model
 @onready var dash_cooldown_timer: Timer = %DashCooldownTimer
+@onready var attack_cooldown_timer: Timer = %AttackCooldownTimer
 
 var facing_direction: Vector3 = Vector3.FORWARD
 var is_invulnerable: bool = false
 var can_dash: bool = true
+var can_attack: bool = true
 
 
 func _ready() -> void:
 	dash_cooldown_timer.one_shot = true
 	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
+	attack_cooldown_timer.one_shot = true
+	attack_cooldown_timer.timeout.connect(_on_attack_cooldown_timeout)
 
 
 func _on_dash_cooldown_timeout() -> void:
 	can_dash = true
+
+
+func _on_attack_cooldown_timeout() -> void:
+	can_attack = true

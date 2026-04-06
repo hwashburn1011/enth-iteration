@@ -10,10 +10,11 @@ func enter() -> void:
 
 
 func handle_input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"dash"):
-		var p: Player = player as Player
-		if p and p.can_dash:
-			state_machine.transition_to(state_machine.get_node("DashState") as State)
+	var p: Player = player as Player
+	if event.is_action_pressed(&"dash") and p.can_dash:
+		state_machine.transition_to(state_machine.get_node("DashState") as State)
+	elif event.is_action_pressed(&"attack_primary") and p.can_attack:
+		state_machine.transition_to(state_machine.get_node("AttackState") as State)
 
 
 func physics_update(delta: float) -> void:

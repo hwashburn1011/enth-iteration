@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://player00001"]
+[gd_scene load_steps=20 format=3 uid="uid://player00001"]
 
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/components/health_component.gd" id="6_health"]
 [ext_resource type="Script" path="res://scripts/components/compute_component.gd" id="7_compute"]
 [ext_resource type="Script" path="res://scripts/components/stats_component.gd" id="8_stats"]
+[ext_resource type="Script" path="res://scripts/state_machines/player/player_attack_state.gd" id="9_attack"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -68,11 +69,32 @@ tracks/0/keys = {
 "values": [Vector3(1, 1, 1), Vector3(1.3, 0.7, 1.3), Vector3(1, 1, 1)]
 }
 
+[sub_resource type="Animation" id="Animation_attack_primary"]
+resource_name = "attack_primary"
+length = 0.4
+loop_mode = 0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Model:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = false
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.15, 0.3, 0.4),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 0, -0.3), Vector3(0, 0, -0.15), Vector3(0, 0, 0)]
+}
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
+size = Vector3(1.5, 1.0, 1.5)
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_main"]
 _data = {
 &"idle": SubResource("Animation_idle"),
 &"walk": SubResource("Animation_walk"),
-&"dash": SubResource("Animation_dash")
+&"dash": SubResource("Animation_dash"),
+&"attack_primary": SubResource("Animation_attack_primary")
 }
 
 [node name="Player" type="CharacterBody3D"]
@@ -103,6 +125,13 @@ script = ExtResource("8_stats")
 
 [node name="HitboxComponent" type="Area3D" parent="."]
 unique_name_in_owner = true
+monitoring = false
+monitorable = false
+
+[node name="HitboxShape" type="CollisionShape3D" parent="HitboxComponent"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -1.0)
+shape = SubResource("BoxShape3D_hitbox")
+disabled = true
 
 [node name="HurtboxComponent" type="Area3D" parent="."]
 unique_name_in_owner = true
@@ -130,7 +159,14 @@ script = ExtResource("4_walk")
 [node name="DashState" type="Node" parent="StateMachine"]
 script = ExtResource("5_dash")
 
+[node name="AttackState" type="Node" parent="StateMachine"]
+script = ExtResource("9_attack")
+
 [node name="DashCooldownTimer" type="Timer" parent="."]
+unique_name_in_owner = true
+one_shot = true
+
+[node name="AttackCooldownTimer" type="Timer" parent="."]
 unique_name_in_owner = true
 one_shot = true
 
