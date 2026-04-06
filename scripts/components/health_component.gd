@@ -7,6 +7,7 @@ signal died
 
 @export var max_health: float = 100.0
 var current_health: float
+var is_dead: bool = false
 
 
 func _ready() -> void:
@@ -14,8 +15,32 @@ func _ready() -> void:
 
 
 func take_damage(amount: float) -> void:
-	pass
+	if is_dead:
+		return
+	# Check invulnerability on parent if it has the property
+	var parent: Node = get_parent()
+	if parent and &"is_invulnerable" in parent and parent.is_invulnerable:
+		return
+	current_health = maxf(0.0, current_health - amount)
+	health_changed.emit(current_health, max_health)
+	if current_health <= 0.0 and not is_dead:
+		is_dead = true
+		died.emit()
+		EventBus.player_died.emit(parent.global_position if parent is Node3D else Vector3.ZERO)
 
 
 func heal(amount: float) -> void:
-	pass
+	if is_dead:
+		return
+	current_health = minf(max_health, current_health + amount)
+	health_changed.emit(current_health, max_health)
+
+
+func reset() -> void:
+	current_health = max_health
+	is_dead = false
+	health_changed.emit(current_health, max_health)
+
+
+func get_health_percentage() -> float:
+	return current_health / max_health
