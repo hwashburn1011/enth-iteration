@@ -1,0 +1,39 @@
+[gd_scene load_steps=5 format=3 uid="uid://dungeonentrance001"]
+
+[ext_resource type="Script" path="res://scenes/town/dungeon_entrance.gd" id="1_script"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_archway"]
+size = Vector3(3.0, 4.0, 1.0)
+
+[sub_resource type="StandardMaterial3D" id="Material_archway"]
+albedo_color = Color(0.3, 0.25, 0.4, 1)
+emission_enabled = true
+emission = Color(0.2, 0.15, 0.3)
+emission_energy_multiplier = 0.3
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
+radius = 2.0
+
+[node name="DungeonEntrance" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Archway" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
+mesh = SubResource("BoxMesh_archway")
+surface_material_override/0 = SubResource("Material_archway")
+
+[node name="InteractionArea" type="Area3D" parent="."]
+unique_name_in_owner = true
+collision_layer = 0
+collision_mask = 1
+
+[node name="InteractionShape" type="CollisionShape3D" parent="InteractionArea"]
+shape = SubResource("SphereShape3D_interact")
+
+[node name="EntranceLabel" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.5, 0)
+billboard = 1
+font_size = 20
+text = "Press E to enter the Compaction Loop"
+visible = false

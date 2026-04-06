@@ -75,7 +75,7 @@ When executing this sprint plan:
 
 ### Epic 6: Town Hub
 - [x] 6.1 Town Scene Layout — `DONE`
-- [ ] 6.2 Dungeon Entrance Interaction — `TODO`
+- [x] 6.2 Dungeon Entrance Interaction — `DONE`
 - [ ] 6.3 Dialogue System — `TODO`
 - [ ] 6.4 NPC Base Scene — `TODO`
 - [ ] 6.5 AI Sage NPC — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 49
-- **Remaining:** 26
+- **Completed:** 50
+- **Remaining:** 25
 - **Current Epic:** 6
