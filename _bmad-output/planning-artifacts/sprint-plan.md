@@ -85,7 +85,7 @@ When executing this sprint plan:
 - [x] 6.9 Town Expansion Triggers — `DONE`
 
 ### Epic 7: Save & Persist
-- [ ] 7.1 SaveManager and Data Structure — `TODO`
+- [x] 7.1 SaveManager and Data Structure — `DONE`
 - [ ] 7.2 Save Serialization — `TODO`
 - [ ] 7.3 Load Deserialization — `TODO`
 - [ ] 7.4 Auto-save Triggers — `TODO`
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 57
-- **Remaining:** 18
+- **Completed:** 58
+- **Remaining:** 17
 - **Current Epic:** 7
