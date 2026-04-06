@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://town001"]
+[gd_scene load_steps=8 format=3 uid="uid://town001"]
 
 [ext_resource type="Script" path="res://scenes/town/town.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/town/DungeonEntrance.tscn" id="2_entrance"]
@@ -9,6 +9,12 @@ size = Vector2(40, 40)
 
 [sub_resource type="StandardMaterial3D" id="Material_ground"]
 albedo_color = Color(0.42, 0.55, 0.42, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_building"]
+albedo_color = Color(0.55, 0.45, 0.35, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_boundary"]
+albedo_color = Color(0.35, 0.3, 0.28, 1)
 
 [node name="Town" type="Node3D"]
 script = ExtResource("1_script")
@@ -22,34 +28,42 @@ surface_material_override/0 = SubResource("Material_ground")
 [node name="Building1" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, -8)
 size = Vector3(6, 4, 5)
+material = SubResource("Material_building")
 
 [node name="Building2" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, -6)
 size = Vector3(5, 3, 4)
+material = SubResource("Material_building")
 
 [node name="Building3" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 8)
 size = Vector3(4, 3, 5)
+material = SubResource("Material_building")
 
 [node name="Building4" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 10)
 size = Vector3(5, 4, 4)
+material = SubResource("Material_building")
 
 [node name="BoundaryNorth" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -20)
 size = Vector3(40, 2, 0.5)
+material = SubResource("Material_boundary")
 
 [node name="BoundarySouth" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 20)
 size = Vector3(40, 2, 0.5)
+material = SubResource("Material_boundary")
 
 [node name="BoundaryEast" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 1, 0)
 size = Vector3(0.5, 2, 40)
+material = SubResource("Material_boundary")
 
 [node name="BoundaryWest" type="CSGBox3D" parent="Geometry"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 1, 0)
 size = Vector3(0.5, 2, 40)
+material = SubResource("Material_boundary")
 
 [node name="PlayerSpawnPoint" type="Marker3D" parent="."]
 unique_name_in_owner = true
@@ -131,4 +145,6 @@ size = Vector3(0.2, 4, 1.5)
 environment = ExtResource("3_env")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.707, 0.707, 0, -0.707, 0.707, 0, 10, 0)
+transform = Transform3D(0.866, -0.354, 0.354, 0, 0.707, 0.707, -0.5, -0.612, 0.612, 0, 10, 0)
+light_energy = 1.2
+shadow_enabled = true

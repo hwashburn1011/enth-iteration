@@ -20,38 +20,35 @@ func _ready() -> void:
 
 	# Spawn player
 	var player_scene: PackedScene = load("res://scenes/entities/player/Player.tscn") as PackedScene
+	var player_node: CharacterBody3D = null
 	if player_scene:
-		var player: CharacterBody3D = player_scene.instantiate() as CharacterBody3D
-		add_child(player)
+		player_node = player_scene.instantiate() as CharacterBody3D
+		add_child(player_node)
 
 		# Determine spawn position based on entry type
 		if GameManager.has_meta(&"town_entry_type") and GameManager.get_meta(&"town_entry_type") == "portal_return":
-			player.global_position = portal_return_point.global_position
+			player_node.global_position = portal_return_point.global_position
 			GameManager.remove_meta(&"town_entry_type")
 		else:
-			player.global_position = player_spawn_point.global_position
+			player_node.global_position = player_spawn_point.global_position
 
-	# Spawn camera
+	# Spawn isometric camera targeting player
+	var cam_scene: PackedScene = load("res://scenes/entities/player/Player.tscn")  # not used, create manually
 	var cam_script: GDScript = load("res://scripts/components/isometric_camera.gd") as GDScript
 	var camera: Camera3D = Camera3D.new()
 	camera.set_script(cam_script)
-	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-	camera.size = 10.0
-	camera.rotation_degrees = Vector3(-60.0, -45.0, 0.0)
+	if player_node:
+		camera.set(&"target", player_node)
 	add_child(camera)
-	# Set target after player is in tree
-	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
-	if players.size() > 0:
-		camera.set(&"target", players[0])
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	_populate_npcs()
 	_update_town_state()
+
 	# Narrative: demo end check after returning from boss
 	if GameManager.should_trigger_demo_end():
-		# Give player a moment to look around, then trigger
 		_setup_demo_end_trigger()
-	# Narrative: auto-trigger AI Sage on first visit
+	# Narrative: auto-trigger AI Sage on first visit — delay 5s so player sees the world
 	elif GameManager.first_run and not GameManager.first_sage_dialogue_complete:
 		_auto_trigger_sage_dialogue.call_deferred()
 
@@ -73,10 +70,9 @@ func _populate_npcs() -> void:
 			add_child(npc)
 			# Trigger arrival dialogue for newly recruited NPCs
 			if GameManager.is_npc_newly_arrived(npc_id) and npc.has_method(&"_start_conversation"):
-				var npc_base: CharacterBody3D = npc as CharacterBody3D
 				var arrival_data: Resource = _get_arrival_dialogue(npc_id)
 				if arrival_data:
-					npc_base.dialogue_resource = arrival_data
+					npc.set(&"dialogue_resource", arrival_data)
 				GameManager.acknowledge_npc_arrival(npc_id)
 
 
@@ -111,17 +107,15 @@ func _update_town_state() -> void:
 
 
 func _auto_trigger_sage_dialogue() -> void:
-	# Wait a moment for the scene to settle
-	await get_tree().create_timer(2.0).timeout
-	# Find the AI Sage NPC and start conversation
+	# Wait 5 seconds so player can see the world first
+	await get_tree().create_timer(5.0).timeout
 	for child: Node in get_children():
-		if child.has_method(&"_start_conversation") and child.npc_id == "ai_sage":
-			(child as CharacterBody3D)._start_conversation()
+		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
+			child._start_conversation()
 			return
 
 
 func _setup_demo_end_trigger() -> void:
-	# Create a trigger zone in town center — when player enters after boss, triggers demo end
 	var trigger: Area3D = Area3D.new()
 	trigger.collision_layer = 0
 	trigger.collision_mask = 1
@@ -133,7 +127,6 @@ func _setup_demo_end_trigger() -> void:
 	trigger.global_position = Vector3.ZERO
 	add_child(trigger)
 
-	# Wait for player to talk to an NPC or enter the trigger after a delay
 	await get_tree().create_timer(5.0).timeout
 	if GameManager.should_trigger_demo_end():
 		GameManager.trigger_demo_end()

@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=3 uid="uid://dungeonentrance001"]
+[gd_scene load_steps=5 format=3 uid="uid://pp3l1tdt0ooe"]
 
 [ext_resource type="Script" path="res://scenes/town/dungeon_entrance.gd" id="1_script"]
 

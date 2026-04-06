@@ -3,26 +3,29 @@ extends Camera3D
 ## Orthographic isometric camera that smoothly follows a target node.
 
 @export var target: Node3D
-@export var follow_speed: float = 5.0
-@export var camera_size: float = 10.0
+@export var follow_speed: float = 8.0
+@export var camera_size: float = 18.0
 @export var offset: Vector3 = Vector3.ZERO
+
+## Fixed camera arm offset — positions camera above and behind target at isometric angle
+var _camera_arm: Vector3 = Vector3(10, 14, 10)
 
 
 func _ready() -> void:
 	projection = PROJECTION_ORTHOGONAL
 	size = camera_size
-	rotation_degrees = Vector3(-60.0, -45.0, 0.0)
+	# Position camera at the arm offset and look toward origin
+	if target:
+		global_position = target.global_position + _camera_arm
+	else:
+		global_position = _camera_arm
+	look_at(target.global_position if target else Vector3.ZERO, Vector3.UP)
 
 
 func _process(delta: float) -> void:
 	if target == null:
 		return
-	var target_position: Vector3 = target.global_position + offset
-	global_position = global_position.lerp(
-		target_position + _get_camera_offset(), follow_speed * delta
-	)
-
-
-func _get_camera_offset() -> Vector3:
-	# Offset the camera position along its viewing direction so the target stays centered
-	return -global_transform.basis.z * 20.0
+	var desired_pos: Vector3 = target.global_position + offset + _camera_arm
+	global_position = global_position.lerp(desired_pos, follow_speed * delta)
+	# Keep looking at target
+	look_at(target.global_position + offset, Vector3.UP)
