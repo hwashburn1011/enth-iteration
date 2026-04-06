@@ -20,6 +20,7 @@ signal player_dashed(from_position: Vector3, to_position: Vector3)
 
 # Combat
 signal enemy_defeated(enemy_type: StringName, position: Vector3, loot_table: Resource)
+signal boss_defeated(boss_id: StringName)
 signal damage_dealt(amount: int, source: Node, target: Node, damage_type: StringName)
 signal player_died(position: Vector3)
 

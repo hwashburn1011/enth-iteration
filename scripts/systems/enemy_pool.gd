@@ -12,6 +12,7 @@ const ENEMY_SCENES: Dictionary = {
 	"glitch_bug": "res://scenes/entities/enemies/glitch_bug/GlitchBug.tscn",
 	"memory_leak": "res://scenes/entities/enemies/memory_leak/MemoryLeak.tscn",
 	"rogue_process": "res://scenes/entities/enemies/rogue_process/RogueProcess.tscn",
+	"corrupted_compiler": "res://scenes/entities/enemies/corrupted_compiler/CorruptedCompiler.tscn",
 }
 
 var _pools: Dictionary = {}  # type -> Array[CharacterBody3D]
