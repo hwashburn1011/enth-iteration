@@ -7,6 +7,10 @@ signal game_state_changed(old_state: int, new_state: int)
 signal game_paused()
 signal game_unpaused()
 
+# Save
+signal game_saved()
+signal game_loaded()
+
 # Scene management
 signal scene_changing()
 signal scene_changed(path: String)
