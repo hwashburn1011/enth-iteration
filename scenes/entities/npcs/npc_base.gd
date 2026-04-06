@@ -55,6 +55,7 @@ func _start_conversation() -> void:
 	var panel: DialoguePanel = _find_dialogue_panel()
 	if panel:
 		panel.speaker_portraits = portraits
+		panel.speaker_npc_id = npc_id
 		panel.start_dialogue(dialogue_resource.lines)
 
 

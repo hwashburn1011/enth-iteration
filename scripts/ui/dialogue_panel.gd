@@ -10,6 +10,8 @@ const PORTRAIT_CROSSFADE: float = 0.15
 var dialogue_data: Array[DialogueLine] = []
 ## Portrait dictionary from current speaker NPC: expression name -> Texture2D
 var speaker_portraits: Dictionary = {}
+## NPC id for affinity-based line filtering
+var speaker_npc_id: String = ""
 
 var _current_index: int = 0
 var _typing: bool = false
@@ -50,7 +52,14 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func start_dialogue(data: Array[DialogueLine]) -> void:
-	dialogue_data = data
+	# Filter lines by affinity requirement
+	var affinity: int = GameManager.get_affinity(speaker_npc_id) if not speaker_npc_id.is_empty() else 0
+	dialogue_data = []
+	for line: DialogueLine in data:
+		if line.min_affinity <= affinity:
+			dialogue_data.append(line)
+	if dialogue_data.is_empty():
+		return
 	_current_index = 0
 	_panel.visible = true
 	get_tree().paused = true
@@ -101,6 +110,7 @@ func _advance() -> void:
 func _close() -> void:
 	_panel.visible = false
 	speaker_portraits = {}
+	speaker_npc_id = ""
 	get_tree().paused = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	EventBus.dialogue_ended.emit()

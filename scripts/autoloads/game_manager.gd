@@ -12,12 +12,20 @@ enum GameState {
 
 var current_state: GameState = GameState.MAIN_MENU
 var recruited_npcs: Array[String] = []
-var newly_recruited: Array[String] = []  # NPCs recruited this run, not yet seen in town
+var newly_recruited: Array[String] = []
+var npc_affinity: Dictionary = {}  # npc_id -> int
+var _talked_this_session: Dictionary = {}  # npc_id -> bool (per-session first-talk tracking)
 var first_run: bool = true
+
+const AFFINITY_STRANGER: int = 0
+const AFFINITY_ACQUAINTANCE: int = 10
+const AFFINITY_ALLY: int = 25
+const AFFINITY_TRUSTED: int = 50
 
 
 func _ready() -> void:
 	EventBus.npc_recruited.connect(_on_npc_recruited)
+	EventBus.npc_talked.connect(_on_npc_talked)
 
 
 func _on_npc_recruited(npc_id: StringName) -> void:
@@ -25,6 +33,35 @@ func _on_npc_recruited(npc_id: StringName) -> void:
 	if id not in recruited_npcs:
 		recruited_npcs.append(id)
 		newly_recruited.append(id)
+		increase_affinity(id, 10)
+
+
+func _on_npc_talked(npc_id: StringName) -> void:
+	var id: String = String(npc_id)
+	if not _talked_this_session.has(id):
+		_talked_this_session[id] = true
+		increase_affinity(id, 5)
+
+
+func increase_affinity(npc_id: String, amount: int) -> void:
+	var current: int = npc_affinity.get(npc_id, 0) as int
+	npc_affinity[npc_id] = current + amount
+	EventBus.affinity_changed.emit(StringName(npc_id), npc_affinity[npc_id] as int)
+
+
+func get_affinity(npc_id: String) -> int:
+	return npc_affinity.get(npc_id, 0) as int
+
+
+func get_affinity_tier(npc_id: String) -> String:
+	var value: int = get_affinity(npc_id)
+	if value >= AFFINITY_TRUSTED:
+		return "Trusted"
+	elif value >= AFFINITY_ALLY:
+		return "Ally"
+	elif value >= AFFINITY_ACQUAINTANCE:
+		return "Acquaintance"
+	return "Stranger"
 
 
 func is_npc_recruited(npc_id: String) -> bool:

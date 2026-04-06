@@ -81,7 +81,7 @@ When executing this sprint plan:
 - [x] 6.5 AI Sage NPC — `DONE`
 - [x] 6.6 NPC Portrait System — `DONE`
 - [x] 6.7 NPC Recruitment Flow — `DONE`
-- [ ] 6.8 NPC Affinity System — `TODO`
+- [x] 6.8 NPC Affinity System — `DONE`
 - [ ] 6.9 Town Expansion Triggers — `TODO`
 
 ### Epic 7: Save & Persist
@@ -114,6 +114,6 @@ When executing this sprint plan:
 ## Progress Tracking
 
 - **Total Stories:** 75
-- **Completed:** 55
-- **Remaining:** 20
+- **Completed:** 56
+- **Remaining:** 19
 - **Current Epic:** 6
