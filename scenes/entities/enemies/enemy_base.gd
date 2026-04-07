@@ -27,6 +27,7 @@ func _ready() -> void:
 	add_to_group(&"enemies")
 	spawn_position = global_position
 	hitbox_component.damage_source = self
+	_build_enemy_visual()
 	# Guard against duplicate connections on pool reuse (_ready fires every add_child)
 	if not hurtbox_component.hit_received.is_connected(_on_hit_received):
 		hurtbox_component.hit_received.connect(_on_hit_received)
@@ -78,6 +79,11 @@ func reset() -> void:
 	var idle_state: Node = state_machine.get_node_or_null("EnemyIdleState") as Node
 	if idle_state:
 		state_machine.force_transition_to(idle_state)
+
+
+func _build_enemy_visual() -> void:
+	# Override in subclasses for unique visuals
+	pass
 
 
 func _on_died() -> void:

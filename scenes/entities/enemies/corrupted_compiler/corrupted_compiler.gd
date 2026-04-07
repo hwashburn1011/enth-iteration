@@ -22,15 +22,57 @@ func _ready() -> void:
 
 	health_component.health_changed.connect(_on_boss_health_changed)
 
-	# Apply pulsing material
-	var mesh: MeshInstance3D = model.get_child(0) as MeshInstance3D
-	if mesh:
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = Color(0.5, 0.1, 0.15)
-		mat.emission_enabled = true
-		mat.emission = Color(0.6, 0.05, 0.2)
-		mat.emission_energy_multiplier = 1.0
-		mesh.material_override = mat
+
+func _build_enemy_visual() -> void:
+	for child: Node in model.get_children():
+		child.queue_free()
+	# Large dark-red core body
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var core_mesh: SphereMesh = SphereMesh.new()
+	core_mesh.radius = 0.6
+	core_mesh.height = 1.0
+	core_mesh.radial_segments = 8
+	core_mesh.rings = 4
+	core.mesh = core_mesh
+	core.position = Vector3(0, 0.5, 0)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.5, 0.1, 0.15)
+	mat.emission_enabled = true
+	mat.emission = Color(0.6, 0.05, 0.2)
+	mat.emission_energy_multiplier = 1.0
+	mat.roughness = 0.4
+	core.material_override = mat
+	model.add_child(core)
+	# Orbiting armor plates
+	for i: int in 4:
+		var plate: MeshInstance3D = MeshInstance3D.new()
+		var plate_mesh: BoxMesh = BoxMesh.new()
+		plate_mesh.size = Vector3(0.3, 0.6, 0.1)
+		plate.mesh = plate_mesh
+		var angle: float = i * TAU / 4.0
+		plate.position = Vector3(cos(angle) * 0.7, 0.5, sin(angle) * 0.7)
+		plate.rotation.y = angle
+		var plate_mat: StandardMaterial3D = StandardMaterial3D.new()
+		plate_mat.albedo_color = Color(0.3, 0.05, 0.1)
+		plate_mat.emission_enabled = true
+		plate_mat.emission = Color(0.4, 0.02, 0.1)
+		plate_mat.emission_energy_multiplier = 0.5
+		plate.material_override = plate_mat
+		model.add_child(plate)
+	# Top eye/core
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var eye_mesh: SphereMesh = SphereMesh.new()
+	eye_mesh.radius = 0.15
+	eye_mesh.height = 0.3
+	eye.mesh = eye_mesh
+	eye.position = Vector3(0, 1.0, 0)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.2, 0.1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.15, 0.05)
+	eye_mat.emission_energy_multiplier = 3.0
+	eye.material_override = eye_mat
+	model.add_child(eye)
 
 
 func _process(_delta: float) -> void:

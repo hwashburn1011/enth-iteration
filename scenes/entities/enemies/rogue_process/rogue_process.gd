@@ -23,6 +23,60 @@ func _ready() -> void:
 	health_component.health_changed.connect(_on_health_changed)
 
 
+func _build_enemy_visual() -> void:
+	for child: Node in model.get_children():
+		child.queue_free()
+	# Angular blue geometric — elite enemy
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var box: BoxMesh = BoxMesh.new()
+	box.size = Vector3(0.6, 0.8, 0.6)
+	body.mesh = box
+	body.position = Vector3(0, 0.5, 0)
+	body.rotation = Vector3(0, PI / 4.0, 0)  # Rotated 45 degrees = diamond
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.15, 0.25, 0.85)
+	mat.emission_enabled = true
+	mat.emission = Color(0.1, 0.2, 0.7)
+	mat.emission_energy_multiplier = 0.6
+	mat.roughness = 0.5
+	body.material_override = mat
+	model.add_child(body)
+	# Top spike
+	var spike: MeshInstance3D = MeshInstance3D.new()
+	var spike_mesh: CylinderMesh = CylinderMesh.new()
+	spike_mesh.top_radius = 0.0
+	spike_mesh.bottom_radius = 0.2
+	spike_mesh.height = 0.4
+	spike.mesh = spike_mesh
+	spike.position = Vector3(0, 1.0, 0)
+	spike.material_override = mat
+	model.add_child(spike)
+	# Shoulder blades
+	for side: float in [-0.4, 0.4]:
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var blade_mesh: BoxMesh = BoxMesh.new()
+		blade_mesh.size = Vector3(0.15, 0.5, 0.3)
+		blade.mesh = blade_mesh
+		blade.position = Vector3(side, 0.6, 0)
+		blade.material_override = mat
+		model.add_child(blade)
+	# Eyes (cold white)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.9, 0.9, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.8, 0.85, 1.0)
+	eye_mat.emission_energy_multiplier = 1.8
+	for side: float in [-0.12, 0.12]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var eye_mesh: SphereMesh = SphereMesh.new()
+		eye_mesh.radius = 0.05
+		eye_mesh.height = 0.1
+		eye.mesh = eye_mesh
+		eye.position = Vector3(side, 0.6, -0.31)
+		eye.material_override = eye_mat
+		model.add_child(eye)
+
+
 func _on_health_changed(current: float, maximum: float) -> void:
 	if not is_enraged and current / maximum <= ENRAGE_THRESHOLD and current > 0.0:
 		is_enraged = true
