@@ -33,13 +33,18 @@ const SFX_CLIPS: Dictionary = {
 func _ready() -> void:
 	# Music player on Music bus
 	_music_player = AudioStreamPlayer.new()
-	_music_player.bus = &"Music"
+	# Use Master bus if Music bus doesn't exist
+	if AudioServer.get_bus_index(&"Music") >= 0:
+		_music_player.bus = &"Music"
+	else:
+		_music_player.bus = &"Master"
 	add_child(_music_player)
 
-	# SFX pool on SFX bus
+	# SFX pool
+	var sfx_bus: StringName = &"SFX" if AudioServer.get_bus_index(&"SFX") >= 0 else &"Master"
 	for i: int in SFX_POOL_SIZE:
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
-		player.bus = &"SFX"
+		player.bus = sfx_bus
 		add_child(player)
 		_sfx_pool.append(player)
 
