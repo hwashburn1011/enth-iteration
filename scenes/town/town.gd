@@ -52,6 +52,7 @@ func _ready() -> void:
 	add_child(camera)
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
+	_build_town_decorations()
 	_populate_npcs()
 	_update_town_state()
 
@@ -133,6 +134,141 @@ func _auto_trigger_sage_dialogue() -> void:
 		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
 			child._start_conversation()
 			return
+
+
+func _build_town_decorations() -> void:
+	var geom: Node3D = get_node_or_null("Geometry") as Node3D
+	if geom == null:
+		return
+
+	# --- Dirt paths ---
+	_add_path(geom, Vector3(0, 0.01, 0), Vector3(3, 0.02, 30))
+	_add_path(geom, Vector3(0, 0.01, 0), Vector3(24, 0.02, 3))
+	_add_path(geom, Vector3(0, 0.01, -10), Vector3(3, 0.02, 12))
+
+	# --- Rooftops on buildings ---
+	for i: int in range(1, 5):
+		var building: CSGBox3D = geom.get_node_or_null("Building%d" % i) as CSGBox3D
+		if building:
+			_add_roof(building)
+
+	# --- Trees ---
+	_add_tree(geom, Vector3(-15, 0, 3), 1.5, 2.4)
+	_add_tree(geom, Vector3(14, 0, 6), 1.3, 2.0)
+	_add_tree(geom, Vector3(-4, 0, 14), 1.8, 3.0)
+	_add_tree(geom, Vector3(16, 0, -12), 1.2, 2.0)
+	_add_tree(geom, Vector3(-16, 0, -14), 1.4, 2.2)
+	_add_tree(geom, Vector3(6, 0, 16), 1.1, 1.8)
+
+	# --- Lanterns with point lights ---
+	_add_lantern(geom, Vector3(-3, 0, 2))
+	_add_lantern(geom, Vector3(3, 0, -4))
+	_add_lantern(geom, Vector3(-6, 0, -10))
+	_add_lantern(geom, Vector3(7, 0, 8))
+
+	# --- Fences ---
+	_add_fence(geom, Vector3(-14, 0.4, -3), Vector3(0.15, 0.8, 6))
+	_add_fence(geom, Vector3(14, 0.4, 5), Vector3(0.15, 0.8, 8))
+	_add_fence(geom, Vector3(5, 0.4, 14), Vector3(6, 0.8, 0.15))
+
+
+func _add_path(parent: Node3D, pos: Vector3, size: Vector3) -> void:
+	var path: CSGBox3D = CSGBox3D.new()
+	path.size = size
+	path.position = pos
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.65, 0.58, 0.48)
+	mat.roughness = 0.95
+	path.material = mat
+	parent.add_child(path)
+
+
+func _add_roof(building: CSGBox3D) -> void:
+	var roof: CSGBox3D = CSGBox3D.new()
+	roof.size = Vector3(building.size.x + 0.6, 0.6, building.size.z + 0.6)
+	roof.position = Vector3(0, building.size.y / 2.0 + 0.3, 0)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.65, 0.30, 0.22)
+	mat.roughness = 0.8
+	roof.material = mat
+	building.add_child(roof)
+	# Peak
+	var peak: CSGBox3D = CSGBox3D.new()
+	peak.size = Vector3(building.size.x - 1.0, 0.4, building.size.z - 1.0)
+	peak.position = Vector3(0, building.size.y / 2.0 + 0.8, 0)
+	peak.material = mat
+	building.add_child(peak)
+
+
+func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height: float) -> void:
+	var tree: Node3D = Node3D.new()
+	tree.position = pos
+	# Trunk
+	var trunk: CSGBox3D = CSGBox3D.new()
+	trunk.size = Vector3(0.4, trunk_height, 0.4)
+	trunk.position = Vector3(0, trunk_height / 2.0, 0)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.40, 0.28, 0.18)
+	trunk_mat.roughness = 0.9
+	trunk.material = trunk_mat
+	tree.add_child(trunk)
+	# Canopy (sphere)
+	var canopy: CSGSphere3D = CSGSphere3D.new()
+	canopy.radius = canopy_radius
+	canopy.radial_segments = 8
+	canopy.rings = 4
+	canopy.position = Vector3(0, trunk_height + canopy_radius * 0.7, 0)
+	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.30, 0.55, 0.28)
+	leaf_mat.roughness = 0.85
+	canopy.material = leaf_mat
+	tree.add_child(canopy)
+	parent.add_child(tree)
+
+
+func _add_lantern(parent: Node3D, pos: Vector3) -> void:
+	var lantern: Node3D = Node3D.new()
+	lantern.position = pos
+	# Post
+	var post: CSGBox3D = CSGBox3D.new()
+	post.size = Vector3(0.15, 2.0, 0.15)
+	post.position = Vector3(0, 1.0, 0)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.32, 0.20)
+	wood_mat.roughness = 0.9
+	post.material = wood_mat
+	lantern.add_child(post)
+	# Lamp head
+	var lamp: CSGBox3D = CSGBox3D.new()
+	lamp.size = Vector3(0.4, 0.5, 0.4)
+	lamp.position = Vector3(0, 2.2, 0)
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(1.0, 0.85, 0.5)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(1.0, 0.8, 0.4)
+	glow_mat.emission_energy_multiplier = 2.0
+	lamp.material = glow_mat
+	lantern.add_child(lamp)
+	# Point light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 2.5, 0)
+	light.light_color = Color(1.0, 0.85, 0.5)
+	light.light_energy = 1.5
+	light.omni_range = 8.0
+	light.omni_attenuation = 1.5
+	lantern.add_child(light)
+	parent.add_child(lantern)
+
+
+func _add_fence(parent: Node3D, pos: Vector3, size: Vector3) -> void:
+	var fence: CSGBox3D = CSGBox3D.new()
+	fence.size = size
+	fence.position = pos
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.45, 0.32, 0.20)
+	mat.roughness = 0.9
+	fence.material = mat
+	parent.add_child(fence)
 
 
 func _setup_environment() -> void:
