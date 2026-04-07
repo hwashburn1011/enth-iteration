@@ -56,6 +56,7 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.portal_used.connect(_on_portal_used)
 	EventBus.scene_changed.connect(_on_scene_changed)
+	EventBus.dialogue_ended.connect(_on_dialogue_ended_audio)
 
 
 var _music_play_countdown: int = 0
@@ -166,6 +167,12 @@ func _on_player_died(_pos: Vector3) -> void:
 
 func _on_portal_used() -> void:
 	play_sfx("portal_activate")
+
+
+func _on_dialogue_ended_audio() -> void:
+	# Retry music play after dialogue ends (tree was paused, play() was ignored)
+	if _music_player.stream != null and not _music_player.playing:
+		_music_player.play()
 
 
 func _on_scene_changed(path: String) -> void:
