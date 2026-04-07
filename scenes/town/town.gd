@@ -448,6 +448,23 @@ func _add_boundary_collision() -> void:
 		if wall:
 			wall.size = wall_configs[dir] as Vector3
 			wall.use_collision = true
+	# Backup: StaticBody3D walls with convex BoxShape3D (more reliable than CSG trimesh)
+	var backup_walls: Array[Array] = [
+		[Vector3(0, 1.5, -21), Vector3(44, 4, 4)],
+		[Vector3(0, 1.5, 21), Vector3(44, 4, 4)],
+		[Vector3(21, 1.5, 0), Vector3(4, 4, 44)],
+		[Vector3(-21, 1.5, 0), Vector3(4, 4, 44)],
+	]
+	for data: Array in backup_walls:
+		var body: StaticBody3D = StaticBody3D.new()
+		body.collision_layer = 1
+		var shape: CollisionShape3D = CollisionShape3D.new()
+		var box: BoxShape3D = BoxShape3D.new()
+		box.size = data[1] as Vector3
+		shape.shape = box
+		body.add_child(shape)
+		body.position = data[0] as Vector3
+		add_child(body)
 
 
 func _add_ground_collision() -> void:
