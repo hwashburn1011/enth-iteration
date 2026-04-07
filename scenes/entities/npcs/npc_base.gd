@@ -32,17 +32,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		_start_conversation()
 
 
+var _interact_indicator: Label3D = null
+var _indicator_base_y: float = 0.0
+
+
+func _process(delta: float) -> void:
+	# Pulse the interaction indicator
+	if _interact_indicator and _interact_indicator.visible:
+		_interact_indicator.position.y = _indicator_base_y + sin(Time.get_ticks_msec() * 0.005) * 0.1
+
+
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group(&"player"):
 		_player_in_range = true
-		_prompt_label.text = "Press E to talk"
+		_prompt_label.text = "[E] Talk"
 		_prompt_label.visible = true
+		if _interact_indicator:
+			_interact_indicator.visible = true
 
 
 func _on_body_exited(body: Node3D) -> void:
 	if body.is_in_group(&"player"):
 		_player_in_range = false
 		_prompt_label.visible = false
+		if _interact_indicator:
+			_interact_indicator.visible = false
 
 
 func _start_conversation() -> void:
@@ -81,7 +95,19 @@ func _build_npc_visual() -> void:
 	for child: Node in _model.get_children():
 		child.queue_free()
 
-	# Colors based on NPC ID
+	# Try Blender model based on NPC ID
+	var model_path: String = ""
+	match npc_id:
+		"ai_sage":
+			model_path = "res://assets/models/characters/ai_sage.glb"
+	if not model_path.is_empty():
+		var glb: PackedScene = load(model_path) as PackedScene
+		if glb:
+			var instance: Node3D = glb.instantiate() as Node3D
+			_model.add_child(instance)
+			return
+
+	# Fallback: Colors based on NPC ID
 	var body_color: Color = Color(0.6, 0.6, 0.65)
 	var head_color: Color = Color(0.7, 0.7, 0.75)
 	var glow_color: Color = Color(0.5, 0.5, 0.6)
@@ -173,3 +199,16 @@ func _build_npc_visual() -> void:
 			staff_mat.albedo_color = Color(0.4, 0.3, 0.2)
 			staff.material_override = staff_mat
 			_model.add_child(staff)
+
+	# Interaction indicator (floating !) — hidden by default
+	_interact_indicator = Label3D.new()
+	_interact_indicator.text = "!"
+	_interact_indicator.font_size = 42
+	_interact_indicator.modulate = Color(1.0, 0.9, 0.2)
+	_interact_indicator.outline_modulate = Color(0, 0, 0)
+	_interact_indicator.outline_size = 6
+	_interact_indicator.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_interact_indicator.position = Vector3(0, 2.2, 0)
+	_indicator_base_y = 2.2
+	_interact_indicator.visible = false
+	add_child(_interact_indicator)

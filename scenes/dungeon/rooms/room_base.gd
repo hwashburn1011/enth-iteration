@@ -26,6 +26,9 @@ func _ready() -> void:
 	_apply_dungeon_materials()
 	# Add tech props based on room type
 	_add_dungeon_props()
+	# Show exit indicator if already cleared (non-combat rooms)
+	if is_cleared:
+		_show_exit_indicator()
 
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
@@ -36,6 +39,50 @@ func _on_exit_trigger_body_entered(body: Node3D) -> void:
 func _on_all_enemies_defeated() -> void:
 	is_cleared = true
 	room_cleared.emit()
+	_show_exit_indicator()
+
+
+func _show_exit_indicator() -> void:
+	var exit_point: Marker3D = get_node_or_null("ExitTrigger") as Marker3D
+	if exit_point == null:
+		# Try finding ExitPoint marker instead
+		exit_point = get_node_or_null("ExitPoint") as Marker3D
+	if exit_point == null:
+		return
+	# Glowing green beacon
+	var beacon: MeshInstance3D = MeshInstance3D.new()
+	var cyl: CylinderMesh = CylinderMesh.new()
+	cyl.top_radius = 0.05
+	cyl.bottom_radius = 0.3
+	cyl.height = 3.0
+	beacon.mesh = cyl
+	beacon.position = Vector3(exit_point.position.x, 1.5, exit_point.position.z)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.1, 0.9, 0.3, 0.4)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.1, 0.8, 0.25)
+	mat.emission_energy_multiplier = 1.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beacon.material_override = mat
+	add_child(beacon)
+	# Arrow label pointing down
+	var arrow: Label3D = Label3D.new()
+	arrow.text = "EXIT"
+	arrow.font_size = 24
+	arrow.modulate = Color(0.2, 1.0, 0.4)
+	arrow.outline_modulate = Color(0, 0, 0)
+	arrow.outline_size = 4
+	arrow.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	arrow.position = Vector3(exit_point.position.x, 2.5, exit_point.position.z)
+	add_child(arrow)
+	# Point light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(exit_point.position.x, 1.0, exit_point.position.z)
+	light.light_color = Color(0.1, 0.9, 0.3)
+	light.light_energy = 1.5
+	light.omni_range = 4.0
+	add_child(light)
 
 
 func get_entry_point() -> Vector3:
