@@ -66,6 +66,10 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	if stream == null:
 		push_warning("AudioManager: '%s' is a placeholder — no audio data" % track_name)
 		return
+	# Enable looping for music
+	if stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+		(stream as AudioStreamWAV).loop_end = -1
 
 	if _music_player.playing:
 		# Crossfade
@@ -81,7 +85,8 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		_music_player.play()
+		# Defer play to next frame — AudioStreamWAV may need a frame to initialize
+		_music_player.play.call_deferred()
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
