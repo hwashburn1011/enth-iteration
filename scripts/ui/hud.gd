@@ -23,10 +23,54 @@ var _ability_slot_uis: Array[AbilitySlotUI] = []
 
 func _ready() -> void:
 	layer = 10
+	_apply_sci_fi_theme()
 	# Connect to player signals after a frame (player may not exist yet)
 	_connect_player.call_deferred()
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
+
+
+func _apply_sci_fi_theme() -> void:
+	# Health bar — red/green sci-fi
+	var health_bg: StyleBoxFlat = StyleBoxFlat.new()
+	health_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
+	health_bg.border_color = Color(0.5, 0.2, 0.2, 0.8)
+	health_bg.set_border_width_all(1)
+	health_bg.set_corner_radius_all(3)
+	health_bar.add_theme_stylebox_override(&"background", health_bg)
+	var health_fill: StyleBoxFlat = StyleBoxFlat.new()
+	health_fill.bg_color = Color(0.2, 0.75, 0.3)
+	health_fill.set_corner_radius_all(3)
+	health_bar.add_theme_stylebox_override(&"fill", health_fill)
+
+	# Compute bar — blue sci-fi
+	var compute_bg: StyleBoxFlat = StyleBoxFlat.new()
+	compute_bg.bg_color = Color(0.08, 0.08, 0.18, 0.9)
+	compute_bg.border_color = Color(0.2, 0.2, 0.5, 0.8)
+	compute_bg.set_border_width_all(1)
+	compute_bg.set_corner_radius_all(3)
+	compute_bar.add_theme_stylebox_override(&"background", compute_bg)
+	var compute_fill: StyleBoxFlat = StyleBoxFlat.new()
+	compute_fill.bg_color = Color(0.2, 0.4, 0.85)
+	compute_fill.set_corner_radius_all(3)
+	compute_bar.add_theme_stylebox_override(&"fill", compute_fill)
+
+	# XP bar — gold
+	var xp_bg: StyleBoxFlat = StyleBoxFlat.new()
+	xp_bg.bg_color = Color(0.12, 0.10, 0.05, 0.9)
+	xp_bg.border_color = Color(0.4, 0.35, 0.15, 0.8)
+	xp_bg.set_border_width_all(1)
+	xp_bg.set_corner_radius_all(2)
+	_xp_bar.add_theme_stylebox_override(&"background", xp_bg)
+	var xp_fill: StyleBoxFlat = StyleBoxFlat.new()
+	xp_fill.bg_color = Color(0.85, 0.7, 0.2)
+	xp_fill.set_corner_radius_all(2)
+	_xp_bar.add_theme_stylebox_override(&"fill", xp_fill)
+
+	# Labels — light color for dark backgrounds
+	health_label.add_theme_color_override(&"font_color", Color(0.9, 0.9, 0.9))
+	compute_label.add_theme_color_override(&"font_color", Color(0.9, 0.9, 0.9))
+	_level_label.add_theme_color_override(&"font_color", Color(0.9, 0.85, 0.6))
 
 
 func _connect_player() -> void:
