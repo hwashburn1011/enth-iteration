@@ -85,8 +85,12 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		# Defer play to next frame — AudioStreamWAV may need a frame to initialize
-		_music_player.play.call_deferred()
+		_music_player.play()
+		# Retry on next frame if play didn't take effect immediately
+		get_tree().create_timer(0.1).timeout.connect(func() -> void:
+			if not _music_player.playing and _music_player.stream != null:
+				_music_player.play()
+		)
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
