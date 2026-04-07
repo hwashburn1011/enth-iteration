@@ -13,12 +13,23 @@ const STATS: Array[String] = ["processing", "bandwidth", "memory", "integrity"]
 
 
 func populate(player: CharacterBody3D) -> void:
+	# Apply sci-fi panel style
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.06, 0.07, 0.14, 0.95)
+	panel_style.border_color = Color(0.15, 0.4, 0.5, 0.7)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(6)
+	panel_style.set_content_margin_all(14)
+	add_theme_stylebox_override(&"panel", panel_style)
+
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override(&"separation", 6)
 
 	var title: Label = Label.new()
 	title.text = "Character Stats"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	title.add_theme_font_size_override(&"font_size", 22)
 	vbox.add_child(title)
 
 	var sep: HSeparator = HSeparator.new()
@@ -39,10 +50,17 @@ func populate(player: CharacterBody3D) -> void:
 		var equip_bonus: float = float(equip_bonuses.get(stat_name, 0.0))
 		var total: float = stats_comp.get_stat(stat_name)
 
+		var stat_colors: Dictionary = {
+			"processing": Color(0.3, 0.85, 0.85),
+			"bandwidth": Color(0.3, 0.85, 0.4),
+			"memory": Color(0.6, 0.4, 0.85),
+			"integrity": Color(0.85, 0.6, 0.2),
+		}
 		var hbox: HBoxContainer = HBoxContainer.new()
 		var name_lbl: Label = Label.new()
 		name_lbl.text = stat_name.capitalize()
 		name_lbl.custom_minimum_size = Vector2(100, 0)
+		name_lbl.add_theme_color_override(&"font_color", stat_colors.get(stat_name, Color.WHITE) as Color)
 		hbox.add_child(name_lbl)
 
 		var breakdown: RichTextLabel = RichTextLabel.new()

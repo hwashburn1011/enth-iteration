@@ -19,6 +19,21 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	_tooltip.visible = false
+	_build_chest_visual()
+
+
+func _build_chest_visual() -> void:
+	var glb: PackedScene = load("res://assets/models/props/loot_chest.glb") as PackedScene
+	if glb and _mesh:
+		var instance: Node3D = glb.instantiate() as Node3D
+		_mesh.add_child(instance)
+		# Add a subtle glow light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = Vector3(0, 0.5, 0)
+		light.light_color = Color(0.2, 0.6, 0.7)
+		light.light_energy = 0.8
+		light.omni_range = 3.0
+		_mesh.add_child(light)
 
 
 func _unhandled_input(event: InputEvent) -> void:

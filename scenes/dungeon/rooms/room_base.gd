@@ -230,6 +230,21 @@ func _add_dungeon_props() -> void:
 	var half_x: float = plane.size.x / 2.0 - 1.5
 	var half_z: float = plane.size.y / 2.0 - 1.5
 
+	# Wall pipe bundles on all room types
+	var pipe_scene: PackedScene = load("res://assets/models/props/wall_pipes.glb") as PackedScene
+	if pipe_scene:
+		# Pipes along two walls
+		for wall_side: int in [0, 1]:
+			var pipes: Node3D = pipe_scene.instantiate() as Node3D
+			pipes.scale = Vector3(1, 1, 1)
+			geom.add_child(pipes)
+			if wall_side == 0:
+				pipes.position = Vector3(-half_x + 0.15, 0, 2.2)
+				pipes.rotation.y = PI / 2.0
+			else:
+				pipes.position = Vector3(half_x - 0.15, 0, 2.2)
+				pipes.rotation.y = -PI / 2.0
+
 	# Server racks along walls (combat and corridor rooms)
 	if room_type in ["combat", "corridor"]:
 		var rack_scene: PackedScene = load("res://assets/models/props/server_rack.glb") as PackedScene
