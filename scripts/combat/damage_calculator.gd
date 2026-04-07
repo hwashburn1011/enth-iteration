@@ -44,6 +44,12 @@ static func calculate(info: Resource) -> Resource:
 	# Emit event
 	EventBus.damage_dealt.emit(int(info.final_damage), info.source, info.target, info.damage_type)
 
+	# Spawn VFX
+	if info.target is Node3D:
+		var target_3d: Node3D = info.target as Node3D
+		VFXFactory.spawn_damage_number(target_3d.global_position, int(info.final_damage), info.is_critical, target_3d.get_tree().current_scene)
+		VFXFactory.spawn_hit_flash(target_3d.global_position + Vector3(0, 0.5, 0), target_3d.get_tree().current_scene)
+
 	return info
 
 

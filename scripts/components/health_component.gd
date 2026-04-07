@@ -35,6 +35,10 @@ func heal(amount: float) -> void:
 		return
 	current_health = minf(max_health, current_health + amount)
 	health_changed.emit(current_health, max_health)
+	# Heal VFX
+	var parent: Node = get_parent()
+	if parent is Node3D:
+		VFXFactory.spawn_heal_particles((parent as Node3D).global_position, parent.get_tree().current_scene)
 
 
 func reset() -> void:
