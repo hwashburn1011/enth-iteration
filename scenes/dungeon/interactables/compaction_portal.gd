@@ -17,6 +17,25 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	_label.visible = false
+	_build_portal_visual()
+
+
+func _build_portal_visual() -> void:
+	# Load the portal archway model
+	var archway: PackedScene = load("res://assets/models/props/portal_archway.glb") as PackedScene
+	if archway:
+		var instance: Node3D = archway.instantiate() as Node3D
+		add_child(instance)
+		instance.position = Vector3.ZERO
+	# Add portal particle swirl
+	VFXFactory.spawn_portal_particles(global_position, self)
+	# Add a point light for the portal glow
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 1.5, 0)
+	light.light_color = Color(0.2, 0.5, 0.8)
+	light.light_energy = 2.0
+	light.omni_range = 6.0
+	add_child(light)
 
 
 func _process(delta: float) -> void:
