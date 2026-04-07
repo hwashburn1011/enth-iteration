@@ -12,7 +12,7 @@ emission = Color(0.2, 0.15, 0.3, 1)
 emission_energy_multiplier = 0.3
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
-radius = 2.0
+radius = 4.5
 
 [node name="DungeonEntrance" type="Node3D"]
 script = ExtResource("1_script")
