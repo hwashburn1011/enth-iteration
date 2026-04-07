@@ -1,4 +1,4 @@
-class_name ColorPalette
+class_name EnthColorPalette
 extends RefCounted
 ## Centralized color palette for consistent visual identity across all placeholders.
 
