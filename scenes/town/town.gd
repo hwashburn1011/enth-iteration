@@ -317,11 +317,11 @@ func _add_ground_patches(parent: Node3D) -> void:
 			parent.add_child(rock)
 
 
-func _add_prop(parent: Node3D, path: String, pos: Vector3, scale: Vector3) -> void:
+func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) -> void:
 	var scene: PackedScene = load(path) as PackedScene
 	if scene:
 		var instance: Node3D = scene.instantiate() as Node3D
-		instance.scale = scale
+		instance.scale = prop_scale
 		parent.add_child(instance)
 		instance.global_position = pos
 

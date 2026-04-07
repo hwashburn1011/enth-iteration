@@ -6,7 +6,6 @@ var _music_player: AudioStreamPlayer = null
 var _music_tween: Tween = null
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _current_track: String = ""
-var _pending_music_play: bool = false
 
 const SFX_POOL_SIZE: int = 8
 
@@ -59,7 +58,6 @@ func _ready() -> void:
 	EventBus.dialogue_ended.connect(_on_dialogue_ended_audio)
 
 
-var _music_play_countdown: int = 0
 var _pending_stream: AudioStream = null
 
 func _process(_delta: float) -> void:

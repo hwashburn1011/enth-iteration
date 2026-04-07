@@ -25,8 +25,8 @@ func _build_entrance_visual() -> void:
 		var archway: Node3D = archway_scene.instantiate() as Node3D
 		add_child(archway)
 		archway.position = Vector3.ZERO
-	# Add portal particles
-	VFXFactory.spawn_portal_particles(global_position + Vector3(0, 1.5, 0), self)
+	# Add portal particles (use position since global_position may not be set yet in _ready)
+	VFXFactory.spawn_portal_particles(Vector3(0, 1.5, 0), self)
 	# Glow light
 	var light: OmniLight3D = OmniLight3D.new()
 	light.position = Vector3(0, 2, 0)

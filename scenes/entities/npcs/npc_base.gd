@@ -36,7 +36,7 @@ var _interact_indicator: Label3D = null
 var _indicator_base_y: float = 0.0
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	# Pulse the interaction indicator
 	if _interact_indicator and _interact_indicator.visible:
 		_interact_indicator.position.y = _indicator_base_y + sin(Time.get_ticks_msec() * 0.005) * 0.1
