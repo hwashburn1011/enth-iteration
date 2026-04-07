@@ -63,21 +63,13 @@ var _music_play_countdown: int = 0
 var _pending_stream: AudioStream = null
 
 func _process(_delta: float) -> void:
-	if _music_play_countdown > 0:
-		_music_play_countdown -= 1
-		if _music_play_countdown == 0 and _pending_stream != null:
-			# Create a completely fresh player to avoid any stale state
-			if is_instance_valid(_music_player):
-				_music_player.stop()
-				_music_player.queue_free()
-			var fresh: AudioStreamPlayer = AudioStreamPlayer.new()
-			fresh.bus = &"Master"
-			fresh.stream = _pending_stream
-			fresh.process_mode = Node.PROCESS_MODE_ALWAYS
-			add_child(fresh)
-			fresh.play()
-			_music_player = fresh
-			_pending_stream = null
+	# Keep retrying until music actually plays
+	if _pending_stream != null and not _music_player.playing:
+		if not get_tree().paused:
+			_music_player.stream = _pending_stream
+			_music_player.play()
+			if _music_player.playing:
+				_pending_stream = null
 
 
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
@@ -111,11 +103,12 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 		)
 		_music_tween.tween_property(_music_player, "volume_db", 0.0, fade_duration * 0.5)
 	else:
-		# Direct play — the music player has PROCESS_MODE_ALWAYS so it
-		# keeps playing even during dialogue pause
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		_music_player.play()
+		# Deferred play — direct play() fails during scene transitions
+		_music_player.play.call_deferred()
+		# Also set pending flag for _process retry
+		_pending_stream = stream
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
