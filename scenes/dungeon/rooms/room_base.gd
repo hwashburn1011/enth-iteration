@@ -26,6 +26,8 @@ func _ready() -> void:
 	_apply_dungeon_materials()
 	# Add tech props based on room type
 	_add_dungeon_props()
+	# Add door model at exit
+	_add_exit_door()
 	# Show exit indicator if already cleared (corridors only — tutorials override is_cleared)
 	if is_cleared and room_type == "corridor":
 		_show_exit_indicator()
@@ -252,6 +254,23 @@ func _add_room_glow_strips(geom: Node) -> void:
 		strip.size = data[1] as Vector3
 		strip.material = glow_mat
 		geom.add_child(strip)
+
+
+func _add_exit_door() -> void:
+	var exit_trigger: Node3D = get_node_or_null("ExitTrigger") as Node3D
+	if exit_trigger == null:
+		exit_trigger = get_node_or_null("ExitPoint") as Node3D
+	if exit_trigger == null:
+		return
+	var door_scene: PackedScene = load("res://assets/models/props/tech_door.glb") as PackedScene
+	if door_scene:
+		var door: Node3D = door_scene.instantiate() as Node3D
+		add_child(door)
+		door.position = exit_trigger.position
+		# Face the door toward the room center
+		var to_center: Vector3 = (Vector3.ZERO - exit_trigger.position).normalized()
+		if to_center.length() > 0.1:
+			door.rotation.y = atan2(to_center.x, to_center.z)
 
 
 func _add_ambient_particles() -> void:
