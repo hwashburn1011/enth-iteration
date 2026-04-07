@@ -203,6 +203,14 @@ func _build_town_decorations() -> void:
 	# --- Portal archway at dungeon entrance ---
 	_add_prop(geom, "res://assets/models/props/portal_archway.glb", Vector3(0, 0, -15), Vector3(1, 1, 1))
 
+	# --- Detail props: barrels, crates, signpost, well ---
+	_add_prop(geom, "res://assets/models/props/barrel.glb", Vector3(-12, 0, -6), Vector3(1, 1, 1))
+	_add_prop(geom, "res://assets/models/props/barrel.glb", Vector3(-11.5, 0, -5.5), Vector3(0.9, 0.9, 0.9))
+	_add_prop(geom, "res://assets/models/props/crate_stack.glb", Vector3(11, 0, 8), Vector3(1, 1, 1))
+	_add_prop(geom, "res://assets/models/props/crate_stack.glb", Vector3(-9, 0, 11), Vector3(0.8, 0.8, 0.8))
+	_add_prop(geom, "res://assets/models/props/signpost.glb", Vector3(2, 0, 3), Vector3(1.2, 1.2, 1.2))
+	_add_prop(geom, "res://assets/models/props/stone_well.glb", Vector3(0, 0, 0), Vector3(1.3, 1.3, 1.3))
+
 
 func _add_ground_patches(parent: Node3D) -> void:
 	# Darker grass patches near buildings for depth
