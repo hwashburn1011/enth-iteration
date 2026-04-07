@@ -61,6 +61,15 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	if _pending_music_play and _music_player.stream != null:
 		_pending_music_play = false
+		# Recreate the player to avoid corrupted state from bad bus assignment
+		var stream: AudioStream = _music_player.stream
+		var vol: float = _music_player.volume_db
+		_music_player.queue_free()
+		_music_player = AudioStreamPlayer.new()
+		_music_player.bus = &"Master"
+		_music_player.stream = stream
+		_music_player.volume_db = vol
+		add_child(_music_player)
 		_music_player.play()
 
 
