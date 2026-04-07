@@ -9,6 +9,14 @@ const FLOOR_DATA_PATHS: Array[String] = [
 	"res://data/floors/floor_5_boss.tres",
 ]
 
+const FLOOR_ACCENT_COLORS: Array[Color] = [
+	Color(0.08, 0.4, 0.6),    # Floor 1: cyan (tutorial)
+	Color(0.1, 0.55, 0.3),    # Floor 2: green (data sector)
+	Color(0.6, 0.5, 0.15),    # Floor 3: amber (exploration)
+	Color(0.65, 0.3, 0.1),    # Floor 4: orange (challenge)
+	Color(0.6, 0.1, 0.1),     # Floor 5: red (boss)
+]
+
 const FLOOR_CONFIGS: Dictionary = {
 	2: "res://scripts/dungeon/floor_2_config.gd",
 	3: "res://scripts/dungeon/floor_3_config.gd",
@@ -110,6 +118,10 @@ func _load_floor(index: int) -> void:
 	if data == null:
 		push_error("Dungeon: failed to load floor data at index %d" % index)
 		return
+
+	# Set floor accent color for room theming
+	if index < FLOOR_ACCENT_COLORS.size():
+		GameManager.set_meta(&"floor_accent_color", FLOOR_ACCENT_COLORS[index])
 
 	# Set floor-specific room configurator
 	var floor_number: int = data.floor_number

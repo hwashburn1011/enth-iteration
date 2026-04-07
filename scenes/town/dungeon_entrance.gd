@@ -15,6 +15,26 @@ func _ready() -> void:
 	_interaction_area.body_entered.connect(_on_body_entered)
 	_interaction_area.body_exited.connect(_on_body_exited)
 	_label.visible = false
+	_build_entrance_visual()
+
+
+func _build_entrance_visual() -> void:
+	# Load portal archway model
+	var archway_scene: PackedScene = load("res://assets/models/props/portal_archway.glb") as PackedScene
+	if archway_scene:
+		var archway: Node3D = archway_scene.instantiate() as Node3D
+		add_child(archway)
+		archway.position = Vector3.ZERO
+	# Add portal particles
+	VFXFactory.spawn_portal_particles(global_position + Vector3(0, 1.5, 0), self)
+	# Glow light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 2, 0)
+	light.light_color = Color(0.2, 0.4, 0.8)
+	light.light_energy = 2.5
+	light.omni_range = 8.0
+	light.omni_attenuation = 1.5
+	add_child(light)
 
 
 func _unhandled_input(event: InputEvent) -> void:

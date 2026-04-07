@@ -194,9 +194,10 @@ func _add_room_glow_strips(geom: Node) -> void:
 		return
 	var half_x: float = plane.size.x / 2.0 - 0.3
 	var half_z: float = plane.size.y / 2.0 - 0.3
-	# Glowing strip material
+	# Glowing strip material — use floor accent color if available
+	var accent: Color = GameManager.get_meta(&"floor_accent_color", Color(0.08, 0.35, 0.55)) as Color
 	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
-	glow_mat.albedo_color = Color(0.1, 0.4, 0.6)
+	glow_mat.albedo_color = accent
 	glow_mat.emission_enabled = true
 	glow_mat.emission = Color(0.08, 0.35, 0.55)
 	glow_mat.emission_energy_multiplier = 1.2
@@ -253,7 +254,8 @@ func _add_dungeon_props() -> void:
 			terminal.position = Vector3(randf_range(-2, 2), 0, randf_range(-half_z * 0.3, half_z * 0.3))
 
 	# Corner point lights for all rooms
-	var corner_color: Color = Color(0.08, 0.3, 0.5) if room_type != "combat" else Color(0.5, 0.1, 0.08)
+	var floor_accent: Color = GameManager.get_meta(&"floor_accent_color", Color(0.08, 0.35, 0.55)) as Color
+	var corner_color: Color = floor_accent if room_type != "combat" else Color(floor_accent.r + 0.2, floor_accent.g * 0.5, floor_accent.b * 0.5)
 	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
 		var light: OmniLight3D = OmniLight3D.new()
 		light.position = Vector3(corner.x * (half_x - 0.5), 2.5, corner.y * (half_z - 0.5))

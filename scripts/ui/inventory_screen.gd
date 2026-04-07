@@ -58,7 +58,7 @@ func _build_ui() -> void:
 	# Background dim
 	var bg: ColorRect = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0, 0, 0, 0.6)
+	bg.color = Color(0.02, 0.02, 0.06, 0.7)
 	_panel.add_child(bg)
 
 	var hbox: HBoxContainer = HBoxContainer.new()
@@ -69,12 +69,23 @@ func _build_ui() -> void:
 	hbox.offset_bottom = 250.0
 	hbox.add_theme_constant_override(&"separation", 16)
 
+	# Sci-fi panel style for sections
+	var section_style: StyleBoxFlat = StyleBoxFlat.new()
+	section_style.bg_color = Color(0.06, 0.07, 0.14, 0.92)
+	section_style.border_color = Color(0.15, 0.4, 0.5, 0.7)
+	section_style.set_border_width_all(2)
+	section_style.set_corner_radius_all(6)
+	section_style.set_content_margin_all(12)
+
 	# Left: Equipment
 	var equip_panel: PanelContainer = PanelContainer.new()
+	equip_panel.add_theme_stylebox_override(&"panel", section_style)
 	var equip_vbox: VBoxContainer = VBoxContainer.new()
 	var equip_title: Label = Label.new()
 	equip_title.text = "Equipment"
 	equip_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	equip_title.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	equip_title.add_theme_font_size_override(&"font_size", 20)
 	equip_vbox.add_child(equip_title)
 	_build_equipment_slots(equip_vbox)
 	equip_panel.add_child(equip_vbox)
@@ -82,10 +93,13 @@ func _build_ui() -> void:
 
 	# Right: Grid inventory
 	var inv_panel: PanelContainer = PanelContainer.new()
+	inv_panel.add_theme_stylebox_override(&"panel", section_style.duplicate())
 	var inv_vbox: VBoxContainer = VBoxContainer.new()
 	var inv_title: Label = Label.new()
 	inv_title.text = "Inventory"
 	inv_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	inv_title.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	inv_title.add_theme_font_size_override(&"font_size", 20)
 	inv_vbox.add_child(inv_title)
 	_build_grid(inv_vbox)
 	inv_panel.add_child(inv_vbox)
