@@ -67,9 +67,18 @@ func _process(_delta: float) -> void:
 	if _pending_stream != null and not _music_player.playing:
 		if not get_tree().paused:
 			_music_player.stream = _pending_stream
+			# Ensure loop mode is set
+			if _music_player.stream is AudioStreamWAV:
+				(_music_player.stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
 			_music_player.play()
 			if _music_player.playing:
 				_pending_stream = null
+	# Also check if music stopped (non-looping track ended) and restart
+	elif _music_player.stream != null and not _music_player.playing and _current_track != "":
+		if _music_player.stream is AudioStreamWAV:
+			(_music_player.stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+		if not get_tree().paused:
+			_music_player.play()
 
 
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
