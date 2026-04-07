@@ -26,9 +26,11 @@ func _ready() -> void:
 	_apply_dungeon_materials()
 	# Add tech props based on room type
 	_add_dungeon_props()
-	# Show exit indicator if already cleared (non-combat rooms)
-	if is_cleared:
+	# Show exit indicator if already cleared (corridors only — tutorials override is_cleared)
+	if is_cleared and room_type == "corridor":
 		_show_exit_indicator()
+	# Ambient digital particles
+	_add_ambient_particles()
 
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
@@ -214,6 +216,53 @@ func _add_room_glow_strips(geom: Node) -> void:
 		strip.size = data[1] as Vector3
 		strip.material = glow_mat
 		geom.add_child(strip)
+
+
+func _add_ambient_particles() -> void:
+	var geom: Node = get_node_or_null("Geometry")
+	if geom == null:
+		return
+	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
+	if floor_node == null:
+		return
+	var plane: PlaneMesh = floor_node.mesh as PlaneMesh
+	if plane == null:
+		return
+
+	var accent: Color = GameManager.get_meta(&"floor_accent_color", Color(0.08, 0.35, 0.55)) as Color
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 20
+	particles.lifetime = 5.0
+	particles.position = Vector3(0, 1.5, 0)
+	particles.visibility_aabb = AABB(Vector3(-plane.size.x / 2, -1, -plane.size.y / 2), Vector3(plane.size.x, 4, plane.size.y))
+
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 0.5, 0)
+	mat.spread = 180.0
+	mat.initial_velocity_min = 0.1
+	mat.initial_velocity_max = 0.3
+	mat.gravity = Vector3(0, 0.05, 0)
+	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	mat.emission_box_extents = Vector3(plane.size.x / 2 - 1, 1, plane.size.y / 2 - 1)
+	mat.color = Color(accent.r, accent.g, accent.b, 0.5)
+	mat.scale_min = 0.3
+	mat.scale_max = 1.0
+	particles.process_material = mat
+
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.04, 0.04, 0.04)
+	particles.draw_pass_1 = mesh
+
+	var vis_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vis_mat.albedo_color = Color(accent.r, accent.g, accent.b, 0.4)
+	vis_mat.emission_enabled = true
+	vis_mat.emission = accent
+	vis_mat.emission_energy_multiplier = 1.5
+	vis_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis_mat
+
+	add_child(particles)
 
 
 func _add_dungeon_props() -> void:
