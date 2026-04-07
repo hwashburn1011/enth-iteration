@@ -58,19 +58,25 @@ func _ready() -> void:
 	EventBus.scene_changed.connect(_on_scene_changed)
 
 
+var _music_play_countdown: int = 0
+
 func _process(_delta: float) -> void:
-	if _pending_music_play and _music_player.stream != null:
-		_pending_music_play = false
-		# Recreate the player to avoid corrupted state from bad bus assignment
+	# Two-phase music start: frame 1 = setup, frame 2 = play
+	if _music_play_countdown == 2:
+		_music_play_countdown = 1
+		# Phase 1: recreate player and add to tree
 		var stream: AudioStream = _music_player.stream
-		var vol: float = _music_player.volume_db
 		_music_player.queue_free()
 		_music_player = AudioStreamPlayer.new()
 		_music_player.bus = &"Master"
 		_music_player.stream = stream
-		_music_player.volume_db = vol
+		_music_player.volume_db = 0.0
 		add_child(_music_player)
-		_music_player.play()
+	elif _music_play_countdown == 1:
+		_music_play_countdown = 0
+		# Phase 2: play (node is now in tree from last frame)
+		if _music_player.stream != null:
+			_music_player.play()
 
 
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
@@ -106,10 +112,8 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		if AudioServer.get_bus_index(_music_player.bus) < 0:
-			_music_player.bus = &"Master"
-		# Schedule play for next process frame to avoid scene-change timing issues
-		_pending_music_play = true
+		# Schedule two-phase play: frame 1 recreates player, frame 2 plays
+		_music_play_countdown = 2
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
