@@ -26,9 +26,26 @@ func _ready() -> void:
 
 	if item:
 		_label.text = item.item_name
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = _rarity_color(item.rarity)
-		_mesh.material_override = mat
+		# Try loading Blender crystal model
+		var crystal: PackedScene = load("res://assets/models/props/item_pickup.glb") as PackedScene
+		if crystal:
+			var instance: Node3D = crystal.instantiate() as Node3D
+			_mesh.add_child(instance)
+			# Color the crystal based on rarity
+			var rarity_col: Color = _rarity_color(item.rarity)
+			for child: Node in instance.get_children():
+				if child is MeshInstance3D:
+					var mat: StandardMaterial3D = StandardMaterial3D.new()
+					mat.albedo_color = rarity_col
+					mat.emission_enabled = true
+					mat.emission = rarity_col * 0.7
+					mat.emission_energy_multiplier = 2.0
+					mat.roughness = 0.2
+					(child as MeshInstance3D).material_override = mat
+		else:
+			var mat: StandardMaterial3D = StandardMaterial3D.new()
+			mat.albedo_color = _rarity_color(item.rarity)
+			_mesh.material_override = mat
 
 	_tooltip.visible = false
 

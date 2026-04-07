@@ -149,12 +149,31 @@ func _build_town_decorations() -> void:
 	_add_path(geom, Vector3(0, 0.01, 0), Vector3(24, 0.02, 3))
 	_add_path(geom, Vector3(0, 0.01, -10), Vector3(3, 0.02, 12))
 
-	# --- Rooftops on buildings + collision ---
+	# --- Ground variation patches ---
+	_add_ground_patches(geom)
+
+	# --- Replace CSG buildings with Blender models ---
+	var building_models: Array[String] = [
+		"res://assets/models/buildings/cottage_01.glb",
+		"res://assets/models/buildings/workshop_01.glb",
+		"res://assets/models/buildings/cottage_01.glb",
+		"res://assets/models/buildings/workshop_01.glb",
+	]
+	var building_rotations: Array[float] = [0, 0, PI, PI / 2.0]
 	for i: int in range(1, 5):
 		var building: CSGBox3D = geom.get_node_or_null("Building%d" % i) as CSGBox3D
 		if building:
-			building.use_collision = true
-			_add_roof(building)
+			var pos: Vector3 = building.global_position
+			var glb: PackedScene = load(building_models[i - 1]) as PackedScene
+			if glb:
+				building.visible = false
+				var instance: Node3D = glb.instantiate() as Node3D
+				instance.rotation.y = building_rotations[i - 1]
+				geom.add_child(instance)
+				instance.global_position = Vector3(pos.x, 0, pos.z)
+			else:
+				building.use_collision = true
+				_add_roof(building)
 
 	# --- Trees ---
 	_add_tree(geom, Vector3(-15, 0, 3), 1.5, 2.4)
@@ -183,6 +202,47 @@ func _build_town_decorations() -> void:
 
 	# --- Portal archway at dungeon entrance ---
 	_add_prop(geom, "res://assets/models/props/portal_archway.glb", Vector3(0, 0, -15), Vector3(1, 1, 1))
+
+
+func _add_ground_patches(parent: Node3D) -> void:
+	# Darker grass patches near buildings for depth
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.35, 0.58, 0.34)
+	dark_mat.roughness = 0.95
+	var light_mat: StandardMaterial3D = StandardMaterial3D.new()
+	light_mat.albedo_color = Color(0.48, 0.72, 0.45)
+	light_mat.roughness = 0.9
+	# Dark patches near buildings
+	var dark_positions: Array[Vector3] = [
+		Vector3(-10, 0.005, -8), Vector3(10, 0.005, -6),
+		Vector3(-8, 0.005, 8), Vector3(8, 0.005, 10),
+	]
+	for pos: Vector3 in dark_positions:
+		var patch: CSGBox3D = CSGBox3D.new()
+		patch.size = Vector3(8, 0.01, 7)
+		patch.position = pos
+		patch.material = dark_mat
+		parent.add_child(patch)
+	# Light patches in open areas
+	for pos: Vector3 in [Vector3(-12, 0.005, 12), Vector3(12, 0.005, -14), Vector3(0, 0.005, 8)]:
+		var patch: CSGBox3D = CSGBox3D.new()
+		patch.size = Vector3(5, 0.01, 5)
+		patch.position = pos
+		patch.material = light_mat
+		parent.add_child(patch)
+	# Small rock clusters
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.5, 0.48, 0.45)
+	rock_mat.roughness = 0.95
+	for pos: Vector3 in [Vector3(-13, 0.1, 10), Vector3(15, 0.1, -8), Vector3(-3, 0.1, -12)]:
+		for j: int in 3:
+			var rock: CSGSphere3D = CSGSphere3D.new()
+			rock.radius = randf_range(0.15, 0.3)
+			rock.radial_segments = 6
+			rock.rings = 3
+			rock.position = pos + Vector3(randf_range(-0.4, 0.4), 0, randf_range(-0.4, 0.4))
+			rock.material = rock_mat
+			parent.add_child(rock)
 
 
 func _add_prop(parent: Node3D, path: String, pos: Vector3, scale: Vector3) -> void:
