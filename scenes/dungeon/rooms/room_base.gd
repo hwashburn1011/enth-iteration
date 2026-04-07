@@ -364,6 +364,16 @@ func _add_dungeon_props() -> void:
 					rack.position = Vector3(half_x, 0, randf_range(-half_z * 0.5, half_z * 0.5))
 					rack.rotation.y = -PI / 2.0
 
+	# Loot room golden ambient glow
+	if room_type == "loot":
+		var gold_light: OmniLight3D = OmniLight3D.new()
+		gold_light.position = Vector3(0, 2.0, 0)
+		gold_light.light_color = Color(1.0, 0.85, 0.4)
+		gold_light.light_energy = 1.2
+		gold_light.omni_range = 8.0
+		gold_light.omni_attenuation = 1.5
+		geom.add_child(gold_light)
+
 	# Data terminals (loot and story rooms)
 	if room_type in ["loot", "story"]:
 		var term_scene: PackedScene = load("res://assets/models/props/data_terminal.glb") as PackedScene
@@ -371,6 +381,20 @@ func _add_dungeon_props() -> void:
 			var terminal: Node3D = term_scene.instantiate() as Node3D
 			geom.add_child(terminal)
 			terminal.position = Vector3(randf_range(-2, 2), 0, randf_range(-half_z * 0.3, half_z * 0.3))
+
+	# Energy crystal decorations (scattered in some rooms)
+	var crystal_scene: PackedScene = load("res://assets/models/props/energy_crystal.glb") as PackedScene
+	if crystal_scene and room_type in ["combat", "corridor"]:
+		for _i: int in randi_range(1, 3):
+			var crystal: Node3D = crystal_scene.instantiate() as Node3D
+			crystal.scale = Vector3(randf_range(0.6, 1.2), randf_range(0.6, 1.2), randf_range(0.6, 1.2))
+			crystal.rotation.y = randf() * TAU
+			geom.add_child(crystal)
+			crystal.position = Vector3(
+				randf_range(-half_x * 0.7, half_x * 0.7),
+				0,
+				randf_range(-half_z * 0.7, half_z * 0.7)
+			)
 
 	# Corner point lights for all rooms
 	var floor_accent: Color = GameManager.get_meta(&"floor_accent_color", Color(0.08, 0.35, 0.55)) as Color

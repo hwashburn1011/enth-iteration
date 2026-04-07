@@ -36,6 +36,39 @@ func _build_entrance_visual() -> void:
 	light.omni_attenuation = 1.5
 	add_child(light)
 
+	# Tall beacon pillar visible from spawn — makes entrance findable
+	var beacon: MeshInstance3D = MeshInstance3D.new()
+	var cyl: CylinderMesh = CylinderMesh.new()
+	cyl.top_radius = 0.03
+	cyl.bottom_radius = 0.15
+	cyl.height = 8.0
+	beacon.mesh = cyl
+	beacon.position = Vector3(0, 4.0, 0)
+	var beacon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beacon_mat.albedo_color = Color(0.15, 0.4, 0.7, 0.3)
+	beacon_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beacon_mat.emission_enabled = true
+	beacon_mat.emission = Color(0.1, 0.35, 0.65)
+	beacon_mat.emission_energy_multiplier = 1.5
+	beacon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beacon.material_override = beacon_mat
+	add_child(beacon)
+
+	# Beacon top orb
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var orb_mesh: SphereMesh = SphereMesh.new()
+	orb_mesh.radius = 0.2
+	orb_mesh.height = 0.4
+	orb.mesh = orb_mesh
+	orb.position = Vector3(0, 8.2, 0)
+	var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	orb_mat.albedo_color = Color(0.2, 0.5, 0.9)
+	orb_mat.emission_enabled = true
+	orb_mat.emission = Color(0.15, 0.45, 0.85)
+	orb_mat.emission_energy_multiplier = 3.0
+	orb.material_override = orb_mat
+	add_child(orb)
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not _player_in_range or _confirm_ui != null:
