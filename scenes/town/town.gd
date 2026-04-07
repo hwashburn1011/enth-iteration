@@ -205,29 +205,37 @@ func _add_roof(building: CSGBox3D) -> void:
 
 
 func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height: float) -> void:
-	var tree: Node3D = Node3D.new()
-	tree.position = pos
-	# Trunk
-	var trunk: CSGBox3D = CSGBox3D.new()
-	trunk.size = Vector3(0.4, trunk_height, 0.4)
-	trunk.position = Vector3(0, trunk_height / 2.0, 0)
-	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
-	trunk_mat.albedo_color = Color(0.40, 0.28, 0.18)
-	trunk_mat.roughness = 0.9
-	trunk.material = trunk_mat
-	tree.add_child(trunk)
-	# Canopy (sphere)
-	var canopy: CSGSphere3D = CSGSphere3D.new()
-	canopy.radius = canopy_radius
-	canopy.radial_segments = 8
-	canopy.rings = 4
-	canopy.position = Vector3(0, trunk_height + canopy_radius * 0.7, 0)
-	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
-	leaf_mat.albedo_color = Color(0.30, 0.55, 0.28)
-	leaf_mat.roughness = 0.85
-	canopy.material = leaf_mat
-	tree.add_child(canopy)
-	parent.add_child(tree)
+	# Try to use Blender-made model, fall back to CSG
+	var tree_scene: PackedScene = load("res://assets/models/props/tree_01.glb") as PackedScene
+	if tree_scene:
+		var tree: Node3D = tree_scene.instantiate() as Node3D
+		var scale_factor: float = canopy_radius / 1.3  # Base model has radius 1.3
+		tree.scale = Vector3(scale_factor, scale_factor, scale_factor)
+		parent.add_child(tree)
+		tree.global_position = pos
+	else:
+		# Fallback to CSG
+		var tree: Node3D = Node3D.new()
+		tree.position = pos
+		var trunk: CSGBox3D = CSGBox3D.new()
+		trunk.size = Vector3(0.4, trunk_height, 0.4)
+		trunk.position = Vector3(0, trunk_height / 2.0, 0)
+		var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+		trunk_mat.albedo_color = Color(0.40, 0.28, 0.18)
+		trunk_mat.roughness = 0.9
+		trunk.material = trunk_mat
+		tree.add_child(trunk)
+		var canopy: CSGSphere3D = CSGSphere3D.new()
+		canopy.radius = canopy_radius
+		canopy.radial_segments = 8
+		canopy.rings = 4
+		canopy.position = Vector3(0, trunk_height + canopy_radius * 0.7, 0)
+		var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+		leaf_mat.albedo_color = Color(0.30, 0.55, 0.28)
+		leaf_mat.roughness = 0.85
+		canopy.material = leaf_mat
+		tree.add_child(canopy)
+		parent.add_child(tree)
 
 
 func _add_lantern(parent: Node3D, pos: Vector3) -> void:
