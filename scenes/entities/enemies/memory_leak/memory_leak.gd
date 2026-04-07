@@ -19,7 +19,12 @@ func _ready() -> void:
 func _build_enemy_visual() -> void:
 	for child: Node in model.get_children():
 		child.queue_free()
-	# Green ooze blob — semi-transparent pulsing
+	var glb: PackedScene = load("res://assets/models/enemies/memory_leak.glb") as PackedScene
+	if glb:
+		var instance: Node3D = glb.instantiate() as Node3D
+		model.add_child(instance)
+		return
+	# Fallback: Green ooze blob
 	var body: MeshInstance3D = MeshInstance3D.new()
 	var sphere: SphereMesh = SphereMesh.new()
 	sphere.radius = 0.4

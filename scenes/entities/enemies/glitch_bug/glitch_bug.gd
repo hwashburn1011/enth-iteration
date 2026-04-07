@@ -20,7 +20,13 @@ func _build_enemy_visual() -> void:
 	# Clear existing mesh
 	for child: Node in model.get_children():
 		child.queue_free()
-	# Red spiky body — small aggressive creature
+	# Try Blender model first
+	var glb: PackedScene = load("res://assets/models/enemies/glitch_bug.glb") as PackedScene
+	if glb:
+		var instance: Node3D = glb.instantiate() as Node3D
+		model.add_child(instance)
+		return
+	# Fallback: Red spiky body — small aggressive creature
 	var body: MeshInstance3D = MeshInstance3D.new()
 	var sphere: SphereMesh = SphereMesh.new()
 	sphere.radius = 0.35

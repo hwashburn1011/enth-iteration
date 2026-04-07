@@ -26,7 +26,12 @@ func _ready() -> void:
 func _build_enemy_visual() -> void:
 	for child: Node in model.get_children():
 		child.queue_free()
-	# Angular blue geometric — elite enemy
+	var glb: PackedScene = load("res://assets/models/enemies/rogue_process.glb") as PackedScene
+	if glb:
+		var instance: Node3D = glb.instantiate() as Node3D
+		model.add_child(instance)
+		return
+	# Fallback: Angular blue geometric
 	var body: MeshInstance3D = MeshInstance3D.new()
 	var box: BoxMesh = BoxMesh.new()
 	box.size = Vector3(0.6, 0.8, 0.6)

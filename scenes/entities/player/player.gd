@@ -46,6 +46,15 @@ func _ready() -> void:
 
 
 func _build_player_extras() -> void:
+	# Try loading Blender model for the player
+	var glb: PackedScene = load("res://assets/models/characters/globbler.glb") as PackedScene
+	if glb:
+		# Remove existing capsule mesh from Model node
+		for child: Node in model.get_children():
+			child.queue_free()
+		var instance: Node3D = glb.instantiate() as Node3D
+		model.add_child(instance)
+
 	# Shadow disc under player
 	var shadow: MeshInstance3D = MeshInstance3D.new()
 	var shadow_mesh: PlaneMesh = PlaneMesh.new()
