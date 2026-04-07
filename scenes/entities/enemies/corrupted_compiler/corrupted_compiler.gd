@@ -26,7 +26,13 @@ func _ready() -> void:
 func _build_enemy_visual() -> void:
 	for child: Node in model.get_children():
 		child.queue_free()
-	# Large dark-red core body
+	# Try Blender model first
+	var glb: PackedScene = load("res://assets/models/enemies/corrupted_compiler.glb") as PackedScene
+	if glb:
+		var instance: Node3D = glb.instantiate() as Node3D
+		model.add_child(instance)
+		return
+	# Fallback: Large dark-red core body
 	var core: MeshInstance3D = MeshInstance3D.new()
 	var core_mesh: SphereMesh = SphereMesh.new()
 	core_mesh.radius = 0.6

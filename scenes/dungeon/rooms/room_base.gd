@@ -77,8 +77,64 @@ func _apply_dungeon_materials() -> void:
 		if child is CSGBox3D and child.name.begins_with("Wall"):
 			(child as CSGBox3D).material = wall_mat
 			(child as CSGBox3D).use_collision = true
+	# Add ceiling and pipes
+	_add_ceiling(geom)
 	# Add glowing edge strips to room for visibility
 	_add_room_glow_strips(geom)
+
+
+func _add_ceiling(geom: Node) -> void:
+	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
+	if floor_node == null:
+		return
+	var plane: PlaneMesh = floor_node.mesh as PlaneMesh
+	if plane == null:
+		return
+	# Dark ceiling plane
+	var ceiling: MeshInstance3D = MeshInstance3D.new()
+	var ceil_mesh: PlaneMesh = PlaneMesh.new()
+	ceil_mesh.size = plane.size
+	ceiling.mesh = ceil_mesh
+	ceiling.position = Vector3(0, 3.2, 0)
+	ceiling.rotation.x = PI  # Flip to face downward
+	var ceil_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ceil_mat.albedo_color = Color(0.08, 0.09, 0.14)
+	ceil_mat.roughness = 0.95
+	ceiling.material_override = ceil_mat
+	geom.add_child(ceiling)
+	# Pipe runs along ceiling edges
+	var pipe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pipe_mat.albedo_color = Color(0.2, 0.22, 0.28)
+	pipe_mat.roughness = 0.7
+	pipe_mat.metallic = 0.4
+	var half_x: float = plane.size.x / 2.0 - 0.5
+	var half_z: float = plane.size.y / 2.0 - 0.5
+	# Pipes along X edges at ceiling height
+	for z_sign: float in [-1.0, 1.0]:
+		var pipe: CSGBox3D = CSGBox3D.new()
+		pipe.size = Vector3(plane.size.x - 1.0, 0.15, 0.15)
+		pipe.position = Vector3(0, 2.9, z_sign * half_z)
+		pipe.material = pipe_mat
+		geom.add_child(pipe)
+	# Pipes along Z edges
+	for x_sign: float in [-1.0, 1.0]:
+		var pipe: CSGBox3D = CSGBox3D.new()
+		pipe.size = Vector3(0.15, 0.15, plane.size.y - 1.0)
+		pipe.position = Vector3(x_sign * half_x, 2.9, 0)
+		pipe.material = pipe_mat
+		geom.add_child(pipe)
+	# Ceiling light strips (subtle emission)
+	var light_mat: StandardMaterial3D = StandardMaterial3D.new()
+	light_mat.albedo_color = Color(0.15, 0.25, 0.35)
+	light_mat.emission_enabled = true
+	light_mat.emission = Color(0.1, 0.2, 0.3)
+	light_mat.emission_energy_multiplier = 0.8
+	for x_pos: float in [-half_x * 0.5, half_x * 0.5]:
+		var strip: CSGBox3D = CSGBox3D.new()
+		strip.size = Vector3(0.2, 0.05, plane.size.y - 2.0)
+		strip.position = Vector3(x_pos, 3.15, 0)
+		strip.material = light_mat
+		geom.add_child(strip)
 
 
 func _add_room_glow_strips(geom: Node) -> void:

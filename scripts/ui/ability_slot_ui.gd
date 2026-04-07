@@ -12,6 +12,27 @@ var _cooldown_remaining: float = 0.0
 var _on_cooldown: bool = false
 
 
+func _ready() -> void:
+	_apply_slot_style()
+
+
+func _apply_slot_style() -> void:
+	# Sci-fi border on the slot
+	var bg_style: StyleBoxFlat = StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.08, 0.10, 0.18, 0.85)
+	bg_style.border_color = Color(0.15, 0.35, 0.45, 0.7)
+	bg_style.set_border_width_all(1)
+	bg_style.set_corner_radius_all(4)
+	# Apply to this Control if it's a PanelContainer, or to icon_bg
+	if _icon_bg:
+		_icon_bg.color = Color(0.1, 0.12, 0.2, 0.8)
+	if _key_label:
+		_key_label.add_theme_color_override(&"font_color", Color(0.6, 0.7, 0.8))
+		_key_label.add_theme_font_size_override(&"font_size", 14)
+	if _cooldown_overlay:
+		_cooldown_overlay.color = Color(0, 0, 0, 0.6)
+
+
 func _process(delta: float) -> void:
 	if not _on_cooldown:
 		return
