@@ -22,6 +22,8 @@ func _ready() -> void:
 
 	# Ensure floor has collision (visual PlaneMesh doesn't provide physics)
 	_ensure_floor_collision()
+	# Apply tech-themed dungeon materials
+	_apply_dungeon_materials()
 
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
@@ -46,6 +48,66 @@ func get_exit_point() -> Vector3:
 	if marker:
 		return marker.global_position
 	return global_position
+
+
+func _apply_dungeon_materials() -> void:
+	var geom: Node = get_node_or_null("Geometry")
+	if geom == null:
+		return
+	# Dark tech floor with subtle grid emission
+	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
+	if floor_node:
+		var floor_mat: StandardMaterial3D = StandardMaterial3D.new()
+		floor_mat.albedo_color = Color(0.18, 0.20, 0.25)
+		floor_mat.emission_enabled = true
+		floor_mat.emission = Color(0.08, 0.12, 0.18)
+		floor_mat.emission_energy_multiplier = 0.15
+		floor_mat.roughness = 0.85
+		floor_node.material_override = floor_mat
+	# Dark walls with subtle blue/purple tint
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.15, 0.16, 0.22)
+	wall_mat.emission_enabled = true
+	wall_mat.emission = Color(0.05, 0.08, 0.15)
+	wall_mat.emission_energy_multiplier = 0.1
+	wall_mat.roughness = 0.9
+	for child: Node in geom.get_children():
+		if child is CSGBox3D and child.name.begins_with("Wall"):
+			(child as CSGBox3D).material = wall_mat
+			(child as CSGBox3D).use_collision = true
+	# Add glowing edge strips to room for visibility
+	_add_room_glow_strips(geom)
+
+
+func _add_room_glow_strips(geom: Node) -> void:
+	# Find floor size for positioning
+	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
+	if floor_node == null:
+		return
+	var plane: PlaneMesh = floor_node.mesh as PlaneMesh
+	if plane == null:
+		return
+	var half_x: float = plane.size.x / 2.0 - 0.3
+	var half_z: float = plane.size.y / 2.0 - 0.3
+	# Glowing strip material
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.1, 0.4, 0.6)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.08, 0.35, 0.55)
+	glow_mat.emission_energy_multiplier = 1.2
+	# Floor edge strips
+	var strip_data: Array = [
+		[Vector3(0, 0.02, -half_z), Vector3(plane.size.x - 1.0, 0.04, 0.08)],
+		[Vector3(0, 0.02, half_z), Vector3(plane.size.x - 1.0, 0.04, 0.08)],
+		[Vector3(-half_x, 0.02, 0), Vector3(0.08, 0.04, plane.size.y - 1.0)],
+		[Vector3(half_x, 0.02, 0), Vector3(0.08, 0.04, plane.size.y - 1.0)],
+	]
+	for data: Array in strip_data:
+		var strip: CSGBox3D = CSGBox3D.new()
+		strip.position = data[0] as Vector3
+		strip.size = data[1] as Vector3
+		strip.material = glow_mat
+		geom.add_child(strip)
 
 
 func _ensure_floor_collision() -> void:

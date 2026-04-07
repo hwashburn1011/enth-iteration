@@ -141,15 +141,19 @@ func _build_town_decorations() -> void:
 	if geom == null:
 		return
 
+	# --- Boundary collision ---
+	_add_boundary_collision()
+
 	# --- Dirt paths ---
 	_add_path(geom, Vector3(0, 0.01, 0), Vector3(3, 0.02, 30))
 	_add_path(geom, Vector3(0, 0.01, 0), Vector3(24, 0.02, 3))
 	_add_path(geom, Vector3(0, 0.01, -10), Vector3(3, 0.02, 12))
 
-	# --- Rooftops on buildings ---
+	# --- Rooftops on buildings + collision ---
 	for i: int in range(1, 5):
 		var building: CSGBox3D = geom.get_node_or_null("Building%d" % i) as CSGBox3D
 		if building:
+			building.use_collision = true
 			_add_roof(building)
 
 	# --- Trees ---
@@ -258,6 +262,17 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 	light.omni_attenuation = 1.5
 	lantern.add_child(light)
 	parent.add_child(lantern)
+
+
+func _add_boundary_collision() -> void:
+	# Town CSGBox3D boundaries are visual only — add StaticBody3D collision
+	var geom: Node3D = get_node_or_null("Geometry") as Node3D
+	if geom == null:
+		return
+	for dir: String in ["BoundaryNorth", "BoundarySouth", "BoundaryEast", "BoundaryWest"]:
+		var wall: CSGBox3D = geom.get_node_or_null(dir) as CSGBox3D
+		if wall and not wall.use_collision:
+			wall.use_collision = true
 
 
 func _add_fence(parent: Node3D, pos: Vector3, size: Vector3) -> void:
