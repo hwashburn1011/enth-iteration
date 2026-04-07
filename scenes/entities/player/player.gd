@@ -68,6 +68,35 @@ func _build_player_extras() -> void:
 	shadow.material_override = shadow_mat
 	add_child(shadow)
 
+	# Player highlight ring (helps visibility on dark dungeon floors)
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var ring_mesh: TorusMesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.35
+	ring_mesh.outer_radius = 0.42
+	ring_mesh.rings = 12
+	ring_mesh.ring_segments = 16
+	ring.mesh = ring_mesh
+	ring.position = Vector3(0, 0.03, 0)
+	ring.rotation.x = 0  # Flat on ground
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.15, 0.6, 0.55, 0.35)
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.1, 0.5, 0.45)
+	ring_mat.emission_energy_multiplier = 0.8
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = ring_mat
+	add_child(ring)
+
+	# Small overhead light so player is always visible
+	var player_light: OmniLight3D = OmniLight3D.new()
+	player_light.position = Vector3(0, 2.0, 0)
+	player_light.light_color = Color(0.6, 0.9, 0.85)
+	player_light.light_energy = 0.4
+	player_light.omni_range = 3.0
+	player_light.omni_attenuation = 2.0
+	add_child(player_light)
+
 	# Small arm stubs for silhouette
 	var arm_mat: StandardMaterial3D = StandardMaterial3D.new()
 	arm_mat.albedo_color = Color(0.22, 0.78, 0.75)
