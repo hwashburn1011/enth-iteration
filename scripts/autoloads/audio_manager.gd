@@ -10,10 +10,10 @@ var _current_track: String = ""
 const SFX_POOL_SIZE: int = 8
 
 const MUSIC_TRACKS: Dictionary = {
-	"town_ambient": "res://assets/audio/music/town_ambient.ogg",
-	"dungeon_ambient": "res://assets/audio/music/dungeon_ambient.ogg",
-	"combat_music": "res://assets/audio/music/combat_music.ogg",
-	"boss_music": "res://assets/audio/music/boss_music.ogg",
+	"town_ambient": "res://assets/audio/music/town_ambient.wav",
+	"dungeon_ambient": "res://assets/audio/music/dungeon_ambient.wav",
+	"combat_music": "res://assets/audio/music/combat_music.wav",
+	"boss_music": "res://assets/audio/music/boss_music.wav",
 }
 
 const SFX_CLIPS: Dictionary = {
