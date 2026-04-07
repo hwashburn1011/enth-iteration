@@ -35,9 +35,10 @@ func _ready() -> void:
 	# AudioManager must run even while game is paused (dialogue pauses tree)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
-	# Music player
+	# Music player — PROCESS_MODE_ALWAYS so it plays during dialogue pause
 	_music_player = AudioStreamPlayer.new()
 	_music_player.bus = &"Master"
+	_music_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_music_player)
 
 	# SFX pool
@@ -109,20 +110,11 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 		)
 		_music_tween.tween_property(_music_player, "volume_db", 0.0, fade_duration * 0.5)
 	else:
-		# Use a timer callback to start music — _process is unreliable during scene transitions
-		var s: AudioStream = stream
-		get_tree().create_timer(0.2, true, false, true).timeout.connect(func() -> void:
-			if is_instance_valid(_music_player):
-				_music_player.stop()
-				_music_player.queue_free()
-			var fresh: AudioStreamPlayer = AudioStreamPlayer.new()
-			fresh.bus = &"Master"
-			fresh.stream = s
-			fresh.process_mode = Node.PROCESS_MODE_ALWAYS
-			add_child(fresh)
-			fresh.play()
-			_music_player = fresh
-		)
+		# Direct play — the music player has PROCESS_MODE_ALWAYS so it
+		# keeps playing even during dialogue pause
+		_music_player.stream = stream
+		_music_player.volume_db = 0.0
+		_music_player.play()
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
