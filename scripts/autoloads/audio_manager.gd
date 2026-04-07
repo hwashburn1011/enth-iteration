@@ -32,7 +32,10 @@ const SFX_CLIPS: Dictionary = {
 
 
 func _ready() -> void:
-	# Music player — create minimal, will be replaced on first play
+	# AudioManager must run even while game is paused (dialogue pauses tree)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Music player
 	_music_player = AudioStreamPlayer.new()
 	_music_player.bus = &"Master"
 	add_child(_music_player)
