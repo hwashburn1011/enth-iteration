@@ -52,6 +52,8 @@ func _ready() -> void:
 	add_child(camera)
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
+	# Start town music directly (AudioManager scene_changed may fail during transitions)
+	AudioManager.play_music("town_ambient")
 	_build_town_decorations()
 	_populate_npcs()
 	_update_town_state()

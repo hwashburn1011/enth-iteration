@@ -31,6 +31,7 @@ var _player: CharacterBody3D = null
 
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
+	AudioManager.play_music("dungeon_ambient")
 
 	# --- Lighting and Environment ---
 	_setup_environment()
