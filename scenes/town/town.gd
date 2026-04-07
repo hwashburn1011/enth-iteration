@@ -168,7 +168,7 @@ func _setup_environment() -> void:
 	env.fog_light_color = Color(0.6, 0.65, 0.75)
 	env.fog_density = 0.005
 	# Tonemap
-	env.tonemap_mode = Environment.TONE_MAP_FILMIC
+	env.tonemap_mode = 2  # Filmic
 	env.tonemap_white = 6.0
 	# Subtle glow
 	env.glow_enabled = true

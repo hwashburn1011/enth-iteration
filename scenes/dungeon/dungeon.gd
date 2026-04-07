@@ -90,7 +90,7 @@ func _setup_environment() -> void:
 	env.fog_light_color = Color(0.1, 0.12, 0.18)
 	env.fog_density = 0.015
 	# Tonemap for better contrast
-	env.tonemap_mode = Environment.TONE_MAP_FILMIC
+	env.tonemap_mode = 2  # Filmic
 	env.tonemap_white = 6.0
 	# Glow for emission effects
 	env.glow_enabled = true
