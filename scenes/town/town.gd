@@ -434,11 +434,11 @@ func _add_boundary_collision() -> void:
 	# Use thick StaticBody3D walls instead of thin CSG collision
 	# CSG use_collision is unreliable for thin walls with fast-moving characters
 	var boundary_data: Array[Array] = [
-		# [position, size] — thick walls surrounding town
-		[Vector3(0, 1, -20.5), Vector3(42, 3, 2)],    # North
-		[Vector3(0, 1, 20.5), Vector3(42, 3, 2)],     # South
-		[Vector3(20.5, 1, 0), Vector3(2, 3, 42)],     # East
-		[Vector3(-20.5, 1, 0), Vector3(2, 3, 42)],    # West
+		# [position, size] — very thick walls overlapping with visual walls
+		[Vector3(0, 1, -21), Vector3(46, 4, 4)],    # North
+		[Vector3(0, 1, 21), Vector3(46, 4, 4)],     # South
+		[Vector3(21, 1, 0), Vector3(4, 4, 46)],     # East
+		[Vector3(-21, 1, 0), Vector3(4, 4, 46)],    # West
 	]
 	for data: Array in boundary_data:
 		var body: StaticBody3D = StaticBody3D.new()
