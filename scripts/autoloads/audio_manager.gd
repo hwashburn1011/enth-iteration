@@ -58,12 +58,24 @@ func _ready() -> void:
 
 
 var _music_play_countdown: int = 0
+var _pending_stream: AudioStream = null
 
 func _process(_delta: float) -> void:
 	if _music_play_countdown > 0:
 		_music_play_countdown -= 1
-		if _music_play_countdown == 0 and _music_player.stream != null and not _music_player.playing:
-			_music_player.play()
+		if _music_play_countdown == 0 and _pending_stream != null:
+			# Create a completely fresh player to avoid any stale state
+			if is_instance_valid(_music_player):
+				_music_player.stop()
+				_music_player.queue_free()
+			var fresh: AudioStreamPlayer = AudioStreamPlayer.new()
+			fresh.bus = &"Master"
+			fresh.stream = _pending_stream
+			fresh.process_mode = Node.PROCESS_MODE_ALWAYS
+			add_child(fresh)
+			fresh.play()
+			_music_player = fresh
+			_pending_stream = null
 
 
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
@@ -97,8 +109,7 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 		)
 		_music_tween.tween_property(_music_player, "volume_db", 0.0, fade_duration * 0.5)
 	else:
-		_music_player.stream = stream
-		_music_player.volume_db = 0.0
+		_pending_stream = stream
 		# Schedule play after a few frames for scene transition to settle
 		_music_play_countdown = 5
 
