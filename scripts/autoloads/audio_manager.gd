@@ -6,6 +6,7 @@ var _music_player: AudioStreamPlayer = null
 var _music_tween: Tween = null
 var _sfx_pool: Array[AudioStreamPlayer] = []
 var _current_track: String = ""
+var _pending_music_play: bool = false
 
 const SFX_POOL_SIZE: int = 8
 
@@ -57,6 +58,12 @@ func _ready() -> void:
 	EventBus.scene_changed.connect(_on_scene_changed)
 
 
+func _process(_delta: float) -> void:
+	if _pending_music_play and _music_player.stream != null:
+		_pending_music_play = false
+		_music_player.play()
+
+
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	if track_name == _current_track:
 		return
@@ -90,16 +97,10 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		# Ensure bus is valid before playing
 		if AudioServer.get_bus_index(_music_player.bus) < 0:
 			_music_player.bus = &"Master"
-		_music_player.play()
-		# Retry after short delay if play didn't take effect
-		get_tree().create_timer(0.1).timeout.connect(func() -> void:
-			if not _music_player.playing and _music_player.stream != null:
-				_music_player.bus = &"Master"
-				_music_player.play()
-		)
+		# Schedule play for next process frame to avoid scene-change timing issues
+		_pending_music_play = true
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
