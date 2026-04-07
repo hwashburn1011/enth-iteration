@@ -77,6 +77,29 @@ func _apply_menu_theme() -> void:
 		(btn as Button).add_theme_color_override(&"font_hover_color", Color(0.3, 0.9, 0.85))
 		(btn as Button).add_theme_font_size_override(&"font_size", 20)
 
+	# Version and copyright footer
+	var version_label: Label = Label.new()
+	version_label.text = "Demo v0.1"
+	version_label.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	version_label.offset_left = 16.0
+	version_label.offset_top = -30.0
+	version_label.offset_bottom = -10.0
+	version_label.add_theme_color_override(&"font_color", Color(0.35, 0.4, 0.5))
+	version_label.add_theme_font_size_override(&"font_size", 13)
+	add_child(version_label)
+
+	var copyright_label: Label = Label.new()
+	copyright_label.text = "© 2026 Heath Washburn"
+	copyright_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	copyright_label.offset_left = -200.0
+	copyright_label.offset_top = -30.0
+	copyright_label.offset_right = -16.0
+	copyright_label.offset_bottom = -10.0
+	copyright_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	copyright_label.add_theme_color_override(&"font_color", Color(0.35, 0.4, 0.5))
+	copyright_label.add_theme_font_size_override(&"font_size", 13)
+	add_child(copyright_label)
+
 	# Digital floating particles
 	_spawn_menu_particles()
 

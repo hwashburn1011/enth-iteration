@@ -160,6 +160,10 @@ func _process(delta: float) -> void:
 		if _health_bar_timer <= 0.0 and _health_bar_bg:
 			_health_bar_bg.visible = false
 			_health_bar_fill.visible = false
+	# Idle bob animation on model
+	if model and visible:
+		var t: float = Time.get_ticks_msec() * 0.003
+		model.position.y = sin(t) * 0.03
 
 
 func _build_enemy_visual() -> void:
