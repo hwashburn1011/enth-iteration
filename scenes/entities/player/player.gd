@@ -168,8 +168,8 @@ func _toggle_pause() -> void:
 func _toggle_quest_log() -> void:
 	if GameManager.current_state == GameManager.GameState.INVENTORY:
 		return
-	var log: Node = load("res://scripts/ui/quest_log.gd").new()
-	get_tree().root.add_child(log)
+	var quest_log: Node = load("res://scripts/ui/quest_log.gd").new()
+	get_tree().root.add_child(quest_log)
 
 
 func _toggle_inventory() -> void:
@@ -180,7 +180,7 @@ func _toggle_inventory() -> void:
 	screen.open(self)
 
 
-func _on_leveled_up(new_level: int) -> void:
+func _on_leveled_up(_new_level: int) -> void:
 	var panel: Node = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)

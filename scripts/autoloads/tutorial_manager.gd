@@ -20,7 +20,7 @@ func _ready() -> void:
 	EventBus.item_collected.connect(_on_item_collected)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if _tracking_movement:
 		var player: Node = _find_player()
 		if player:
@@ -67,10 +67,19 @@ func show_hint(text: String, auto_dismiss_time: float = 0.0) -> void:
 	panel.offset_top = 60.0
 	panel.offset_right = 250.0
 	panel.offset_bottom = 100.0
+	# Sci-fi styled panel
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.05, 0.06, 0.12, 0.85)
+	panel_style.border_color = Color(0.15, 0.4, 0.5, 0.6)
+	panel_style.set_border_width_all(1)
+	panel_style.border_width_bottom = 2
+	panel_style.set_corner_radius_all(4)
+	panel_style.set_content_margin_all(10)
+	panel.add_theme_stylebox_override(&"panel", panel_style)
 
 	var label: RichTextLabel = RichTextLabel.new()
 	label.bbcode_enabled = true
-	label.text = "[center]%s[/center]" % text
+	label.text = "[center][color=#60C8C0]%s[/color][/center]" % text
 	label.fit_content = true
 	label.custom_minimum_size = Vector2(480, 30)
 	panel.add_child(label)
@@ -78,6 +87,11 @@ func show_hint(text: String, auto_dismiss_time: float = 0.0) -> void:
 
 	_canvas.add_child(wrapper)
 	_active_hint = wrapper
+
+	# Fade in animation
+	wrapper.modulate.a = 0.0
+	var tween: Tween = wrapper.create_tween()
+	tween.tween_property(wrapper, "modulate:a", 1.0, 0.3)
 
 	if auto_dismiss_time > 0.0:
 		await get_tree().create_timer(auto_dismiss_time).timeout

@@ -19,6 +19,7 @@ const TWEEN_DURATION: float = 0.2
 var _health_tween: Tween = null
 var _compute_tween: Tween = null
 var _ability_slot_uis: Array[AbilitySlotUI] = []
+var _room_label: Label = null
 
 
 func _ready() -> void:
@@ -28,6 +29,7 @@ func _ready() -> void:
 	_connect_player.call_deferred()
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
+	_create_room_indicator()
 
 
 func _apply_sci_fi_theme() -> void:
@@ -111,6 +113,38 @@ func _connect_player() -> void:
 	player.level_component.xp_changed.connect(_on_xp_changed)
 	player.level_component.leveled_up.connect(_on_leveled_up_hud)
 	_update_xp_display(player.level_component)
+
+
+func _create_room_indicator() -> void:
+	_room_label = Label.new()
+	_room_label.text = ""
+	_room_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_room_label.offset_left = -180.0
+	_room_label.offset_top = 16.0
+	_room_label.offset_right = -16.0
+	_room_label.offset_bottom = 40.0
+	_room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_room_label.add_theme_color_override(&"font_color", Color(0.6, 0.7, 0.8))
+	_room_label.add_theme_font_size_override(&"font_size", 14)
+	_container.add_child(_room_label)
+	# Connect to floor manager signals
+	EventBus.floor_completed.connect(_on_floor_completed_hud)
+	EventBus.scene_changed.connect(_on_scene_changed_hud)
+
+
+func update_room_indicator(room_index: int, total_rooms: int, floor_name: String) -> void:
+	if _room_label:
+		_room_label.text = "%s — Room %d/%d" % [floor_name, room_index + 1, total_rooms]
+
+
+func _on_floor_completed_hud(_floor_num: int) -> void:
+	if _room_label:
+		_room_label.text = "Floor Complete!"
+
+
+func _on_scene_changed_hud(_path: String) -> void:
+	if _room_label:
+		_room_label.text = ""
 
 
 func _on_health_changed(current: float, max_val: float) -> void:

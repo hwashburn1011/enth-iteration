@@ -69,6 +69,9 @@ func _transition_to_room(index: int) -> void:
 
 	current_room_index = index
 
+	# Update HUD room indicator
+	_update_room_indicator()
+
 	# Fade in
 	await _fade(1.0, 0.0, FADE_DURATION)
 
@@ -81,6 +84,17 @@ func _on_room_exit() -> void:
 		# Floor complete
 		floor_completed.emit(floor_data.floor_number)
 		EventBus.portal_reached.emit(StringName("floor_%d_complete" % floor_data.floor_number))
+
+
+func _update_room_indicator() -> void:
+	if floor_data == null:
+		return
+	# Find HUD in scene tree and update room indicator
+	for node: Node in get_tree().current_scene.get_children():
+		if node.has_method(&"update_room_indicator"):
+			var floor_name: String = floor_data.floor_name if floor_data.get(&"floor_name") else "Floor %d" % floor_data.floor_number
+			node.update_room_indicator(current_room_index, floor_data.room_sequence.size(), floor_name)
+			return
 
 
 func _find_player() -> CharacterBody3D:
