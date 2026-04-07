@@ -32,13 +32,9 @@ const SFX_CLIPS: Dictionary = {
 
 
 func _ready() -> void:
-	# Music player on Music bus
+	# Music player — create minimal, will be replaced on first play
 	_music_player = AudioStreamPlayer.new()
-	# Use Master bus if Music bus doesn't exist
-	if AudioServer.get_bus_index(&"Music") >= 0:
-		_music_player.bus = &"Music"
-	else:
-		_music_player.bus = &"Master"
+	_music_player.bus = &"Master"
 	add_child(_music_player)
 
 	# SFX pool
@@ -61,21 +57,9 @@ func _ready() -> void:
 var _music_play_countdown: int = 0
 
 func _process(_delta: float) -> void:
-	# Two-phase music start: frame 1 = setup, frame 2 = play
-	if _music_play_countdown == 2:
-		_music_play_countdown = 1
-		# Phase 1: recreate player and add to tree
-		var stream: AudioStream = _music_player.stream
-		_music_player.queue_free()
-		_music_player = AudioStreamPlayer.new()
-		_music_player.bus = &"Master"
-		_music_player.stream = stream
-		_music_player.volume_db = 0.0
-		add_child(_music_player)
-	elif _music_play_countdown == 1:
-		_music_play_countdown = 0
-		# Phase 2: play (node is now in tree from last frame)
-		if _music_player.stream != null:
+	if _music_play_countdown > 0:
+		_music_play_countdown -= 1
+		if _music_play_countdown == 0 and _music_player.stream != null and not _music_player.playing:
 			_music_player.play()
 
 
@@ -112,8 +96,8 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		# Schedule two-phase play: frame 1 recreates player, frame 2 plays
-		_music_play_countdown = 2
+		# Schedule play after a few frames for scene transition to settle
+		_music_play_countdown = 5
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
