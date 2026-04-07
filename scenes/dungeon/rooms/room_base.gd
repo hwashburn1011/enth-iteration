@@ -24,6 +24,8 @@ func _ready() -> void:
 	_ensure_floor_collision()
 	# Apply tech-themed dungeon materials
 	_apply_dungeon_materials()
+	# Add tech props based on room type
+	_add_dungeon_props()
 
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
@@ -108,6 +110,55 @@ func _add_room_glow_strips(geom: Node) -> void:
 		strip.size = data[1] as Vector3
 		strip.material = glow_mat
 		geom.add_child(strip)
+
+
+func _add_dungeon_props() -> void:
+	var geom: Node = get_node_or_null("Geometry")
+	if geom == null:
+		return
+	# Get floor size for prop placement
+	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
+	if floor_node == null:
+		return
+	var plane: PlaneMesh = floor_node.mesh as PlaneMesh
+	if plane == null:
+		return
+	var half_x: float = plane.size.x / 2.0 - 1.5
+	var half_z: float = plane.size.y / 2.0 - 1.5
+
+	# Server racks along walls (combat and corridor rooms)
+	if room_type in ["combat", "corridor"]:
+		var rack_scene: PackedScene = load("res://assets/models/props/server_rack.glb") as PackedScene
+		if rack_scene:
+			for i: int in 2:
+				var rack: Node3D = rack_scene.instantiate() as Node3D
+				rack.scale = Vector3(0.8, 0.8, 0.8)
+				geom.add_child(rack)
+				if i == 0:
+					rack.position = Vector3(-half_x, 0, randf_range(-half_z * 0.5, half_z * 0.5))
+					rack.rotation.y = PI / 2.0
+				else:
+					rack.position = Vector3(half_x, 0, randf_range(-half_z * 0.5, half_z * 0.5))
+					rack.rotation.y = -PI / 2.0
+
+	# Data terminals (loot and story rooms)
+	if room_type in ["loot", "story"]:
+		var term_scene: PackedScene = load("res://assets/models/props/data_terminal.glb") as PackedScene
+		if term_scene:
+			var terminal: Node3D = term_scene.instantiate() as Node3D
+			geom.add_child(terminal)
+			terminal.position = Vector3(randf_range(-2, 2), 0, randf_range(-half_z * 0.3, half_z * 0.3))
+
+	# Corner point lights for all rooms
+	var corner_color: Color = Color(0.08, 0.3, 0.5) if room_type != "combat" else Color(0.5, 0.1, 0.08)
+	for corner: Vector2 in [Vector2(-1, -1), Vector2(1, -1), Vector2(-1, 1), Vector2(1, 1)]:
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = Vector3(corner.x * (half_x - 0.5), 2.5, corner.y * (half_z - 0.5))
+		light.light_color = corner_color
+		light.light_energy = 0.4
+		light.omni_range = 5.0
+		light.omni_attenuation = 2.0
+		geom.add_child(light)
 
 
 func _ensure_floor_collision() -> void:
