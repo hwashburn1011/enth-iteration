@@ -83,6 +83,8 @@ func reset() -> void:
 	var idle_state: Node = state_machine.get_node_or_null("EnemyIdleState") as Node
 	if idle_state:
 		state_machine.force_transition_to(idle_state)
+	# Spawn-in materialization effect
+	_play_spawn_effect()
 
 
 func _create_health_bar() -> void:
@@ -163,6 +165,17 @@ func _process(delta: float) -> void:
 func _build_enemy_visual() -> void:
 	# Override in subclasses for unique visuals
 	pass
+
+
+func _play_spawn_effect() -> void:
+	# Scale from 0 to 1 with particle burst
+	model.scale = Vector3(0.01, 0.01, 0.01)
+	var tween: Tween = create_tween()
+	tween.tween_property(model, "scale", Vector3(1.2, 1.2, 1.2), 0.2).set_ease(Tween.EASE_OUT)
+	tween.tween_property(model, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+	# Spawn particles
+	if is_inside_tree():
+		VFXFactory.spawn_hit_flash(global_position + Vector3(0, 0.5, 0), get_tree().current_scene)
 
 
 func _on_died() -> void:
