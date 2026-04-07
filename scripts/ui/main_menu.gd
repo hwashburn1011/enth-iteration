@@ -77,6 +77,35 @@ func _apply_menu_theme() -> void:
 		(btn as Button).add_theme_color_override(&"font_hover_color", Color(0.3, 0.9, 0.85))
 		(btn as Button).add_theme_font_size_override(&"font_size", 20)
 
+	# Digital floating particles
+	_spawn_menu_particles()
+
+
+func _spawn_menu_particles() -> void:
+	var bg: ColorRect = get_node_or_null("Background") as ColorRect
+	if bg == null:
+		return
+	# Create a simple animated particle field using ColorRects
+	for i: int in 30:
+		var dot: ColorRect = ColorRect.new()
+		dot.size = Vector2(randf_range(1, 3), randf_range(1, 3))
+		dot.position = Vector2(randf_range(0, 1152), randf_range(0, 648))
+		var colors: Array[Color] = [
+			Color(0.2, 0.7, 0.7, 0.3),
+			Color(0.4, 0.3, 0.7, 0.2),
+			Color(0.2, 0.5, 0.8, 0.25),
+		]
+		dot.color = colors[i % 3]
+		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.add_child(dot)
+		# Animate upward drift
+		var tween: Tween = dot.create_tween().set_loops()
+		var duration: float = randf_range(8.0, 15.0)
+		var start_y: float = randf_range(650, 800)
+		dot.position.y = start_y
+		tween.tween_property(dot, "position:y", randf_range(-50, -10), duration)
+		tween.tween_callback(func() -> void: dot.position.y = start_y)
+
 
 func _on_new_game_pressed() -> void:
 	SaveManager.new_game()

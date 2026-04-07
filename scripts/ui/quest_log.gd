@@ -32,7 +32,7 @@ func _build_ui() -> void:
 
 	var bg: ColorRect = ColorRect.new()
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	bg.color = Color(0, 0, 0, 0.6)
+	bg.color = Color(0.02, 0.02, 0.06, 0.7)
 	_panel.add_child(bg)
 
 	var hbox: HBoxContainer = HBoxContainer.new()
@@ -50,6 +50,8 @@ func _build_ui() -> void:
 	var title: Label = Label.new()
 	title.text = "Quest Log"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	title.add_theme_font_size_override(&"font_size", 22)
 	tabs.add_child(title)
 	for cat: String in CATEGORIES:
 		var btn: Button = Button.new()

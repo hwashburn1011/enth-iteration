@@ -55,6 +55,7 @@ func _ready() -> void:
 	_build_town_decorations()
 	_populate_npcs()
 	_update_town_state()
+	_add_ambient_particles()
 
 	# Narrative: demo end check after returning from boss
 	if GameManager.should_trigger_demo_end():
@@ -134,6 +135,45 @@ func _auto_trigger_sage_dialogue() -> void:
 		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
 			child._start_conversation()
 			return
+
+
+func _add_ambient_particles() -> void:
+	# Warm floating dust motes / fireflies
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 40
+	particles.lifetime = 6.0
+	particles.visibility_aabb = AABB(Vector3(-20, 0, -20), Vector3(40, 6, 40))
+	particles.position = Vector3(0, 2, 0)
+
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 180.0
+	mat.initial_velocity_min = 0.2
+	mat.initial_velocity_max = 0.5
+	mat.gravity = Vector3(0, 0.1, 0)
+	mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	mat.emission_box_extents = Vector3(18, 2, 18)
+	mat.color = Color(1.0, 0.9, 0.5, 0.6)
+	mat.scale_min = 0.5
+	mat.scale_max = 1.5
+	particles.process_material = mat
+
+	var mesh: SphereMesh = SphereMesh.new()
+	mesh.radius = 0.03
+	mesh.height = 0.06
+	particles.draw_pass_1 = mesh
+
+	# Glow material for particles
+	var vis_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vis_mat.albedo_color = Color(1.0, 0.9, 0.5, 0.6)
+	vis_mat.emission_enabled = true
+	vis_mat.emission = Color(1.0, 0.85, 0.4)
+	vis_mat.emission_energy_multiplier = 2.0
+	vis_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis_mat
+
+	add_child(particles)
 
 
 func _build_town_decorations() -> void:

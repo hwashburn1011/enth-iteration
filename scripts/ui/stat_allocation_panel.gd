@@ -27,7 +27,7 @@ func _build_ui() -> void:
 	add_child(fullscreen)
 	var dim: ColorRect = ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0, 0, 0, 0.5)
+	dim.color = Color(0.02, 0.02, 0.06, 0.7)
 	fullscreen.add_child(dim)
 
 	_panel = PanelContainer.new()
@@ -36,6 +36,13 @@ func _build_ui() -> void:
 	_panel.offset_top = -140.0
 	_panel.offset_right = 180.0
 	_panel.offset_bottom = 140.0
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.06, 0.07, 0.14, 0.95)
+	panel_style.border_color = Color(0.15, 0.4, 0.5, 0.7)
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(6)
+	panel_style.set_content_margin_all(14)
+	_panel.add_theme_stylebox_override(&"panel", panel_style)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.add_theme_constant_override(&"separation", 8)
@@ -43,6 +50,8 @@ func _build_ui() -> void:
 	var title: Label = Label.new()
 	title.text = "Level Up! Allocate Stat Points"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.2))
+	title.add_theme_font_size_override(&"font_size", 20)
 	vbox.add_child(title)
 
 	_points_label = Label.new()
