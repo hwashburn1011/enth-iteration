@@ -29,6 +29,26 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	layer = 80
 	_panel.visible = false
+	_apply_dialogue_theme()
+
+
+func _apply_dialogue_theme() -> void:
+	# Sci-fi styled panel
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.05, 0.06, 0.12, 0.92)
+	panel_style.border_color = Color(0.15, 0.45, 0.55, 0.8)
+	panel_style.set_border_width_all(2)
+	panel_style.border_width_top = 3
+	panel_style.set_corner_radius_all(4)
+	panel_style.set_content_margin_all(16)
+	_panel.add_theme_stylebox_override(&"panel", panel_style)
+
+	# Name label — accent color
+	_name_label.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	_name_label.add_theme_font_size_override(&"font_size", 20)
+
+	# Dialogue text — light color
+	_dialogue_label.add_theme_color_override(&"default_color", Color(0.85, 0.87, 0.92))
 
 
 func _process(delta: float) -> void:
