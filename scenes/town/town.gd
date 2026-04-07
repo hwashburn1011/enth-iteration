@@ -181,8 +181,9 @@ func _build_town_decorations() -> void:
 	if geom == null:
 		return
 
-	# --- Boundary collision ---
+	# --- Boundary collision + ground collision ---
 	_add_boundary_collision()
+	_add_ground_collision()
 
 	# --- Dirt paths ---
 	_add_path(geom, Vector3(0, 0.01, 0), Vector3(3, 0.02, 30))
@@ -430,14 +431,35 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 
 
 func _add_boundary_collision() -> void:
-	# Town CSGBox3D boundaries are visual only — add StaticBody3D collision
-	var geom: Node3D = get_node_or_null("Geometry") as Node3D
-	if geom == null:
-		return
-	for dir: String in ["BoundaryNorth", "BoundarySouth", "BoundaryEast", "BoundaryWest"]:
-		var wall: CSGBox3D = geom.get_node_or_null(dir) as CSGBox3D
-		if wall and not wall.use_collision:
-			wall.use_collision = true
+	# Use thick StaticBody3D walls instead of thin CSG collision
+	# CSG use_collision is unreliable for thin walls with fast-moving characters
+	var boundary_data: Array[Array] = [
+		# [position, size] — thick walls surrounding town
+		[Vector3(0, 1, -20.5), Vector3(42, 3, 2)],    # North
+		[Vector3(0, 1, 20.5), Vector3(42, 3, 2)],     # South
+		[Vector3(20.5, 1, 0), Vector3(2, 3, 42)],     # East
+		[Vector3(-20.5, 1, 0), Vector3(2, 3, 42)],    # West
+	]
+	for data: Array in boundary_data:
+		var body: StaticBody3D = StaticBody3D.new()
+		var shape: CollisionShape3D = CollisionShape3D.new()
+		var box: BoxShape3D = BoxShape3D.new()
+		box.size = data[1] as Vector3
+		shape.shape = box
+		body.add_child(shape)
+		body.position = data[0] as Vector3
+		add_child(body)
+
+
+func _add_ground_collision() -> void:
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = Vector3(42, 0.2, 42)
+	shape.shape = box
+	shape.position = Vector3(0, -0.1, 0)
+	body.add_child(shape)
+	add_child(body)
 
 
 func _add_fence(parent: Node3D, pos: Vector3, size: Vector3) -> void:
