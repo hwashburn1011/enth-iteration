@@ -34,6 +34,7 @@ var _prompt_cooldown: float = 0.0
 
 func _ready() -> void:
 	add_to_group(&"player")
+	_build_player_extras()
 	dash_cooldown_timer.one_shot = true
 	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
 	attack_cooldown_timer.one_shot = true
@@ -42,6 +43,46 @@ func _ready() -> void:
 	hitbox_component.damage_source = self
 	hurtbox_component.hit_received.connect(_on_hit_received)
 	level_component.leveled_up.connect(_on_leveled_up)
+
+
+func _build_player_extras() -> void:
+	# Shadow disc under player
+	var shadow: MeshInstance3D = MeshInstance3D.new()
+	var shadow_mesh: PlaneMesh = PlaneMesh.new()
+	shadow_mesh.size = Vector2(0.8, 0.8)
+	shadow.mesh = shadow_mesh
+	shadow.position = Vector3(0, 0.02, 0)
+	var shadow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shadow_mat.albedo_color = Color(0, 0, 0, 0.3)
+	shadow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	shadow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shadow.material_override = shadow_mat
+	add_child(shadow)
+
+	# Small arm stubs for silhouette
+	var arm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	arm_mat.albedo_color = Color(0.22, 0.78, 0.75)
+	arm_mat.roughness = 0.7
+	for side: float in [-0.4, 0.4]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var arm_mesh: SphereMesh = SphereMesh.new()
+		arm_mesh.radius = 0.12
+		arm_mesh.height = 0.24
+		arm.mesh = arm_mesh
+		arm.position = Vector3(side, 0.45, 0)
+		arm.material_override = arm_mat
+		model.add_child(arm)
+
+	# Small feet stubs
+	for side: float in [-0.15, 0.15]:
+		var foot: MeshInstance3D = MeshInstance3D.new()
+		var foot_mesh: SphereMesh = SphereMesh.new()
+		foot_mesh.radius = 0.1
+		foot_mesh.height = 0.15
+		foot.mesh = foot_mesh
+		foot.position = Vector3(side, 0.08, 0)
+		foot.material_override = arm_mat
+		model.add_child(foot)
 
 
 func _on_hit_received(damage_info: Resource) -> void:
