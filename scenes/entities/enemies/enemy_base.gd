@@ -21,6 +21,9 @@ extends CharacterBody3D
 var target_player: Node3D = null
 var spawn_position: Vector3 = Vector3.ZERO
 var is_invulnerable: bool = false
+var _health_bar_bg: MeshInstance3D = null
+var _health_bar_fill: MeshInstance3D = null
+var _health_bar_timer: float = 0.0
 
 
 func _ready() -> void:
@@ -28,6 +31,7 @@ func _ready() -> void:
 	spawn_position = global_position
 	hitbox_component.damage_source = self
 	_build_enemy_visual()
+	_create_health_bar()
 	# Guard against duplicate connections on pool reuse (_ready fires every add_child)
 	if not hurtbox_component.hit_received.is_connected(_on_hit_received):
 		hurtbox_component.hit_received.connect(_on_hit_received)
@@ -79,6 +83,81 @@ func reset() -> void:
 	var idle_state: Node = state_machine.get_node_or_null("EnemyIdleState") as Node
 	if idle_state:
 		state_machine.force_transition_to(idle_state)
+
+
+func _create_health_bar() -> void:
+	if _health_bar_bg != null:
+		return
+	# Background bar
+	_health_bar_bg = MeshInstance3D.new()
+	var bg_mesh: BoxMesh = BoxMesh.new()
+	bg_mesh.size = Vector3(0.8, 0.08, 0.02)
+	_health_bar_bg.mesh = bg_mesh
+	_health_bar_bg.position = Vector3(0, 1.6, 0)
+	var bg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bg_mat.albedo_color = Color(0.15, 0.05, 0.05, 0.8)
+	bg_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bg_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bg_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	_health_bar_bg.material_override = bg_mat
+	_health_bar_bg.visible = false
+	add_child(_health_bar_bg)
+
+	# Fill bar
+	_health_bar_fill = MeshInstance3D.new()
+	var fill_mesh: BoxMesh = BoxMesh.new()
+	fill_mesh.size = Vector3(0.76, 0.06, 0.02)
+	_health_bar_fill.mesh = fill_mesh
+	_health_bar_fill.position = Vector3(0, 1.6, -0.01)
+	var fill_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fill_mat.albedo_color = Color(0.9, 0.2, 0.15)
+	fill_mat.emission_enabled = true
+	fill_mat.emission = Color(0.8, 0.15, 0.1)
+	fill_mat.emission_energy_multiplier = 0.5
+	fill_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fill_mat.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	_health_bar_fill.material_override = fill_mat
+	_health_bar_fill.visible = false
+	add_child(_health_bar_fill)
+
+	# Connect health changed
+	if not health_component.health_changed.is_connected(_on_health_bar_update):
+		health_component.health_changed.connect(_on_health_bar_update)
+
+
+func _on_health_bar_update(current: float, max_val: float) -> void:
+	if _health_bar_bg == null or _health_bar_fill == null:
+		return
+	if current >= max_val:
+		_health_bar_bg.visible = false
+		_health_bar_fill.visible = false
+		return
+	_health_bar_bg.visible = true
+	_health_bar_fill.visible = true
+	var ratio: float = clampf(current / max_val, 0.0, 1.0)
+	_health_bar_fill.scale.x = ratio
+	_health_bar_fill.position.x = (ratio - 1.0) * 0.38  # Offset to keep left-aligned
+	# Color: green→yellow→red based on health
+	var fill_mat: StandardMaterial3D = _health_bar_fill.material_override as StandardMaterial3D
+	if fill_mat:
+		if ratio > 0.5:
+			fill_mat.albedo_color = Color(0.2, 0.85, 0.2)
+			fill_mat.emission = Color(0.15, 0.7, 0.15)
+		elif ratio > 0.25:
+			fill_mat.albedo_color = Color(0.9, 0.8, 0.15)
+			fill_mat.emission = Color(0.8, 0.7, 0.1)
+		else:
+			fill_mat.albedo_color = Color(0.9, 0.2, 0.15)
+			fill_mat.emission = Color(0.8, 0.15, 0.1)
+	_health_bar_timer = 4.0
+
+
+func _process(delta: float) -> void:
+	if _health_bar_timer > 0.0:
+		_health_bar_timer -= delta
+		if _health_bar_timer <= 0.0 and _health_bar_bg:
+			_health_bar_bg.visible = false
+			_health_bar_fill.visible = false
 
 
 func _build_enemy_visual() -> void:

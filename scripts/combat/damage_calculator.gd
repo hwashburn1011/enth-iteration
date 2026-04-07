@@ -49,6 +49,11 @@ static func calculate(info: Resource) -> Resource:
 		var target_3d: Node3D = info.target as Node3D
 		VFXFactory.spawn_damage_number(target_3d.global_position, int(info.final_damage), info.is_critical, target_3d.get_tree().current_scene)
 		VFXFactory.spawn_hit_flash(target_3d.global_position + Vector3(0, 0.5, 0), target_3d.get_tree().current_scene)
+		# Screen shake on hit
+		var camera: Camera3D = target_3d.get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"shake"):
+			var shake_amount: float = 0.08 if not info.is_critical else 0.2
+			camera.shake(shake_amount)
 
 	return info
 
