@@ -30,6 +30,7 @@ func _ready() -> void:
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
 	_create_room_indicator()
+	_create_controls_hint()
 
 
 func _apply_sci_fi_theme() -> void:
@@ -113,6 +114,36 @@ func _connect_player() -> void:
 	player.level_component.xp_changed.connect(_on_xp_changed)
 	player.level_component.leveled_up.connect(_on_leveled_up_hud)
 	_update_xp_display(player.level_component)
+
+
+func _create_controls_hint() -> void:
+	var hint: PanelContainer = PanelContainer.new()
+	hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	hint.offset_left = 16.0
+	hint.offset_top = -120.0
+	hint.offset_right = 200.0
+	hint.offset_bottom = -16.0
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.05, 0.10, 0.7)
+	style.border_color = Color(0.12, 0.3, 0.4, 0.4)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(8)
+	hint.add_theme_stylebox_override(&"panel", style)
+	var label: RichTextLabel = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.text = "[color=#60C8C0]WASD[/color] Move  [color=#60C8C0]Space[/color] Dash\n[color=#60C8C0]LMB[/color] Attack  [color=#60C8C0]RMB[/color] Charge\n[color=#60C8C0]E[/color] Interact  [color=#60C8C0]Tab[/color] Inventory\n[color=#60C8C0]Q[/color] Prompt  [color=#60C8C0]Esc[/color] Pause"
+	label.add_theme_font_size_override(&"normal_font_size", 12)
+	hint.add_child(label)
+	_container.add_child(hint)
+	# Fade out after 20 seconds
+	var tween: Tween = hint.create_tween()
+	tween.tween_interval(20.0)
+	tween.tween_property(hint, "modulate:a", 0.0, 2.0)
+	tween.tween_callback(hint.queue_free)
 
 
 func _create_room_indicator() -> void:

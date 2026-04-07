@@ -382,6 +382,20 @@ func _add_dungeon_props() -> void:
 			geom.add_child(terminal)
 			terminal.position = Vector3(randf_range(-2, 2), 0, randf_range(-half_z * 0.3, half_z * 0.3))
 
+	# Glowing mushroom clusters (corridors and story rooms)
+	var mushroom_scene: PackedScene = load("res://assets/models/props/mushroom_cluster.glb") as PackedScene
+	if mushroom_scene and room_type in ["corridor", "story", "loot"]:
+		for _i: int in randi_range(1, 2):
+			var mushroom: Node3D = mushroom_scene.instantiate() as Node3D
+			mushroom.scale = Vector3(randf_range(1.0, 2.0), randf_range(1.0, 2.0), randf_range(1.0, 2.0))
+			mushroom.rotation.y = randf() * TAU
+			geom.add_child(mushroom)
+			mushroom.position = Vector3(
+				randf_range(-half_x * 0.8, half_x * 0.8),
+				0,
+				randf_range(-half_z * 0.8, half_z * 0.8)
+			)
+
 	# Energy crystal decorations (scattered in some rooms)
 	var crystal_scene: PackedScene = load("res://assets/models/props/energy_crystal.glb") as PackedScene
 	if crystal_scene and room_type in ["combat", "corridor"]:
