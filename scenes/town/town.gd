@@ -175,6 +175,24 @@ func _build_town_decorations() -> void:
 	_add_fence(geom, Vector3(14, 0.4, 5), Vector3(0.15, 0.8, 8))
 	_add_fence(geom, Vector3(5, 0.4, 14), Vector3(6, 0.8, 0.15))
 
+	# --- Flower beds ---
+	_add_prop(geom, "res://assets/models/props/flower_bed.glb", Vector3(-6, 0, 2), Vector3(0.8, 0.8, 0.8))
+	_add_prop(geom, "res://assets/models/props/flower_bed.glb", Vector3(6, 0, -2), Vector3(0.7, 0.7, 0.7))
+	_add_prop(geom, "res://assets/models/props/flower_bed.glb", Vector3(-2, 0, 12), Vector3(0.9, 0.9, 0.9))
+	_add_prop(geom, "res://assets/models/props/flower_bed.glb", Vector3(12, 0, 2), Vector3(0.6, 0.6, 0.6))
+
+	# --- Portal archway at dungeon entrance ---
+	_add_prop(geom, "res://assets/models/props/portal_archway.glb", Vector3(0, 0, -15), Vector3(1, 1, 1))
+
+
+func _add_prop(parent: Node3D, path: String, pos: Vector3, scale: Vector3) -> void:
+	var scene: PackedScene = load(path) as PackedScene
+	if scene:
+		var instance: Node3D = scene.instantiate() as Node3D
+		instance.scale = scale
+		parent.add_child(instance)
+		instance.global_position = pos
+
 
 func _add_path(parent: Node3D, pos: Vector3, size: Vector3) -> void:
 	var path: CSGBox3D = CSGBox3D.new()
