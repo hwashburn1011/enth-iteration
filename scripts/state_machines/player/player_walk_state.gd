@@ -2,6 +2,9 @@ class_name PlayerWalkState
 extends "res://scripts/state_machines/state.gd"
 ## Player is moving via WASD input.
 
+var _dust_timer: float = 0.0
+const DUST_INTERVAL: float = 0.3
+
 
 func enter() -> void:
 	var p = player
@@ -41,3 +44,31 @@ func physics_update(delta: float) -> void:
 	p.model.rotation.y = lerp_angle(p.model.rotation.y, target_angle, p.turn_speed * delta)
 
 	p.move_and_slide()
+
+	# Footstep dust particles
+	_dust_timer += delta
+	if _dust_timer >= DUST_INTERVAL:
+		_dust_timer = 0.0
+		_spawn_footstep_dust(p)
+
+
+func _spawn_footstep_dust(p: CharacterBody3D) -> void:
+	if not p.is_inside_tree():
+		return
+	var dust: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.08
+	sphere.height = 0.06
+	dust.mesh = sphere
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.6, 0.55, 0.45, 0.4)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dust.material_override = mat
+	p.get_tree().current_scene.add_child(dust)
+	dust.global_position = p.global_position + Vector3(randf_range(-0.15, 0.15), 0.05, randf_range(-0.15, 0.15))
+	var tween: Tween = dust.create_tween()
+	tween.tween_property(dust, "position:y", dust.position.y + 0.3, 0.4)
+	tween.parallel().tween_property(dust, "scale", Vector3(2, 2, 2), 0.4)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.4)
+	tween.tween_callback(dust.queue_free)
