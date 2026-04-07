@@ -24,3 +24,4 @@ func _on_marker_reached(body: Node3D, marker: Area3D) -> void:
 	if _markers_reached >= _required:
 		is_cleared = true
 		room_cleared.emit()
+		_show_exit_indicator()

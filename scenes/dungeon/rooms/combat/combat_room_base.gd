@@ -25,3 +25,4 @@ func _on_room_cleared() -> void:
 	if exit_barrier:
 		exit_barrier.open()
 	room_cleared.emit()
+	_show_exit_indicator()
