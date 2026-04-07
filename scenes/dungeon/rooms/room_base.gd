@@ -126,10 +126,46 @@ func _apply_dungeon_materials() -> void:
 		if child is CSGBox3D and child.name.begins_with("Wall"):
 			(child as CSGBox3D).material = wall_mat
 			(child as CSGBox3D).use_collision = true
+	# Room type accent strip on top of walls
+	_add_room_type_accent(geom)
 	# Add ceiling and pipes
 	_add_ceiling(geom)
 	# Add glowing edge strips to room for visibility
 	_add_room_glow_strips(geom)
+
+
+func _add_room_type_accent(geom: Node) -> void:
+	# Colored accent strip at top of walls indicating room type
+	var accent_color: Color
+	match room_type:
+		"combat":
+			accent_color = Color(0.7, 0.1, 0.08)
+		"loot":
+			accent_color = Color(0.8, 0.65, 0.1)
+		"story":
+			accent_color = Color(0.1, 0.3, 0.7)
+		_:
+			accent_color = Color(0.15, 0.35, 0.45)  # Corridor/default
+
+	var accent_mat: StandardMaterial3D = StandardMaterial3D.new()
+	accent_mat.albedo_color = accent_color
+	accent_mat.emission_enabled = true
+	accent_mat.emission = accent_color * 0.8
+	accent_mat.emission_energy_multiplier = 0.8
+	accent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+
+	for child: Node in geom.get_children():
+		if child is CSGBox3D and child.name.begins_with("Wall"):
+			var wall: CSGBox3D = child as CSGBox3D
+			var strip: CSGBox3D = CSGBox3D.new()
+			# Strip at top of wall
+			if wall.size.x > wall.size.z:
+				strip.size = Vector3(wall.size.x, 0.08, wall.size.z + 0.02)
+			else:
+				strip.size = Vector3(wall.size.x + 0.02, 0.08, wall.size.z)
+			strip.position = Vector3(0, wall.size.y / 2.0 - 0.04, 0)
+			strip.material = accent_mat
+			wall.add_child(strip)
 
 
 func _add_ceiling(geom: Node) -> void:

@@ -211,6 +211,14 @@ func _build_town_decorations() -> void:
 				instance.rotation.y = building_rotations[i - 1]
 				geom.add_child(instance)
 				instance.global_position = Vector3(pos.x, 0, pos.z)
+				# Add warm window light
+				var win_light: OmniLight3D = OmniLight3D.new()
+				win_light.position = Vector3(0, 2.0, -2.0)
+				win_light.light_color = Color(1.0, 0.85, 0.55)
+				win_light.light_energy = 1.0
+				win_light.omni_range = 5.0
+				win_light.omni_attenuation = 2.0
+				instance.add_child(win_light)
 			else:
 				building.use_collision = true
 				_add_roof(building)

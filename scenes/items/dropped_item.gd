@@ -24,6 +24,13 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
+	# Add glowing platform disc under item
+	var platform_scene: PackedScene = load("res://assets/models/props/item_platform.glb") as PackedScene
+	if platform_scene:
+		var plat: Node3D = platform_scene.instantiate() as Node3D
+		add_child(plat)
+		plat.position = Vector3(0, 0.01, 0)
+
 	if item:
 		_label.text = item.item_name
 		# Try loading Blender crystal model
