@@ -40,6 +40,11 @@ func _process(delta: float) -> void:
 	# Pulse the interaction indicator
 	if _interact_indicator and _interact_indicator.visible:
 		_interact_indicator.position.y = _indicator_base_y + sin(Time.get_ticks_msec() * 0.005) * 0.1
+	# Idle breathing animation on model
+	if _model:
+		var t: float = Time.get_ticks_msec() * 0.002
+		_model.position.y = sin(t) * 0.03  # Gentle vertical bob
+		_model.rotation.y = sin(t * 0.7) * 0.02  # Subtle sway
 
 
 func _on_body_entered(body: Node3D) -> void:

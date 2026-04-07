@@ -196,8 +196,8 @@ func _build_town_decorations() -> void:
 	var building_models: Array[String] = [
 		"res://assets/models/buildings/cottage_01.glb",
 		"res://assets/models/buildings/workshop_01.glb",
+		"res://assets/models/buildings/tavern_01.glb",
 		"res://assets/models/buildings/cottage_01.glb",
-		"res://assets/models/buildings/workshop_01.glb",
 	]
 	var building_rotations: Array[float] = [0, 0, PI, PI / 2.0]
 	for i: int in range(1, 5):
