@@ -100,10 +100,21 @@ func _setup_environment() -> void:
 	# Tonemap for better contrast
 	env.tonemap_mode = 2  # Filmic
 	env.tonemap_white = 6.0
-	# Glow for emission effects
+	# Glow for emission effects — stronger to make edge strips and LEDs pop
 	env.glow_enabled = true
-	env.glow_intensity = 0.3
-	env.glow_bloom = 0.1
+	env.glow_intensity = 0.5
+	env.glow_bloom = 0.2
+	env.glow_blend_mode = 0  # Additive
+	# SSAO for depth in enclosed rooms
+	env.ssao_enabled = true
+	env.ssao_radius = 0.8
+	env.ssao_intensity = 0.6
+	# Volumetric fog for atmospheric depth
+	env.volumetric_fog_enabled = true
+	env.volumetric_fog_density = 0.02
+	env.volumetric_fog_albedo = Color(0.08, 0.1, 0.16)
+	env.volumetric_fog_emission = Color(0.04, 0.06, 0.1)
+	env.volumetric_fog_emission_energy = 0.3
 
 	var world_env: WorldEnvironment = WorldEnvironment.new()
 	world_env.environment = env

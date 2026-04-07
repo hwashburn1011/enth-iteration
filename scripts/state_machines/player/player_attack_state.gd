@@ -82,6 +82,7 @@ func physics_update(delta: float) -> void:
 				p.hitbox_component.set_meta(&"damage_type", &"data")
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
+			_spawn_attack_arc(p)
 	elif _hitbox_enabled:
 		_set_hitbox_active(p, false)
 		_hitbox_enabled = false
@@ -138,3 +139,41 @@ func _get_mouse_world_direction(p: CharacterBody3D) -> Vector3:
 	if direction.length() < 0.1:
 		return p.facing_direction
 	return direction.normalized()
+
+
+func _spawn_attack_arc(p: CharacterBody3D) -> void:
+	if not p.is_inside_tree():
+		return
+	var arc: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.6
+	torus.outer_radius = 0.9
+	torus.rings = 8
+	torus.ring_segments = 12
+	arc.mesh = torus
+	arc.position = p.global_position + p.facing_direction * 0.5 + Vector3(0, 0.5, 0)
+	arc.rotation.x = PI / 2.0  # Lay flat
+	arc.rotation.y = atan2(p.facing_direction.x, p.facing_direction.z)
+
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	if _is_energy_burst:
+		mat.albedo_color = Color(0.3, 0.5, 1.0, 0.6)
+		mat.emission_enabled = true
+		mat.emission = Color(0.25, 0.45, 0.9)
+		mat.emission_energy_multiplier = 2.0
+		arc.scale = Vector3(1.5, 1.5, 0.3)
+	else:
+		mat.albedo_color = Color(0.2, 0.8, 0.8, 0.5)
+		mat.emission_enabled = true
+		mat.emission = Color(0.15, 0.6, 0.6)
+		mat.emission_energy_multiplier = 1.5
+		arc.scale = Vector3(1.0, 1.0, 0.2)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arc.material_override = mat
+
+	p.get_tree().current_scene.add_child(arc)
+	var tween: Tween = arc.create_tween()
+	tween.tween_property(arc, "scale", arc.scale * 1.5, 0.15)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.2)
+	tween.tween_callback(arc.queue_free)
