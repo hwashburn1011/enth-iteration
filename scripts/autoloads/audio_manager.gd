@@ -64,6 +64,7 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 
 	var stream: AudioStream = load(path) as AudioStream
 	if stream == null:
+		push_warning("AudioManager: '%s' is a placeholder — no audio data" % track_name)
 		return
 
 	if _music_player.playing:
