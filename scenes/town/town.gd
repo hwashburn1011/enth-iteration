@@ -431,24 +431,23 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 
 
 func _add_boundary_collision() -> void:
-	# Use thick StaticBody3D walls instead of thin CSG collision
-	# CSG use_collision is unreliable for thin walls with fast-moving characters
-	var boundary_data: Array[Array] = [
-		# [position, size] — very thick walls overlapping with visual walls
-		[Vector3(0, 1, -21), Vector3(46, 4, 4)],    # North
-		[Vector3(0, 1, 21), Vector3(46, 4, 4)],     # South
-		[Vector3(21, 1, 0), Vector3(4, 4, 46)],     # East
-		[Vector3(-21, 1, 0), Vector3(4, 4, 46)],    # West
-	]
-	for data: Array in boundary_data:
-		var body: StaticBody3D = StaticBody3D.new()
-		var shape: CollisionShape3D = CollisionShape3D.new()
-		var box: BoxShape3D = BoxShape3D.new()
-		box.size = data[1] as Vector3
-		shape.shape = box
-		body.add_child(shape)
-		body.position = data[0] as Vector3
-		add_child(body)
+	# Make the existing CSG boundary walls thick enough to prevent clipping
+	# AND enable collision on them
+	var geom: Node3D = get_node_or_null("Geometry") as Node3D
+	if geom == null:
+		return
+	# Resize walls to be much thicker (3 units instead of 0.5)
+	var wall_configs: Dictionary = {
+		"BoundaryNorth": Vector3(44, 3, 3),
+		"BoundarySouth": Vector3(44, 3, 3),
+		"BoundaryEast": Vector3(3, 3, 44),
+		"BoundaryWest": Vector3(3, 3, 44),
+	}
+	for dir: String in wall_configs:
+		var wall: CSGBox3D = geom.get_node_or_null(dir) as CSGBox3D
+		if wall:
+			wall.size = wall_configs[dir] as Vector3
+			wall.use_collision = true
 
 
 func _add_ground_collision() -> void:
