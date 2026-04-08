@@ -286,6 +286,9 @@ func _on_scene_changed_hud(_path: String) -> void:
 		_room_label.text = ""
 
 
+var _last_health: float = -1.0
+
+
 func _on_health_changed(current: float, max_val: float) -> void:
 	health_bar.max_value = max_val
 	if _health_tween and _health_tween.is_running():
@@ -293,12 +296,33 @@ func _on_health_changed(current: float, max_val: float) -> void:
 	_health_tween = create_tween()
 	_health_tween.tween_property(health_bar, "value", current, TWEEN_DURATION).set_ease(Tween.EASE_OUT)
 	health_label.text = "%d / %d" % [int(current), int(max_val)]
+	# Flash health bar red on damage (not on heal or initial set)
+	if _last_health > 0 and current < _last_health:
+		_flash_health_bar_damage()
+	_last_health = current
 	# Low-health vignette
 	var pct: float = current / max_val if max_val > 0 else 1.0
 	if pct < 0.25 and current > 0:
 		_ensure_low_health_vignette()
 	elif pct >= 0.35:
 		_remove_low_health_vignette()
+
+
+func _flash_health_bar_damage() -> void:
+	if health_bar == null:
+		return
+	var flash_fill: StyleBoxFlat = StyleBoxFlat.new()
+	flash_fill.bg_color = Color(1.0, 0.95, 0.9)
+	flash_fill.set_corner_radius_all(3)
+	health_bar.add_theme_stylebox_override(&"fill", flash_fill)
+	var tween: Tween = create_tween()
+	tween.tween_interval(0.1)
+	tween.tween_callback(func() -> void:
+		var normal_fill: StyleBoxFlat = StyleBoxFlat.new()
+		normal_fill.bg_color = Color(0.2, 0.75, 0.3)
+		normal_fill.set_corner_radius_all(3)
+		health_bar.add_theme_stylebox_override(&"fill", normal_fill)
+	)
 
 
 func _ensure_low_health_vignette() -> void:
