@@ -126,30 +126,51 @@ func _toggle_settings() -> void:
 		return
 
 	_settings_panel = PanelContainer.new()
+	# Place to the right of the pause menu, vertically centered
 	_settings_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_settings_panel.offset_left = -180.0
-	_settings_panel.offset_top = 50.0
-	_settings_panel.offset_right = 180.0
-	_settings_panel.offset_bottom = 250.0
+	_settings_panel.offset_left = 200.0
+	_settings_panel.offset_top = -150.0
+	_settings_panel.offset_right = 540.0
+	_settings_panel.offset_bottom = 150.0
+	var settings_style: StyleBoxFlat = StyleBoxFlat.new()
+	settings_style.bg_color = Color(0.05, 0.06, 0.12, 0.96)
+	settings_style.border_color = Color(0.15, 0.45, 0.55, 0.8)
+	settings_style.set_border_width_all(2)
+	settings_style.set_corner_radius_all(8)
+	settings_style.set_content_margin_all(16)
+	_settings_panel.add_theme_stylebox_override(&"panel", settings_style)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.add_theme_constant_override(&"separation", 10)
+	vbox.add_theme_constant_override(&"separation", 12)
 
 	var stitle: Label = Label.new()
-	stitle.text = "Settings"
+	stitle.text = "SETTINGS"
 	stitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stitle.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	stitle.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	stitle.add_theme_constant_override(&"outline_size", 3)
+	stitle.add_theme_font_size_override(&"font_size", 22)
 	vbox.add_child(stitle)
+
+	var sep: HSeparator = HSeparator.new()
+	vbox.add_child(sep)
 
 	# Volume sliders
 	_add_slider(vbox, "Master Volume", 0, func(val: float) -> void: _set_bus_volume("Master", val))
 	_add_slider(vbox, "Music Volume", 1, func(val: float) -> void: _set_bus_volume("Music", val))
 	_add_slider(vbox, "SFX Volume", 2, func(val: float) -> void: _set_bus_volume("SFX", val))
 
+	var sep2: HSeparator = HSeparator.new()
+	vbox.add_child(sep2)
+
 	# Fullscreen toggle
 	var fs_check: CheckButton = CheckButton.new()
 	fs_check.text = "Fullscreen"
 	fs_check.button_pressed = DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN
 	fs_check.toggled.connect(_on_fullscreen_toggled)
+	fs_check.add_theme_color_override(&"font_color", Color(0.85, 0.9, 0.95))
+	fs_check.add_theme_color_override(&"font_hover_color", Color(0.3, 0.85, 0.85))
+	fs_check.add_theme_font_size_override(&"font_size", 16)
 	vbox.add_child(fs_check)
 
 	_settings_panel.add_child(vbox)
@@ -158,9 +179,12 @@ func _toggle_settings() -> void:
 
 func _add_slider(parent: VBoxContainer, label_text: String, bus_index: int, callback: Callable) -> void:
 	var hbox: HBoxContainer = HBoxContainer.new()
+	hbox.add_theme_constant_override(&"separation", 10)
 	var lbl: Label = Label.new()
 	lbl.text = label_text
-	lbl.custom_minimum_size = Vector2(110, 0)
+	lbl.custom_minimum_size = Vector2(130, 0)
+	lbl.add_theme_color_override(&"font_color", Color(0.85, 0.9, 0.95))
+	lbl.add_theme_font_size_override(&"font_size", 15)
 	hbox.add_child(lbl)
 
 	var slider: HSlider = HSlider.new()
@@ -168,9 +192,20 @@ func _add_slider(parent: VBoxContainer, label_text: String, bus_index: int, call
 	slider.max_value = 1.0
 	slider.step = 0.05
 	slider.value = db_to_linear(AudioServer.get_bus_volume_db(bus_index)) if bus_index < AudioServer.bus_count else 1.0
-	slider.custom_minimum_size = Vector2(120, 0)
+	slider.custom_minimum_size = Vector2(150, 0)
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	slider.value_changed.connect(callback)
 	hbox.add_child(slider)
+
+	# Live percentage label
+	var pct: Label = Label.new()
+	pct.text = "%d%%" % int(slider.value * 100)
+	pct.custom_minimum_size = Vector2(40, 0)
+	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	pct.add_theme_color_override(&"font_color", Color(0.55, 0.85, 0.85))
+	pct.add_theme_font_size_override(&"font_size", 14)
+	slider.value_changed.connect(func(val: float) -> void: pct.text = "%d%%" % int(val * 100))
+	hbox.add_child(pct)
 
 	parent.add_child(hbox)
 
