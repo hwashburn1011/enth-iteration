@@ -43,6 +43,11 @@ func physics_update(delta: float) -> void:
 	var charge_pct: float = charge_time / MAX_CHARGE_TIME
 	_set_emission(p, charge_pct)
 	_update_charge_vfx(p, charge_pct)
+	# Subtle screen shake when fully charged (last 20% of charge time)
+	if charge_pct >= 0.8:
+		var camera: Camera3D = p.get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"shake"):
+			camera.shake(0.02 + (charge_pct - 0.8) * 0.1, 10.0)
 
 	# Allow reduced-speed movement while charging
 	var input_vector: Vector2 = Input.get_vector(
