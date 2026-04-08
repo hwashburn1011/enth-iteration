@@ -57,11 +57,27 @@ func _ready() -> void:
 	_tooltip.visible = false
 
 
+const MAGNET_RANGE: float = 3.0
+const MAGNET_SPEED: float = 4.0
+
+
 func _process(delta: float) -> void:
 	_timer += delta
 
 	# Bobbing
 	_mesh.position.y = _base_y + sin(_timer * BOB_FREQUENCY * TAU) * BOB_AMPLITUDE
+
+	# Magnetism — drift toward nearby player
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if not players.is_empty():
+		var p: Node3D = players[0] as Node3D
+		var dist: float = global_position.distance_to(p.global_position)
+		if dist < MAGNET_RANGE and dist > 0.5:
+			var dir: Vector3 = (p.global_position - global_position).normalized()
+			dir.y = 0.0
+			# Strength scales inversely with distance
+			var strength: float = (1.0 - dist / MAGNET_RANGE) * MAGNET_SPEED
+			global_position += dir * strength * delta
 
 	# Despawn
 	if _timer >= DESPAWN_TIME - FADE_DURATION:
