@@ -63,10 +63,10 @@ func _build_ui() -> void:
 
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.set_anchors_preset(Control.PRESET_CENTER)
-	hbox.offset_left = -400.0
-	hbox.offset_top = -250.0
-	hbox.offset_right = 400.0
-	hbox.offset_bottom = 250.0
+	hbox.offset_left = -540.0
+	hbox.offset_top = -260.0
+	hbox.offset_right = 540.0
+	hbox.offset_bottom = 260.0
 	hbox.add_theme_constant_override(&"separation", 16)
 
 	# Sci-fi panel style for sections
@@ -134,8 +134,13 @@ func _build_equipment_slots(parent: VBoxContainer) -> void:
 			slot.custom_minimum_size = Vector2(CELL_SIZE, CELL_SIZE)
 			var slot_key: String = "%s_%d" % [section[1], i]
 			var item: Resource = _get_equipped_item(section[1] as String, i)
-			slot.text = item.item_name.substr(0, 3) if item else "--"
-			slot.tooltip_text = item.item_name if item else "Empty"
+			_style_grid_cell(slot, item != null)
+			slot.text = ""
+			if item:
+				_add_item_icon(slot, item)
+				slot.tooltip_text = item.item_name
+			else:
+				slot.tooltip_text = "Empty"
 			slot.pressed.connect(_on_equip_slot_clicked.bind(section[1] as String, i))
 			hbox.add_child(slot)
 			_equip_slots[slot_key] = slot
@@ -153,17 +158,53 @@ func _build_grid(parent: VBoxContainer) -> void:
 			var cell: Button = Button.new()
 			cell.custom_minimum_size = Vector2(CELL_SIZE, CELL_SIZE)
 			var item: Resource = _player.inventory_component.get_item_at(Vector2i(x, y))
-			if item:
-				cell.text = item.item_name.substr(0, 2)
-				cell.modulate = RARITY_COLORS[clampi(item.rarity, 0, 3)]
-			else:
-				cell.text = ""
-				cell.modulate = Color(0.4, 0.4, 0.4)
+			cell.text = ""
 			_style_grid_cell(cell, item != null)
+			if item:
+				_add_item_icon(cell, item)
+				cell.tooltip_text = item.item_name
 			cell.pressed.connect(_on_grid_cell_clicked.bind(x, y))
 			grid_container.add_child(cell)
 			_grid_cells.append(cell)
 	parent.add_child(grid_container)
+
+
+const ITEM_TYPE_GLYPHS: Dictionary = {
+	"chip": "◆",
+	"module": "▲",
+	"core": "●",
+	"protocol": "■",
+	"weapon": "✦",
+	"prompt": "★",
+}
+
+
+func _add_item_icon(cell: Button, item: Resource) -> void:
+	## Center a rarity-colored glyph in the cell to represent the item visually.
+	var rarity_col: Color = RARITY_COLORS[clampi(item.rarity, 0, 3)]
+	# Background rarity tint behind the icon
+	var tint: ColorRect = ColorRect.new()
+	tint.color = Color(rarity_col.r, rarity_col.g, rarity_col.b, 0.18)
+	tint.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tint.offset_left = 4
+	tint.offset_top = 4
+	tint.offset_right = -4
+	tint.offset_bottom = -4
+	tint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(tint)
+	# Glyph icon centered
+	var glyph: Label = Label.new()
+	var item_type: String = str(item.get(&"item_type")) if item.get(&"item_type") else ""
+	glyph.text = ITEM_TYPE_GLYPHS.get(item_type, "◇")
+	glyph.add_theme_font_size_override(&"font_size", 28)
+	glyph.add_theme_color_override(&"font_color", rarity_col)
+	glyph.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	glyph.add_theme_constant_override(&"outline_size", 3)
+	glyph.set_anchors_preset(Control.PRESET_FULL_RECT)
+	glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	glyph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.add_child(glyph)
 
 
 func _style_grid_cell(cell: Button, has_item: bool) -> void:
@@ -234,7 +275,13 @@ func _show_tooltip(item: Resource) -> void:
 
 	for stat_name: String in item.stat_modifiers:
 		var stat_label: Label = Label.new()
-		stat_label.text = "+ %s %s" % [str(item.stat_modifiers[stat_name]), stat_name.capitalize()]
+		var raw_val: Variant = item.stat_modifiers[stat_name]
+		var formatted: String
+		if raw_val is float:
+			formatted = "%.1f" % (raw_val as float)
+		else:
+			formatted = str(raw_val)
+		stat_label.text = "+ %s %s" % [formatted, stat_name.capitalize()]
 		stat_label.modulate = Color(0.3, 0.9, 0.3)
 		vbox.add_child(stat_label)
 
