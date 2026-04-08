@@ -56,3 +56,11 @@ func _process(delta: float) -> void:
 func shake(intensity: float = 0.15, decay: float = 5.0) -> void:
 	_shake_intensity = intensity
 	_shake_decay = decay
+
+
+func zoom_pulse(in_size: float = 11.0, duration: float = 0.3) -> void:
+	## Briefly zoom in then out for dramatic effect
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "size", in_size, duration * 0.4).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(duration * 0.2)
+	tween.tween_property(self, "size", camera_size, duration * 0.4).set_ease(Tween.EASE_IN)

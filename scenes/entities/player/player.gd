@@ -272,6 +272,10 @@ func _on_leveled_up(_new_level: int) -> void:
 		VFXFactory.spawn_level_up_effect(global_position, get_tree().current_scene)
 		# Brief hitstop for dramatic impact
 		_apply_level_up_hitstop()
+		# Camera zoom pulse
+		var camera: Camera3D = get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"zoom_pulse"):
+			camera.zoom_pulse(11.0, 0.4)
 	var panel: Node = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)
