@@ -29,6 +29,9 @@ func enter() -> void:
 
 	# Damage feedback VFX
 	_spawn_damage_vignette(p)
+	# Directional damage indicator
+	if _knockback_dir.length() > 0.1:
+		_spawn_directional_indicator(p, -_knockback_dir)
 	# Screen shake
 	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	if camera and camera.has_method(&"shake"):
@@ -56,6 +59,28 @@ func physics_update(delta: float) -> void:
 			state_machine.force_transition_to(state_machine.get_node("WalkState") as Node)
 		else:
 			state_machine.force_transition_to(state_machine.get_node("IdleState") as Node)
+
+
+func _spawn_directional_indicator(p: CharacterBody3D, from_dir: Vector3) -> void:
+	## Arrow pointing toward the source of damage
+	if not p.is_inside_tree():
+		return
+	var indicator: Label3D = Label3D.new()
+	indicator.text = "▼"
+	indicator.font_size = 48
+	indicator.modulate = Color(1.0, 0.2, 0.1, 0.8)
+	indicator.outline_modulate = Color(0, 0, 0, 0.6)
+	indicator.outline_size = 4
+	indicator.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	# Position indicator in the direction of the damage source
+	var offset: Vector3 = from_dir.normalized() * 1.5 + Vector3(0, 1.5, 0)
+	indicator.position = p.global_position + offset
+	# Rotate to point toward damage source
+	indicator.rotation.z = atan2(from_dir.x, from_dir.z)
+	p.get_tree().current_scene.add_child(indicator)
+	var tween: Tween = indicator.create_tween()
+	tween.tween_property(indicator, "modulate:a", 0.0, 0.6)
+	tween.tween_callback(indicator.queue_free)
 
 
 func _spawn_damage_vignette(p: CharacterBody3D) -> void:
