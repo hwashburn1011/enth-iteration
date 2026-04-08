@@ -18,8 +18,8 @@ static func spawn_hit_flash(position: Vector3, parent: Node) -> void:
 	mat.emission_energy_multiplier = 3.0
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mesh.material_override = mat
-	mesh.global_position = position
 	parent.add_child(mesh)
+	mesh.global_position = position
 	# Double-pulse: flash→dim→flash→fade
 	var tween: Tween = mesh.create_tween()
 	tween.tween_property(mat, "albedo_color:a", 1.0, 0.02)
@@ -38,7 +38,6 @@ static func _spawn_hit_sparks(position: Vector3, parent: Node) -> void:
 	particles.lifetime = 0.3
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = position
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
 	mat.spread = 180.0
@@ -60,6 +59,7 @@ static func _spawn_hit_sparks(position: Vector3, parent: Node) -> void:
 	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	particles.material_override = vis_mat
 	parent.add_child(particles)
+	particles.global_position = position
 	parent.get_tree().create_timer(0.6).timeout.connect(particles.queue_free)
 
 
