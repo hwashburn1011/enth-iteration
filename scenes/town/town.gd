@@ -453,6 +453,80 @@ func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) 
 		instance.scale = prop_scale
 		parent.add_child(instance)
 		instance.global_position = pos
+		# Route texture by GLB filename
+		_apply_prop_material_by_path(instance, path)
+
+
+func _apply_prop_material_by_path(root: Node, path: String) -> void:
+	## Pick a material from the path stem and override every mesh in the
+	## prop tree, skipping meshes that have emissive (glow) materials.
+	var stem: String = path.get_file().get_basename().to_lower()
+	var mat: StandardMaterial3D
+	if "well" in stem or "stone" in stem:
+		mat = _make_stone_material()
+	elif "bridge" in stem or "barrel" in stem or "crate" in stem or "bench" in stem or "signpost" in stem:
+		mat = _make_wood_material()
+	elif "bush" in stem or "flower" in stem or "pine" in stem:
+		# Foliage already textured by tree pass — reuse
+		mat = _make_foliage_material()
+	else:
+		return  # Unknown prop type — leave default materials
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var mi: MeshInstance3D = n as MeshInstance3D
+			var existing: Material = mi.get_active_material(0)
+			var keep_glow: bool = false
+			if existing is StandardMaterial3D:
+				var sm: StandardMaterial3D = existing as StandardMaterial3D
+				if sm.emission_enabled and sm.emission_energy_multiplier > 0.5:
+					keep_glow = true
+			if not keep_glow:
+				mi.material_override = mat
+		for c in n.get_children():
+			stack.append(c)
+
+
+static func _make_wood_material() -> StandardMaterial3D:
+	## Warm aged wood with vertical grain.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.55, 0.36, 0.20)
+	var grain_noise: FastNoiseLite = FastNoiseLite.new()
+	grain_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	grain_noise.frequency = 0.6
+	grain_noise.fractal_octaves = 4
+	var grain_tex: NoiseTexture2D = NoiseTexture2D.new()
+	grain_tex.noise = grain_noise
+	grain_tex.width = 256
+	grain_tex.height = 512
+	grain_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.32, 0.18, 0.08))
+	ramp.set_color(1, Color(0.72, 0.50, 0.28))
+	ramp.add_point(0.5, Color(0.50, 0.32, 0.18))
+	grain_tex.color_ramp = ramp
+	mat.albedo_texture = grain_tex
+	# Subtle bump
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	bump_noise.frequency = 0.9
+	bump_noise.fractal_octaves = 3
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 256
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 3.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.7
+	mat.uv1_triplanar = false
+	mat.uv1_scale = Vector3(1.0, 0.5, 1.0)
+	mat.metallic = 0.0
+	mat.roughness = 0.9
+	return mat
 
 
 func _add_path(parent: Node3D, pos: Vector3, size: Vector3) -> void:
