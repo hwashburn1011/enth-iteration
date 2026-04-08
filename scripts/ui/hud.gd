@@ -402,6 +402,7 @@ func _update_prompt_display(player: CharacterBody3D) -> void:
 	if active.is_empty():
 		_prompt_icon.color = Color(0.3, 0.3, 0.3, 0.5)
 		_prompt_quantity.text = "x0"
+		_prompt_icon.scale = Vector2.ONE
 		return
 	var prompt: Resource = active["item"] as Resource
 	var qty: int = int(active["quantity"])
@@ -415,6 +416,11 @@ func _update_prompt_display(player: CharacterBody3D) -> void:
 		_:
 			_prompt_icon.color = Color(0.5, 0.5, 0.5)
 	_prompt_quantity.text = "x%d" % qty
+	# Brief pop animation when prompt loaded
+	_prompt_icon.scale = Vector2(0.6, 0.6)
+	var tween: Tween = create_tween()
+	tween.tween_property(_prompt_icon, "scale", Vector2(1.15, 1.15), 0.1).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_prompt_icon, "scale", Vector2(1.0, 1.0), 0.08)
 
 
 func _refresh_prompt_from_tree() -> void:
