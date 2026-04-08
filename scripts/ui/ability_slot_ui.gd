@@ -17,20 +17,40 @@ func _ready() -> void:
 
 
 func _apply_slot_style() -> void:
-	# Sci-fi border on the slot
+	# Wrap the slot in a styled panel border (drawn behind icon_bg)
+	var border_panel: PanelContainer = PanelContainer.new()
+	border_panel.name = "BorderPanel"
+	border_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	border_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	border_panel.show_behind_parent = true
 	var bg_style: StyleBoxFlat = StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.08, 0.10, 0.18, 0.85)
-	bg_style.border_color = Color(0.15, 0.35, 0.45, 0.7)
-	bg_style.set_border_width_all(1)
-	bg_style.set_corner_radius_all(4)
-	# Apply to this Control if it's a PanelContainer, or to icon_bg
+	bg_style.bg_color = Color(0.06, 0.08, 0.14, 0.92)
+	bg_style.border_color = Color(0.18, 0.45, 0.55, 0.85)
+	bg_style.set_border_width_all(2)
+	bg_style.set_corner_radius_all(5)
+	border_panel.add_theme_stylebox_override(&"panel", bg_style)
+	add_child(border_panel)
+	move_child(border_panel, 0)
+
 	if _icon_bg:
-		_icon_bg.color = Color(0.1, 0.12, 0.2, 0.8)
+		_icon_bg.color = Color(0.0, 0.0, 0.0, 0.0)  # transparent — let border panel show
+		# Inset the icon bg so the border is visible
+		_icon_bg.offset_left = 3
+		_icon_bg.offset_top = 3
+		_icon_bg.offset_right = -3
+		_icon_bg.offset_bottom = -3
 	if _key_label:
-		_key_label.add_theme_color_override(&"font_color", Color(0.6, 0.7, 0.8))
+		_key_label.add_theme_color_override(&"font_color", Color(0.65, 0.85, 0.9))
+		_key_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+		_key_label.add_theme_constant_override(&"outline_size", 2)
 		_key_label.add_theme_font_size_override(&"font_size", 14)
+	if _name_label:
+		_name_label.add_theme_color_override(&"font_color", Color(0.85, 0.9, 0.95))
+		_name_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.8))
+		_name_label.add_theme_constant_override(&"outline_size", 2)
+		_name_label.add_theme_font_size_override(&"font_size", 11)
 	if _cooldown_overlay:
-		_cooldown_overlay.color = Color(0, 0, 0, 0.6)
+		_cooldown_overlay.color = Color(0, 0, 0, 0.65)
 
 
 func _process(delta: float) -> void:

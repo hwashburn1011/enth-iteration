@@ -144,6 +144,30 @@ func _process_low_health(delta: float) -> void:
 
 
 func _apply_sci_fi_theme() -> void:
+	# Style the prompt display panel — currently a bare PanelContainer in HUD.tscn
+	var prompt_display: PanelContainer = _container.get_node_or_null("PromptDisplay") as PanelContainer
+	if prompt_display:
+		var prompt_style: StyleBoxFlat = StyleBoxFlat.new()
+		prompt_style.bg_color = Color(0.06, 0.08, 0.14, 0.92)
+		prompt_style.border_color = Color(0.18, 0.45, 0.55, 0.85)
+		prompt_style.set_border_width_all(2)
+		prompt_style.border_width_left = 4
+		prompt_style.set_corner_radius_all(5)
+		prompt_style.set_content_margin_all(6)
+		prompt_display.add_theme_stylebox_override(&"panel", prompt_style)
+		_prompt_indicator_root = prompt_display
+	# Style the prompt key label
+	var prompt_key: Label = _container.get_node_or_null("PromptDisplay/HBox/VBox/PromptKey") as Label
+	if prompt_key:
+		prompt_key.add_theme_color_override(&"font_color", Color(0.65, 0.85, 0.9))
+		prompt_key.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+		prompt_key.add_theme_constant_override(&"outline_size", 2)
+		prompt_key.add_theme_font_size_override(&"font_size", 14)
+	if _prompt_quantity:
+		_prompt_quantity.add_theme_color_override(&"font_color", Color(0.95, 0.85, 0.3))
+		_prompt_quantity.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+		_prompt_quantity.add_theme_constant_override(&"outline_size", 2)
+		_prompt_quantity.add_theme_font_size_override(&"font_size", 16)
 	# Health bar — red/green sci-fi
 	var health_bg: StyleBoxFlat = StyleBoxFlat.new()
 	health_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
@@ -267,13 +291,8 @@ func set_combat_visible(combat: bool) -> void:
 	## Top-left status (HP/CP/XP/Level) stays visible.
 	if _ability_slots_container:
 		_ability_slots_container.visible = combat
-	if _prompt_icon:
-		# Hide the prompt icon and its key label by hiding their common parent
-		var p: Node = _prompt_icon.get_parent()
-		while p and p != _container and not (p is Control and p.get_parent() == _container):
-			p = p.get_parent()
-		if p is Control:
-			(p as Control).visible = combat
+	if _prompt_indicator_root:
+		_prompt_indicator_root.visible = combat
 	if _room_panel:
 		_room_panel.visible = combat and not _room_label.text.is_empty() if _room_label else combat
 	if _controls_hint and is_instance_valid(_controls_hint):
