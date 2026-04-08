@@ -276,6 +276,24 @@ func apply_variant(tier: int) -> void:
 		_elite_aura.material_override = vis_mat
 		_elite_aura.position = Vector3(0, 0.5, 0)
 		add_child(_elite_aura)
+		# Ground ring under elite/champion
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var torus: TorusMesh = TorusMesh.new()
+		torus.inner_radius = 0.45
+		torus.outer_radius = 0.55
+		torus.rings = 12
+		torus.ring_segments = 16
+		ring.mesh = torus
+		ring.position = Vector3(0, 0.05, 0)
+		var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ring_mat.albedo_color = aura_mat.color
+		ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		ring_mat.emission_enabled = true
+		ring_mat.emission = aura_mat.color
+		ring_mat.emission_energy_multiplier = 2.5
+		ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override = ring_mat
+		add_child(ring)
 
 
 func _play_spawn_effect() -> void:
