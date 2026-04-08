@@ -85,6 +85,8 @@ func physics_update(delta: float) -> void:
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
 			_spawn_attack_arc(p)
+		# Poll for overlaps each frame (area_entered may not fire if already overlapping)
+		_poll_hitbox_overlaps(p)
 	elif _hitbox_enabled:
 		_set_hitbox_active(p, false)
 		_hitbox_enabled = false
@@ -106,6 +108,21 @@ func exit() -> void:
 	_hitbox_enabled = false
 	# Restore default hitbox size
 	_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
+
+
+func _poll_hitbox_overlaps(p: CharacterBody3D) -> void:
+	var hitbox: Node = p.hitbox_component
+	if not hitbox.is_active:
+		return
+	for area: Area3D in hitbox.get_overlapping_areas():
+		if area == p.hurtbox_component:
+			continue  # Skip self
+		if not area.has_method(&"activate"):
+			continue  # Not a hurtbox
+		if hitbox.has_hit(area.get_parent()):
+			continue  # Already hit this target
+		# Trigger the hurtbox's damage processing manually
+		area._on_area_entered(hitbox)
 
 
 func _set_hitbox_active(p: CharacterBody3D, active: bool) -> void:
