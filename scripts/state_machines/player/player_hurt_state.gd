@@ -27,6 +27,13 @@ func enter() -> void:
 	if p.animation_player.has_animation(&"hurt"):
 		p.animation_player.play(&"hurt")
 
+	# Damage feedback VFX
+	_spawn_damage_vignette(p)
+	# Screen shake
+	var camera: Camera3D = p.get_viewport().get_camera_3d()
+	if camera and camera.has_method(&"shake"):
+		camera.shake(0.15, 8.0)
+
 
 func physics_update(delta: float) -> void:
 	var p = player
@@ -49,3 +56,18 @@ func physics_update(delta: float) -> void:
 			state_machine.force_transition_to(state_machine.get_node("WalkState") as Node)
 		else:
 			state_machine.force_transition_to(state_machine.get_node("IdleState") as Node)
+
+
+func _spawn_damage_vignette(p: CharacterBody3D) -> void:
+	## Brief red screen flash when player takes damage
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 90
+	var rect: ColorRect = ColorRect.new()
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.color = Color(0.8, 0.05, 0.02, 0.3)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(rect)
+	p.get_tree().root.add_child(canvas)
+	var tween: Tween = rect.create_tween()
+	tween.tween_property(rect, "color:a", 0.0, 0.25)
+	tween.tween_callback(canvas.queue_free)
