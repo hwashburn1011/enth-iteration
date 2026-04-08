@@ -417,6 +417,8 @@ func _add_exit_door() -> void:
 		var to_center: Vector3 = (Vector3.ZERO - exit_trigger.position).normalized()
 		if to_center.length() > 0.1:
 			door.rotation.y = atan2(to_center.x, to_center.z)
+		# Apply brushed metal texture to the door body (preserve any glow)
+		_apply_prop_texture(door, _make_tech_prop_material())
 
 
 func _add_ambient_particles() -> void:
@@ -602,8 +604,10 @@ func _add_dungeon_props() -> void:
 			var terminal: Node3D = term_scene.instantiate() as Node3D
 			geom.add_child(terminal)
 			terminal.position = Vector3(randf_range(-2, 2), 0, randf_range(-half_z * 0.3, half_z * 0.3))
+			_apply_prop_texture(terminal, prop_mat)
 
-	# Glowing mushroom clusters (corridors and story rooms)
+	# Glowing mushroom clusters (corridors and story rooms) — keep their
+	# original glowing materials, only re-tint the stems
 	var mushroom_scene: PackedScene = load("res://assets/models/props/mushroom_cluster.glb") as PackedScene
 	if mushroom_scene and room_type in ["corridor", "story", "loot"]:
 		for _i: int in randi_range(1, 2):
@@ -616,8 +620,9 @@ func _add_dungeon_props() -> void:
 				0,
 				randf_range(-half_z * 0.8, half_z * 0.8)
 			)
+			# Skip texture override on mushrooms — they're meant to glow
 
-	# Energy crystal decorations (scattered in some rooms)
+	# Energy crystal decorations (scattered in some rooms) — keep glow
 	var crystal_scene: PackedScene = load("res://assets/models/props/energy_crystal.glb") as PackedScene
 	if crystal_scene and room_type in ["combat", "corridor"]:
 		for _i: int in randi_range(1, 3):
@@ -630,6 +635,7 @@ func _add_dungeon_props() -> void:
 				0,
 				randf_range(-half_z * 0.7, half_z * 0.7)
 			)
+			# Skip texture override on crystals — they're meant to glow
 
 	# Corner point lights for all rooms
 	var floor_accent: Color = GameManager.get_meta(&"floor_accent_color", Color(0.08, 0.35, 0.55)) as Color
