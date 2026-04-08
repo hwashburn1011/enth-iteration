@@ -3,7 +3,7 @@ extends Node
 ## Handles player death → fade → degradation → respawn in town flow.
 
 const TOWN_SCENE_PATH: String = "res://scenes/town/Town.tscn"
-const DEATH_WAIT: float = 1.0
+const DEATH_WAIT: float = 2.5  # Long enough for SYSTEM FAILURE overlay to land
 const FADE_DURATION: float = 0.5
 
 var _fade_overlay: ColorRect = null
