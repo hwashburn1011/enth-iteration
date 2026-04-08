@@ -234,6 +234,25 @@ func _apply_level_up_hitstop() -> void:
 
 func _on_dash_cooldown_timeout() -> void:
 	can_dash = true
+	# Brief ring flash to indicate dash ready
+	_flash_ring_ready()
+
+
+func _flash_ring_ready() -> void:
+	var ring: MeshInstance3D = get_node_or_null("HighlightRing") as MeshInstance3D
+	if ring == null or not is_instance_valid(ring):
+		return
+	var mat: StandardMaterial3D = ring.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	# Brief bright pulse
+	var original_energy: float = mat.emission_energy_multiplier
+	var original_color: Color = mat.albedo_color
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(mat, "emission_energy_multiplier", 3.0, 0.08)
+	tween.parallel().tween_property(mat, "albedo_color", Color(0.3, 0.9, 0.85, 0.6), 0.08)
+	tween.tween_property(mat, "emission_energy_multiplier", original_energy, 0.2)
+	tween.parallel().tween_property(mat, "albedo_color", original_color, 0.2)
 
 
 func _on_attack_cooldown_timeout() -> void:
