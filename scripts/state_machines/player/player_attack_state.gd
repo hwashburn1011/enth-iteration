@@ -63,6 +63,8 @@ func enter() -> void:
 		p.facing_direction = attack_dir
 		var target_angle: float = atan2(attack_dir.x, attack_dir.z)
 		p.model.rotation.y = target_angle
+		# Position hitbox in the attack direction
+		p.hitbox_component.rotation.y = target_angle
 
 	_set_hitbox_active(p, false)
 

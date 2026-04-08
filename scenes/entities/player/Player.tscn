@@ -129,7 +129,7 @@ tracks/0/keys = {
 }
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hitbox"]
-size = Vector3(1.5, 1.0, 1.5)
+size = Vector3(2.0, 1.2, 2.0)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_hurtbox"]
 radius = 0.4
@@ -268,7 +268,7 @@ monitorable = false
 script = ExtResource("13_hitbox")
 
 [node name="HitboxShape" type="CollisionShape3D" parent="HitboxComponent"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -1.0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -0.5)
 shape = SubResource("BoxShape3D_hitbox")
 disabled = true
 
