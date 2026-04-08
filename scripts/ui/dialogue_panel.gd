@@ -18,6 +18,8 @@ var _typing: bool = false
 var _visible_chars: int = 0
 var _full_text: String = ""
 var _char_timer: float = 0.0
+var _continue_label: Label = null
+var _placeholder_label: Label = null
 
 @onready var _panel: PanelContainer = %DialoguePanel
 @onready var _portrait_rect: TextureRect = %PortraitRect
@@ -45,22 +47,84 @@ func _apply_dialogue_theme() -> void:
 
 	# Name label — accent color
 	_name_label.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
-	_name_label.add_theme_font_size_override(&"font_size", 20)
+	_name_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_name_label.add_theme_constant_override(&"outline_size", 3)
+	_name_label.add_theme_font_size_override(&"font_size", 22)
 
 	# Dialogue text — light color
 	_dialogue_label.add_theme_color_override(&"default_color", Color(0.85, 0.87, 0.92))
+	_dialogue_label.add_theme_font_size_override(&"normal_font_size", 16)
+
+	# Placeholder portrait: bordered initial letter when no texture is set
+	_placeholder_label = Label.new()
+	_placeholder_label.name = "PlaceholderInitial"
+	_placeholder_label.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_placeholder_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_placeholder_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_placeholder_label.add_theme_font_size_override(&"font_size", 64)
+	_placeholder_label.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	_placeholder_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	_placeholder_label.add_theme_constant_override(&"outline_size", 4)
+	_placeholder_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait_rect.add_child(_placeholder_label)
+	# Frame the portrait rect so the initial sits in a styled box
+	var portrait_style: StyleBoxFlat = StyleBoxFlat.new()
+	portrait_style.bg_color = Color(0.08, 0.12, 0.18, 0.85)
+	portrait_style.border_color = Color(0.15, 0.45, 0.55, 0.7)
+	portrait_style.set_border_width_all(2)
+	portrait_style.set_corner_radius_all(6)
+	# TextureRect doesn't accept stylebox; wrap via background ColorRect
+	var bg_frame: PanelContainer = PanelContainer.new()
+	bg_frame.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg_frame.add_theme_stylebox_override(&"panel", portrait_style)
+	bg_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg_frame.show_behind_parent = true
+	_portrait_rect.add_child(bg_frame)
+
+	# Continue indicator — blinks when text is fully typed
+	_continue_label = Label.new()
+	_continue_label.name = "ContinueHint"
+	_continue_label.text = "▼ Press [E] or [LMB] to continue"
+	_continue_label.add_theme_font_size_override(&"font_size", 12)
+	_continue_label.add_theme_color_override(&"font_color", Color(0.55, 0.85, 0.95))
+	_continue_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.6))
+	_continue_label.add_theme_constant_override(&"outline_size", 2)
+	_continue_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_continue_label.offset_left = -240
+	_continue_label.offset_top = -22
+	_continue_label.offset_right = -16
+	_continue_label.offset_bottom = -4
+	_continue_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_continue_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_continue_label.visible = false
+	_panel.add_child(_continue_label)
 
 
 func _process(delta: float) -> void:
-	if not _typing:
-		return
-	_char_timer += delta
-	var chars_to_show: int = int(_char_timer * CHARS_PER_SECOND)
-	if chars_to_show > _visible_chars:
-		_visible_chars = chars_to_show
-		_dialogue_label.visible_characters = mini(_visible_chars, _full_text.length())
-		if _visible_chars >= _full_text.length():
-			_typing = false
+	if _typing:
+		_char_timer += delta
+		var chars_to_show: int = int(_char_timer * CHARS_PER_SECOND)
+		if chars_to_show > _visible_chars:
+			_visible_chars = chars_to_show
+			_dialogue_label.visible_characters = mini(_visible_chars, _full_text.length())
+			if _visible_chars >= _full_text.length():
+				_typing = false
+				_show_continue_hint()
+	elif _continue_label and _continue_label.visible:
+		# Pulse the continue hint
+		var t: float = Time.get_ticks_msec() * 0.004
+		_continue_label.modulate.a = 0.55 + 0.45 * (sin(t) * 0.5 + 0.5)
+
+
+func _show_continue_hint() -> void:
+	if _continue_label:
+		_continue_label.visible = true
+		_continue_label.modulate.a = 1.0
+
+
+func _hide_continue_hint() -> void:
+	if _continue_label:
+		_continue_label.visible = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -103,6 +167,7 @@ func start_dialogue(data: Array[Resource]) -> void:
 
 func _display_line(line: Resource) -> void:
 	_name_label.text = line.speaker_name
+	_hide_continue_hint()
 
 	# Portrait lookup: line.portrait > speaker_portraits[expression] > speaker_portraits["default"]
 	var new_portrait: Texture2D = null
@@ -115,9 +180,18 @@ func _display_line(line: Resource) -> void:
 
 	if new_portrait:
 		_crossfade_portrait(new_portrait)
+		_portrait_rect.texture = new_portrait
 		_portrait_rect.visible = true
+		if _placeholder_label:
+			_placeholder_label.visible = false
 	else:
-		_portrait_rect.visible = false
+		# Show placeholder initial of speaker name
+		_portrait_rect.visible = true
+		_portrait_rect.texture = null
+		if _placeholder_label:
+			var initial: String = line.speaker_name.substr(0, 1).to_upper() if not line.speaker_name.is_empty() else "?"
+			_placeholder_label.text = initial
+			_placeholder_label.visible = true
 
 	_full_text = line.text
 	_dialogue_label.text = _full_text
@@ -131,6 +205,7 @@ func _advance() -> void:
 	if _typing:
 		_typing = false
 		_dialogue_label.visible_characters = -1
+		_show_continue_hint()
 		return
 
 	_current_index += 1
