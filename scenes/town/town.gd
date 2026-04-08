@@ -58,6 +58,8 @@ func _ready() -> void:
 	_populate_npcs()
 	_update_town_state()
 	_add_ambient_particles()
+	# Show "TOWN" location label briefly
+	_show_location_label("TOWN")
 
 	# Narrative: demo end check after returning from boss
 	if GameManager.should_trigger_demo_end():
@@ -137,6 +139,31 @@ func _auto_trigger_sage_dialogue() -> void:
 		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
 			child._start_conversation()
 			return
+
+
+func _show_location_label(location: String) -> void:
+	## Brief location label fade-in/out at top of screen
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 85
+	var label: Label = Label.new()
+	label.text = location
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	label.offset_left = -200
+	label.offset_right = 200
+	label.offset_top = 80
+	label.offset_bottom = 130
+	label.add_theme_font_size_override(&"font_size", 32)
+	label.add_theme_color_override(&"font_color", Color(0.95, 0.85, 0.5, 0.0))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(label)
+	add_child(canvas)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "theme_override_colors/font_color:a", 1.0, 0.5)
+	tween.tween_interval(2.0)
+	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.7)
+	tween.tween_callback(canvas.queue_free)
 
 
 func _add_ambient_particles() -> void:
