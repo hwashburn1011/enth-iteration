@@ -85,6 +85,8 @@ func physics_update(delta: float) -> void:
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
 			_spawn_attack_arc(p)
+			if _is_energy_burst:
+				_spawn_burst_shockwave(p)
 		# Poll for overlaps each frame (area_entered may not fire if already overlapping)
 		_poll_hitbox_overlaps(p)
 	elif _hitbox_enabled:
@@ -264,3 +266,76 @@ func _spawn_attack_arc(p: CharacterBody3D) -> void:
 	sparks.material_override = spark_vis
 	scene_root.add_child(sparks)
 	p.get_tree().create_timer(0.5).timeout.connect(sparks.queue_free)
+
+
+func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
+	## Energy Burst exclusive: expanding shockwave ring + screen shake + hitstop
+	if not p.is_inside_tree():
+		return
+	var scene_root: Node = p.get_tree().current_scene
+	var pos: Vector3 = p.global_position + Vector3(0, 0.1, 0)
+
+	# Expanding ground shockwave ring
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var ring_mesh: TorusMesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.3
+	ring_mesh.outer_radius = 0.5
+	ring_mesh.rings = 16
+	ring_mesh.ring_segments = 20
+	ring.mesh = ring_mesh
+	ring.global_position = pos
+	ring.scale = Vector3(0.5, 0.5, 0.5)
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.3, 0.55, 1.0, 0.7)
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.25, 0.5, 0.95)
+	ring_mat.emission_energy_multiplier = 3.0
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = ring_mat
+	scene_root.add_child(ring)
+	var ring_tween: Tween = ring.create_tween()
+	ring_tween.tween_property(ring, "scale", Vector3(4.0, 1.0, 4.0), 0.25).set_ease(Tween.EASE_OUT)
+	ring_tween.parallel().tween_property(ring_mat, "albedo_color:a", 0.0, 0.3)
+	ring_tween.tween_callback(ring.queue_free)
+
+	# Radial particle burst (energy fragments)
+	var burst: GPUParticles3D = GPUParticles3D.new()
+	burst.amount = 20
+	burst.lifetime = 0.4
+	burst.one_shot = true
+	burst.emitting = true
+	burst.global_position = pos + Vector3(0, 0.3, 0)
+	var burst_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	burst_mat.direction = Vector3(0, 0.3, 0)
+	burst_mat.spread = 180.0
+	burst_mat.initial_velocity_min = 4.0
+	burst_mat.initial_velocity_max = 7.0
+	burst_mat.gravity = Vector3(0, -2, 0)
+	burst_mat.color = Color(0.35, 0.6, 1.0, 0.8)
+	burst_mat.scale_min = 0.3
+	burst_mat.scale_max = 1.0
+	burst.process_material = burst_mat
+	var burst_mesh: BoxMesh = BoxMesh.new()
+	burst_mesh.size = Vector3(0.04, 0.04, 0.04)
+	burst.draw_pass_1 = burst_mesh
+	var burst_vis: StandardMaterial3D = StandardMaterial3D.new()
+	burst_vis.albedo_color = Color(0.4, 0.65, 1.0, 0.8)
+	burst_vis.emission_enabled = true
+	burst_vis.emission = Color(0.3, 0.55, 0.95)
+	burst_vis.emission_energy_multiplier = 3.5
+	burst_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	burst.material_override = burst_vis
+	scene_root.add_child(burst)
+	p.get_tree().create_timer(0.7).timeout.connect(burst.queue_free)
+
+	# Screen shake
+	var camera: Camera3D = p.get_viewport().get_camera_3d()
+	if camera and camera.has_method(&"shake"):
+		camera.shake(0.2, 6.0)
+
+	# Brief hitstop
+	Engine.time_scale = 0.15
+	p.get_tree().create_timer(0.05, true, false, true).timeout.connect(func() -> void:
+		Engine.time_scale = 1.0
+	)
