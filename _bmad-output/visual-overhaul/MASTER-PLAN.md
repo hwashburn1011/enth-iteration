@@ -54,14 +54,14 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 22](epic-22-npc-interaction-polish.md) — NPC Interaction Polish ✅ DONE
 
 ### PHASE 5: Town Environment (Epics 23-30)
-- [Epic 23](epic-23-terrain-system.md) — Town Terrain (sculpted ground mesh, painted grass/dirt/stone)
-- [Epic 24](epic-24-buildings-textured.md) — Buildings Textured (UV unwrap, hand-paint all 3 buildings)
-- [Epic 25](epic-25-vegetation-system.md) — Vegetation System (textured trees, grass billboards, flowers)
-- [Epic 26](epic-26-props-textured.md) — Town Props Textured (well, benches, barrels, signs, fences)
-- [Epic 27](epic-27-town-lighting.md) — Town Lighting Overhaul (baked lightmaps, time-of-day prep)
-- [Epic 28](epic-28-water-effects.md) — Water Effects (well water shader, animated ripples)
-- [Epic 29](epic-29-town-atmosphere.md) — Town Atmosphere (improved particles, god rays, ambient sounds)
-- [Epic 30](epic-30-town-layout-polish.md) — Town Layout Polish (hand-placed composition, sightlines)
+- [Epic 23](epic-23-terrain-system.md) — Town Terrain ✅ DONE
+- [Epic 24](epic-24-buildings-textured.md) — Buildings Textured ✅ DONE
+- [Epic 25](epic-25-vegetation-system.md) — Vegetation System ✅ DONE
+- [Epic 26](epic-26-props-textured.md) — Town Props Textured ✅ DONE
+- [Epic 27](epic-27-town-lighting.md) — Town Lighting Overhaul ✅ DONE
+- [Epic 28](epic-28-water-effects.md) — Water Effects ✅ DONE
+- [Epic 29](epic-29-town-atmosphere.md) — Town Atmosphere ✅ DONE
+- [Epic 30](epic-30-town-layout-polish.md) — Town Layout Polish ✅ DONE
 
 ### PHASE 6: Dungeon Environment (Epics 31-38)
 - [Epic 31](epic-31-dungeon-tileset.md) — Dungeon Tile Set (modular wall/floor/ceiling pieces, textured)
