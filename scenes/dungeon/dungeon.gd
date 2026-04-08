@@ -250,26 +250,66 @@ func _update_environment_for_floor(accent: Color) -> void:
 func _show_floor_clear_banner(floor_number: int) -> void:
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 85
+	# Holder so the entire group fades + scales together with proper pivot
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER)
+	holder.offset_left = -300
+	holder.offset_right = 300
+	holder.offset_top = -50
+	holder.offset_bottom = 60
+	holder.pivot_offset = Vector2(300, 55)
+	holder.modulate.a = 0.0
+	holder.scale = Vector2(0.7, 0.7)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(holder)
+	# Subtitle "FLOOR N"
+	var sub: Label = Label.new()
+	sub.text = "FLOOR %d" % floor_number
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	sub.offset_top = 0
+	sub.offset_bottom = 24
+	sub.add_theme_font_size_override(&"font_size", 18)
+	sub.add_theme_color_override(&"font_color", Color(0.55, 0.85, 0.85))
+	sub.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	sub.add_theme_constant_override(&"outline_size", 4)
+	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(sub)
+	# Main "CLEARED"
 	var label: Label = Label.new()
-	label.text = "FLOOR %d CLEARED" % floor_number
+	label.text = "CLEARED"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.set_anchors_preset(Control.PRESET_CENTER)
-	label.offset_left = -200
-	label.offset_right = 200
-	label.offset_top = -30
-	label.offset_bottom = 30
-	label.add_theme_font_size_override(&"font_size", 36)
-	label.add_theme_color_override(&"font_color", Color(0.3, 0.9, 0.8, 0.0))
+	label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	label.offset_top = 28
+	label.offset_bottom = 90
+	label.add_theme_font_size_override(&"font_size", 56)
+	label.add_theme_color_override(&"font_color", Color(0.95, 0.85, 0.25))
+	label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	label.add_theme_constant_override(&"outline_size", 8)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	canvas.add_child(label)
+	holder.add_child(label)
+	# Decorative underline rule
+	var rule: ColorRect = ColorRect.new()
+	rule.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	rule.offset_left = 100
+	rule.offset_right = -100
+	rule.offset_top = 96
+	rule.offset_bottom = 99
+	rule.color = Color(0.95, 0.8, 0.2, 0.7)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(rule)
 	add_child(canvas)
-	var tween: Tween = label.create_tween()
-	tween.tween_property(label, "theme_override_colors/font_color:a", 1.0, 0.3)
-	tween.tween_property(label, "scale", Vector2(1.15, 1.15), 0.1)
-	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.1)
-	tween.tween_interval(1.2)
-	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.5)
+	# Cinematic in/hold/out — use sequential tween with parallel sub-tweens
+	var tween: Tween = holder.create_tween()
+	# Phase 1: fade-in + scale-pop in parallel
+	tween.tween_property(holder, "modulate:a", 1.0, 0.35).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(holder, "scale", Vector2(1.05, 1.05), 0.35).set_ease(Tween.EASE_OUT)
+	# Phase 2: settle scale
+	tween.tween_property(holder, "scale", Vector2(1.0, 1.0), 0.12)
+	# Phase 3: hold
+	tween.tween_interval(1.8)
+	# Phase 4: fade out
+	tween.tween_property(holder, "modulate:a", 0.0, 0.6).set_ease(Tween.EASE_IN)
 	tween.tween_callback(canvas.queue_free)
 	# VFX burst at player position
 	if _player and _player.is_inside_tree():
