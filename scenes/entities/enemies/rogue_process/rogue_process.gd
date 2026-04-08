@@ -26,7 +26,7 @@ func _ready() -> void:
 func _build_enemy_visual() -> void:
 	for child: Node in model.get_children():
 		child.queue_free()
-	var glb: PackedScene = load("res://assets/models/enemies/rogue_process.glb") as PackedScene
+	var glb: PackedScene = load("res://assets/models/enemies/enemy_rogueprocess_v2.glb") as PackedScene
 	if glb:
 		var instance: Node3D = glb.instantiate() as Node3D
 		model.add_child(instance)

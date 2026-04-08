@@ -38,10 +38,10 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 10](epic-10-globbler-vfx.md) — Globbler VFX Integration (attack trails, dash ghost, footsteps)
 
 ### PHASE 3: Enemy Characters (Epics 11-18)
-- [Epic 11](epic-11-glitchbug-full.md) — GlitchBug Full Rebuild (model, texture, rig, animate)
-- [Epic 12](epic-12-memoryleak-full.md) — MemoryLeak Full Rebuild
-- [Epic 13](epic-13-rogueprocess-full.md) — RogueProcess Full Rebuild
-- [Epic 14](epic-14-corrupted-compiler-full.md) — Corrupted Compiler Boss Full Rebuild
+- [Epic 11](epic-11-glitchbug-full.md) — GlitchBug Full Rebuild ✅ DONE
+- [Epic 12](epic-12-memoryleak-full.md) — MemoryLeak Full Rebuild ✅ DONE
+- [Epic 13](epic-13-rogueprocess-full.md) — RogueProcess Full Rebuild ✅ DONE
+- [Epic 14](epic-14-corrupted-compiler-full.md) — Corrupted Compiler Boss Full Rebuild ✅ DONE
 - [Epic 15](epic-15-enemy-shared-vfx.md) — Enemy Shared VFX (spawn, death, hit reactions)
 - [Epic 16](epic-16-enemy-ai-polish.md) — Enemy AI Visual Polish (telegraph animations, aggro indicators)
 - [Epic 17](epic-17-enemy-variants.md) — Enemy Color/Size Variants (elite versions, floor scaling)
