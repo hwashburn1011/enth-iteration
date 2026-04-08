@@ -142,8 +142,8 @@ func _auto_trigger_sage_dialogue() -> void:
 func _add_ambient_particles() -> void:
 	# Warm floating dust motes / fireflies
 	var particles: GPUParticles3D = GPUParticles3D.new()
-	particles.amount = 40
-	particles.lifetime = 6.0
+	particles.amount = 60  # More fireflies for richer atmosphere
+	particles.lifetime = 7.0
 	particles.visibility_aabb = AABB(Vector3(-20, 0, -20), Vector3(40, 6, 40))
 	particles.position = Vector3(0, 2, 0)
 
@@ -176,6 +176,35 @@ func _add_ambient_particles() -> void:
 	particles.material_override = vis_mat
 
 	add_child(particles)
+
+	# High-altitude drifting cloud particles for sky depth
+	var clouds: GPUParticles3D = GPUParticles3D.new()
+	clouds.amount = 15
+	clouds.lifetime = 20.0
+	clouds.position = Vector3(0, 12, 0)
+	clouds.visibility_aabb = AABB(Vector3(-25, 8, -25), Vector3(50, 6, 50))
+	var cloud_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	cloud_mat.direction = Vector3(1, 0, 0.2)
+	cloud_mat.spread = 5.0
+	cloud_mat.initial_velocity_min = 0.3
+	cloud_mat.initial_velocity_max = 0.6
+	cloud_mat.gravity = Vector3.ZERO
+	cloud_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	cloud_mat.emission_box_extents = Vector3(25, 2, 25)
+	cloud_mat.color = Color(1.0, 0.95, 0.85, 0.15)
+	cloud_mat.scale_min = 3.0
+	cloud_mat.scale_max = 6.0
+	clouds.process_material = cloud_mat
+	var cloud_mesh: SphereMesh = SphereMesh.new()
+	cloud_mesh.radius = 0.5
+	cloud_mesh.height = 0.4
+	clouds.draw_pass_1 = cloud_mesh
+	var cloud_vis: StandardMaterial3D = StandardMaterial3D.new()
+	cloud_vis.albedo_color = Color(1.0, 0.96, 0.88, 0.12)
+	cloud_vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cloud_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	clouds.material_override = cloud_vis
+	add_child(clouds)
 
 
 func _build_town_decorations() -> void:
