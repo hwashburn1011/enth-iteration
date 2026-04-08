@@ -24,8 +24,8 @@ func enter() -> void:
 	)
 	var dash_dir: Vector3 = p.facing_direction
 	if input_vector.length() > 0.0:
-		var camera: Camera3D = p.get_viewport().get_camera_3d()
-		var camera_basis: Basis = Basis(Vector3.UP, camera.global_rotation.y) if camera else Basis.IDENTITY
+		var dir_camera: Camera3D = p.get_viewport().get_camera_3d()
+		var camera_basis: Basis = Basis(Vector3.UP, dir_camera.global_rotation.y) if dir_camera else Basis.IDENTITY
 		dash_dir = (camera_basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
 
 	# Wall collision check — test motion to find valid dash endpoint

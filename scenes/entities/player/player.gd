@@ -35,6 +35,15 @@ var _prompt_cooldown: float = 0.0
 func _ready() -> void:
 	add_to_group(&"player")
 	_build_player_extras()
+	dash_cooldown_timer.one_shot = true
+	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
+	attack_cooldown_timer.one_shot = true
+	attack_cooldown_timer.timeout.connect(_on_attack_cooldown_timeout)
+	health_component.died.connect(_on_died)
+	health_component.health_changed.connect(_on_health_changed_color)
+	hitbox_component.damage_source = self
+	hurtbox_component.hit_received.connect(_on_hit_received)
+	level_component.leveled_up.connect(_on_leveled_up)
 	# Brief spawn-in flash on player when scene starts
 	call_deferred(&"_spawn_in_flash")
 
@@ -50,8 +59,9 @@ func _spawn_in_flash() -> void:
 	torus.rings = 16
 	torus.ring_segments = 16
 	ring.mesh = torus
-	ring.global_position = global_position + Vector3(0, 0.1, 0)
 	ring.scale = Vector3(0.3, 0.3, 0.3)
+	get_tree().current_scene.add_child(ring)
+	ring.global_position = global_position + Vector3(0, 0.1, 0)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.3, 0.85, 0.85, 0.85)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -60,20 +70,10 @@ func _spawn_in_flash() -> void:
 	mat.emission_energy_multiplier = 4.0
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = mat
-	get_tree().current_scene.add_child(ring)
 	var tween: Tween = ring.create_tween()
 	tween.tween_property(ring, "scale", Vector3(3.0, 1.0, 3.0), 0.5).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.6)
 	tween.tween_callback(ring.queue_free)
-	dash_cooldown_timer.one_shot = true
-	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
-	attack_cooldown_timer.one_shot = true
-	attack_cooldown_timer.timeout.connect(_on_attack_cooldown_timeout)
-	health_component.died.connect(_on_died)
-	health_component.health_changed.connect(_on_health_changed_color)
-	hitbox_component.damage_source = self
-	hurtbox_component.hit_received.connect(_on_hit_received)
-	level_component.leveled_up.connect(_on_leveled_up)
 
 
 func _on_health_changed_color(current: float, max_val: float) -> void:
