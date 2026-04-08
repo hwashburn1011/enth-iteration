@@ -85,6 +85,7 @@ func physics_update(delta: float) -> void:
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
 			_spawn_attack_arc(p)
+			_spawn_attack_range_indicator(p)
 			if _is_energy_burst:
 				_spawn_burst_shockwave(p)
 			else:
@@ -271,6 +272,33 @@ func _spawn_attack_arc(p: CharacterBody3D) -> void:
 	sparks.material_override = spark_vis
 	scene_root.add_child(sparks)
 	p.get_tree().create_timer(0.5).timeout.connect(sparks.queue_free)
+
+
+func _spawn_attack_range_indicator(p: CharacterBody3D) -> void:
+	## Brief faint cyan ring showing attack reach
+	if not p.is_inside_tree():
+		return
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	var attack_radius: float = 1.5 if not _is_energy_burst else 2.5
+	torus.inner_radius = attack_radius - 0.05
+	torus.outer_radius = attack_radius + 0.05
+	torus.rings = 16
+	torus.ring_segments = 16
+	ring.mesh = torus
+	ring.global_position = p.global_position + Vector3(0, 0.05, 0)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.3, 0.85, 0.85, 0.4)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.25, 0.8, 0.8)
+	mat.emission_energy_multiplier = 1.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	p.get_tree().current_scene.add_child(ring)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(mat, "albedo_color:a", 0.0, 0.25)
+	tween.tween_callback(ring.queue_free)
 
 
 func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
