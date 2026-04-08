@@ -79,6 +79,32 @@ func _show_aggro_indicator() -> void:
 	tween.tween_interval(0.8)
 	tween.tween_property(_aggro_indicator, "modulate:a", 0.0, 0.3)
 	tween.tween_callback(_cleanup_aggro_indicator)
+	# Eye-shine flash at enemy's "face" height
+	_spawn_aggro_flash()
+
+
+func _spawn_aggro_flash() -> void:
+	if not is_inside_tree():
+		return
+	var flash: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.15
+	sphere.height = 0.3
+	flash.mesh = sphere
+	flash.position = Vector3(0, 1.0, 0)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.2, 0.1, 0.7)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.2, 0.1)
+	mat.emission_energy_multiplier = 3.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flash.material_override = mat
+	add_child(flash)
+	var tween: Tween = flash.create_tween()
+	tween.tween_property(flash, "scale", Vector3(2.5, 2.5, 2.5), 0.25)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.25)
+	tween.tween_callback(flash.queue_free)
 
 
 func _hide_aggro_indicator() -> void:
