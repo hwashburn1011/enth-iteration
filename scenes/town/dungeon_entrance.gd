@@ -156,24 +156,44 @@ func _show_confirmation() -> void:
 	# Dim background
 	var dim: ColorRect = ColorRect.new()
 	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
-	dim.color = Color(0, 0, 0, 0.5)
+	dim.color = Color(0.02, 0.02, 0.06, 0.78)
 	fullscreen.add_child(dim)
 
 	_confirm_ui = PanelContainer.new()
 	_confirm_ui.set_anchors_preset(Control.PRESET_CENTER)
-	_confirm_ui.offset_left = -160
-	_confirm_ui.offset_top = -70
-	_confirm_ui.offset_right = 160
-	_confirm_ui.offset_bottom = 70
+	_confirm_ui.offset_left = -200
+	_confirm_ui.offset_top = -90
+	_confirm_ui.offset_right = 200
+	_confirm_ui.offset_bottom = 90
+	# Sci-fi panel styling
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.05, 0.06, 0.12, 0.95)
+	panel_style.border_color = Color(0.2, 0.55, 0.7, 0.85)
+	panel_style.set_border_width_all(2)
+	panel_style.border_width_top = 4
+	panel_style.set_corner_radius_all(6)
+	panel_style.set_content_margin_all(20)
+	_confirm_ui.add_theme_stylebox_override(&"panel", panel_style)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	vbox.add_theme_constant_override(&"separation", 12)
+	vbox.add_theme_constant_override(&"separation", 16)
 
 	var label: Label = Label.new()
 	label.text = "Enter the Compaction Loop?"
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.85))
+	label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.8))
+	label.add_theme_constant_override(&"outline_size", 3)
+	label.add_theme_font_size_override(&"font_size", 22)
 	vbox.add_child(label)
+
+	var subtitle: Label = Label.new()
+	subtitle.text = "Run · Earn · Recompile"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_color_override(&"font_color", Color(0.55, 0.7, 0.78))
+	subtitle.add_theme_font_size_override(&"font_size", 13)
+	vbox.add_child(subtitle)
 
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
