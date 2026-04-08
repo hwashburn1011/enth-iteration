@@ -81,6 +81,7 @@ func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group(&"player"):
 		_player_in_range = true
 		_label.visible = true
+		_play_proximity_burst()
 
 
 func _on_body_exited(body: Node3D) -> void:
@@ -160,6 +161,35 @@ func _on_no_pressed(canvas: CanvasLayer) -> void:
 	canvas.queue_free()
 	_confirm_ui = null
 	GameManager.set_state(GameManager.GameState.PLAYING)
+
+
+func _play_proximity_burst() -> void:
+	## Bright burst when player enters portal interaction range
+	if not is_inside_tree():
+		return
+	# Expanding ring on the ground
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.3
+	torus.outer_radius = 0.5
+	torus.rings = 16
+	torus.ring_segments = 16
+	ring.mesh = torus
+	ring.global_position = global_position + Vector3(0, 0.05, 0)
+	ring.scale = Vector3(0.5, 0.5, 0.5)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.3, 0.6, 1.0, 0.8)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.25, 0.55, 0.95)
+	mat.emission_energy_multiplier = 4.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	get_tree().current_scene.add_child(ring)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(ring, "scale", Vector3(4.0, 1.0, 4.0), 0.6).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.7)
+	tween.tween_callback(ring.queue_free)
 
 
 func _style_confirm_button(btn: Button, is_confirm: bool) -> void:
