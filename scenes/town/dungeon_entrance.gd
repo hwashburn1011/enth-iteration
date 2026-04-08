@@ -82,6 +82,17 @@ func _on_body_entered(body: Node3D) -> void:
 		_player_in_range = true
 		_label.visible = true
 		_play_proximity_burst()
+		_pulse_label()
+
+
+func _pulse_label() -> void:
+	if _label == null:
+		return
+	# Scale pulse to draw attention
+	_label.scale = Vector3(0.8, 0.8, 0.8)
+	var tween: Tween = _label.create_tween().set_loops(3)
+	tween.tween_property(_label, "scale", Vector3(1.1, 1.1, 1.1), 0.4).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(_label, "scale", Vector3(0.95, 0.95, 0.95), 0.4).set_ease(Tween.EASE_IN_OUT)
 
 
 func _on_body_exited(body: Node3D) -> void:
