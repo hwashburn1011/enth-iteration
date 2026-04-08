@@ -71,7 +71,6 @@ func _spawn_death_burst(enemy: CharacterBody3D) -> void:
 	particles.lifetime = 0.8
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = pos
 
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
@@ -98,6 +97,7 @@ func _spawn_death_burst(enemy: CharacterBody3D) -> void:
 	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	particles.material_override = vis_mat
 	scene_root.add_child(particles)
+	particles.global_position = pos
 
 	# Secondary: small white spark ring for impact flash
 	var flash_ring: MeshInstance3D = MeshInstance3D.new()
@@ -107,7 +107,6 @@ func _spawn_death_burst(enemy: CharacterBody3D) -> void:
 	torus.rings = 8
 	torus.ring_segments = 12
 	flash_ring.mesh = torus
-	flash_ring.global_position = pos
 	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
 	ring_mat.albedo_color = Color(burst_color.r * 0.5 + 0.5, burst_color.g * 0.5 + 0.5, burst_color.b * 0.5 + 0.5, 0.7)
 	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -117,6 +116,7 @@ func _spawn_death_burst(enemy: CharacterBody3D) -> void:
 	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	flash_ring.material_override = ring_mat
 	scene_root.add_child(flash_ring)
+	flash_ring.global_position = pos
 	var ring_tween: Tween = flash_ring.create_tween()
 	ring_tween.tween_property(flash_ring, "scale", Vector3(3, 3, 3), 0.25)
 	ring_tween.parallel().tween_property(ring_mat, "albedo_color:a", 0.0, 0.25)
