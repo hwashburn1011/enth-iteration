@@ -268,11 +268,54 @@ func _on_xp_changed(current_xp: int, xp_to_next: int) -> void:
 	_xp_bar.max_value = xp_to_next
 	var tween: Tween = create_tween()
 	tween.tween_property(_xp_bar, "value", float(current_xp), TWEEN_DURATION).set_ease(Tween.EASE_OUT)
+	# Brief XP bar glow on gain
+	_flash_xp_bar()
 
 
 func _on_leveled_up_hud(new_level: int) -> void:
 	_level_label.text = "Lv. %d" % new_level
 	_xp_bar.value = 0
+	# Level-up HUD notification
+	_show_level_up_banner(new_level)
+
+
+func _flash_xp_bar() -> void:
+	if _xp_bar == null:
+		return
+	var flash_fill: StyleBoxFlat = StyleBoxFlat.new()
+	flash_fill.bg_color = Color(0.9, 0.8, 0.2)
+	flash_fill.set_corner_radius_all(3)
+	_xp_bar.add_theme_stylebox_override(&"fill", flash_fill)
+	var tween: Tween = create_tween()
+	tween.tween_interval(0.15)
+	tween.tween_callback(func() -> void:
+		var normal_fill: StyleBoxFlat = StyleBoxFlat.new()
+		normal_fill.bg_color = Color(0.2, 0.6, 0.85)
+		normal_fill.set_corner_radius_all(3)
+		_xp_bar.add_theme_stylebox_override(&"fill", normal_fill)
+	)
+
+
+func _show_level_up_banner(level: int) -> void:
+	var banner: Label = Label.new()
+	banner.text = "LEVEL %d!" % level
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	banner.offset_left = -150
+	banner.offset_right = 150
+	banner.offset_top = 80
+	banner.offset_bottom = 120
+	banner.add_theme_font_size_override(&"font_size", 36)
+	banner.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.2, 0.0))
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_container.add_child(banner)
+	var tween: Tween = banner.create_tween()
+	tween.tween_property(banner, "theme_override_colors/font_color:a", 1.0, 0.15)
+	tween.tween_property(banner, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.tween_property(banner, "scale", Vector2(1.0, 1.0), 0.1)
+	tween.tween_interval(1.5)
+	tween.tween_property(banner, "theme_override_colors/font_color:a", 0.0, 0.5)
+	tween.tween_callback(banner.queue_free)
 
 
 func _update_xp_display(lc: Node) -> void:
