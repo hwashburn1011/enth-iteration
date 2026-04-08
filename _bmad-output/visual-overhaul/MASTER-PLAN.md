@@ -44,8 +44,8 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 14](epic-14-corrupted-compiler-full.md) — Corrupted Compiler Boss Full Rebuild ✅ DONE
 - [Epic 15](epic-15-enemy-shared-vfx.md) — Enemy Shared VFX (spawn, death, hit reactions) ✅ DONE
 - [Epic 16](epic-16-enemy-ai-polish.md) — Enemy AI Visual Polish (telegraph animations, aggro indicators) ✅ DONE
-- [Epic 17](epic-17-enemy-variants.md) — Enemy Color/Size Variants (elite versions, floor scaling)
-- [Epic 18](epic-18-boss-phases.md) — Boss Phase Visuals (phase transitions, arena effects)
+- [Epic 17](epic-17-enemy-variants.md) — Enemy Color/Size Variants (elite versions, floor scaling) ✅ DONE
+- [Epic 18](epic-18-boss-phases.md) — Boss Phase Visuals (phase transitions, arena effects) ✅ DONE
 
 ### PHASE 4: NPC Characters (Epics 19-22)
 - [Epic 19](epic-19-ai-sage-full.md) — AI Sage Full Rebuild (model, texture, rig, animate)

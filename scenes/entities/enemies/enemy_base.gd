@@ -25,6 +25,8 @@ var _health_bar_bg: MeshInstance3D = null
 var _health_bar_fill: MeshInstance3D = null
 var _health_bar_timer: float = 0.0
 var _aggro_indicator: Label3D = null
+var variant_tier: int = 0  ## 0=normal, 1=elite, 2=champion
+var _elite_aura: GPUParticles3D = null
 
 
 func _ready() -> void:
@@ -205,6 +207,49 @@ func _process(delta: float) -> void:
 func _build_enemy_visual() -> void:
 	# Override in subclasses for unique visuals
 	pass
+
+
+func apply_variant(tier: int) -> void:
+	## Apply elite/champion variant: scale up, tint, add aura particles.
+	variant_tier = tier
+	if tier == 0:
+		return
+	# Scale up (1.2x elite, 1.5x champion)
+	var scale_mult: float = 1.0 + tier * 0.2
+	model.scale *= scale_mult
+	# Stat boost
+	health_component.max_health *= 1.0 + tier * 0.5
+	health_component.current_health = health_component.max_health
+	stats_component.base_processing *= 1.0 + tier * 0.3
+	# Aura particles
+	if is_inside_tree():
+		_elite_aura = GPUParticles3D.new()
+		_elite_aura.amount = 8 + tier * 6
+		_elite_aura.lifetime = 0.8
+		var aura_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		aura_mat.direction = Vector3(0, 1, 0)
+		aura_mat.spread = 180.0
+		aura_mat.initial_velocity_min = 0.3
+		aura_mat.initial_velocity_max = 0.8
+		aura_mat.gravity = Vector3(0, 0.5, 0)
+		aura_mat.orbit_velocity_min = 0.5
+		aura_mat.orbit_velocity_max = 1.0
+		# Elite = orange, Champion = purple
+		aura_mat.color = Color(1.0, 0.6, 0.1, 0.6) if tier == 1 else Color(0.7, 0.2, 1.0, 0.6)
+		_elite_aura.process_material = aura_mat
+		var mesh: SphereMesh = SphereMesh.new()
+		mesh.radius = 0.03
+		mesh.height = 0.06
+		_elite_aura.draw_pass_1 = mesh
+		var vis_mat: StandardMaterial3D = StandardMaterial3D.new()
+		vis_mat.albedo_color = aura_mat.color
+		vis_mat.emission_enabled = true
+		vis_mat.emission = aura_mat.color
+		vis_mat.emission_energy_multiplier = 2.0
+		vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_elite_aura.material_override = vis_mat
+		_elite_aura.position = Vector3(0, 0.5, 0)
+		add_child(_elite_aura)
 
 
 func _play_spawn_effect() -> void:
