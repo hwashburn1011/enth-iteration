@@ -8,11 +8,6 @@ const PROMPT_DROP_CHANCE: float = 0.30
 const SCATTER_MIN: float = 1.0
 const SCATTER_MAX: float = 2.0
 
-## Preloaded prompt base items for universal prompt sub-table
-static var _health_prompt: Resource = null
-static var _compute_prompt: Resource = null
-
-
 func drop_loot(global_pos: Vector3) -> void:
 	var scene_root: Node = get_tree().current_scene
 	if scene_root == null:

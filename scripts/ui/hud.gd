@@ -12,7 +12,6 @@ const TWEEN_DURATION: float = 0.2
 @onready var _ability_slots_container: HBoxContainer = %AbilitySlots
 @onready var _prompt_icon: ColorRect = %PromptIcon
 @onready var _prompt_quantity: Label = %PromptQuantity
-@onready var _prompt_key: Label = %PromptKey
 @onready var _xp_bar: ProgressBar = %XPBar
 @onready var _level_label: Label = %LevelLabel
 
