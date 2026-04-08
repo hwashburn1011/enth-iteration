@@ -75,6 +75,9 @@ func _transition_to_room(index: int) -> void:
 	# Fade in
 	await _fade(1.0, 0.0, FADE_DURATION)
 
+	# Show room name briefly
+	_show_room_name()
+
 
 func _on_room_exit() -> void:
 	var next_index: int = current_room_index + 1
@@ -113,6 +116,39 @@ func _create_fade_overlay() -> void:
 	canvas.layer = 99
 	canvas.add_child(_fade_overlay)
 	add_child(canvas)
+
+
+func _show_room_name() -> void:
+	if current_room == null:
+		return
+	var room_name: String = ""
+	if current_room.get(&"room_name") and not (current_room.room_name as String).is_empty():
+		room_name = current_room.room_name
+	elif current_room.get(&"room_type"):
+		room_name = (current_room.room_type as String).capitalize()
+	else:
+		return
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 85
+	var label: Label = Label.new()
+	label.text = room_name
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	label.offset_left = -200
+	label.offset_right = 200
+	label.offset_top = 60
+	label.offset_bottom = 100
+	label.add_theme_font_size_override(&"font_size", 24)
+	label.add_theme_color_override(&"font_color", Color(0.3, 0.8, 0.75, 0.0))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(label)
+	_dungeon_root.add_child(canvas)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "theme_override_colors/font_color:a", 0.8, 0.3)
+	tween.tween_interval(1.5)
+	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.5)
+	tween.tween_callback(canvas.queue_free)
 
 
 func _fade(from: float, to: float, duration: float) -> void:
