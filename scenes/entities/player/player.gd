@@ -70,6 +70,7 @@ func _build_player_extras() -> void:
 
 	# Player highlight ring (helps visibility on dark dungeon floors)
 	var ring: MeshInstance3D = MeshInstance3D.new()
+	ring.name = "HighlightRing"
 	var ring_mesh: TorusMesh = TorusMesh.new()
 	ring_mesh.inner_radius = 0.35
 	ring_mesh.outer_radius = 0.42
@@ -87,6 +88,10 @@ func _build_player_extras() -> void:
 	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = ring_mat
 	add_child(ring)
+	# Subtle pulse animation on ring emission
+	var ring_tween: Tween = create_tween().set_loops()
+	ring_tween.tween_property(ring_mat, "emission_energy_multiplier", 1.4, 1.5).set_ease(Tween.EASE_IN_OUT)
+	ring_tween.tween_property(ring_mat, "emission_energy_multiplier", 0.6, 1.5).set_ease(Tween.EASE_IN_OUT)
 
 	# Small overhead light so player is always visible
 	var player_light: OmniLight3D = OmniLight3D.new()
