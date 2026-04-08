@@ -150,7 +150,7 @@ static func spawn_portal_particles(position: Vector3, parent: Node) -> GPUPartic
 	var particles: GPUParticles3D = GPUParticles3D.new()
 	particles.amount = 20
 	particles.lifetime = 1.5
-	particles.global_position = position + Vector3(0, 1, 0)
+	particles.position = position + Vector3(0, 1, 0)
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 0, 0)
 	mat.spread = 180.0
