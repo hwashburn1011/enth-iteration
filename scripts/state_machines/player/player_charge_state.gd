@@ -169,7 +169,20 @@ func _update_charge_vfx(_p: CharacterBody3D, charge_pct: float) -> void:
 		var pmat: ParticleProcessMaterial = _charge_particles.process_material as ParticleProcessMaterial
 		pmat.orbit_velocity_min = 1.5 + charge_pct * 3.0
 		pmat.orbit_velocity_max = 2.5 + charge_pct * 4.0
-		pmat.color = Color(0.3 + charge_pct * 0.2, 0.6 + charge_pct * 0.2, 1.0, 0.4 + charge_pct * 0.4)
+		# At full charge, shift toward bright white-cyan
+		if charge_pct >= 0.95:
+			pmat.color = Color(0.85, 0.95, 1.0, 0.95)
+		else:
+			pmat.color = Color(0.3 + charge_pct * 0.2, 0.6 + charge_pct * 0.2, 1.0, 0.4 + charge_pct * 0.4)
+	# Visible material on particles too (drawn pass material)
+	if _charge_particles and _charge_particles.material_override is StandardMaterial3D:
+		var vis_mat: StandardMaterial3D = _charge_particles.material_override as StandardMaterial3D
+		if charge_pct >= 0.95:
+			vis_mat.emission_energy_multiplier = 4.5
+			vis_mat.emission = Color(0.95, 0.98, 1.0)
+		else:
+			vis_mat.emission_energy_multiplier = 2.0 + charge_pct * 1.5
+			vis_mat.emission = Color(0.3, 0.6, 0.95)
 	if _charge_ring and _charge_ring.material_override is StandardMaterial3D:
 		var rmat: StandardMaterial3D = _charge_ring.material_override as StandardMaterial3D
 		rmat.albedo_color.a = charge_pct * 0.35
