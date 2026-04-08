@@ -625,18 +625,23 @@ func _update_streak_display() -> void:
 		streak_text = "MULTI-KILL x%d" % _kill_streak
 	_streak_label.text = streak_text
 	_streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_streak_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_streak_label.offset_left = -150
-	_streak_label.offset_right = 150
-	_streak_label.offset_top = 120
-	_streak_label.offset_bottom = 150
-	var streak_color: Color = Color(1.0, 0.5, 0.1) if _kill_streak < 5 else Color(1.0, 0.2, 0.1)
-	_streak_label.add_theme_font_size_override(&"font_size", 22 + mini(_kill_streak, 10) * 2)
+	# Anchor on the right side, mid-screen — out of the way of top-center stack
+	_streak_label.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_streak_label.offset_left = -340
+	_streak_label.offset_right = -16
+	_streak_label.offset_top = -160
+	_streak_label.offset_bottom = -120
+	_streak_label.pivot_offset = Vector2(162, 20)
+	var streak_color: Color = Color(1.0, 0.55, 0.1) if _kill_streak < 5 else Color(1.0, 0.22, 0.1)
+	var font_size: int = 22 + mini(_kill_streak, 10) * 2
+	_streak_label.add_theme_font_size_override(&"font_size", font_size)
 	_streak_label.add_theme_color_override(&"font_color", streak_color)
+	_streak_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	_streak_label.add_theme_constant_override(&"outline_size", 5)
 	_streak_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_container.add_child(_streak_label)
-	# Pop animation
+	# Pop animation with proper pivot — sequential tween
 	_streak_label.scale = Vector2(0.5, 0.5)
 	var tween: Tween = _streak_label.create_tween()
-	tween.tween_property(_streak_label, "scale", Vector2(1.2, 1.2), 0.08)
-	tween.tween_property(_streak_label, "scale", Vector2(1.0, 1.0), 0.06)
+	tween.tween_property(_streak_label, "scale", Vector2(1.18, 1.18), 0.09).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_streak_label, "scale", Vector2(1.0, 1.0), 0.08).set_ease(Tween.EASE_IN_OUT)
