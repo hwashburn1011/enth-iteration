@@ -63,26 +63,44 @@ func _on_combat_may_have_ended(_t: StringName, _p: Vector3, _l: Resource) -> voi
 func _create_save_indicator() -> void:
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 90
+	# Wrap label in a styled panel
+	var panel: PanelContainer = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	panel.offset_left = -160.0
+	panel.offset_top = 50.0
+	panel.offset_right = -16.0
+	panel.offset_bottom = 80.0
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.06, 0.12, 0.9)
+	style.border_color = Color(0.15, 0.45, 0.55, 0.8)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(8)
+	panel.add_theme_stylebox_override(&"panel", style)
+
 	_save_indicator = Label.new()
-	_save_indicator.text = "Saving..."
-	_save_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_save_indicator.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_save_indicator.offset_left = -120.0
-	_save_indicator.offset_top = 10.0
-	_save_indicator.offset_right = -10.0
-	_save_indicator.offset_bottom = 40.0
-	_save_indicator.modulate.a = 0.0
-	canvas.add_child(_save_indicator)
+	_save_indicator.text = "● SAVED"
+	_save_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_save_indicator.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	_save_indicator.add_theme_font_size_override(&"font_size", 14)
+	panel.add_child(_save_indicator)
+
+	panel.modulate.a = 0.0
+	_save_indicator.set_meta(&"panel", panel)
+	canvas.add_child(panel)
 	add_child(canvas)
 
 
 func _show_save_indicator() -> void:
 	if _save_indicator == null:
 		return
-	_save_indicator.modulate.a = 1.0
+	var panel: PanelContainer = _save_indicator.get_meta(&"panel") as PanelContainer
+	if panel == null:
+		return
+	panel.modulate.a = 1.0
 	var tween: Tween = create_tween()
 	tween.tween_interval(INDICATOR_DURATION)
-	tween.tween_property(_save_indicator, "modulate:a", 0.0, 0.3)
+	tween.tween_property(panel, "modulate:a", 0.0, 0.5)
 
 
 func new_game() -> void:
