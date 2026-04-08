@@ -183,7 +183,7 @@ func _fade_transition(to_black: bool) -> void:
 	var rect: ColorRect = _transition_overlay.get_node("FadeRect") as ColorRect
 	var target_alpha: float = 1.0 if to_black else 0.0
 	var tween: Tween = create_tween()
-	tween.tween_property(rect, "color:a", target_alpha, 0.3)
+	tween.tween_property(rect, "color:a", target_alpha, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	await tween.finished
 
 
