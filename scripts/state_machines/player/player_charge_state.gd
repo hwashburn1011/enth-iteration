@@ -71,6 +71,7 @@ func _release_burst() -> void:
 
 	if not p.compute_component.spend(compute_cost):
 		# Fizzle — not enough compute
+		_spawn_fizzle_vfx(p)
 		p.move_speed = _original_move_speed
 		_set_emission(p, 0.0)
 		var input_vector: Vector2 = Input.get_vector(
@@ -189,6 +190,25 @@ func _update_charge_vfx(_p: CharacterBody3D, charge_pct: float) -> void:
 		# Scale ring to show AoE size
 		var ring_scale: float = 1.0 + charge_pct * 0.8
 		_charge_ring.scale = Vector3(ring_scale, 1.0, ring_scale)
+
+
+func _spawn_fizzle_vfx(p: CharacterBody3D) -> void:
+	## Brief gray "no compute" puff when burst fizzles
+	if not p.is_inside_tree():
+		return
+	var label: Label3D = Label3D.new()
+	label.text = "NO COMPUTE"
+	label.font_size = 18
+	label.modulate = Color(0.6, 0.6, 0.6)
+	label.outline_modulate = Color(0, 0, 0, 0.6)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = p.global_position + Vector3(0, 1.6, 0)
+	p.get_tree().current_scene.add_child(label)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "position:y", label.position.y + 0.8, 0.7).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.7)
+	tween.tween_callback(label.queue_free)
 
 
 func _cleanup_charge_vfx() -> void:
