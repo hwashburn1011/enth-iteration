@@ -117,11 +117,12 @@ func _poll_hitbox_overlaps(p: CharacterBody3D) -> void:
 	for area: Area3D in hitbox.get_overlapping_areas():
 		if area == p.hurtbox_component:
 			continue  # Skip self
-		if not area.has_method(&"activate"):
-			continue  # Not a hurtbox
-		if hitbox.has_hit(area.get_parent()):
+		if not area.has_method(&"_on_area_entered"):
+			continue  # Not a hurtbox component
+		var target_entity: Node = area.get_parent()
+		if hitbox.has_hit(target_entity):
 			continue  # Already hit this target
-		# Trigger the hurtbox's damage processing manually
+		# Trigger the hurtbox's damage processing (it will register the hit)
 		area._on_area_entered(hitbox)
 
 
