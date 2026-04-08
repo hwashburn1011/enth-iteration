@@ -54,7 +54,6 @@ func _do_compile_error(boss: CharacterBody3D) -> void:
 
 	# Apply status in later phases
 	if boss.current_phase >= 3:
-		# Fragmented on hit handled via meta
 		boss.set_meta(&"apply_fragmented", true)
 	elif boss.current_phase >= 2:
 		boss.set_meta(&"apply_corrupted", true)
@@ -65,6 +64,17 @@ func _do_compile_error(boss: CharacterBody3D) -> void:
 	# Speed modifier for phase 2+
 	var speed_mult: float = 1.2 if boss.current_phase >= 2 else 1.0
 	var telegraph: float = COMPILE_ERROR_TELEGRAPH / speed_mult
+
+	# Ground AoE telegraph indicator
+	if boss.is_inside_tree() and boss.target_player:
+		var attack_dir: Vector3 = (boss.target_player.global_position - boss.global_position).normalized()
+		attack_dir.y = 0.0
+		AttackTelegraph.show_circle(
+			boss.global_position + attack_dir * 1.5,
+			boss.attack_range * 0.8,
+			telegraph,
+			boss.get_tree().current_scene
+		)
 
 	await boss.get_tree().create_timer(telegraph).timeout
 	if not is_instance_valid(boss) or boss.is_transitioning:
