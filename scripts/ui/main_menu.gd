@@ -108,26 +108,52 @@ func _spawn_menu_particles() -> void:
 	var bg: ColorRect = get_node_or_null("Background") as ColorRect
 	if bg == null:
 		return
-	# Create a simple animated particle field using ColorRects
-	for i: int in 30:
+	# Floating data particles — cyan/purple/blue mix
+	for i: int in 40:
 		var dot: ColorRect = ColorRect.new()
-		dot.size = Vector2(randf_range(1, 3), randf_range(1, 3))
+		dot.size = Vector2(randf_range(1, 4), randf_range(1, 4))
 		dot.position = Vector2(randf_range(0, 1152), randf_range(0, 648))
 		var colors: Array[Color] = [
 			Color(0.2, 0.7, 0.7, 0.3),
 			Color(0.4, 0.3, 0.7, 0.2),
 			Color(0.2, 0.5, 0.8, 0.25),
+			Color(0.3, 0.8, 0.75, 0.2),
 		]
-		dot.color = colors[i % 3]
+		dot.color = colors[i % 4]
 		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		bg.add_child(dot)
-		# Animate upward drift
 		var tween: Tween = dot.create_tween().set_loops()
-		var duration: float = randf_range(8.0, 15.0)
+		var duration: float = randf_range(6.0, 14.0)
 		var start_y: float = randf_range(650, 800)
 		dot.position.y = start_y
 		tween.tween_property(dot, "position:y", randf_range(-50, -10), duration)
 		tween.tween_callback(func() -> void: dot.position.y = start_y)
+	# Horizontal scan lines (digital aesthetic)
+	for i: int in 5:
+		var line: ColorRect = ColorRect.new()
+		line.size = Vector2(1152, 1)
+		line.color = Color(0.15, 0.4, 0.5, 0.08)
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		bg.add_child(line)
+		var line_tween: Tween = line.create_tween().set_loops()
+		var line_start: float = randf_range(700, 900)
+		line.position.y = line_start
+		line_tween.tween_property(line, "position:y", randf_range(-50, -10), randf_range(10.0, 20.0))
+		line_tween.tween_callback(func() -> void: line.position.y = line_start)
+	# Pulsing title glow
+	_animate_title_glow()
+
+
+func _animate_title_glow() -> void:
+	var title: Label = get_node_or_null("VBoxContainer/TitleLabel") as Label
+	if title == null:
+		return
+	# Subtle pulsing shadow that creates a glow effect
+	var tween: Tween = title.create_tween().set_loops()
+	tween.tween_property(title, "theme_override_colors/font_shadow_color",
+		Color(0.15, 0.5, 0.5, 0.7), 2.0).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(title, "theme_override_colors/font_shadow_color",
+		Color(0.1, 0.3, 0.35, 0.3), 2.0).set_ease(Tween.EASE_IN_OUT)
 
 
 func _on_new_game_pressed() -> void:
