@@ -24,6 +24,9 @@ func enter() -> void:
 	if enemy.animation_player.has_animation(&"hurt"):
 		enemy.animation_player.play(&"hurt")
 
+	# White flash on enemy model for hit feedback
+	_flash_white(enemy)
+
 
 func physics_update(delta: float) -> void:
 	var enemy = player
@@ -34,4 +37,38 @@ func physics_update(delta: float) -> void:
 	enemy.move_and_slide()
 
 	if _timer >= STUN_DURATION:
+		_restore_material(enemy)
 		state_machine.transition_to(state_machine.get_node("EnemyChaseState") as Node)
+
+
+var _original_mat: Material = null
+var _flashed: bool = false
+
+
+func _flash_white(enemy: CharacterBody3D) -> void:
+	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
+	if mesh == null:
+		return
+	_original_mat = mesh.material_override
+	_flashed = true
+	var flash_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flash_mat.albedo_color = Color(1, 1, 1)
+	flash_mat.emission_enabled = true
+	flash_mat.emission = Color(1, 1, 1)
+	flash_mat.emission_energy_multiplier = 2.0
+	mesh.material_override = flash_mat
+	# Restore after 0.08s
+	if enemy.is_inside_tree():
+		enemy.get_tree().create_timer(0.08).timeout.connect(func() -> void:
+			if is_instance_valid(mesh):
+				mesh.material_override = _original_mat
+		)
+
+
+func _restore_material(enemy: CharacterBody3D) -> void:
+	if not _flashed:
+		return
+	_flashed = false
+	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
+	if mesh and is_instance_valid(mesh):
+		mesh.material_override = _original_mat
