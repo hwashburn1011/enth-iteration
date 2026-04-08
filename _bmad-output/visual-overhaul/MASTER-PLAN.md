@@ -64,14 +64,14 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 30](epic-30-town-layout-polish.md) — Town Layout Polish ✅ DONE
 
 ### PHASE 6: Dungeon Environment (Epics 31-38)
-- [Epic 31](epic-31-dungeon-tileset.md) — Dungeon Tile Set (modular wall/floor/ceiling pieces, textured)
-- [Epic 32](epic-32-dungeon-props-textured.md) — Dungeon Props Textured (racks, terminals, crystals, mushrooms)
-- [Epic 33](epic-33-dungeon-lighting.md) — Dungeon Lighting Overhaul (per-room mood, flickering lights)
-- [Epic 34](epic-34-dungeon-floor-themes.md) — Floor Visual Themes (unique palette/props per floor)
-- [Epic 35](epic-35-combat-arena-design.md) — Combat Arena Design (cover, elevation, visual variety)
-- [Epic 36](epic-36-dungeon-hazards.md) — Dungeon Hazards Visual (laser grids, acid pools, spark traps)
-- [Epic 37](epic-37-boss-arena.md) — Boss Arena Overhaul (dramatic staging, phase-change environment)
-- [Epic 38](epic-38-dungeon-transitions.md) — Room Transitions Visual (door animations, loading screens)
+- [Epic 31](epic-31-dungeon-tileset.md) — Dungeon Tile Set ✅ DONE
+- [Epic 32](epic-32-dungeon-props-textured.md) — Dungeon Props Textured ✅ DONE
+- [Epic 33](epic-33-dungeon-lighting.md) — Dungeon Lighting Overhaul ✅ DONE
+- [Epic 34](epic-34-dungeon-floor-themes.md) — Floor Visual Themes ✅ DONE
+- [Epic 35](epic-35-combat-arena-design.md) — Combat Arena Design ✅ DONE
+- [Epic 36](epic-36-dungeon-hazards.md) — Dungeon Hazards Visual ✅ DONE
+- [Epic 37](epic-37-boss-arena.md) — Boss Arena Overhaul ✅ DONE
+- [Epic 38](epic-38-dungeon-transitions.md) — Room Transitions Visual ✅ DONE
 
 ### PHASE 7: UI/UX Overhaul (Epics 39-43)
 - [Epic 39](epic-39-custom-font.md) — Custom Game Font (find/create sci-fi font, integrate everywhere)
