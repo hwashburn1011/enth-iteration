@@ -35,6 +35,36 @@ var _prompt_cooldown: float = 0.0
 func _ready() -> void:
 	add_to_group(&"player")
 	_build_player_extras()
+	# Brief spawn-in flash on player when scene starts
+	call_deferred(&"_spawn_in_flash")
+
+
+func _spawn_in_flash() -> void:
+	if not is_inside_tree():
+		return
+	# Bright cyan ring at player position
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.4
+	torus.outer_radius = 0.55
+	torus.rings = 16
+	torus.ring_segments = 16
+	ring.mesh = torus
+	ring.global_position = global_position + Vector3(0, 0.1, 0)
+	ring.scale = Vector3(0.3, 0.3, 0.3)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.3, 0.85, 0.85, 0.85)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.25, 0.8, 0.8)
+	mat.emission_energy_multiplier = 4.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	get_tree().current_scene.add_child(ring)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(ring, "scale", Vector3(3.0, 1.0, 3.0), 0.5).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.6)
+	tween.tween_callback(ring.queue_free)
 	dash_cooldown_timer.one_shot = true
 	dash_cooldown_timer.timeout.connect(_on_dash_cooldown_timeout)
 	attack_cooldown_timer.one_shot = true
