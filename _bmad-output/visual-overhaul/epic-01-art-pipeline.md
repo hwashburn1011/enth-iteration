@@ -21,7 +21,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 ## Tasks
 
 ### Task 01.01: Configure Blender Project Template File
-**Status:** TODO
+**Status:** DONE
 **Description:** Create a master Blender 4.x template file (`_art_source/template_enth.blend`) with scene units set to Metric at 1.0 scale factor, grid floor visible at 1m intervals, and the 3D cursor at world origin. Add a reference cube scaled to 1m x 1m x 1m (Godot unit reference) and a character-height guide cylinder at 1.5m tall. Set the viewport shading to Material Preview with the studio HDRI for consistent lighting during modeling.
 **Acceptance Criteria:**
 - Opening the template shows a 1m reference cube and 1.5m character guide at origin
@@ -29,7 +29,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - File saves to `_art_source/template_enth.blend` in the project repository
 
 ### Task 01.02: Define Collection Hierarchy in Template
-**Status:** TODO
+**Status:** DONE
 **Description:** Inside the Blender template, create a standard collection hierarchy: `Export` (meshes that will be exported), `Reference` (guide objects, greybox shapes, not exported), `Armature` (skeleton/rig for characters), `Collision` (simplified collision meshes prefixed with `-col`), and `LOD` (level-of-detail meshes suffixed with `_lod1`, `_lod2`). Mark the `Reference` collection as non-exportable by disabling its render visibility.
 **Acceptance Criteria:**
 - Five named collections exist in the template with correct nesting
@@ -37,7 +37,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Collision meshes in the Collision collection use the `-col` suffix recognized by Godot's importer
 
 ### Task 01.03: Establish Asset Naming Convention Document
-**Status:** TODO
+**Status:** DONE
 **Description:** Write a naming convention reference in `_bmad-output/visual-overhaul/naming-conventions.md` covering all asset types. Meshes follow `category_name_variant` (e.g., `prop_barrel_rusty`, `char_globbler_body`, `bldg_house_stone_01`). Textures follow `assetname_maptype` (e.g., `globbler_albedo.png`, `globbler_normal.png`, `globbler_emission.png`). Animations follow `charname_actionname` (e.g., `globbler_idle`, `globbler_walk`). Materials in Godot use `mat_assetname` prefix.
 **Acceptance Criteria:**
 - Document covers mesh, texture, animation, and material naming with examples for each
@@ -45,7 +45,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Document includes a table of map type suffixes: `_albedo`, `_normal`, `_roughness`, `_emission`, `_ao`
 
 ### Task 01.04: Create Godot Export Preset for Props
-**Status:** TODO
+**Status:** DONE
 **Description:** In Blender, configure and save a glTF 2.0 export preset named `EnthProp` that exports selected objects only, applies modifiers, uses +Y Up / +Z Forward (matching Godot's coordinate system), embeds textures as `.glb` binary, and sets animation export to off. Save this preset so it appears in the export dialog dropdown. Document the exact settings in the naming conventions file.
 **Acceptance Criteria:**
 - Export preset `EnthProp` is accessible from Blender's File > Export > glTF menu
@@ -53,7 +53,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Props exported with this preset have no animation data bloating the file
 
 ### Task 01.05: Create Godot Export Preset for Characters
-**Status:** TODO
+**Status:** DONE
 **Description:** Configure a second glTF 2.0 export preset named `EnthCharacter` that includes armature export, exports all actions as separate animations, applies modifiers, uses the same coordinate system as props, and embeds textures. Enable skinning/bone export and set the bone influence limit to 4 (Godot's default). Add shape key export if the character uses blend shapes for facial expressions.
 **Acceptance Criteria:**
 - Export preset `EnthCharacter` includes armature and animation data
@@ -61,7 +61,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Exported .glb contains named animation clips accessible in Godot's AnimationPlayer
 
 ### Task 01.06: Create Godot Export Preset for Buildings
-**Status:** TODO
+**Status:** DONE
 **Description:** Configure a third glTF 2.0 export preset named `EnthBuilding` similar to props but with lightmap UV generation enabled (UV2). Buildings are larger assets that benefit from lightmap baking, so ensure the export includes a second UV channel. Set texture compression to lossy at quality 0.85 to reduce file size for the larger textures buildings use.
 **Acceptance Criteria:**
 - Export preset `EnthBuilding` generates UV2 for lightmapping
@@ -69,7 +69,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Texture quality setting balances file size and visual fidelity
 
 ### Task 01.07: Set Up Godot Import Folder Structure
-**Status:** TODO
+**Status:** DONE
 **Description:** Create the following directory tree under `res://` in the Godot project: `assets/models/characters/`, `assets/models/props/`, `assets/models/buildings/`, `assets/models/enemies/`, `assets/textures/characters/`, `assets/textures/props/`, `assets/textures/buildings/`, `assets/textures/enemies/`, `assets/textures/ui/`, `assets/textures/vfx/`, `assets/materials/`, `assets/shaders/`. Add a `.gdignore` file to any temp/working directories that should not be imported.
 **Acceptance Criteria:**
 - All listed directories exist in the Godot project filesystem
@@ -77,7 +77,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - No `.gdignore` files accidentally exclude production asset folders
 
 ### Task 01.08: Set Up Blender Source Folder Structure
-**Status:** TODO
+**Status:** DONE
 **Description:** Create `_art_source/` at the project root (outside `res://`) with subdirectories: `characters/`, `props/`, `buildings/`, `enemies/`, `vfx/`, `reference/`, `textures_source/`. This folder holds all .blend files and high-resolution texture source files (PSD/Krita). Add `_art_source/` to `.gitignore` if binary art files should not be versioned, or configure Git LFS tracking for `.blend`, `.psd`, `.kra`, and `.png` files over 1MB.
 **Acceptance Criteria:**
 - `_art_source/` directory tree exists with all subdirectories
@@ -85,7 +85,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - A README inside `_art_source/` explains the folder purpose and points to the naming conventions doc
 
 ### Task 01.09: Define Texture Resolution Standards
-**Status:** TODO
+**Status:** DONE
 **Description:** Document and enforce texture resolution tiers: props use 512x512, characters use 1024x1024, buildings and large environment pieces use 2048x2048, VFX textures use 256x256 or 512x512, UI elements use power-of-two sizes appropriate to their screen coverage. All textures must be power-of-two dimensions for GPU compression compatibility. Add these rules to the naming conventions document with a quick-reference table.
 **Acceptance Criteria:**
 - Resolution table is documented with asset type, resolution, and format (PNG for source, Godot handles compression)
@@ -93,7 +93,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Document explains why power-of-two matters (GPU mipmap generation, VRAM efficiency)
 
 ### Task 01.10: Create Color Palette Reference Sheet
-**Status:** TODO
+**Status:** DONE
 **Description:** Build a color palette reference image (`_art_source/reference/color_palette.png`) and a corresponding data file listing hex values. Include: grass green #6FAF6A, dirt brown #8A6A4A, stone grey #9A9A9A, wood brown #7A5A3A, water blue #4A8ABA, sky blue #87CEEB, accent neon cyan #00FFDD, accent neon magenta #FF00AA, accent neon yellow #FFE500, shadow purple #3A2A4A, highlight warm #FFF4E0, UI panel dark #1A1A2E, UI text light #E0E0E0. Create swatches in Blender's color palette system and save them in the template file.
 **Acceptance Criteria:**
 - Color palette image exists with labeled swatches and hex codes
@@ -125,7 +125,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - LOD meshes use Godot's built-in LOD system (GeometryInstance3D LOD properties) rather than custom scripts
 
 ### Task 01.14: Create Material Library Base Materials
-**Status:** TODO
+**Status:** DONE
 **Description:** Build a set of reusable base materials in Godot saved as `.tres` resources in `assets/materials/`: `mat_stylized_opaque.tres` (StandardMaterial3D with roughness 0.8, no metallic, vertex color enabled), `mat_stylized_emissive.tres` (same but with emission enabled and emission energy at 1.5), `mat_stylized_transparent.tres` (alpha scissor at 0.5 for foliage/VFX), `mat_stylized_water.tres` (transparency with blue tint, subtle refraction). Each material should have sensible defaults matching the chunky hand-painted art style.
 **Acceptance Criteria:**
 - Four base materials exist as .tres files in `assets/materials/`

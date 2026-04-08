@@ -1,0 +1,7 @@
+[gd_resource type="StandardMaterial3D" format=3 uid="uid://k7qk3mun3rwe"]
+
+[resource]
+vertex_color_use_as_albedo = true
+roughness = 0.8
+emission_enabled = true
+emission_energy_multiplier = 1.5
