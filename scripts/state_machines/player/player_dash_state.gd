@@ -41,6 +41,9 @@ func enter() -> void:
 	p.global_position += target_offset
 	p.facing_direction = dash_dir
 
+	# Dash ghost trail VFX
+	_spawn_dash_trail(p, from_position, p.global_position)
+
 	# Emit event
 	EventBus.player_dashed.emit(from_position, p.global_position)
 
@@ -78,6 +81,69 @@ func exit() -> void:
 	_iframe_active = false
 	player.is_invulnerable = false
 	_flash_transparent(player, false)
+
+
+func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
+	if not p.is_inside_tree():
+		return
+	var scene_root: Node = p.get_tree().current_scene
+	var trail_dir: Vector3 = (to - from).normalized()
+	var trail_dist: float = from.distance_to(to)
+
+	# Ghost afterimages along the dash path (3 ghosts)
+	for i: int in 3:
+		var t: float = (i + 1) / 4.0
+		var ghost_pos: Vector3 = from.lerp(to, t) + Vector3(0, 0.5, 0)
+		var ghost: MeshInstance3D = MeshInstance3D.new()
+		var sphere: SphereMesh = SphereMesh.new()
+		sphere.radius = 0.3
+		sphere.height = 0.6
+		ghost.mesh = sphere
+		ghost.global_position = ghost_pos
+		var ghost_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ghost_mat.albedo_color = Color(0.2, 0.8, 0.75, 0.4 - i * 0.1)
+		ghost_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		ghost_mat.emission_enabled = true
+		ghost_mat.emission = Color(0.15, 0.65, 0.6)
+		ghost_mat.emission_energy_multiplier = 1.5
+		ghost_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ghost.material_override = ghost_mat
+		scene_root.add_child(ghost)
+		var tween: Tween = ghost.create_tween()
+		tween.tween_property(ghost_mat, "albedo_color:a", 0.0, 0.2 + i * 0.05)
+		tween.parallel().tween_property(ghost, "scale", Vector3(0.5, 0.5, 0.5), 0.25)
+		tween.tween_callback(ghost.queue_free)
+
+	# Speed line particles along trail
+	var trail_particles: GPUParticles3D = GPUParticles3D.new()
+	trail_particles.amount = 12
+	trail_particles.lifetime = 0.3
+	trail_particles.one_shot = true
+	trail_particles.emitting = true
+	trail_particles.global_position = from.lerp(to, 0.5) + Vector3(0, 0.5, 0)
+	var trail_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	trail_mat.direction = Vector3(trail_dir.x, 0, trail_dir.z)
+	trail_mat.spread = 20.0
+	trail_mat.initial_velocity_min = 4.0
+	trail_mat.initial_velocity_max = 6.0
+	trail_mat.gravity = Vector3.ZERO
+	trail_mat.color = Color(0.3, 0.9, 0.85, 0.6)
+	trail_mat.scale_min = 0.2
+	trail_mat.scale_max = 0.5
+	trail_particles.process_material = trail_mat
+	var line_mesh: BoxMesh = BoxMesh.new()
+	line_mesh.size = Vector3(0.02, 0.02, 0.15)
+	trail_particles.draw_pass_1 = line_mesh
+	var line_vis: StandardMaterial3D = StandardMaterial3D.new()
+	line_vis.albedo_color = Color(0.3, 0.9, 0.85, 0.6)
+	line_vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	line_vis.emission_enabled = true
+	line_vis.emission = Color(0.2, 0.7, 0.65)
+	line_vis.emission_energy_multiplier = 2.0
+	line_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	trail_particles.material_override = line_vis
+	scene_root.add_child(trail_particles)
+	p.get_tree().create_timer(0.6).timeout.connect(trail_particles.queue_free)
 
 
 func _flash_transparent(p: CharacterBody3D, transparent: bool) -> void:

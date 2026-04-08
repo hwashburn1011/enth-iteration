@@ -163,36 +163,104 @@ func _get_mouse_world_direction(p: CharacterBody3D) -> Vector3:
 func _spawn_attack_arc(p: CharacterBody3D) -> void:
 	if not p.is_inside_tree():
 		return
-	var arc: MeshInstance3D = MeshInstance3D.new()
-	var torus: TorusMesh = TorusMesh.new()
-	torus.inner_radius = 0.6
-	torus.outer_radius = 0.9
-	torus.rings = 8
-	torus.ring_segments = 12
-	arc.mesh = torus
-	arc.position = p.global_position + p.facing_direction * 0.5 + Vector3(0, 0.5, 0)
-	arc.rotation.x = PI / 2.0  # Lay flat
-	arc.rotation.y = atan2(p.facing_direction.x, p.facing_direction.z)
+	var scene_root: Node = p.get_tree().current_scene
+	var arc_pos: Vector3 = p.global_position + p.facing_direction * 0.5 + Vector3(0, 0.5, 0)
+	var arc_rot_y: float = atan2(p.facing_direction.x, p.facing_direction.z)
 
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	var inner_color: Color
+	var outer_color: Color
+	var base_scale: Vector3
 	if _is_energy_burst:
-		mat.albedo_color = Color(0.3, 0.5, 1.0, 0.6)
-		mat.emission_enabled = true
-		mat.emission = Color(0.25, 0.45, 0.9)
-		mat.emission_energy_multiplier = 2.0
-		arc.scale = Vector3(1.5, 1.5, 0.3)
+		inner_color = Color(0.4, 0.6, 1.0, 0.8)
+		outer_color = Color(0.2, 0.4, 0.9, 0.4)
+		base_scale = Vector3(1.5, 1.5, 0.3)
 	else:
-		mat.albedo_color = Color(0.2, 0.8, 0.8, 0.5)
-		mat.emission_enabled = true
-		mat.emission = Color(0.15, 0.6, 0.6)
-		mat.emission_energy_multiplier = 1.5
-		arc.scale = Vector3(1.0, 1.0, 0.2)
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	arc.material_override = mat
+		inner_color = Color(0.3, 0.9, 0.85, 0.7)
+		outer_color = Color(0.15, 0.6, 0.6, 0.35)
+		base_scale = Vector3(1.0, 1.0, 0.2)
 
-	p.get_tree().current_scene.add_child(arc)
-	var tween: Tween = arc.create_tween()
-	tween.tween_property(arc, "scale", arc.scale * 1.5, 0.15)
-	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.2)
-	tween.tween_callback(arc.queue_free)
+	# Layer 1: Bright inner arc
+	var arc_inner: MeshInstance3D = MeshInstance3D.new()
+	var torus_inner: TorusMesh = TorusMesh.new()
+	torus_inner.inner_radius = 0.5
+	torus_inner.outer_radius = 0.75
+	torus_inner.rings = 10
+	torus_inner.ring_segments = 14
+	arc_inner.mesh = torus_inner
+	arc_inner.position = arc_pos
+	arc_inner.rotation.x = PI / 2.0
+	arc_inner.rotation.y = arc_rot_y
+	arc_inner.scale = base_scale
+	var mat_inner: StandardMaterial3D = StandardMaterial3D.new()
+	mat_inner.albedo_color = inner_color
+	mat_inner.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_inner.emission_enabled = true
+	mat_inner.emission = Color(inner_color.r, inner_color.g, inner_color.b)
+	mat_inner.emission_energy_multiplier = 2.5 if _is_energy_burst else 2.0
+	mat_inner.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arc_inner.material_override = mat_inner
+	scene_root.add_child(arc_inner)
+
+	# Layer 2: Soft outer glow
+	var arc_outer: MeshInstance3D = MeshInstance3D.new()
+	var torus_outer: TorusMesh = TorusMesh.new()
+	torus_outer.inner_radius = 0.4
+	torus_outer.outer_radius = 1.0
+	torus_outer.rings = 8
+	torus_outer.ring_segments = 12
+	arc_outer.mesh = torus_outer
+	arc_outer.position = arc_pos
+	arc_outer.rotation.x = PI / 2.0
+	arc_outer.rotation.y = arc_rot_y
+	arc_outer.scale = base_scale * 1.1
+	var mat_outer: StandardMaterial3D = StandardMaterial3D.new()
+	mat_outer.albedo_color = outer_color
+	mat_outer.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_outer.emission_enabled = true
+	mat_outer.emission = Color(outer_color.r, outer_color.g, outer_color.b)
+	mat_outer.emission_energy_multiplier = 1.0
+	mat_outer.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arc_outer.material_override = mat_outer
+	scene_root.add_child(arc_outer)
+
+	# Inner arc: expand + fade
+	var tween_in: Tween = arc_inner.create_tween()
+	tween_in.tween_property(arc_inner, "scale", base_scale * 1.6, 0.12)
+	tween_in.parallel().tween_property(mat_inner, "albedo_color:a", 0.0, 0.15)
+	tween_in.tween_callback(arc_inner.queue_free)
+
+	# Outer arc: expand slightly slower
+	var tween_out: Tween = arc_outer.create_tween()
+	tween_out.tween_property(arc_outer, "scale", base_scale * 1.8, 0.18)
+	tween_out.parallel().tween_property(mat_outer, "albedo_color:a", 0.0, 0.2)
+	tween_out.tween_callback(arc_outer.queue_free)
+
+	# Spark particles along the arc
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 8
+	sparks.lifetime = 0.25
+	sparks.one_shot = true
+	sparks.emitting = true
+	sparks.position = arc_pos
+	var spark_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spark_mat.direction = Vector3(p.facing_direction.x, 0.5, p.facing_direction.z)
+	spark_mat.spread = 60.0
+	spark_mat.initial_velocity_min = 3.0
+	spark_mat.initial_velocity_max = 5.0
+	spark_mat.gravity = Vector3(0, -4, 0)
+	spark_mat.color = inner_color
+	spark_mat.scale_min = 0.3
+	spark_mat.scale_max = 0.7
+	sparks.process_material = spark_mat
+	var spark_mesh: BoxMesh = BoxMesh.new()
+	spark_mesh.size = Vector3(0.03, 0.03, 0.03)
+	sparks.draw_pass_1 = spark_mesh
+	var spark_vis: StandardMaterial3D = StandardMaterial3D.new()
+	spark_vis.albedo_color = inner_color
+	spark_vis.emission_enabled = true
+	spark_vis.emission = Color(inner_color.r, inner_color.g, inner_color.b)
+	spark_vis.emission_energy_multiplier = 3.0
+	spark_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sparks.material_override = spark_vis
+	scene_root.add_child(sparks)
+	p.get_tree().create_timer(0.5).timeout.connect(sparks.queue_free)
