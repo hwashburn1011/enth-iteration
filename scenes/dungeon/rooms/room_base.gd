@@ -33,6 +33,8 @@ func _ready() -> void:
 		_show_exit_indicator()
 	# Ambient digital particles
 	_add_ambient_particles()
+	# Combat room danger lighting
+	_setup_danger_lighting()
 
 
 func _on_exit_trigger_body_entered(body: Node3D) -> void:
@@ -44,6 +46,7 @@ func _on_all_enemies_defeated() -> void:
 	is_cleared = true
 	room_cleared.emit()
 	_show_exit_indicator()
+	_clear_danger_lighting()
 
 
 func _show_exit_indicator() -> void:
@@ -360,6 +363,34 @@ func _add_ambient_particles() -> void:
 			point_light.omni_range = 3.5
 			point_light.omni_attenuation = 1.8
 			add_child(point_light)
+
+
+var _danger_light: OmniLight3D = null
+
+
+func _setup_danger_lighting() -> void:
+	## Red-tinted center light for active combat rooms
+	if room_type != "combat" or is_cleared:
+		return
+	_danger_light = OmniLight3D.new()
+	_danger_light.position = Vector3(0, 2.5, 0)
+	_danger_light.light_color = Color(0.8, 0.15, 0.1)
+	_danger_light.light_energy = 0.0
+	_danger_light.omni_range = 10.0
+	_danger_light.omni_attenuation = 1.5
+	add_child(_danger_light)
+	# Fade in danger light
+	var tween: Tween = _danger_light.create_tween()
+	tween.tween_property(_danger_light, "light_energy", 0.5, 1.0)
+
+
+func _clear_danger_lighting() -> void:
+	if _danger_light == null or not is_instance_valid(_danger_light):
+		return
+	var tween: Tween = _danger_light.create_tween()
+	tween.tween_property(_danger_light, "light_energy", 0.0, 0.8)
+	tween.tween_callback(_danger_light.queue_free)
+	_danger_light = null
 
 
 func _add_dungeon_props() -> void:
