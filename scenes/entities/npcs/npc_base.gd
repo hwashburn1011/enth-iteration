@@ -207,6 +207,13 @@ func _build_npc_visual() -> void:
 			staff.material_override = staff_mat
 			_model.add_child(staff)
 
+	# NPC-specific ambient VFX
+	match npc_id:
+		"ai_sage":
+			_add_wisdom_particles()
+		"cache_sprite":
+			_add_sprite_sparkles()
+
 	# Interaction indicator (floating !) — hidden by default
 	_interact_indicator = Label3D.new()
 	_interact_indicator.text = "!"
@@ -219,3 +226,66 @@ func _build_npc_visual() -> void:
 	_indicator_base_y = 2.2
 	_interact_indicator.visible = false
 	add_child(_interact_indicator)
+
+
+func _add_wisdom_particles() -> void:
+	## Golden wisdom data particles orbiting the AI Sage
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 12
+	particles.lifetime = 3.0
+	particles.position = Vector3(0, 1.2, 0)
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 0.5, 0)
+	mat.spread = 60.0
+	mat.initial_velocity_min = 0.2
+	mat.initial_velocity_max = 0.4
+	mat.gravity = Vector3(0, 0.1, 0)
+	mat.orbit_velocity_min = 0.3
+	mat.orbit_velocity_max = 0.6
+	mat.color = Color(1.0, 0.85, 0.3, 0.7)
+	mat.scale_min = 0.4
+	mat.scale_max = 1.0
+	particles.process_material = mat
+	var mesh: SphereMesh = SphereMesh.new()
+	mesh.radius = 0.025
+	mesh.height = 0.05
+	particles.draw_pass_1 = mesh
+	var vis: StandardMaterial3D = StandardMaterial3D.new()
+	vis.albedo_color = Color(1.0, 0.85, 0.3, 0.7)
+	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis.emission_enabled = true
+	vis.emission = Color(1.0, 0.8, 0.2)
+	vis.emission_energy_multiplier = 2.5
+	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis
+	add_child(particles)
+
+
+func _add_sprite_sparkles() -> void:
+	## Teal sparkle trail for Cache Sprite
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 8
+	particles.lifetime = 1.5
+	particles.position = Vector3(0, 0.8, 0)
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, -0.5, 0)
+	mat.spread = 90.0
+	mat.initial_velocity_min = 0.1
+	mat.initial_velocity_max = 0.3
+	mat.gravity = Vector3(0, -0.5, 0)
+	mat.color = Color(0.3, 0.9, 0.85, 0.5)
+	mat.scale_min = 0.3
+	mat.scale_max = 0.8
+	particles.process_material = mat
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.02, 0.02, 0.02)
+	particles.draw_pass_1 = mesh
+	var vis: StandardMaterial3D = StandardMaterial3D.new()
+	vis.albedo_color = Color(0.3, 0.9, 0.85, 0.5)
+	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis.emission_enabled = true
+	vis.emission = Color(0.2, 0.8, 0.75)
+	vis.emission_energy_multiplier = 2.0
+	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis
+	add_child(particles)
