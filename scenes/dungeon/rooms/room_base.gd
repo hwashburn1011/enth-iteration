@@ -163,18 +163,19 @@ static func _make_floor_material() -> StandardMaterial3D:
 	## normal map derived from the same noise so the surface has visible
 	## bumps and seams instead of being a flat dark plate.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.3, 0.34, 0.42)
-	# Albedo: panel-grid noise
+	mat.albedo_color = Color(0.55, 0.62, 0.78)
+	# Albedo: panel-grid cellular noise — use Manhattan + return-distance for
+	# crisp panel seams, higher frequency for more cells per square meter
 	var panel_noise: FastNoiseLite = FastNoiseLite.new()
 	panel_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	panel_noise.frequency = 0.08
+	panel_noise.frequency = 0.18
 	panel_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
 	panel_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	panel_noise.cellular_jitter = 0.6
+	panel_noise.cellular_jitter = 0.45
 	var panel_tex: NoiseTexture2D = NoiseTexture2D.new()
 	panel_tex.noise = panel_noise
-	panel_tex.width = 512
-	panel_tex.height = 512
+	panel_tex.width = 1024
+	panel_tex.height = 1024
 	panel_tex.seamless = true
 	panel_tex.color_ramp = _build_floor_ramp()
 	mat.albedo_texture = panel_tex
@@ -194,19 +195,20 @@ static func _make_floor_material() -> StandardMaterial3D:
 	# Normal map from the same panel noise (Godot's NoiseTexture2D supports as_normal_map)
 	var normal_noise: FastNoiseLite = FastNoiseLite.new()
 	normal_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	normal_noise.frequency = 0.08
-	normal_noise.cellular_jitter = 0.6
+	normal_noise.frequency = 0.18
+	normal_noise.cellular_jitter = 0.45
+	normal_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
 	normal_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
 	var normal_tex: NoiseTexture2D = NoiseTexture2D.new()
 	normal_tex.noise = normal_noise
-	normal_tex.width = 512
-	normal_tex.height = 512
+	normal_tex.width = 1024
+	normal_tex.height = 1024
 	normal_tex.seamless = true
 	normal_tex.as_normal_map = true
-	normal_tex.bump_strength = 4.0
+	normal_tex.bump_strength = 8.0
 	mat.normal_enabled = true
 	mat.normal_texture = normal_tex
-	mat.normal_scale = 1.2
+	mat.normal_scale = 1.6
 	# Triplanar so the texture wraps without UV stretching
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.4, 0.4, 0.4)
@@ -222,11 +224,13 @@ static func _make_floor_material() -> StandardMaterial3D:
 
 
 static func _build_floor_ramp() -> Gradient:
+	## More dramatic gradient — brighter highs, visible cell seams.
 	var g: Gradient = Gradient.new()
-	g.set_color(0, Color(0.10, 0.12, 0.18))
-	g.set_color(1, Color(0.36, 0.42, 0.54))
-	g.add_point(0.5, Color(0.18, 0.22, 0.30))
-	g.add_point(0.85, Color(0.30, 0.38, 0.50))
+	g.set_color(0, Color(0.12, 0.16, 0.22))
+	g.set_color(1, Color(0.55, 0.66, 0.82))
+	g.add_point(0.35, Color(0.20, 0.26, 0.36))
+	g.add_point(0.65, Color(0.34, 0.44, 0.58))
+	g.add_point(0.92, Color(0.48, 0.60, 0.78))
 	return g
 
 
