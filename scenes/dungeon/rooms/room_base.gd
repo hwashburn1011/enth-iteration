@@ -143,10 +143,12 @@ func _apply_dungeon_materials() -> void:
 	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
 	if floor_node:
 		floor_node.material_override = _make_floor_material()
-	# Procedurally textured walls with brushed-metal noise + normal map
+	# Procedurally textured walls with brushed-metal noise + normal map.
+	# Apply to Wall*, Pillar*, and any other unmaterialized CSGBox3D so the
+	# boss arena pillars and other structural elements get the texture too.
 	var wall_mat: StandardMaterial3D = _make_wall_material()
 	for child: Node in geom.get_children():
-		if child is CSGBox3D and child.name.begins_with("Wall"):
+		if child is CSGBox3D and (child.name.begins_with("Wall") or child.name.begins_with("Pillar")):
 			(child as CSGBox3D).material = wall_mat
 			(child as CSGBox3D).use_collision = true
 	# Room type accent strip on top of walls
