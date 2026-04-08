@@ -488,6 +488,13 @@ func _on_enemy_killed_streak(_type: StringName, _pos: Vector3, _loot: Resource) 
 	_kill_streak_timer = STREAK_TIMEOUT
 	if _kill_streak >= 2:
 		_update_streak_display()
+	# Screen shake intensity scales with streak
+	if _kill_streak >= 3:
+		var cam_nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
+		if not cam_nodes.is_empty():
+			var camera: Camera3D = cam_nodes[0].get_viewport().get_camera_3d()
+			if camera and camera.has_method(&"shake"):
+				camera.shake(0.05 + _kill_streak * 0.01, 6.0)
 
 
 func _process_streak(delta: float) -> void:
