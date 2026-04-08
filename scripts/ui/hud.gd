@@ -29,6 +29,8 @@ var _boss_panel: PanelContainer = null
 var _boss_bar: ProgressBar = null
 var _boss_name_label: Label = null
 var _boss_ref: Node = null
+var _controls_hint: PanelContainer = null
+var _prompt_indicator_root: Control = null
 
 
 func _ready() -> void:
@@ -246,11 +248,39 @@ func _create_controls_hint() -> void:
 	label.add_theme_font_size_override(&"normal_font_size", 12)
 	hint.add_child(label)
 	_container.add_child(hint)
+	_controls_hint = hint
 	# Fade out after 20 seconds
 	var tween: Tween = hint.create_tween()
 	tween.tween_interval(20.0)
 	tween.tween_property(hint, "modulate:a", 0.0, 2.0)
-	tween.tween_callback(hint.queue_free)
+	tween.tween_callback(func() -> void:
+		if is_instance_valid(hint):
+			hint.queue_free()
+		if _controls_hint == hint:
+			_controls_hint = null
+	)
+
+
+func set_combat_visible(combat: bool) -> void:
+	## Hide combat-only HUD elements when in peaceful zones (e.g. town).
+	## Top-left status (HP/CP/XP/Level) stays visible.
+	if _ability_slots_container:
+		_ability_slots_container.visible = combat
+	if _prompt_icon:
+		# Hide the prompt icon and its key label by hiding their common parent
+		var p: Node = _prompt_icon.get_parent()
+		while p and p != _container and not (p is Control and p.get_parent() == _container):
+			p = p.get_parent()
+		if p is Control:
+			(p as Control).visible = combat
+	if _room_label:
+		_room_label.visible = combat
+	if _controls_hint and is_instance_valid(_controls_hint):
+		_controls_hint.visible = combat
+	if _streak_label and is_instance_valid(_streak_label):
+		_streak_label.visible = combat
+	if _low_health_vignette and is_instance_valid(_low_health_vignette):
+		_low_health_vignette.visible = combat
 
 
 func _create_room_indicator() -> void:

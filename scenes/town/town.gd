@@ -21,10 +21,13 @@ func _ready() -> void:
 	# --- Lighting and Environment ---
 	_setup_environment()
 
-	# Spawn HUD
+	# Spawn HUD (combat elements hidden in town)
 	var hud_scene: PackedScene = load("res://scenes/ui/hud/HUD.tscn") as PackedScene
 	if hud_scene:
-		add_child(hud_scene.instantiate())
+		var hud_inst: Node = hud_scene.instantiate()
+		add_child(hud_inst)
+		if hud_inst.has_method(&"set_combat_visible"):
+			hud_inst.set_combat_visible.call_deferred(false)
 
 	# Spawn player
 	var player_scene: PackedScene = load("res://scenes/entities/player/Player.tscn") as PackedScene
