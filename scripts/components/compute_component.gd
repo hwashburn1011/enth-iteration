@@ -48,6 +48,12 @@ func restore(amount: float) -> void:
 	current_compute = minf(max_compute, current_compute + amount)
 	_last_emitted_compute = current_compute
 	compute_changed.emit(current_compute, max_compute)
+	# Compute restore VFX
+	var parent: Node = get_parent()
+	if parent is Node3D:
+		var pos: Vector3 = (parent as Node3D).global_position
+		VFXFactory.spawn_compute_particles(pos, parent.get_tree().current_scene)
+		VFXFactory.spawn_compute_number(pos, int(amount), parent.get_tree().current_scene)
 
 
 func reset() -> void:

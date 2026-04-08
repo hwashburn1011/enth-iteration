@@ -259,6 +259,56 @@ static func spawn_heal_number(position: Vector3, amount: int, parent: Node) -> v
 	tween.tween_callback(label.queue_free)
 
 
+static func spawn_compute_particles(position: Vector3, parent: Node) -> void:
+	## Blue compute restore particles rising upward
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 12
+	particles.lifetime = 0.8
+	particles.one_shot = true
+	particles.emitting = true
+	particles.global_position = position
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 30.0
+	mat.initial_velocity_min = 1.5
+	mat.initial_velocity_max = 2.5
+	mat.gravity = Vector3(0, -1, 0)
+	mat.color = Color(0.3, 0.6, 1.0, 0.8)
+	particles.process_material = mat
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.03, 0.03, 0.03)
+	particles.draw_pass_1 = mesh
+	var vis: StandardMaterial3D = StandardMaterial3D.new()
+	vis.albedo_color = Color(0.3, 0.6, 1.0, 0.7)
+	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis.emission_enabled = true
+	vis.emission = Color(0.25, 0.55, 0.95)
+	vis.emission_energy_multiplier = 2.5
+	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis
+	parent.add_child(particles)
+	parent.get_tree().create_timer(1.2).timeout.connect(particles.queue_free)
+
+
+static func spawn_compute_number(position: Vector3, amount: int, parent: Node) -> void:
+	## Blue floating "+CP" number for compute restore
+	var label: Label3D = Label3D.new()
+	label.text = "+%d CP" % amount
+	label.font_size = 22
+	label.modulate = Color(0.35, 0.7, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.6)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = position + Vector3(randf_range(-0.3, 0.3), 1.3, 0)
+	parent.add_child(label)
+	label.scale = Vector3(0.5, 0.5, 0.5)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+	tween.tween_property(label, "position:y", label.position.y + 1.5, 0.8).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.8).set_delay(0.3)
+	tween.tween_callback(label.queue_free)
+
+
 static func spawn_heal_particles(position: Vector3, parent: Node) -> void:
 	## Green healing particles rising upward
 	var particles: GPUParticles3D = GPUParticles3D.new()
