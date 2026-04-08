@@ -170,17 +170,49 @@ static func spawn_portal_particles(position: Vector3, parent: Node) -> GPUPartic
 
 
 static func spawn_damage_number(position: Vector3, amount: int, is_crit: bool, parent: Node) -> void:
-	## Floating damage number that rises and fades
+	## Floating damage number that rises, scales, and fades — size reflects damage
 	var label: Label3D = Label3D.new()
-	label.text = str(amount)
-	label.font_size = 32 if not is_crit else 48
-	label.modulate = Color(1.0, 0.3, 0.2) if not is_crit else Color(1.0, 0.9, 0.1)
-	label.outline_modulate = Color(0, 0, 0)
-	label.outline_size = 4
+	# Scale font size by damage amount (clamped)
+	var size_factor: float = clampf(amount / 20.0, 0.6, 2.5)
+	if is_crit:
+		label.text = str(amount) + "!"
+		label.font_size = int(40 * size_factor)
+		label.modulate = Color(1.0, 0.9, 0.1)
+	else:
+		label.text = str(amount)
+		label.font_size = int(28 * size_factor)
+		label.modulate = Color(1.0, 0.35, 0.2)
+	label.outline_modulate = Color(0, 0, 0, 0.8)
+	label.outline_size = 5
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.global_position = position + Vector3(randf_range(-0.3, 0.3), 1.0, 0)
+	# Scatter horizontally to prevent stacking
+	var scatter_x: float = randf_range(-0.5, 0.5)
+	var scatter_z: float = randf_range(-0.2, 0.2)
+	label.position = position + Vector3(scatter_x, 1.0, scatter_z)
 	parent.add_child(label)
+	# Pop-in scale effect then float up
+	label.scale = Vector3(0.5, 0.5, 0.5)
 	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "scale", Vector3(1.0, 1.0, 1.0), 0.08).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "position:y", label.position.y + 1.8, 0.9).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.9).set_delay(0.35)
+	tween.tween_callback(label.queue_free)
+
+
+static func spawn_heal_number(position: Vector3, amount: int, parent: Node) -> void:
+	## Green floating "+HP" number for heals
+	var label: Label3D = Label3D.new()
+	label.text = "+" + str(amount)
+	label.font_size = 24
+	label.modulate = Color(0.2, 0.95, 0.4)
+	label.outline_modulate = Color(0, 0, 0, 0.6)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = position + Vector3(randf_range(-0.3, 0.3), 1.2, 0)
+	parent.add_child(label)
+	label.scale = Vector3(0.5, 0.5, 0.5)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
 	tween.tween_property(label, "position:y", label.position.y + 1.5, 0.8).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.8).set_delay(0.3)
 	tween.tween_callback(label.queue_free)

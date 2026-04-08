@@ -38,7 +38,9 @@ func heal(amount: float) -> void:
 	# Heal VFX
 	var parent: Node = get_parent()
 	if parent is Node3D:
-		VFXFactory.spawn_heal_particles((parent as Node3D).global_position, parent.get_tree().current_scene)
+		var pos: Vector3 = (parent as Node3D).global_position
+		VFXFactory.spawn_heal_particles(pos, parent.get_tree().current_scene)
+		VFXFactory.spawn_heal_number(pos, int(amount), parent.get_tree().current_scene)
 
 
 func reset() -> void:
