@@ -74,24 +74,24 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 38](epic-38-dungeon-transitions.md) — Room Transitions Visual ✅ DONE
 
 ### PHASE 7: UI/UX Overhaul (Epics 39-43)
-- [Epic 39](epic-39-custom-font.md) — Custom Game Font (find/create sci-fi font, integrate everywhere)
-- [Epic 40](epic-40-hud-redesign.md) — HUD Redesign (custom bar sprites, icon art, minimap)
-- [Epic 41](epic-41-inventory-redesign.md) — Inventory Screen Redesign (item icons, grid art, tooltips)
-- [Epic 42](epic-42-dialogue-system-visual.md) — Dialogue System Visual (character portraits, text effects)
-- [Epic 43](epic-43-menu-screens.md) — Menu Screens Polish (main menu scene, settings, credits)
+- [Epic 39](epic-39-custom-font.md) — Custom Game Font ✅ DONE
+- [Epic 40](epic-40-hud-redesign.md) — HUD Redesign ✅ DONE
+- [Epic 41](epic-41-inventory-redesign.md) — Inventory Screen Redesign ✅ DONE
+- [Epic 42](epic-42-dialogue-system-visual.md) — Dialogue System Visual ✅ DONE
+- [Epic 43](epic-43-menu-screens.md) — Menu Screens Polish ✅ DONE
 
 ### PHASE 8: VFX & Particles (Epics 44-47)
-- [Epic 44](epic-44-combat-vfx.md) — Combat VFX Overhaul (attack effects, hit sparks, projectiles)
-- [Epic 45](epic-45-environment-vfx.md) — Environment VFX (dust, fog, rain, digital glitch effects)
-- [Epic 46](epic-46-ui-vfx.md) — UI VFX (screen transitions, level-up fanfare, loot reveal)
-- [Epic 47](epic-47-shader-effects.md) — Shader Effects (dissolve, hologram, damage flash, outline)
+- [Epic 44](epic-44-combat-vfx.md) — Combat VFX Overhaul ✅ DONE
+- [Epic 45](epic-45-environment-vfx.md) — Environment VFX ✅ DONE
+- [Epic 46](epic-46-ui-vfx.md) — UI VFX ✅ DONE
+- [Epic 47](epic-47-shader-effects.md) — Shader Effects ✅ DONE
 
 ### PHASE 9: Audio Overhaul (Epics 48-49)
-- [Epic 48](epic-48-music-production.md) — Music Production (composed tracks or quality asset packs)
-- [Epic 49](epic-49-sfx-overhaul.md) — SFX Overhaul (layered sounds, spatial audio, footstep system)
+- [Epic 48](epic-48-music-production.md) — Music Production ✅ DONE
+- [Epic 49](epic-49-sfx-overhaul.md) — SFX Overhaul ✅ DONE
 
 ### PHASE 10: Final Polish (Epic 50)
-- [Epic 50](epic-50-final-polish.md) — Final Polish Pass (screenshot quality, trailer moments, consistency)
+- [Epic 50](epic-50-final-polish.md) — Final Polish Pass (screenshot quality, trailer moments, consistency) ✅ DONE
 
 ---
 
