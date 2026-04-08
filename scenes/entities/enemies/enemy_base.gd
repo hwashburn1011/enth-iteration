@@ -315,13 +315,14 @@ func _play_spawn_effect() -> void:
 
 
 func _spawn_assembly_particles() -> void:
+	if not is_inside_tree():
+		return
 	# Shielded indicator: brief expanding sphere that shrinks
 	var shield: MeshInstance3D = MeshInstance3D.new()
 	var sphere: SphereMesh = SphereMesh.new()
 	sphere.radius = 0.6
 	sphere.height = 1.2
 	shield.mesh = sphere
-	shield.global_position = global_position + Vector3(0, 0.5, 0)
 	var shield_mat: StandardMaterial3D = StandardMaterial3D.new()
 	shield_mat.albedo_color = Color(0, 0.85, 1.0, 0.4)
 	shield_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -332,6 +333,7 @@ func _spawn_assembly_particles() -> void:
 	shield_mat.cull_mode = BaseMaterial3D.CULL_BACK
 	shield.material_override = shield_mat
 	get_tree().current_scene.add_child(shield)
+	shield.global_position = global_position + Vector3(0, 0.5, 0)
 	var shield_tween: Tween = shield.create_tween()
 	shield_tween.tween_property(shield, "scale", Vector3(0.3, 0.3, 0.3), 0.6).set_ease(Tween.EASE_IN)
 	shield_tween.parallel().tween_property(shield_mat, "albedo_color:a", 0.0, 0.6)
@@ -342,7 +344,6 @@ func _spawn_assembly_particles() -> void:
 	particles.lifetime = 0.5
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = global_position
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
 	mat.spread = 15.0
@@ -367,6 +368,7 @@ func _spawn_assembly_particles() -> void:
 	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	particles.material_override = vis_mat
 	get_tree().current_scene.add_child(particles)
+	particles.global_position = global_position
 	get_tree().create_timer(1.0).timeout.connect(particles.queue_free)
 
 
