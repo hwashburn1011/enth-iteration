@@ -24,6 +24,7 @@ var is_invulnerable: bool = false
 var _health_bar_bg: MeshInstance3D = null
 var _health_bar_fill: MeshInstance3D = null
 var _health_bar_timer: float = 0.0
+var _aggro_indicator: Label3D = null
 
 
 func _ready() -> void:
@@ -46,11 +47,46 @@ func _ready() -> void:
 func _on_detection_body_entered(body: Node3D) -> void:
 	if body.is_in_group(&"player"):
 		target_player = body
+		_show_aggro_indicator()
 
 
 func _on_detection_body_exited(body: Node3D) -> void:
 	if body.is_in_group(&"player") and body == target_player:
 		target_player = null
+		_hide_aggro_indicator()
+
+
+func _show_aggro_indicator() -> void:
+	if _aggro_indicator != null:
+		return
+	_aggro_indicator = Label3D.new()
+	_aggro_indicator.text = "!"
+	_aggro_indicator.font_size = 36
+	_aggro_indicator.modulate = Color(1.0, 0.3, 0.2, 0.9)
+	_aggro_indicator.outline_modulate = Color(0, 0, 0, 0.8)
+	_aggro_indicator.outline_size = 4
+	_aggro_indicator.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_aggro_indicator.position = Vector3(0, 2.0, 0)
+	add_child(_aggro_indicator)
+	# Pop-in animation
+	_aggro_indicator.scale = Vector3(0.01, 0.01, 0.01)
+	var tween: Tween = _aggro_indicator.create_tween()
+	tween.tween_property(_aggro_indicator, "scale", Vector3(1.3, 1.3, 1.3), 0.1).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_aggro_indicator, "scale", Vector3(1.0, 1.0, 1.0), 0.05)
+	# Fade out after 1s
+	tween.tween_interval(0.8)
+	tween.tween_property(_aggro_indicator, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(_cleanup_aggro_indicator)
+
+
+func _hide_aggro_indicator() -> void:
+	_cleanup_aggro_indicator()
+
+
+func _cleanup_aggro_indicator() -> void:
+	if _aggro_indicator != null and is_instance_valid(_aggro_indicator):
+		_aggro_indicator.queue_free()
+	_aggro_indicator = null
 
 
 func _on_hit_received(damage_info: Resource) -> void:
@@ -172,14 +208,58 @@ func _build_enemy_visual() -> void:
 
 
 func _play_spawn_effect() -> void:
-	# Scale from 0 to 1 with particle burst
+	# Digital assembly: cyan particle column → scale in → pixel pop
 	model.scale = Vector3(0.01, 0.01, 0.01)
-	var tween: Tween = create_tween()
-	tween.tween_property(model, "scale", Vector3(1.2, 1.2, 1.2), 0.2).set_ease(Tween.EASE_OUT)
-	tween.tween_property(model, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
-	# Spawn particles
 	if is_inside_tree():
-		VFXFactory.spawn_hit_flash(global_position + Vector3(0, 0.5, 0), get_tree().current_scene)
+		_spawn_assembly_particles()
+	var tween: Tween = create_tween()
+	# Phase 1: Particle column swirls (0.3s delay while particles build)
+	tween.tween_interval(0.3)
+	# Phase 2: Scale in with overshoot
+	tween.tween_property(model, "scale", Vector3(1.15, 1.15, 1.15), 0.2).set_ease(Tween.EASE_OUT)
+	tween.tween_property(model, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+	# Phase 3: Pixel pop flash
+	tween.tween_callback(_spawn_pixel_pop)
+
+
+func _spawn_assembly_particles() -> void:
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 24
+	particles.lifetime = 0.5
+	particles.one_shot = true
+	particles.emitting = true
+	particles.global_position = global_position
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 15.0
+	mat.initial_velocity_min = 2.0
+	mat.initial_velocity_max = 4.0
+	mat.gravity = Vector3.ZERO
+	mat.orbit_velocity_min = 1.5
+	mat.orbit_velocity_max = 2.5
+	mat.color = Color(0, 0.85, 1.0, 0.8)
+	mat.scale_min = 0.5
+	mat.scale_max = 1.2
+	particles.process_material = mat
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.04, 0.04, 0.04)
+	particles.draw_pass_1 = mesh
+	var vis_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vis_mat.albedo_color = Color(0, 0.85, 1.0, 0.8)
+	vis_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis_mat.emission_enabled = true
+	vis_mat.emission = Color(0, 0.7, 0.9)
+	vis_mat.emission_energy_multiplier = 2.5
+	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis_mat
+	get_tree().current_scene.add_child(particles)
+	get_tree().create_timer(1.0).timeout.connect(particles.queue_free)
+
+
+func _spawn_pixel_pop() -> void:
+	if not is_inside_tree():
+		return
+	VFXFactory.spawn_hit_flash(global_position + Vector3(0, 0.5, 0), get_tree().current_scene)
 
 
 func _on_died() -> void:

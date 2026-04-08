@@ -4,25 +4,63 @@ extends RefCounted
 
 
 static func spawn_hit_flash(position: Vector3, parent: Node) -> void:
-	## White flash burst on hit (0.2s)
+	## Double-pulse white flash burst on hit (0.15s) + spark particles
 	var mesh: MeshInstance3D = MeshInstance3D.new()
 	var sphere: SphereMesh = SphereMesh.new()
 	sphere.radius = 0.3
 	sphere.height = 0.6
 	mesh.mesh = sphere
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(1, 1, 1, 0.8)
+	mat.albedo_color = Color(1, 1, 1, 0.9)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.emission_enabled = true
 	mat.emission = Color.WHITE
-	mat.emission_energy_multiplier = 2.0
+	mat.emission_energy_multiplier = 3.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mesh.material_override = mat
 	mesh.global_position = position
 	parent.add_child(mesh)
+	# Double-pulse: flash→dim→flash→fade
 	var tween: Tween = mesh.create_tween()
-	tween.tween_property(mesh, "scale", Vector3(2, 2, 2), 0.2)
-	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.2)
+	tween.tween_property(mat, "albedo_color:a", 1.0, 0.02)
+	tween.tween_property(mat, "albedo_color:a", 0.2, 0.03)
+	tween.tween_property(mat, "albedo_color:a", 0.9, 0.02)
+	tween.tween_property(mesh, "scale", Vector3(1.8, 1.8, 1.8), 0.08)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.08)
 	tween.tween_callback(mesh.queue_free)
+	# Spark particles (10 small cyan/white sparks)
+	_spawn_hit_sparks(position, parent)
+
+
+static func _spawn_hit_sparks(position: Vector3, parent: Node) -> void:
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 10
+	particles.lifetime = 0.3
+	particles.one_shot = true
+	particles.emitting = true
+	particles.global_position = position
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 1, 0)
+	mat.spread = 180.0
+	mat.initial_velocity_min = 3.0
+	mat.initial_velocity_max = 5.0
+	mat.gravity = Vector3(0, -6, 0)
+	mat.color = Color(0.7, 0.95, 1.0, 0.9)
+	mat.scale_min = 0.3
+	mat.scale_max = 0.8
+	particles.process_material = mat
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.03, 0.03, 0.03)
+	particles.draw_pass_1 = mesh
+	var vis_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vis_mat.albedo_color = Color(0.8, 0.95, 1.0)
+	vis_mat.emission_enabled = true
+	vis_mat.emission = Color(0.6, 0.9, 1.0)
+	vis_mat.emission_energy_multiplier = 3.0
+	vis_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis_mat
+	parent.add_child(particles)
+	parent.get_tree().create_timer(0.6).timeout.connect(particles.queue_free)
 
 
 static func spawn_energy_burst_ring(position: Vector3, parent: Node) -> void:
@@ -47,9 +85,37 @@ static func spawn_energy_burst_ring(position: Vector3, parent: Node) -> void:
 
 
 static func spawn_death_dissolve(target: Node3D) -> void:
-	## Shrink + fade dissolve on enemy death (0.5s)
+	## Digital dissolve: shrink + pixel scatter + data fragments (1.2s)
+	if not target.is_inside_tree():
+		return
+	var parent: Node = target.get_tree().current_scene
+	# Phase 1: Flash white twice (0.1s)
 	var tween: Tween = target.create_tween()
-	tween.tween_property(target, "scale", Vector3(0.01, 0.01, 0.01), 0.5).set_ease(Tween.EASE_IN)
+	tween.tween_property(target, "scale", target.scale * 1.1, 0.05)
+	tween.tween_property(target, "scale", target.scale * 0.95, 0.05)
+	# Phase 2: Dissolve + pixel scatter (0.8s)
+	tween.tween_property(target, "scale", Vector3(0.01, 0.01, 0.01), 0.8).set_ease(Tween.EASE_IN)
+	# Phase 3: Data fragment text particles
+	_spawn_data_fragments(target.global_position + Vector3(0, 0.5, 0), parent)
+
+
+static func _spawn_data_fragments(position: Vector3, parent: Node) -> void:
+	## Small drifting text fragments ("0x00", "NULL", "ERR") on death
+	var fragments: Array[String] = ["0x00", "NULL", "ERR", "NaN", "0xFF", "VOID"]
+	for i: int in 3:
+		var label: Label3D = Label3D.new()
+		label.text = fragments[randi() % fragments.size()]
+		label.font_size = 16
+		label.modulate = Color(0.5, 0.8, 1.0, 0.7)
+		label.outline_modulate = Color(0, 0, 0, 0.5)
+		label.outline_size = 2
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.global_position = position + Vector3(randf_range(-0.3, 0.3), randf_range(0, 0.5), randf_range(-0.3, 0.3))
+		parent.add_child(label)
+		var tween: Tween = label.create_tween()
+		tween.tween_property(label, "position:y", label.position.y + 1.5, 1.2).set_ease(Tween.EASE_OUT)
+		tween.parallel().tween_property(label, "modulate:a", 0.0, 1.2).set_delay(0.4)
+		tween.tween_callback(label.queue_free)
 
 
 static func spawn_item_sparkle(position: Vector3, rarity: int, parent: Node) -> void:
