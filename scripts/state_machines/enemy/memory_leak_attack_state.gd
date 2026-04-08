@@ -147,7 +147,6 @@ func _spawn_muzzle_flash(enemy: CharacterBody3D) -> void:
 	sphere.radius = 0.3
 	sphere.height = 0.6
 	flash.mesh = sphere
-	flash.global_position = enemy.global_position + Vector3(0, 0.5, 0)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.3, 1.0, 0.4, 0.8)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -157,6 +156,7 @@ func _spawn_muzzle_flash(enemy: CharacterBody3D) -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	flash.material_override = mat
 	enemy.get_tree().current_scene.add_child(flash)
+	flash.global_position = enemy.global_position + Vector3(0, 0.5, 0)
 	var tween: Tween = flash.create_tween()
 	tween.tween_property(flash, "scale", Vector3(2.0, 2.0, 2.0), 0.15)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.18)

@@ -283,8 +283,8 @@ func _on_drop_item(item: Resource) -> void:
 	if dropped_scene:
 		var dropped: Node = dropped_scene.instantiate() as Node
 		dropped.item = item
-		dropped.global_position = _player.global_position + Vector3(randf_range(-1.0, 1.0), 0, randf_range(-1.0, 1.0))
 		get_tree().current_scene.add_child(dropped)
+		dropped.global_position = _player.global_position + Vector3(randf_range(-1.0, 1.0), 0, randf_range(-1.0, 1.0))
 	_rebuild()
 
 
