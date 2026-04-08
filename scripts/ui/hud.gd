@@ -20,6 +20,10 @@ var _health_tween: Tween = null
 var _compute_tween: Tween = null
 var _ability_slot_uis: Array[AbilitySlotUI] = []
 var _room_label: Label = null
+var _kill_streak: int = 0
+var _kill_streak_timer: float = 0.0
+var _streak_label: Label = null
+const STREAK_TIMEOUT: float = 3.0
 
 
 func _ready() -> void:
@@ -29,8 +33,13 @@ func _ready() -> void:
 	_connect_player.call_deferred()
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
+	EventBus.enemy_defeated.connect(_on_enemy_killed_streak)
 	_create_room_indicator()
 	_create_controls_hint()
+
+
+func _process(delta: float) -> void:
+	_process_streak(delta)
 
 
 func _apply_sci_fi_theme() -> void:
@@ -322,3 +331,48 @@ func _update_xp_display(lc: Node) -> void:
 	_level_label.text = "Lv. %d" % lc.current_level
 	_xp_bar.max_value = lc.xp_to_next_level
 	_xp_bar.value = lc.current_xp
+
+
+func _on_enemy_killed_streak(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
+	_kill_streak += 1
+	_kill_streak_timer = STREAK_TIMEOUT
+	if _kill_streak >= 2:
+		_update_streak_display()
+
+
+func _process_streak(delta: float) -> void:
+	if _kill_streak_timer > 0.0:
+		_kill_streak_timer -= delta
+		if _kill_streak_timer <= 0.0:
+			_kill_streak = 0
+			if _streak_label and is_instance_valid(_streak_label):
+				_streak_label.queue_free()
+				_streak_label = null
+
+
+func _update_streak_display() -> void:
+	if _streak_label and is_instance_valid(_streak_label):
+		_streak_label.queue_free()
+	_streak_label = Label.new()
+	var streak_text: String = "%d KILL STREAK" % _kill_streak
+	if _kill_streak >= 5:
+		streak_text = "RAMPAGE! x%d" % _kill_streak
+	elif _kill_streak >= 3:
+		streak_text = "MULTI-KILL x%d" % _kill_streak
+	_streak_label.text = streak_text
+	_streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_streak_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_streak_label.offset_left = -150
+	_streak_label.offset_right = 150
+	_streak_label.offset_top = 120
+	_streak_label.offset_bottom = 150
+	var streak_color: Color = Color(1.0, 0.5, 0.1) if _kill_streak < 5 else Color(1.0, 0.2, 0.1)
+	_streak_label.add_theme_font_size_override(&"font_size", 22 + mini(_kill_streak, 10) * 2)
+	_streak_label.add_theme_color_override(&"font_color", streak_color)
+	_streak_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_container.add_child(_streak_label)
+	# Pop animation
+	_streak_label.scale = Vector2(0.5, 0.5)
+	var tween: Tween = _streak_label.create_tween()
+	tween.tween_property(_streak_label, "scale", Vector2(1.2, 1.2), 0.08)
+	tween.tween_property(_streak_label, "scale", Vector2(1.0, 1.0), 0.06)
