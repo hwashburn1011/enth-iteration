@@ -146,6 +146,8 @@ func _build_grid(parent: VBoxContainer) -> void:
 	_grid_cells.clear()
 	var grid_container: GridContainer = GridContainer.new()
 	grid_container.columns = _player.inventory_component.grid_width
+	grid_container.add_theme_constant_override(&"h_separation", 3)
+	grid_container.add_theme_constant_override(&"v_separation", 3)
 	for y: int in _player.inventory_component.grid_height:
 		for x: int in _player.inventory_component.grid_width:
 			var cell: Button = Button.new()
@@ -157,10 +159,33 @@ func _build_grid(parent: VBoxContainer) -> void:
 			else:
 				cell.text = ""
 				cell.modulate = Color(0.4, 0.4, 0.4)
+			_style_grid_cell(cell, item != null)
 			cell.pressed.connect(_on_grid_cell_clicked.bind(x, y))
 			grid_container.add_child(cell)
 			_grid_cells.append(cell)
 	parent.add_child(grid_container)
+
+
+func _style_grid_cell(cell: Button, has_item: bool) -> void:
+	var normal: StyleBoxFlat = StyleBoxFlat.new()
+	normal.bg_color = Color(0.08, 0.1, 0.16, 0.85) if has_item else Color(0.04, 0.05, 0.1, 0.7)
+	normal.border_color = Color(0.2, 0.45, 0.55, 0.6) if has_item else Color(0.1, 0.2, 0.28, 0.4)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(3)
+	var hover: StyleBoxFlat = StyleBoxFlat.new()
+	hover.bg_color = Color(0.12, 0.18, 0.28, 0.95)
+	hover.border_color = Color(0.3, 0.7, 0.8, 0.9)
+	hover.set_border_width_all(2)
+	hover.set_corner_radius_all(3)
+	var pressed: StyleBoxFlat = StyleBoxFlat.new()
+	pressed.bg_color = Color(0.08, 0.2, 0.3, 1.0)
+	pressed.border_color = Color(0.4, 0.85, 0.95, 1.0)
+	pressed.set_border_width_all(2)
+	pressed.set_corner_radius_all(3)
+	cell.add_theme_stylebox_override(&"normal", normal)
+	cell.add_theme_stylebox_override(&"hover", hover)
+	cell.add_theme_stylebox_override(&"pressed", pressed)
+	cell.add_theme_font_size_override(&"font_size", 14)
 
 
 func _on_grid_cell_clicked(x: int, y: int) -> void:
