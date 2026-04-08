@@ -19,10 +19,34 @@ var _player_in_range: bool = false
 
 func _ready() -> void:
 	_name_label.text = npc_name
+	_style_world_labels()
 	_prompt_label.visible = false
 	_interaction_area.body_entered.connect(_on_body_entered)
 	_interaction_area.body_exited.connect(_on_body_exited)
 	_build_npc_visual()
+
+
+func _style_world_labels() -> void:
+	## Apply outlined modulate to the in-world Label3D nodes so they pop
+	## against any background. Reposition so name and prompt don't overlap.
+	if _name_label:
+		_name_label.modulate = Color(0.85, 0.95, 1.0)
+		_name_label.outline_modulate = Color(0, 0, 0, 0.9)
+		_name_label.outline_size = 6
+		_name_label.font_size = 28
+		_name_label.no_depth_test = true
+		_name_label.fixed_size = true
+		_name_label.pixel_size = 0.004
+		_name_label.position.y = 2.4
+	if _prompt_label:
+		_prompt_label.modulate = Color(0.4, 0.9, 0.9)
+		_prompt_label.outline_modulate = Color(0, 0, 0, 0.9)
+		_prompt_label.outline_size = 5
+		_prompt_label.font_size = 22
+		_prompt_label.no_depth_test = true
+		_prompt_label.fixed_size = true
+		_prompt_label.pixel_size = 0.004
+		_prompt_label.position.y = 1.95
 
 
 func _unhandled_input(event: InputEvent) -> void:
