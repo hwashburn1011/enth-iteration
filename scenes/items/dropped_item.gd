@@ -71,7 +71,6 @@ func _spawn_drop_shimmer() -> void:
 	torus.rings = 12
 	torus.ring_segments = 12
 	ring.mesh = torus
-	ring.global_position = global_position + Vector3(0, 0.05, 0)
 	var rarity_col: Color = _rarity_color(item.rarity)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(rarity_col.r, rarity_col.g, rarity_col.b, 0.7)
@@ -82,6 +81,7 @@ func _spawn_drop_shimmer() -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = mat
 	get_tree().current_scene.add_child(ring)
+	ring.global_position = global_position + Vector3(0, 0.05, 0)
 	var tween: Tween = ring.create_tween()
 	tween.tween_property(ring, "scale", Vector3(2.5, 1.0, 2.5), 0.5).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.6)

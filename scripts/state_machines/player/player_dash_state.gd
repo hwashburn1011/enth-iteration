@@ -103,7 +103,6 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 		sphere.radius = 0.3
 		sphere.height = 0.6
 		ghost.mesh = sphere
-		ghost.global_position = ghost_pos
 		var ghost_mat: StandardMaterial3D = StandardMaterial3D.new()
 		ghost_mat.albedo_color = Color(0.2, 0.8, 0.75, 0.4 - i * 0.1)
 		ghost_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -113,6 +112,7 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 		ghost_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		ghost.material_override = ghost_mat
 		scene_root.add_child(ghost)
+		ghost.global_position = ghost_pos
 		var tween: Tween = ghost.create_tween()
 		tween.tween_property(ghost_mat, "albedo_color:a", 0.0, 0.2 + i * 0.05)
 		tween.parallel().tween_property(ghost, "scale", Vector3(0.5, 0.5, 0.5), 0.25)

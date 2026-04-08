@@ -172,18 +172,18 @@ func _fade_transition(to_black: bool) -> void:
 		_transition_overlay = CanvasLayer.new()
 		_transition_overlay.layer = 110
 		_transition_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
-		var rect: ColorRect = ColorRect.new()
-		rect.name = "FadeRect"
-		rect.set_anchors_preset(Control.PRESET_FULL_RECT)
-		rect.color = Color(0.03, 0.03, 0.08, 0.0)
-		rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		_transition_overlay.add_child(rect)
+		var new_rect: ColorRect = ColorRect.new()
+		new_rect.name = "FadeRect"
+		new_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		new_rect.color = Color(0.03, 0.03, 0.08, 0.0)
+		new_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_transition_overlay.add_child(new_rect)
 		add_child(_transition_overlay)
 
-	var rect: ColorRect = _transition_overlay.get_node("FadeRect") as ColorRect
+	var fade_rect: ColorRect = _transition_overlay.get_node("FadeRect") as ColorRect
 	var target_alpha: float = 1.0 if to_black else 0.0
 	var tween: Tween = create_tween()
-	tween.tween_property(rect, "color:a", target_alpha, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(fade_rect, "color:a", target_alpha, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
 	await tween.finished
 
 

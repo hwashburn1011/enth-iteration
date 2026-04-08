@@ -82,8 +82,8 @@ func _populate_npcs() -> void:
 		var scene: PackedScene = load(NPC_SCENES[npc_id]) as PackedScene
 		if scene:
 			var npc: Node3D = scene.instantiate() as Node3D
-			npc.global_position = slot.global_position
 			add_child(npc)
+			npc.global_position = slot.global_position
 			# Trigger arrival dialogue for newly recruited NPCs
 			if GameManager.is_npc_newly_arrived(npc_id) and npc.has_method(&"_start_conversation"):
 				var arrival_data: Resource = _get_arrival_dialogue(npc_id)
@@ -585,7 +585,7 @@ func _setup_environment() -> void:
 	env.fog_light_color = Color(0.6, 0.65, 0.75)
 	env.fog_density = 0.005
 	# Tonemap
-	env.tonemap_mode = 2 as Environment.ToneMapper  # Filmic
+	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
 	env.tonemap_white = 6.0
 	# Subtle glow
 	env.glow_enabled = true

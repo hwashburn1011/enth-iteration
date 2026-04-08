@@ -110,8 +110,8 @@ static func _spawn_data_fragments(position: Vector3, parent: Node) -> void:
 		label.outline_modulate = Color(0, 0, 0, 0.5)
 		label.outline_size = 2
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		label.global_position = position + Vector3(randf_range(-0.3, 0.3), randf_range(0, 0.5), randf_range(-0.3, 0.3))
 		parent.add_child(label)
+		label.global_position = position + Vector3(randf_range(-0.3, 0.3), randf_range(0, 0.5), randf_range(-0.3, 0.3))
 		var tween: Tween = label.create_tween()
 		tween.tween_property(label, "position:y", label.position.y + 1.5, 1.2).set_ease(Tween.EASE_OUT)
 		tween.parallel().tween_property(label, "modulate:a", 0.0, 1.2).set_delay(0.4)
@@ -126,7 +126,6 @@ static func spawn_item_sparkle(position: Vector3, rarity: int, parent: Node) -> 
 	particles.lifetime = 0.6
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = position
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
 	mat.spread = 45.0
@@ -140,6 +139,7 @@ static func spawn_item_sparkle(position: Vector3, rarity: int, parent: Node) -> 
 	mesh.height = 0.1
 	particles.draw_pass_1 = mesh
 	parent.add_child(particles)
+	particles.global_position = position
 	# Auto-free after emission
 	var timer: SceneTreeTimer = parent.get_tree().create_timer(1.0)
 	timer.timeout.connect(particles.queue_free)
