@@ -58,40 +58,44 @@ func show_boss_bar(boss: Node, boss_display_name: String) -> void:
 		_boss_panel.queue_free()
 	_boss_ref = boss
 	_boss_panel = PanelContainer.new()
-	_boss_panel.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	_boss_panel.offset_left = 200.0
-	_boss_panel.offset_top = 20.0
-	_boss_panel.offset_right = -200.0
-	_boss_panel.offset_bottom = 90.0
+	# Bottom-center: doesn't collide with top-left HP bars or top-center tutorial banner
+	_boss_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_boss_panel.offset_left = -300.0
+	_boss_panel.offset_top = -150.0
+	_boss_panel.offset_right = 300.0
+	_boss_panel.offset_bottom = -90.0
 	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.08, 0.03, 0.03, 0.85)
-	panel_style.border_color = Color(0.8, 0.15, 0.1, 0.9)
+	panel_style.bg_color = Color(0.08, 0.03, 0.03, 0.92)
+	panel_style.border_color = Color(0.85, 0.18, 0.12, 0.95)
 	panel_style.set_border_width_all(2)
-	panel_style.set_corner_radius_all(4)
-	panel_style.set_content_margin_all(10)
+	panel_style.border_width_top = 4
+	panel_style.set_corner_radius_all(5)
+	panel_style.set_content_margin_all(12)
 	_boss_panel.add_theme_stylebox_override(&"panel", panel_style)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
-	vbox.add_theme_constant_override(&"separation", 4)
+	vbox.add_theme_constant_override(&"separation", 6)
 
 	_boss_name_label = Label.new()
 	_boss_name_label.text = boss_display_name
 	_boss_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_boss_name_label.add_theme_color_override(&"font_color", Color(0.95, 0.3, 0.2))
-	_boss_name_label.add_theme_font_size_override(&"font_size", 20)
+	_boss_name_label.add_theme_color_override(&"font_color", Color(0.98, 0.32, 0.22))
+	_boss_name_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	_boss_name_label.add_theme_constant_override(&"outline_size", 4)
+	_boss_name_label.add_theme_font_size_override(&"font_size", 22)
 	vbox.add_child(_boss_name_label)
 
 	_boss_bar = ProgressBar.new()
-	_boss_bar.custom_minimum_size = Vector2(0, 20)
+	_boss_bar.custom_minimum_size = Vector2(0, 22)
 	_boss_bar.show_percentage = false
 	var bar_bg: StyleBoxFlat = StyleBoxFlat.new()
-	bar_bg.bg_color = Color(0.15, 0.05, 0.05, 0.9)
+	bar_bg.bg_color = Color(0.15, 0.05, 0.05, 0.95)
 	bar_bg.set_border_width_all(1)
-	bar_bg.border_color = Color(0.5, 0.1, 0.05, 0.8)
+	bar_bg.border_color = Color(0.5, 0.1, 0.05, 0.9)
 	bar_bg.set_corner_radius_all(3)
 	_boss_bar.add_theme_stylebox_override(&"background", bar_bg)
 	var bar_fill: StyleBoxFlat = StyleBoxFlat.new()
-	bar_fill.bg_color = Color(0.85, 0.15, 0.1)
+	bar_fill.bg_color = Color(0.9, 0.18, 0.12)
 	bar_fill.set_corner_radius_all(3)
 	_boss_bar.add_theme_stylebox_override(&"fill", bar_fill)
 	vbox.add_child(_boss_bar)
