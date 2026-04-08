@@ -33,13 +33,30 @@ func _ready() -> void:
 
 	if item:
 		_label.text = item.item_name
+		# Style the world labels with outline and rarity color
+		var rarity_col: Color = _rarity_color(item.rarity)
+		_label.modulate = rarity_col
+		_label.outline_modulate = Color(0, 0, 0, 0.95)
+		_label.outline_size = 6
+		_label.font_size = 26
+		_label.no_depth_test = true
+		_label.fixed_size = true
+		_label.pixel_size = 0.0035
+		_label.position.y = 1.1
+		_tooltip.modulate = Color(0.95, 0.97, 1.0)
+		_tooltip.outline_modulate = Color(0, 0, 0, 0.95)
+		_tooltip.outline_size = 5
+		_tooltip.font_size = 20
+		_tooltip.no_depth_test = true
+		_tooltip.fixed_size = true
+		_tooltip.pixel_size = 0.0035
+		_tooltip.position.y = 1.45
 		# Try loading Blender crystal model
 		var crystal: PackedScene = load("res://assets/models/props/item_pickup.glb") as PackedScene
 		if crystal:
 			var instance: Node3D = crystal.instantiate() as Node3D
 			_mesh.add_child(instance)
-			# Color the crystal based on rarity
-			var rarity_col: Color = _rarity_color(item.rarity)
+			# Color the crystal based on rarity (re-use rarity_col from above)
 			for child: Node in instance.get_children():
 				if child is MeshInstance3D:
 					var mat: StandardMaterial3D = StandardMaterial3D.new()
