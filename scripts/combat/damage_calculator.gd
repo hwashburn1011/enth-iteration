@@ -54,6 +54,12 @@ static func calculate(info: Resource) -> Resource:
 		if camera and camera.has_method(&"shake"):
 			var shake_amount: float = 0.08 if not info.is_critical else 0.2
 			camera.shake(shake_amount)
+		# Brief hitstop on critical hits for impact
+		if info.is_critical:
+			Engine.time_scale = 0.2
+			target_3d.get_tree().create_timer(0.04, true, false, true).timeout.connect(func() -> void:
+				Engine.time_scale = 1.0
+			)
 
 	return info
 

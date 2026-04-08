@@ -210,9 +210,21 @@ func _toggle_inventory() -> void:
 
 
 func _on_leveled_up(_new_level: int) -> void:
+	# Level-up VFX burst
+	if is_inside_tree():
+		VFXFactory.spawn_level_up_effect(global_position, get_tree().current_scene)
+		# Brief hitstop for dramatic impact
+		_apply_level_up_hitstop()
 	var panel: Node = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)
+
+
+func _apply_level_up_hitstop() -> void:
+	Engine.time_scale = 0.15
+	get_tree().create_timer(0.08, true, false, true).timeout.connect(func() -> void:
+		Engine.time_scale = 1.0
+	)
 
 
 func _on_dash_cooldown_timeout() -> void:
