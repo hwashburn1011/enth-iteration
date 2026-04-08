@@ -21,7 +21,7 @@ func _build_enemy_visual() -> void:
 	for child: Node in model.get_children():
 		child.queue_free()
 	# Try Blender model first
-	var glb: PackedScene = load("res://assets/models/enemies/glitch_bug.glb") as PackedScene
+	var glb: PackedScene = load("res://assets/models/enemies/enemy_glitchbug_v2.glb") as PackedScene
 	if glb:
 		var instance: Node3D = glb.instantiate() as Node3D
 		model.add_child(instance)
