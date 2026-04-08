@@ -56,6 +56,37 @@ func _ready() -> void:
 
 	_tooltip.visible = false
 
+	# Initial drop shimmer — bright pulse that fades
+	if item:
+		_spawn_drop_shimmer()
+
+
+func _spawn_drop_shimmer() -> void:
+	if not is_inside_tree():
+		return
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.2
+	torus.outer_radius = 0.35
+	torus.rings = 12
+	torus.ring_segments = 12
+	ring.mesh = torus
+	ring.global_position = global_position + Vector3(0, 0.05, 0)
+	var rarity_col: Color = _rarity_color(item.rarity)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(rarity_col.r, rarity_col.g, rarity_col.b, 0.7)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = rarity_col
+	mat.emission_energy_multiplier = 3.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	get_tree().current_scene.add_child(ring)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(ring, "scale", Vector3(2.5, 1.0, 2.5), 0.5).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.6)
+	tween.tween_callback(ring.queue_free)
+
 
 const MAGNET_RANGE: float = 3.0
 const MAGNET_SPEED: float = 4.0
