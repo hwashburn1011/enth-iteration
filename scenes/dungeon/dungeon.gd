@@ -134,6 +134,8 @@ func _load_floor(index: int) -> void:
 	# Set floor accent color for room theming
 	if index < FLOOR_ACCENT_COLORS.size():
 		GameManager.set_meta(&"floor_accent_color", FLOOR_ACCENT_COLORS[index])
+		# Update world environment fog to match floor theme
+		_update_environment_for_floor(FLOOR_ACCENT_COLORS[index])
 
 	# Set floor-specific room configurator
 	var floor_number: int = data.floor_number
@@ -162,6 +164,41 @@ func _on_floor_completed(floor_number: int) -> void:
 		EventBus.returned_to_town.emit()
 		GameManager.set_meta(&"town_entry_type", "portal_return")
 		GameManager.change_scene_to("res://scenes/town/Town.tscn")
+
+
+func _update_environment_for_floor(accent: Color) -> void:
+	## Tint dungeon environment fog + volumetric fog to match floor accent
+	var world_env: WorldEnvironment = null
+	for child: Node in get_children():
+		if child is WorldEnvironment:
+			world_env = child as WorldEnvironment
+			break
+	if world_env == null or world_env.environment == null:
+		return
+	var env: Environment = world_env.environment
+	# Fog tint toward accent
+	env.fog_light_color = Color(
+		0.08 + accent.r * 0.15,
+		0.1 + accent.g * 0.15,
+		0.15 + accent.b * 0.15
+	)
+	# Volumetric fog emission
+	env.volumetric_fog_albedo = Color(
+		0.06 + accent.r * 0.12,
+		0.08 + accent.g * 0.12,
+		0.13 + accent.b * 0.15
+	)
+	env.volumetric_fog_emission = Color(
+		0.03 + accent.r * 0.08,
+		0.05 + accent.g * 0.08,
+		0.08 + accent.b * 0.1
+	)
+	# Ambient light shift
+	env.ambient_light_color = Color(
+		0.18 + accent.r * 0.1,
+		0.2 + accent.g * 0.1,
+		0.28 + accent.b * 0.1
+	)
 
 
 func _show_floor_clear_banner(floor_number: int) -> void:
