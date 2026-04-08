@@ -104,7 +104,6 @@ func _spawn_open_vfx() -> void:
 	particles.lifetime = 0.8
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = pos
 	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	pmat.direction = Vector3(0, 1, 0)
 	pmat.spread = 60.0
@@ -127,16 +126,17 @@ func _spawn_open_vfx() -> void:
 	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	particles.material_override = vis
 	scene_root.add_child(particles)
+	particles.global_position = pos
 	get_tree().create_timer(1.2).timeout.connect(particles.queue_free)
 	# Bright flash
 	VFXFactory.spawn_hit_flash(pos, scene_root)
 	# Temporary bright light that fades
 	var flash_light: OmniLight3D = OmniLight3D.new()
-	flash_light.global_position = pos
 	flash_light.light_color = Color(1.0, 0.85, 0.4)
 	flash_light.light_energy = 4.0
 	flash_light.omni_range = 6.0
 	scene_root.add_child(flash_light)
+	flash_light.global_position = pos
 	var light_tween: Tween = flash_light.create_tween()
 	light_tween.tween_property(flash_light, "light_energy", 0.0, 0.8)
 	light_tween.tween_callback(flash_light.queue_free)

@@ -225,7 +225,6 @@ func _play_proximity_burst() -> void:
 	torus.rings = 16
 	torus.ring_segments = 16
 	ring.mesh = torus
-	ring.global_position = global_position + Vector3(0, 0.05, 0)
 	ring.scale = Vector3(0.5, 0.5, 0.5)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.3, 0.6, 1.0, 0.8)
@@ -236,6 +235,7 @@ func _play_proximity_burst() -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = mat
 	get_tree().current_scene.add_child(ring)
+	ring.global_position = global_position + Vector3(0, 0.05, 0)
 	var tween: Tween = ring.create_tween()
 	tween.tween_property(ring, "scale", Vector3(4.0, 1.0, 4.0), 0.6).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.7)

@@ -263,7 +263,6 @@ func _spawn_buff_vfx() -> void:
 	particles.lifetime = 1.0
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = global_position + Vector3(0, 0.5, 0)
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 0, 0)
 	mat.spread = 180.0
@@ -288,6 +287,7 @@ func _spawn_buff_vfx() -> void:
 	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	particles.material_override = vis
 	get_tree().current_scene.add_child(particles)
+	particles.global_position = global_position + Vector3(0, 0.5, 0)
 	get_tree().create_timer(1.5).timeout.connect(particles.queue_free)
 	# "OVERCLOCKED" text label
 	var label: Label3D = Label3D.new()

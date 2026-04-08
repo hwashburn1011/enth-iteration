@@ -338,7 +338,6 @@ func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
 	burst.lifetime = 0.4
 	burst.one_shot = true
 	burst.emitting = true
-	burst.global_position = pos + Vector3(0, 0.3, 0)
 	var burst_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	burst_mat.direction = Vector3(0, 0.3, 0)
 	burst_mat.spread = 180.0
@@ -360,6 +359,7 @@ func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
 	burst_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	burst.material_override = burst_vis
 	scene_root.add_child(burst)
+	burst.global_position = pos + Vector3(0, 0.3, 0)
 	p.get_tree().create_timer(0.7).timeout.connect(burst.queue_free)
 
 	# Screen shake

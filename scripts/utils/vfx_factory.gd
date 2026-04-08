@@ -76,8 +76,8 @@ static func spawn_energy_burst_ring(position: Vector3, parent: Node) -> void:
 	mat.emission_enabled = true
 	mat.emission = Color(0.4, 0.7, 1.0)
 	mesh.material_override = mat
-	mesh.global_position = position
 	parent.add_child(mesh)
+	mesh.global_position = position
 	var tween: Tween = mesh.create_tween()
 	tween.tween_property(mesh, "scale", Vector3(4, 4, 4), 0.3)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.3)
@@ -266,7 +266,6 @@ static func spawn_compute_particles(position: Vector3, parent: Node) -> void:
 	particles.lifetime = 0.8
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = position
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
 	mat.spread = 30.0
@@ -287,6 +286,7 @@ static func spawn_compute_particles(position: Vector3, parent: Node) -> void:
 	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	particles.material_override = vis
 	parent.add_child(particles)
+	particles.global_position = position
 	parent.get_tree().create_timer(1.2).timeout.connect(particles.queue_free)
 
 
@@ -316,7 +316,6 @@ static func spawn_heal_particles(position: Vector3, parent: Node) -> void:
 	particles.lifetime = 0.8
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = position
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
 	mat.spread = 30.0
@@ -330,6 +329,7 @@ static func spawn_heal_particles(position: Vector3, parent: Node) -> void:
 	mesh.height = 0.08
 	particles.draw_pass_1 = mesh
 	parent.add_child(particles)
+	particles.global_position = position
 	parent.get_tree().create_timer(1.2).timeout.connect(particles.queue_free)
 
 
@@ -341,7 +341,6 @@ static func spawn_level_up_effect(position: Vector3, parent: Node) -> void:
 	particles.lifetime = 1.0
 	particles.one_shot = true
 	particles.emitting = true
-	particles.global_position = position
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, 1, 0)
 	mat.spread = 180.0
@@ -355,6 +354,7 @@ static func spawn_level_up_effect(position: Vector3, parent: Node) -> void:
 	mesh.height = 0.1
 	particles.draw_pass_1 = mesh
 	parent.add_child(particles)
+	particles.global_position = position
 	# Expanding ring
 	var ring: MeshInstance3D = MeshInstance3D.new()
 	var torus: TorusMesh = TorusMesh.new()
@@ -368,8 +368,8 @@ static func spawn_level_up_effect(position: Vector3, parent: Node) -> void:
 	ring_mat.emission = Color(1.0, 0.75, 0.15)
 	ring_mat.emission_energy_multiplier = 2.0
 	ring.material_override = ring_mat
-	ring.global_position = position
 	parent.add_child(ring)
+	ring.global_position = position
 	var tween: Tween = ring.create_tween()
 	tween.tween_property(ring, "scale", Vector3(5, 5, 5), 0.5)
 	tween.parallel().tween_property(ring_mat, "albedo_color:a", 0.0, 0.5)
