@@ -407,8 +407,8 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 		lantern.add_child(light)
 		return
 	# Fallback CSG
-	var lantern: Node3D = Node3D.new()
-	lantern.position = pos
+	var fallback_lantern: Node3D = Node3D.new()
+	fallback_lantern.position = pos
 	var post: CSGBox3D = CSGBox3D.new()
 	post.size = Vector3(0.15, 2.0, 0.15)
 	post.position = Vector3(0, 1.0, 0)
@@ -416,7 +416,7 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 	wood_mat.albedo_color = Color(0.45, 0.32, 0.20)
 	wood_mat.roughness = 0.9
 	post.material = wood_mat
-	lantern.add_child(post)
+	fallback_lantern.add_child(post)
 	var lamp: CSGBox3D = CSGBox3D.new()
 	lamp.size = Vector3(0.4, 0.5, 0.4)
 	lamp.position = Vector3(0, 2.2, 0)
@@ -426,15 +426,15 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 	glow_mat.emission = Color(1.0, 0.8, 0.4)
 	glow_mat.emission_energy_multiplier = 2.0
 	lamp.material = glow_mat
-	lantern.add_child(lamp)
-	var light: OmniLight3D = OmniLight3D.new()
-	light.position = Vector3(0, 2.5, 0)
-	light.light_color = Color(1.0, 0.85, 0.5)
-	light.light_energy = 1.5
-	light.omni_range = 8.0
-	light.omni_attenuation = 1.5
-	lantern.add_child(light)
-	parent.add_child(lantern)
+	fallback_lantern.add_child(lamp)
+	var fallback_light: OmniLight3D = OmniLight3D.new()
+	fallback_light.position = Vector3(0, 2.5, 0)
+	fallback_light.light_color = Color(1.0, 0.85, 0.5)
+	fallback_light.light_energy = 1.5
+	fallback_light.omni_range = 8.0
+	fallback_light.omni_attenuation = 1.5
+	fallback_lantern.add_child(fallback_light)
+	parent.add_child(fallback_lantern)
 
 
 func _add_boundary_collision() -> void:

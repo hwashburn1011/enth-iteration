@@ -158,7 +158,7 @@ func _create_charge_vfx(p: CharacterBody3D) -> void:
 	p.add_child(_charge_ring)
 
 
-func _update_charge_vfx(p: CharacterBody3D, charge_pct: float) -> void:
+func _update_charge_vfx(_p: CharacterBody3D, charge_pct: float) -> void:
 	# Scale particle speed and ring opacity with charge
 	if _charge_particles and _charge_particles.process_material is ParticleProcessMaterial:
 		var pmat: ParticleProcessMaterial = _charge_particles.process_material as ParticleProcessMaterial

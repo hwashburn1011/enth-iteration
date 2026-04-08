@@ -88,7 +88,6 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 		return
 	var scene_root: Node = p.get_tree().current_scene
 	var trail_dir: Vector3 = (to - from).normalized()
-	var trail_dist: float = from.distance_to(to)
 
 	# Ghost afterimages along the dash path (3 ghosts)
 	for i: int in 3:
