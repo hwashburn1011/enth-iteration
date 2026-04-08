@@ -99,9 +99,33 @@ func _try_pickup() -> void:
 		return
 	if _nearby_player.inventory_component.add_item(item):
 		EventBus.item_collected.emit(item)
+		# Pickup VFX before freeing
+		_spawn_pickup_vfx()
 		queue_free()
 	else:
 		_tooltip.text = "Inventory Full"
+
+
+func _spawn_pickup_vfx() -> void:
+	var scene_root: Node = get_tree().current_scene
+	var pos: Vector3 = global_position + Vector3(0, 0.5, 0)
+	var color: Color = _rarity_color(item.rarity)
+	# Rarity sparkle burst
+	VFXFactory.spawn_item_sparkle(pos, item.rarity, scene_root)
+	# Pickup text notification
+	var label: Label3D = Label3D.new()
+	label.text = item.item_name
+	label.font_size = 20
+	label.modulate = color
+	label.outline_modulate = Color(0, 0, 0, 0.7)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = pos + Vector3(0, 0.5, 0)
+	scene_root.add_child(label)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "position:y", label.position.y + 1.2, 1.0).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 1.0).set_delay(0.4)
+	tween.tween_callback(label.queue_free)
 
 
 func _rarity_color(rarity: int) -> Color:
