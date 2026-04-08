@@ -536,25 +536,52 @@ func _flash_xp_bar() -> void:
 
 
 func _show_level_up_banner(level: int) -> void:
+	# Holder for unified fade + scale-pop
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	holder.offset_left = -260
+	holder.offset_right = 260
+	holder.offset_top = 220  # below location label and tutorial banner
+	holder.offset_bottom = 320
+	holder.pivot_offset = Vector2(260, 50)
+	holder.modulate.a = 0.0
+	holder.scale = Vector2(0.7, 0.7)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Subtitle
+	var sub: Label = Label.new()
+	sub.text = "LEVEL UP"
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	sub.offset_top = 0
+	sub.offset_bottom = 22
+	sub.add_theme_font_size_override(&"font_size", 16)
+	sub.add_theme_color_override(&"font_color", Color(0.7, 0.85, 0.95))
+	sub.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	sub.add_theme_constant_override(&"outline_size", 4)
+	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(sub)
+	# Big "Lv N" text
 	var banner: Label = Label.new()
-	banner.text = "LEVEL %d!" % level
+	banner.text = "Lv %d" % level
 	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	banner.offset_left = -150
-	banner.offset_right = 150
-	banner.offset_top = 80
-	banner.offset_bottom = 120
-	banner.add_theme_font_size_override(&"font_size", 36)
-	banner.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.2, 0.0))
+	banner.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	banner.offset_top = 24
+	banner.offset_bottom = 90
+	banner.add_theme_font_size_override(&"font_size", 56)
+	banner.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.2))
+	banner.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	banner.add_theme_constant_override(&"outline_size", 8)
 	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_container.add_child(banner)
-	var tween: Tween = banner.create_tween()
-	tween.tween_property(banner, "theme_override_colors/font_color:a", 1.0, 0.15)
-	tween.tween_property(banner, "scale", Vector2(1.2, 1.2), 0.1)
-	tween.tween_property(banner, "scale", Vector2(1.0, 1.0), 0.1)
-	tween.tween_interval(1.5)
-	tween.tween_property(banner, "theme_override_colors/font_color:a", 0.0, 0.5)
-	tween.tween_callback(banner.queue_free)
+	holder.add_child(banner)
+	_container.add_child(holder)
+	# Sequential cinematic tween
+	var tween: Tween = holder.create_tween()
+	tween.tween_property(holder, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(holder, "scale", Vector2(1.08, 1.08), 0.25).set_ease(Tween.EASE_OUT)
+	tween.tween_property(holder, "scale", Vector2(1.0, 1.0), 0.12)
+	tween.tween_interval(1.4)
+	tween.tween_property(holder, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+	tween.tween_callback(holder.queue_free)
 
 
 func _update_xp_display(lc: Node) -> void:
