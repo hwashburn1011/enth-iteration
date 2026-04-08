@@ -73,27 +73,45 @@ func _ready() -> void:
 
 
 func _show_location_label(location: String) -> void:
-	## Brief location label fade-in/out at top of screen
+	## Cinematic location title — dramatic fade in/out at the top of the screen.
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 85
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	holder.offset_left = -300
+	holder.offset_right = 300
+	holder.offset_top = 140  # below tutorial hint banner area
+	holder.offset_bottom = 230
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.modulate.a = 0.0
+	canvas.add_child(holder)
 	var label: Label = Label.new()
 	label.text = location
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	label.offset_left = -250
-	label.offset_right = 250
-	label.offset_top = 80
-	label.offset_bottom = 130
-	label.add_theme_font_size_override(&"font_size", 32)
-	label.add_theme_color_override(&"font_color", Color(0.85, 0.2, 0.15, 0.0))
+	label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	label.offset_top = 0
+	label.offset_bottom = 50
+	label.add_theme_font_size_override(&"font_size", 44)
+	label.add_theme_color_override(&"font_color", Color(0.9, 0.25, 0.18))
+	label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	label.add_theme_constant_override(&"outline_size", 6)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	canvas.add_child(label)
+	holder.add_child(label)
+	var rule: ColorRect = ColorRect.new()
+	rule.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	rule.offset_left = 80
+	rule.offset_right = -80
+	rule.offset_top = 56
+	rule.offset_bottom = 58
+	rule.color = Color(0.85, 0.2, 0.12, 0.7)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(rule)
 	add_child(canvas)
-	var tween: Tween = label.create_tween()
-	tween.tween_property(label, "theme_override_colors/font_color:a", 1.0, 0.5)
+	var tween: Tween = holder.create_tween()
+	tween.tween_property(holder, "modulate:a", 1.0, 0.5).set_ease(Tween.EASE_OUT)
 	tween.tween_interval(2.0)
-	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.7)
+	tween.tween_property(holder, "modulate:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
 	tween.tween_callback(canvas.queue_free)
 
 
