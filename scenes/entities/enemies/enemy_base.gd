@@ -255,6 +255,8 @@ func apply_variant(tier: int) -> void:
 func _play_spawn_effect() -> void:
 	# Digital assembly: cyan particle column → scale in → pixel pop
 	model.scale = Vector3(0.01, 0.01, 0.01)
+	# Brief spawn invulnerability so player can see the materialization
+	is_invulnerable = true
 	if is_inside_tree():
 		_spawn_assembly_particles()
 	var tween: Tween = create_tween()
@@ -263,8 +265,9 @@ func _play_spawn_effect() -> void:
 	# Phase 2: Scale in with overshoot
 	tween.tween_property(model, "scale", Vector3(1.15, 1.15, 1.15), 0.2).set_ease(Tween.EASE_OUT)
 	tween.tween_property(model, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
-	# Phase 3: Pixel pop flash
+	# Phase 3: Pixel pop flash + end invulnerability
 	tween.tween_callback(_spawn_pixel_pop)
+	tween.tween_callback(func() -> void: is_invulnerable = false)
 
 
 func _spawn_assembly_particles() -> void:
