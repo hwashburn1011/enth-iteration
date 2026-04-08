@@ -44,11 +44,13 @@ func physics_update(delta: float) -> void:
 	var next_pos: Vector3 = enemy.navigation_agent.get_next_path_position()
 	var direction: Vector3 = (next_pos - enemy.global_position).normalized()
 	direction.y = 0.0
-	# Brief speed burst when first entering chase
+	# Brief speed burst when first entering chase, smoothly tapering off
 	var speed: float = enemy.move_speed
 	if _initial_burst:
 		_burst_timer += delta
-		speed *= BURST_SPEED_MULT
+		var burst_pct: float = 1.0 - (_burst_timer / BURST_DURATION)
+		burst_pct = clampf(burst_pct, 0.0, 1.0)
+		speed *= 1.0 + (BURST_SPEED_MULT - 1.0) * burst_pct
 		if _burst_timer >= BURST_DURATION:
 			_initial_burst = false
 	enemy.velocity = direction * speed
