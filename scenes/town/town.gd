@@ -368,12 +368,15 @@ func _build_town_decorations() -> void:
 
 
 func _add_ground_patches(parent: Node3D) -> void:
-	# Darker grass patches near buildings for depth
+	# Subtle dark/light grass patches for depth — much lower alpha now that
+	# the procedural grass texture provides natural variation.
 	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
-	dark_mat.albedo_color = Color(0.35, 0.58, 0.34)
+	dark_mat.albedo_color = Color(0.18, 0.30, 0.16, 0.35)
+	dark_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	dark_mat.roughness = 0.95
 	var light_mat: StandardMaterial3D = StandardMaterial3D.new()
-	light_mat.albedo_color = Color(0.48, 0.72, 0.45)
+	light_mat.albedo_color = Color(0.55, 0.78, 0.45, 0.30)
+	light_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	light_mat.roughness = 0.9
 	# Dark patches near buildings
 	var dark_positions: Array[Vector3] = [
@@ -393,10 +396,8 @@ func _add_ground_patches(parent: Node3D) -> void:
 		patch.position = pos
 		patch.material = light_mat
 		parent.add_child(patch)
-	# Small rock clusters
-	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
-	rock_mat.albedo_color = Color(0.5, 0.48, 0.45)
-	rock_mat.roughness = 0.95
+	# Textured stone rock clusters
+	var rock_mat: StandardMaterial3D = _make_pebble_rock_material()
 	for pos: Vector3 in [Vector3(-13, 0.1, 10), Vector3(15, 0.1, -8), Vector3(-3, 0.1, -12)]:
 		for j: int in 3:
 			var rock: CSGSphere3D = CSGSphere3D.new()
@@ -406,6 +407,43 @@ func _add_ground_patches(parent: Node3D) -> void:
 			rock.position = pos + Vector3(randf_range(-0.4, 0.4), 0, randf_range(-0.4, 0.4))
 			rock.material = rock_mat
 			parent.add_child(rock)
+
+
+static func _make_pebble_rock_material() -> StandardMaterial3D:
+	## Mossy gray stone for small ground rocks.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.55, 0.55, 0.52)
+	var stone_noise: FastNoiseLite = FastNoiseLite.new()
+	stone_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	stone_noise.frequency = 0.5
+	stone_noise.cellular_jitter = 0.7
+	var stone_tex: NoiseTexture2D = NoiseTexture2D.new()
+	stone_tex.noise = stone_noise
+	stone_tex.width = 256
+	stone_tex.height = 256
+	stone_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.30, 0.32, 0.28))
+	ramp.set_color(1, Color(0.68, 0.68, 0.62))
+	ramp.add_point(0.4, Color(0.42, 0.43, 0.38))
+	ramp.add_point(0.75, Color(0.55, 0.55, 0.50))
+	stone_tex.color_ramp = ramp
+	mat.albedo_texture = stone_tex
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = stone_noise
+	bump_tex.width = 256
+	bump_tex.height = 256
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 5.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 1.0
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(2.0, 2.0, 2.0)
+	mat.metallic = 0.05
+	mat.roughness = 0.95
+	return mat
 
 
 func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) -> void:
