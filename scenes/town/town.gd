@@ -22,6 +22,8 @@ func _ready() -> void:
 	_setup_environment()
 	# Replace the flat green Ground material with a procedural grass texture
 	_apply_town_ground_texture()
+	# Replace flat building/boundary materials with procedural plaster + stone
+	_apply_town_building_textures()
 
 	# Spawn HUD (combat elements hidden in town)
 	var hud_scene: PackedScene = load("res://scenes/ui/hud/HUD.tscn") as PackedScene
@@ -286,6 +288,8 @@ func _build_town_decorations() -> void:
 		"res://assets/models/buildings/cottage_01.glb",
 	]
 	var building_rotations: Array[float] = [0, 0, PI, PI / 2.0]
+	var plaster_mat: StandardMaterial3D = _make_plaster_material()
+	var roof_mat: StandardMaterial3D = _make_roof_tile_material()
 	for i: int in range(1, 5):
 		var building: CSGBox3D = geom.get_node_or_null("Building%d" % i) as CSGBox3D
 		if building:
@@ -297,6 +301,8 @@ func _build_town_decorations() -> void:
 				instance.rotation.y = building_rotations[i - 1]
 				geom.add_child(instance)
 				instance.global_position = Vector3(pos.x, 0, pos.z)
+				# Apply plaster + roof tile materials to the GLB mesh tree
+				_apply_building_materials(instance, plaster_mat, roof_mat)
 				# Add warm window light
 				var win_light: OmniLight3D = OmniLight3D.new()
 				win_light.position = Vector3(0, 2.0, -2.0)
@@ -603,6 +609,171 @@ func _apply_town_ground_texture() -> void:
 	mat.metallic = 0.0
 	mat.roughness = 0.92
 	ground.material_override = mat
+
+
+func _apply_town_building_textures() -> void:
+	## Replace flat brown Building1-4 and gray Boundary1-4 materials with
+	## procedurally textured plaster + stone surfaces.
+	var geom: Node = get_node_or_null("Geometry")
+	if geom == null:
+		return
+	var building_mat: StandardMaterial3D = _make_plaster_material()
+	var boundary_mat: StandardMaterial3D = _make_stone_material()
+	for child: Node in geom.get_children():
+		if not (child is CSGBox3D):
+			continue
+		var box: CSGBox3D = child as CSGBox3D
+		if box.name.begins_with("Building"):
+			box.material = building_mat
+		elif box.name.begins_with("Boundary"):
+			box.material = boundary_mat
+
+
+static func _make_plaster_material() -> StandardMaterial3D:
+	## Warm cream plaster with subtle brick-like noise underlay.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.92, 0.84, 0.72)
+	# Albedo: warm Perlin variation
+	var albedo_noise: FastNoiseLite = FastNoiseLite.new()
+	albedo_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	albedo_noise.frequency = 0.25
+	albedo_noise.fractal_octaves = 4
+	var albedo_tex: NoiseTexture2D = NoiseTexture2D.new()
+	albedo_tex.noise = albedo_noise
+	albedo_tex.width = 512
+	albedo_tex.height = 512
+	albedo_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.66, 0.50, 0.35))  # warm shadow tone
+	ramp.set_color(1, Color(0.96, 0.88, 0.74))  # cream highlight
+	ramp.add_point(0.45, Color(0.82, 0.68, 0.52))
+	albedo_tex.color_ramp = ramp
+	mat.albedo_texture = albedo_tex
+	# Normal: subtle plaster surface bumps
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	bump_noise.frequency = 0.6
+	bump_noise.fractal_octaves = 3
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 2.5
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.5
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.6, 0.6, 0.6)
+	mat.metallic = 0.0
+	mat.roughness = 0.92
+	return mat
+
+
+static func _make_roof_tile_material() -> StandardMaterial3D:
+	## Terracotta tile material with rhythmic cellular pattern.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.78, 0.36, 0.22)
+	var tile_noise: FastNoiseLite = FastNoiseLite.new()
+	tile_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	tile_noise.frequency = 0.35
+	tile_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
+	tile_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	tile_noise.cellular_jitter = 0.4
+	var tile_tex: NoiseTexture2D = NoiseTexture2D.new()
+	tile_tex.noise = tile_noise
+	tile_tex.width = 512
+	tile_tex.height = 512
+	tile_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.55, 0.22, 0.12))
+	ramp.set_color(1, Color(0.92, 0.50, 0.30))
+	ramp.add_point(0.5, Color(0.78, 0.36, 0.20))
+	tile_tex.color_ramp = ramp
+	mat.albedo_texture = tile_tex
+	# Bump from same cellular noise
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = tile_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 4.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.9
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.7, 0.7, 0.7)
+	mat.metallic = 0.05
+	mat.roughness = 0.85
+	return mat
+
+
+func _apply_building_materials(root: Node, body_mat: StandardMaterial3D, roof_mat: StandardMaterial3D) -> void:
+	## Walk a building GLB tree and override every MeshInstance3D's material.
+	## Heuristic: if the mesh's first surface uses a warm/orange tone, treat
+	## it as roof; otherwise treat it as body.
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var mi: MeshInstance3D = n as MeshInstance3D
+			var existing: Material = mi.get_active_material(0)
+			var is_roof: bool = false
+			if existing is StandardMaterial3D:
+				var col: Color = (existing as StandardMaterial3D).albedo_color
+				# Roofs are red/orange in the original GLB
+				if col.r > col.g and col.r > col.b:
+					is_roof = true
+			mi.material_override = roof_mat if is_roof else body_mat
+		for c in n.get_children():
+			stack.append(c)
+
+
+static func _make_stone_material() -> StandardMaterial3D:
+	## Cool gray stone with cellular cracks and bumpy surface.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.62, 0.62, 0.66)
+	# Albedo: cellular noise mapped through gray gradient
+	var albedo_noise: FastNoiseLite = FastNoiseLite.new()
+	albedo_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	albedo_noise.frequency = 0.15
+	albedo_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
+	albedo_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	var albedo_tex: NoiseTexture2D = NoiseTexture2D.new()
+	albedo_tex.noise = albedo_noise
+	albedo_tex.width = 512
+	albedo_tex.height = 512
+	albedo_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.32, 0.32, 0.36))
+	ramp.set_color(1, Color(0.78, 0.78, 0.82))
+	ramp.add_point(0.5, Color(0.55, 0.55, 0.60))
+	albedo_tex.color_ramp = ramp
+	mat.albedo_texture = albedo_tex
+	# Normal: chunky cellular bumps for stone block feel
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.2
+	bump_noise.cellular_jitter = 0.8
+	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
+	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 6.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 1.1
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
+	mat.metallic = 0.0
+	mat.roughness = 0.95
+	return mat
 
 
 func _add_ground_collision() -> void:
