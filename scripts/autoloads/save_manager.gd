@@ -66,7 +66,7 @@ func _create_save_indicator() -> void:
 	# Wrap label in a styled panel — matches HUD room-indicator chip style
 	var panel: PanelContainer = PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	panel.offset_left = -160.0
+	panel.offset_left = -300.0  # match room indicator width
 	panel.offset_top = 56.0
 	panel.offset_right = -14.0
 	panel.offset_bottom = 88.0

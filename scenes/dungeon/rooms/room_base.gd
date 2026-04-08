@@ -139,23 +139,12 @@ func _apply_dungeon_materials() -> void:
 	var geom: Node = get_node_or_null("Geometry")
 	if geom == null:
 		return
-	# Dark tech floor with subtle grid emission
+	# Procedurally textured tech floor — noise-based panels with normal map
 	var floor_node: MeshInstance3D = geom.get_node_or_null("Floor") as MeshInstance3D
 	if floor_node:
-		var floor_mat: StandardMaterial3D = StandardMaterial3D.new()
-		floor_mat.albedo_color = Color(0.18, 0.20, 0.25)
-		floor_mat.emission_enabled = true
-		floor_mat.emission = Color(0.08, 0.12, 0.18)
-		floor_mat.emission_energy_multiplier = 0.15
-		floor_mat.roughness = 0.85
-		floor_node.material_override = floor_mat
-	# Dark walls with subtle blue/purple tint
-	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
-	wall_mat.albedo_color = Color(0.15, 0.16, 0.22)
-	wall_mat.emission_enabled = true
-	wall_mat.emission = Color(0.05, 0.08, 0.15)
-	wall_mat.emission_energy_multiplier = 0.1
-	wall_mat.roughness = 0.9
+		floor_node.material_override = _make_floor_material()
+	# Procedurally textured walls with brushed-metal noise + normal map
+	var wall_mat: StandardMaterial3D = _make_wall_material()
 	for child: Node in geom.get_children():
 		if child is CSGBox3D and child.name.begins_with("Wall"):
 			(child as CSGBox3D).material = wall_mat
@@ -166,6 +155,127 @@ func _apply_dungeon_materials() -> void:
 	_add_ceiling(geom)
 	# Add glowing edge strips to room for visibility
 	_add_room_glow_strips(geom)
+
+
+static func _make_floor_material() -> StandardMaterial3D:
+	## Build a richly-textured sci-fi floor material from procedural noise.
+	## Uses two FastNoiseLite layers (large panels + fine grain) and a
+	## normal map derived from the same noise so the surface has visible
+	## bumps and seams instead of being a flat dark plate.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.3, 0.34, 0.42)
+	# Albedo: panel-grid noise
+	var panel_noise: FastNoiseLite = FastNoiseLite.new()
+	panel_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	panel_noise.frequency = 0.08
+	panel_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
+	panel_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	panel_noise.cellular_jitter = 0.6
+	var panel_tex: NoiseTexture2D = NoiseTexture2D.new()
+	panel_tex.noise = panel_noise
+	panel_tex.width = 512
+	panel_tex.height = 512
+	panel_tex.seamless = true
+	panel_tex.color_ramp = _build_floor_ramp()
+	mat.albedo_texture = panel_tex
+	# Detail noise on top — fine surface variation
+	var detail_noise: FastNoiseLite = FastNoiseLite.new()
+	detail_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	detail_noise.frequency = 0.6
+	var detail_tex: NoiseTexture2D = NoiseTexture2D.new()
+	detail_tex.noise = detail_noise
+	detail_tex.width = 256
+	detail_tex.height = 256
+	detail_tex.seamless = true
+	mat.detail_enabled = true
+	mat.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MIX
+	mat.detail_albedo = detail_tex
+	mat.detail_mask = detail_tex
+	# Normal map from the same panel noise (Godot's NoiseTexture2D supports as_normal_map)
+	var normal_noise: FastNoiseLite = FastNoiseLite.new()
+	normal_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	normal_noise.frequency = 0.08
+	normal_noise.cellular_jitter = 0.6
+	normal_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	var normal_tex: NoiseTexture2D = NoiseTexture2D.new()
+	normal_tex.noise = normal_noise
+	normal_tex.width = 512
+	normal_tex.height = 512
+	normal_tex.seamless = true
+	normal_tex.as_normal_map = true
+	normal_tex.bump_strength = 4.0
+	mat.normal_enabled = true
+	mat.normal_texture = normal_tex
+	mat.normal_scale = 1.2
+	# Triplanar so the texture wraps without UV stretching
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.4, 0.4, 0.4)
+	# Sci-fi metallic-ish surface
+	mat.metallic = 0.55
+	mat.metallic_specular = 0.5
+	mat.roughness = 0.55
+	# Subtle ambient emission so the floor reads even in dim rooms
+	mat.emission_enabled = true
+	mat.emission = Color(0.06, 0.10, 0.18)
+	mat.emission_energy_multiplier = 0.12
+	return mat
+
+
+static func _build_floor_ramp() -> Gradient:
+	var g: Gradient = Gradient.new()
+	g.set_color(0, Color(0.10, 0.12, 0.18))
+	g.set_color(1, Color(0.36, 0.42, 0.54))
+	g.add_point(0.5, Color(0.18, 0.22, 0.30))
+	g.add_point(0.85, Color(0.30, 0.38, 0.50))
+	return g
+
+
+static func _make_wall_material() -> StandardMaterial3D:
+	## Brushed-metal sci-fi wall material with procedural normal detail.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.28, 0.30, 0.38)
+	# Streaky brushed-metal albedo
+	var streak_noise: FastNoiseLite = FastNoiseLite.new()
+	streak_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	streak_noise.frequency = 0.04
+	streak_noise.fractal_octaves = 4
+	var streak_tex: NoiseTexture2D = NoiseTexture2D.new()
+	streak_tex.noise = streak_noise
+	streak_tex.width = 512
+	streak_tex.height = 512
+	streak_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.13, 0.15, 0.22))
+	ramp.set_color(1, Color(0.38, 0.42, 0.52))
+	ramp.add_point(0.6, Color(0.24, 0.28, 0.38))
+	streak_tex.color_ramp = ramp
+	mat.albedo_texture = streak_tex
+	# Bumpy normal from cellular noise
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.12
+	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN_SQUARED
+	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 5.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.8
+	# Triplanar mapping so corners blend cleanly
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
+	mat.metallic = 0.7
+	mat.metallic_specular = 0.6
+	mat.roughness = 0.45
+	mat.emission_enabled = true
+	mat.emission = Color(0.04, 0.07, 0.13)
+	mat.emission_energy_multiplier = 0.08
+	return mat
 
 
 func _add_room_type_accent(geom: Node) -> void:

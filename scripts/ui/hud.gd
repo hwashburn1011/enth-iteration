@@ -311,7 +311,7 @@ func _create_room_indicator() -> void:
 	# Styled chip panel in the top-right corner
 	_room_panel = PanelContainer.new()
 	_room_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_room_panel.offset_left = -220.0
+	_room_panel.offset_left = -300.0  # wider so longer floor names fit
 	_room_panel.offset_top = 14.0
 	_room_panel.offset_right = -14.0
 	_room_panel.offset_bottom = 46.0
