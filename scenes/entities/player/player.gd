@@ -47,7 +47,7 @@ func _ready() -> void:
 
 func _build_player_extras() -> void:
 	# Try loading Blender model for the player
-	var glb: PackedScene = load("res://assets/models/characters/globbler.glb") as PackedScene
+	var glb: PackedScene = load("res://assets/models/characters/char_globbler_v2.glb") as PackedScene
 	if glb:
 		# Remove existing capsule mesh from Model node
 		for child: Node in model.get_children():
