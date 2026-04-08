@@ -286,7 +286,6 @@ func _spawn_attack_range_indicator(p: CharacterBody3D) -> void:
 	torus.rings = 16
 	torus.ring_segments = 16
 	ring.mesh = torus
-	ring.global_position = p.global_position + Vector3(0, 0.05, 0)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.3, 0.85, 0.85, 0.4)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -296,6 +295,7 @@ func _spawn_attack_range_indicator(p: CharacterBody3D) -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = mat
 	p.get_tree().current_scene.add_child(ring)
+	ring.global_position = p.global_position + Vector3(0, 0.05, 0)
 	var tween: Tween = ring.create_tween()
 	tween.tween_property(mat, "albedo_color:a", 0.0, 0.25)
 	tween.tween_callback(ring.queue_free)
@@ -316,7 +316,6 @@ func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
 	ring_mesh.rings = 16
 	ring_mesh.ring_segments = 20
 	ring.mesh = ring_mesh
-	ring.global_position = pos
 	ring.scale = Vector3(0.5, 0.5, 0.5)
 	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
 	ring_mat.albedo_color = Color(0.3, 0.55, 1.0, 0.7)
@@ -327,6 +326,7 @@ func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
 	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = ring_mat
 	scene_root.add_child(ring)
+	ring.global_position = pos
 	var ring_tween: Tween = ring.create_tween()
 	ring_tween.tween_property(ring, "scale", Vector3(4.0, 1.0, 4.0), 0.25).set_ease(Tween.EASE_OUT)
 	ring_tween.parallel().tween_property(ring_mat, "albedo_color:a", 0.0, 0.3)

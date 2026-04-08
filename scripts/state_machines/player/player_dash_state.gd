@@ -124,7 +124,6 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 	trail_particles.lifetime = 0.3
 	trail_particles.one_shot = true
 	trail_particles.emitting = true
-	trail_particles.global_position = from.lerp(to, 0.5) + Vector3(0, 0.5, 0)
 	var trail_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
 	trail_mat.direction = Vector3(trail_dir.x, 0, trail_dir.z)
 	trail_mat.spread = 20.0
@@ -147,6 +146,7 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 	line_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	trail_particles.material_override = line_vis
 	scene_root.add_child(trail_particles)
+	trail_particles.global_position = from.lerp(to, 0.5) + Vector3(0, 0.5, 0)
 	p.get_tree().create_timer(0.6).timeout.connect(trail_particles.queue_free)
 
 
