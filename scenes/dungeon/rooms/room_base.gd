@@ -90,6 +90,35 @@ func _show_exit_indicator() -> void:
 	light.light_energy = 1.5
 	light.omni_range = 4.0
 	add_child(light)
+	# Rising particles around beacon
+	var exit_particles: GPUParticles3D = GPUParticles3D.new()
+	exit_particles.amount = 20
+	exit_particles.lifetime = 2.0
+	exit_particles.position = Vector3(exit_point.position.x, 0.1, exit_point.position.z)
+	var ep_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	ep_mat.direction = Vector3(0, 1, 0)
+	ep_mat.spread = 15.0
+	ep_mat.initial_velocity_min = 0.5
+	ep_mat.initial_velocity_max = 1.2
+	ep_mat.gravity = Vector3.ZERO
+	ep_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	ep_mat.emission_sphere_radius = 0.4
+	ep_mat.color = Color(0.2, 1.0, 0.4, 0.7)
+	ep_mat.scale_min = 0.3
+	ep_mat.scale_max = 0.8
+	exit_particles.process_material = ep_mat
+	var ep_mesh: BoxMesh = BoxMesh.new()
+	ep_mesh.size = Vector3(0.04, 0.04, 0.04)
+	exit_particles.draw_pass_1 = ep_mesh
+	var ep_vis: StandardMaterial3D = StandardMaterial3D.new()
+	ep_vis.albedo_color = Color(0.2, 1.0, 0.4, 0.6)
+	ep_vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ep_vis.emission_enabled = true
+	ep_vis.emission = Color(0.15, 0.8, 0.3)
+	ep_vis.emission_energy_multiplier = 3.0
+	ep_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	exit_particles.material_override = ep_vis
+	add_child(exit_particles)
 
 
 func get_entry_point() -> Vector3:
