@@ -185,6 +185,12 @@ func _transition_to_phase(new_phase: int) -> void:
 
 	velocity = Vector3.ZERO
 
+	# Phase transition shockwave + camera shake
+	_spawn_phase_transition_shockwave(new_phase)
+	var camera: Camera3D = get_viewport().get_camera_3d()
+	if camera and camera.has_method(&"shake"):
+		camera.shake(0.25, 4.0)
+
 	await get_tree().create_timer(1.5).timeout
 
 	# Restore material
@@ -208,6 +214,35 @@ func _transition_to_phase(new_phase: int) -> void:
 				if enemy.is_in_group(&"enemies"):
 					(enemy as CharacterBody3D).spawn_position = enemy.global_position
 				enemy.reparent(get_tree().current_scene)
+
+
+func _spawn_phase_transition_shockwave(new_phase: int) -> void:
+	if not is_inside_tree():
+		return
+	# Phase color: 2=orange, 3=deep red
+	var color: Color = Color(1.0, 0.45, 0.1) if new_phase == 2 else Color(0.95, 0.1, 0.05)
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.6
+	torus.outer_radius = 0.9
+	torus.rings = 16
+	torus.ring_segments = 20
+	ring.mesh = torus
+	ring.global_position = global_position + Vector3(0, 0.2, 0)
+	ring.scale = Vector3(0.5, 0.5, 0.5)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(color.r, color.g, color.b, 0.8)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = color
+	mat.emission_energy_multiplier = 5.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	get_tree().current_scene.add_child(ring)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(ring, "scale", Vector3(10.0, 1.0, 10.0), 1.2).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 1.4)
+	tween.tween_callback(ring.queue_free)
 
 
 func _on_died() -> void:
