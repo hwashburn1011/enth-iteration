@@ -150,11 +150,25 @@ func _build_enemy_visual() -> void:
 
 
 func _process(_delta: float) -> void:
-	# Pulse emission
-	var mesh: MeshInstance3D = model.get_child(0) as MeshInstance3D
-	if mesh and mesh.material_override is StandardMaterial3D:
-		var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
-		mat.emission_energy_multiplier = 0.8 + sin(Time.get_ticks_msec() * 0.003) * 0.4
+	# Pulse emission across all mesh instances under the model (works for
+	# both placeholder fallback meshes and the Blender GLB model tree)
+	var pulse: float = 0.8 + sin(Time.get_ticks_msec() * 0.003) * 0.4
+	for mesh: MeshInstance3D in _find_mesh_instances(model):
+		if mesh.material_override is StandardMaterial3D:
+			var mat: StandardMaterial3D = mesh.material_override as StandardMaterial3D
+			mat.emission_energy_multiplier = pulse
+
+
+func _find_mesh_instances(root: Node) -> Array[MeshInstance3D]:
+	var out: Array[MeshInstance3D] = []
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			out.append(n as MeshInstance3D)
+		for c in n.get_children():
+			stack.append(c)
+	return out
 
 
 func _on_boss_health_changed(current: float, max_val: float) -> void:
@@ -173,15 +187,15 @@ func _transition_to_phase(new_phase: int) -> void:
 	current_phase = new_phase
 	phase_changed.emit(new_phase)
 
-	# Stagger animation — flash and pause
-	var mesh: MeshInstance3D = model.get_child(0) as MeshInstance3D
-	if mesh:
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = Color.WHITE
-		mat.emission_enabled = true
-		mat.emission = Color.WHITE
-		mat.emission_energy_multiplier = 3.0
-		mesh.material_override = mat
+	# Stagger animation — flash all mesh children white
+	var meshes: Array[MeshInstance3D] = _find_mesh_instances(model)
+	var flash_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flash_mat.albedo_color = Color.WHITE
+	flash_mat.emission_enabled = true
+	flash_mat.emission = Color.WHITE
+	flash_mat.emission_energy_multiplier = 3.0
+	for mesh: MeshInstance3D in meshes:
+		mesh.material_override = flash_mat
 
 	velocity = Vector3.ZERO
 
@@ -193,14 +207,15 @@ func _transition_to_phase(new_phase: int) -> void:
 
 	await get_tree().create_timer(1.5).timeout
 
-	# Restore material
-	if mesh:
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = Color(0.5, 0.1, 0.15)
-		mat.emission_enabled = true
-		mat.emission = Color(0.6, 0.05, 0.2)
-		mat.emission_energy_multiplier = 1.0
-		mesh.material_override = mat
+	# Restore default red material on every mesh
+	var restore_mat: StandardMaterial3D = StandardMaterial3D.new()
+	restore_mat.albedo_color = Color(0.5, 0.1, 0.15)
+	restore_mat.emission_enabled = true
+	restore_mat.emission = Color(0.6, 0.05, 0.2)
+	restore_mat.emission_energy_multiplier = 1.0
+	for mesh: MeshInstance3D in meshes:
+		if is_instance_valid(mesh):
+			mesh.material_override = restore_mat
 
 	is_invulnerable = false
 	is_transitioning = false
