@@ -65,8 +65,36 @@ func _ready() -> void:
 	# Apply saved player data if loading
 	SaveManager.apply_to_player(_player)
 
+	# Show "DUNGEON" location label
+	_show_location_label("THE DUNGEON")
+
 	# Start with floor 1
 	_load_floor(_current_floor_index)
+
+
+func _show_location_label(location: String) -> void:
+	## Brief location label fade-in/out at top of screen
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 85
+	var label: Label = Label.new()
+	label.text = location
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	label.offset_left = -250
+	label.offset_right = 250
+	label.offset_top = 80
+	label.offset_bottom = 130
+	label.add_theme_font_size_override(&"font_size", 32)
+	label.add_theme_color_override(&"font_color", Color(0.85, 0.2, 0.15, 0.0))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(label)
+	add_child(canvas)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "theme_override_colors/font_color:a", 1.0, 0.5)
+	tween.tween_interval(2.0)
+	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.7)
+	tween.tween_callback(canvas.queue_free)
 
 
 func _setup_environment() -> void:
