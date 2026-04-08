@@ -36,6 +36,8 @@ func enter() -> void:
 	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	if camera and camera.has_method(&"shake"):
 		camera.shake(0.15, 8.0)
+	# Player mesh white flash
+	_flash_player_white(p)
 
 
 func physics_update(delta: float) -> void:
@@ -59,6 +61,32 @@ func physics_update(delta: float) -> void:
 			state_machine.force_transition_to(state_machine.get_node("WalkState") as Node)
 		else:
 			state_machine.force_transition_to(state_machine.get_node("IdleState") as Node)
+
+
+func _flash_player_white(p: CharacterBody3D) -> void:
+	## Brief white emission flash on the player model
+	if p.model == null or p.model.get_child_count() == 0:
+		return
+	# Find first MeshInstance3D in model
+	var mesh: MeshInstance3D = null
+	for child: Node in p.model.get_children():
+		if child is MeshInstance3D:
+			mesh = child as MeshInstance3D
+			break
+	if mesh == null:
+		return
+	var original_mat: Material = mesh.material_override
+	var flash_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flash_mat.albedo_color = Color(1, 1, 1)
+	flash_mat.emission_enabled = true
+	flash_mat.emission = Color(1, 1, 1)
+	flash_mat.emission_energy_multiplier = 2.5
+	mesh.material_override = flash_mat
+	if p.is_inside_tree():
+		p.get_tree().create_timer(0.08).timeout.connect(func() -> void:
+			if is_instance_valid(mesh):
+				mesh.material_override = original_mat
+		)
 
 
 func _spawn_directional_indicator(p: CharacterBody3D, from_dir: Vector3) -> void:
