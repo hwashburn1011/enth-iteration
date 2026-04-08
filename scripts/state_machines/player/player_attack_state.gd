@@ -107,12 +107,11 @@ func exit() -> void:
 
 
 func _set_hitbox_active(p: CharacterBody3D, active: bool) -> void:
-	var hitbox: Area3D = p.hitbox_component
-	hitbox.monitoring = active
-	hitbox.monitorable = active
-	for child: Node in hitbox.get_children():
-		if child is CollisionShape3D:
-			child.disabled = not active
+	var hitbox: Node = p.hitbox_component
+	if active:
+		hitbox.activate()  # Sets is_active=true, clears hit_targets, enables monitoring
+	else:
+		hitbox.deactivate()  # Sets is_active=false, disables monitoring
 
 
 func _set_hitbox_size(p: CharacterBody3D, size: Vector3) -> void:
