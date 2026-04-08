@@ -64,3 +64,15 @@ func zoom_pulse(in_size: float = 11.0, duration: float = 0.3) -> void:
 	tween.tween_property(self, "size", in_size, duration * 0.4).set_ease(Tween.EASE_OUT)
 	tween.tween_interval(duration * 0.2)
 	tween.tween_property(self, "size", camera_size, duration * 0.4).set_ease(Tween.EASE_IN)
+
+
+func zoom_to(target_size: float, duration: float = 0.5) -> void:
+	## Smoothly zoom to a target size and stay there
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "size", target_size, duration).set_ease(Tween.EASE_IN_OUT)
+
+
+func zoom_reset(duration: float = 0.5) -> void:
+	## Smoothly return to default camera_size
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "size", camera_size, duration).set_ease(Tween.EASE_IN_OUT)

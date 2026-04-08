@@ -89,6 +89,12 @@ func start_dialogue(data: Array[Resource]) -> void:
 			return
 	_current_index = 0
 	_panel.visible = true
+	# Cinematic camera zoom (before pause — process_mode allows tween during pause)
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if not players.is_empty():
+		var camera: Camera3D = players[0].get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"zoom_to"):
+			camera.zoom_to(11.0, 0.5)
 	get_tree().paused = true
 	GameManager.set_state(GameManager.GameState.DIALOGUE)
 	EventBus.dialogue_started.emit(&"")
@@ -140,6 +146,12 @@ func _close() -> void:
 	speaker_npc_id = ""
 	get_tree().paused = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
+	# Reset camera zoom
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if not players.is_empty():
+		var camera: Camera3D = players[0].get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"zoom_reset"):
+			camera.zoom_reset(0.5)
 	EventBus.dialogue_ended.emit()
 	dialogue_finished.emit()
 
