@@ -319,6 +319,48 @@ func _add_ambient_particles() -> void:
 
 	add_child(particles)
 
+	# Ground fog layer for depth
+	var fog: GPUParticles3D = GPUParticles3D.new()
+	fog.amount = 30
+	fog.lifetime = 8.0
+	fog.position = Vector3(0, 0.15, 0)
+	fog.visibility_aabb = AABB(Vector3(-plane.size.x / 2, -0.5, -plane.size.y / 2), Vector3(plane.size.x, 1.5, plane.size.y))
+	var fog_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	fog_mat.direction = Vector3(1, 0.1, 0)
+	fog_mat.spread = 180.0
+	fog_mat.initial_velocity_min = 0.05
+	fog_mat.initial_velocity_max = 0.15
+	fog_mat.gravity = Vector3.ZERO
+	fog_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	fog_mat.emission_box_extents = Vector3(plane.size.x / 2 - 0.5, 0.1, plane.size.y / 2 - 0.5)
+	fog_mat.color = Color(0.15, 0.2, 0.3, 0.08)
+	fog_mat.scale_min = 2.0
+	fog_mat.scale_max = 4.0
+	fog.process_material = fog_mat
+	var fog_mesh: SphereMesh = SphereMesh.new()
+	fog_mesh.radius = 0.5
+	fog_mesh.height = 0.3
+	fog.draw_pass_1 = fog_mesh
+	var fog_vis: StandardMaterial3D = StandardMaterial3D.new()
+	fog_vis.albedo_color = Color(0.1, 0.15, 0.25, 0.06)
+	fog_vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fog_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fog.material_override = fog_vis
+	add_child(fog)
+
+	# Flickering accent lights in corners
+	var fog_half_x: float = plane.size.x / 2.0 - 1.5
+	var fog_half_z: float = plane.size.y / 2.0 - 1.5
+	for corner_x: float in [-fog_half_x + 1.0, fog_half_x - 1.0]:
+		for corner_z: float in [-fog_half_z + 1.0, fog_half_z - 1.0]:
+			var point_light: OmniLight3D = OmniLight3D.new()
+			point_light.position = Vector3(corner_x, 1.5, corner_z)
+			point_light.light_color = accent
+			point_light.light_energy = 0.6
+			point_light.omni_range = 3.5
+			point_light.omni_attenuation = 1.8
+			add_child(point_light)
+
 
 func _add_dungeon_props() -> void:
 	var geom: Node = get_node_or_null("Geometry")
