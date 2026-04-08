@@ -550,6 +550,9 @@ func _add_dungeon_props() -> void:
 	var half_x: float = plane.size.x / 2.0 - 1.5
 	var half_z: float = plane.size.y / 2.0 - 1.5
 
+	# Shared sci-fi metal material for tech props (server racks, pipes, terminals)
+	var prop_mat: StandardMaterial3D = _make_tech_prop_material()
+
 	# Wall pipe bundles on all room types
 	var pipe_scene: PackedScene = load("res://assets/models/props/wall_pipes.glb") as PackedScene
 	if pipe_scene:
@@ -564,6 +567,7 @@ func _add_dungeon_props() -> void:
 			else:
 				pipes.position = Vector3(half_x - 0.15, 0, 2.2)
 				pipes.rotation.y = -PI / 2.0
+			_apply_prop_texture(pipes, prop_mat)
 
 	# Server racks along walls (combat and corridor rooms)
 	if room_type in ["combat", "corridor"]:
@@ -579,6 +583,7 @@ func _add_dungeon_props() -> void:
 				else:
 					rack.position = Vector3(half_x, 0, randf_range(-half_z * 0.5, half_z * 0.5))
 					rack.rotation.y = -PI / 2.0
+				_apply_prop_texture(rack, prop_mat)
 
 	# Loot room golden ambient glow
 	if room_type == "loot":
@@ -665,3 +670,67 @@ func _ensure_floor_collision() -> void:
 	shape.position = Vector3(0, -0.05, 0)
 	body.add_child(shape)
 	add_child(body)
+
+
+func _apply_prop_texture(root: Node, prop_mat: StandardMaterial3D) -> void:
+	## Apply the shared brushed-metal prop material to every mesh in a prop
+	## GLB tree, EXCEPT meshes that look like glowing accents (cyan/red emit
+	## colors that should keep their original glowing material).
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var mi: MeshInstance3D = n as MeshInstance3D
+			var existing: Material = mi.get_active_material(0)
+			var keep_glow: bool = false
+			if existing is StandardMaterial3D:
+				var sm: StandardMaterial3D = existing as StandardMaterial3D
+				if sm.emission_enabled and sm.emission_energy_multiplier > 0.5:
+					keep_glow = true
+			if not keep_glow:
+				mi.material_override = prop_mat
+		for c in n.get_children():
+			stack.append(c)
+
+
+static func _make_tech_prop_material() -> StandardMaterial3D:
+	## Brushed dark metal for sci-fi props (server racks, pipes, terminals).
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.32, 0.36, 0.44)
+	# Albedo: Perlin streaks
+	var streak_noise: FastNoiseLite = FastNoiseLite.new()
+	streak_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	streak_noise.frequency = 0.5
+	streak_noise.fractal_octaves = 4
+	var streak_tex: NoiseTexture2D = NoiseTexture2D.new()
+	streak_tex.noise = streak_noise
+	streak_tex.width = 256
+	streak_tex.height = 512  # vertical streaks
+	streak_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.16, 0.18, 0.24))
+	ramp.set_color(1, Color(0.50, 0.56, 0.66))
+	ramp.add_point(0.5, Color(0.30, 0.34, 0.42))
+	streak_tex.color_ramp = ramp
+	mat.albedo_texture = streak_tex
+	# Bumpy normal
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.6
+	bump_noise.cellular_jitter = 0.6
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 256
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 4.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.8
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.8, 0.8, 0.8)
+	mat.metallic = 0.75
+	mat.metallic_specular = 0.6
+	mat.roughness = 0.42
+	return mat
