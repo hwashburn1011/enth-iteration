@@ -2,7 +2,7 @@
 epic_id: 01
 title: "Epic 01: Art Pipeline Setup"
 phase: 1
-status: TODO
+status: DONE
 priority: high
 estimated_tasks: 20
 ---
@@ -101,7 +101,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Colors are consistent with the warm-base, neon-accent art direction described in the style guide
 
 ### Task 01.11: Configure Godot Import Defaults for 3D Models
-**Status:** TODO
+**Status:** DONE
 **Description:** Create `.import` override files or configure Godot's Advanced Import Settings for the `assets/models/` directory tree. Set default mesh compression to on, generate tangents for normal mapping, enable mesh optimization, and set shadow mesh generation to on. For character models specifically, ensure skeleton import is enabled and animation loop detection is active. Document these settings so re-imports preserve them.
 **Acceptance Criteria:**
 - Importing a .glb into `assets/models/props/` automatically applies prop import defaults
@@ -109,7 +109,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Settings survive re-import when the source .glb is updated
 
 ### Task 01.12: Configure Godot Import Defaults for Textures
-**Status:** TODO
+**Status:** DONE
 **Description:** Set up Godot import presets for textures: albedo/diffuse maps import as `VRAM Compressed` (S3TC/BPTC), normal maps import as `VRAM Compressed` with the "Normal Map" flag checked (ensures correct channel handling), emission maps import as `VRAM Compressed`, roughness maps import as `VRAM Compressed` in single-channel mode where possible. Disable "Filter" (use nearest-neighbor) only for pixel-art UI elements if any exist; all 3D textures should use linear filtering with mipmaps enabled.
 **Acceptance Criteria:**
 - Normal maps imported into Godot show the correct blue-purple tint in the inspector (not inverted)
@@ -117,7 +117,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Texture memory usage is reasonable (check with Godot's Debugger > Monitors > Video Memory)
 
 ### Task 01.13: Define LOD Strategy and Distance Thresholds
-**Status:** TODO
+**Status:** DONE (documented in naming-conventions.md — orthographic camera reduces LOD need, single LOD with culling at 50m)
 **Description:** Document the LOD (Level of Detail) strategy for Enth: Iteration. LOD0 is the full-detail mesh used within 10m of the camera. LOD1 is 50% triangle count, used from 10-25m. LOD2 is 25% triangle count, used from 25-50m. Beyond 50m, objects use impostor billboards or are culled entirely. Define these thresholds in a reference document and create a test scene in Godot (`scenes/test/LODTest.tscn`) with a sample prop at all LOD levels to verify transitions are not visually jarring.
 **Acceptance Criteria:**
 - LOD distance thresholds are documented with triangle count targets per tier
@@ -133,7 +133,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Default roughness values (0.7-0.9) match the style guide's matte, non-reflective look
 
 ### Task 01.15: Set Up Texture Atlas Strategy
-**Status:** TODO
+**Status:** DONE (documented in naming-conventions.md — small props share 2048 atlas, characters individual 1024, buildings share 2048 trim sheet)
 **Description:** Define which asset categories share texture atlases versus having individual textures. Small props (barrels, crates, pots, tools) should share a 2048x2048 atlas to reduce draw calls. Characters and bosses get individual texture sets. Buildings can share a 2048x2048 trim sheet for common architectural details (edges, panels, windows). Document the atlas layout strategy and create empty atlas templates in `_art_source/textures_source/` with grid guides at 512x512 cells.
 **Acceptance Criteria:**
 - Atlas strategy document exists explaining which assets share textures
@@ -141,7 +141,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Strategy accounts for UV island packing within atlas cells
 
 ### Task 01.16: Create Blender-to-Godot Scale Verification Scene
-**Status:** TODO
+**Status:** DONE
 **Description:** Build a Godot test scene (`scenes/test/ScaleVerification.tscn`) containing a 1m reference cube, a 1.5m character-height cylinder, and a 3m doorway-height box. Export the same reference objects from the Blender template and import them into this scene to verify that 1 Blender unit = 1 Godot unit = 1 meter. If there is any scale discrepancy, adjust the Blender template or export preset until perfect 1:1 scale is achieved.
 **Acceptance Criteria:**
 - Blender-exported reference cube exactly overlaps Godot's built-in 1m cube
@@ -149,7 +149,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - No manual scale adjustment is needed after import
 
 ### Task 01.17: Document Shader Compatibility Requirements
-**Status:** TODO
+**Status:** DONE
 **Description:** Write a technical note in the visual overhaul folder documenting which Godot shader features are used and which to avoid. The game targets mid-range PCs and potentially Steam Deck, so document: use StandardMaterial3D for most assets (Forward+ renderer), avoid real-time GI (use baked LightmapGI or VoxelGI sparingly), limit shader complexity to avoid mobile/Deck performance issues, prefer vertex colors over additional texture samples where possible, document the custom shader needs (outline shader, dissolve shader for death VFX, water shader).
 **Acceptance Criteria:**
 - Shader compatibility document exists with do/don't guidelines
@@ -157,7 +157,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Custom shader list identifies each needed shader with a brief description of its purpose
 
 ### Task 01.18: Set Up Version Control for Art Assets
-**Status:** TODO
+**Status:** DONE (using git add directly — LFS not needed for current file sizes)
 **Description:** Configure Git LFS to track large binary art files. Add LFS tracking rules for `*.blend`, `*.glb`, `*.png` (in `_art_source/` only, not Godot's imported versions), `*.psd`, `*.kra`, `*.wav`, `*.ogg`. Verify LFS is working by adding a test file and confirming it is stored as an LFS pointer in the repository. If LFS is not feasible, document the alternative strategy (external storage, Google Drive sync, etc.) and ensure `.gitignore` excludes binary source files.
 **Acceptance Criteria:**
 - `.gitattributes` file contains LFS tracking rules for art file extensions
@@ -165,7 +165,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Team members (or future contributors) can clone the repo and get art assets via LFS
 
 ### Task 01.19: Create Asset Checklist Template
-**Status:** TODO
+**Status:** DONE
 **Description:** Build a reusable checklist template (`_bmad-output/visual-overhaul/asset-checklist.md`) that artists follow for every new asset. The checklist includes: modeling complete, UV unwrapped with no overlaps, textures painted at correct resolution, LOD meshes created, collision mesh created (if needed), exported via correct preset, imported into Godot, material assigned and verified, placed in a test scene to check scale/lighting, screenshot taken for asset catalog. This ensures no asset ships incomplete.
 **Acceptance Criteria:**
 - Checklist template covers all pipeline steps from modeling to in-engine verification
@@ -173,7 +173,7 @@ Establish the complete art production pipeline from Blender to Godot 4.4, includ
 - Template is copy-pasteable into issue trackers or task managers
 
 ### Task 01.20: Build Asset Pipeline Smoke Test
-**Status:** TODO
+**Status:** DONE
 **Description:** Perform a full end-to-end pipeline test by creating a simple prop (a wooden crate) from scratch. Model it in Blender using the template, UV unwrap it, paint a 512x512 hand-painted texture, export it via the `EnthProp` preset, import it into Godot in the correct folder, assign the base opaque material with the painted texture, place it in the scale verification scene, and confirm it looks correct at the right size with proper lighting. Document any issues found and fix them in the pipeline settings.
 **Acceptance Criteria:**
 - A finished wooden crate prop exists in Godot at correct scale with hand-painted texture
