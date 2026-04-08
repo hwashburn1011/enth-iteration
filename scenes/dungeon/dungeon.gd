@@ -150,12 +150,44 @@ func _load_floor(index: int) -> void:
 
 
 func _on_floor_completed(floor_number: int) -> void:
-	push_warning("Dungeon: floor %d completed" % floor_number)
 	_current_floor_index += 1
+	# Floor clear celebration
+	_show_floor_clear_banner(floor_number)
 	if _current_floor_index < FLOOR_DATA_PATHS.size():
+		# Brief pause before loading next floor
+		await get_tree().create_timer(2.0).timeout
 		_load_floor(_current_floor_index)
 	else:
-		push_warning("Dungeon: all floors cleared — returning to town")
+		await get_tree().create_timer(2.0).timeout
 		EventBus.returned_to_town.emit()
 		GameManager.set_meta(&"town_entry_type", "portal_return")
 		GameManager.change_scene_to("res://scenes/town/Town.tscn")
+
+
+func _show_floor_clear_banner(floor_number: int) -> void:
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 85
+	var label: Label = Label.new()
+	label.text = "FLOOR %d CLEARED" % floor_number
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.offset_left = -200
+	label.offset_right = 200
+	label.offset_top = -30
+	label.offset_bottom = 30
+	label.add_theme_font_size_override(&"font_size", 36)
+	label.add_theme_color_override(&"font_color", Color(0.3, 0.9, 0.8, 0.0))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(label)
+	add_child(canvas)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "theme_override_colors/font_color:a", 1.0, 0.3)
+	tween.tween_property(label, "scale", Vector2(1.15, 1.15), 0.1)
+	tween.tween_property(label, "scale", Vector2(1.0, 1.0), 0.1)
+	tween.tween_interval(1.2)
+	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.5)
+	tween.tween_callback(canvas.queue_free)
+	# VFX burst at player position
+	if _player and _player.is_inside_tree():
+		VFXFactory.spawn_level_up_effect(_player.global_position, get_tree().current_scene)
