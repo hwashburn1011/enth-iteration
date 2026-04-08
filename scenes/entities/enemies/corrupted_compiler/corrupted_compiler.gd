@@ -34,18 +34,61 @@ func _register_with_hud() -> void:
 		for node: Node in get_tree().root.get_children():
 			if node.has_method(&"show_boss_bar"):
 				node.show_boss_bar(self, "CORRUPTED COMPILER")
-				return
+				break
 		# Search deeper
 		var root: Node = get_tree().current_scene
 		if root:
 			for child: Node in root.get_children():
 				if child.has_method(&"show_boss_bar"):
 					child.show_boss_bar(self, "CORRUPTED COMPILER")
-					return
+					break
 	else:
 		var hud: Node = hud_nodes[0]
 		if hud.has_method(&"show_boss_bar"):
 			hud.show_boss_bar(self, "CORRUPTED COMPILER")
+	# Dramatic intro effects
+	_play_boss_intro()
+
+
+func _play_boss_intro() -> void:
+	## Dramatic boss encounter intro: screen shake + slow-mo + pulsing light
+	if not is_inside_tree():
+		return
+	# Brief global hitstop
+	Engine.time_scale = 0.4
+	get_tree().create_timer(0.5, true, false, true).timeout.connect(func() -> void:
+		Engine.time_scale = 1.0
+	)
+	# Find player camera and shake it
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if not players.is_empty():
+		var player: Node = players[0]
+		var camera: Camera3D = player.get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"shake"):
+			camera.shake(0.3, 3.0)
+	# Red ground shockwave emanating from boss
+	var shock: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.5
+	torus.outer_radius = 0.8
+	torus.rings = 16
+	torus.ring_segments = 20
+	shock.mesh = torus
+	shock.global_position = global_position + Vector3(0, 0.1, 0)
+	shock.scale = Vector3(0.5, 0.5, 0.5)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.9, 0.1, 0.05, 0.8)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.85, 0.1, 0.03)
+	mat.emission_energy_multiplier = 4.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shock.material_override = mat
+	get_tree().current_scene.add_child(shock)
+	var tween: Tween = shock.create_tween()
+	tween.tween_property(shock, "scale", Vector3(8.0, 1.0, 8.0), 1.2).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 1.5)
+	tween.tween_callback(shock.queue_free)
 
 
 func _build_enemy_visual() -> void:
