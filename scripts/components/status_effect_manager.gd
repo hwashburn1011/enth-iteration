@@ -10,11 +10,17 @@ var _label: Label3D = null
 
 
 func _ready() -> void:
-	# Create overhead status label
+	# Create overhead status label — outlined so it reads against any backdrop
 	_label = Label3D.new()
 	_label.position = Vector3(0, 2.2, 0)
-	_label.font_size = 32
+	_label.font_size = 22
 	_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_label.modulate = Color(0.95, 0.6, 0.3)
+	_label.outline_modulate = Color(0, 0, 0, 0.95)
+	_label.outline_size = 5
+	_label.no_depth_test = true
+	_label.fixed_size = true
+	_label.pixel_size = 0.0035
 	_label.visible = false
 	get_parent().add_child.call_deferred(_label)
 
