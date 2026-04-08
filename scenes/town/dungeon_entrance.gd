@@ -132,12 +132,14 @@ func _show_confirmation() -> void:
 	yes_btn.text = "Yes"
 	yes_btn.custom_minimum_size = Vector2(100, 36)
 	yes_btn.pressed.connect(_on_yes_pressed.bind(canvas))
+	_style_confirm_button(yes_btn, true)
 	hbox.add_child(yes_btn)
 
 	var no_btn: Button = Button.new()
 	no_btn.text = "No"
 	no_btn.custom_minimum_size = Vector2(100, 36)
 	no_btn.pressed.connect(_on_no_pressed.bind(canvas))
+	_style_confirm_button(no_btn, false)
 	hbox.add_child(no_btn)
 
 	vbox.add_child(hbox)
@@ -158,3 +160,27 @@ func _on_no_pressed(canvas: CanvasLayer) -> void:
 	canvas.queue_free()
 	_confirm_ui = null
 	GameManager.set_state(GameManager.GameState.PLAYING)
+
+
+func _style_confirm_button(btn: Button, is_confirm: bool) -> void:
+	var accent: Color = Color(0.2, 0.6, 0.9) if is_confirm else Color(0.5, 0.4, 0.35)
+	var normal: StyleBoxFlat = StyleBoxFlat.new()
+	normal.bg_color = Color(0.1, 0.12, 0.2, 0.9)
+	normal.border_color = Color(accent.r * 0.6, accent.g * 0.6, accent.b * 0.6, 0.6)
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(4)
+	normal.set_content_margin_all(8)
+	var hover: StyleBoxFlat = StyleBoxFlat.new()
+	hover.bg_color = Color(0.14, 0.16, 0.28, 0.95)
+	hover.border_color = accent
+	hover.set_border_width_all(2)
+	hover.set_corner_radius_all(4)
+	hover.set_content_margin_all(8)
+	var focus: StyleBoxFlat = hover.duplicate() as StyleBoxFlat
+	focus.set_border_width_all(3)
+	btn.add_theme_stylebox_override(&"normal", normal)
+	btn.add_theme_stylebox_override(&"hover", hover)
+	btn.add_theme_stylebox_override(&"focus", focus)
+	btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
+	btn.add_theme_color_override(&"font_hover_color", accent)
+	btn.add_theme_font_size_override(&"font_size", 18)
