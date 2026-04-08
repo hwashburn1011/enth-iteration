@@ -130,10 +130,37 @@ func _fire_projectile(enemy: CharacterBody3D) -> void:
 	# Add to tree FIRST, then set position
 	enemy.get_tree().current_scene.add_child(projectile)
 	projectile.global_position = enemy.global_position + Vector3(0, 0.5, 0)
+	# Muzzle flash at enemy
+	_spawn_muzzle_flash(enemy)
 	# Track projectile on enemy for cleanup when pooled
 	if not enemy.has_meta(&"active_projectiles"):
 		enemy.set_meta(&"active_projectiles", [])
 	(enemy.get_meta(&"active_projectiles") as Array).append(projectile)
+
+
+func _spawn_muzzle_flash(enemy: CharacterBody3D) -> void:
+	if not enemy.is_inside_tree():
+		return
+	# Bright green flash sphere at projectile spawn point
+	var flash: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.3
+	sphere.height = 0.6
+	flash.mesh = sphere
+	flash.global_position = enemy.global_position + Vector3(0, 0.5, 0)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.3, 1.0, 0.4, 0.8)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.25, 0.95, 0.35)
+	mat.emission_energy_multiplier = 4.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flash.material_override = mat
+	enemy.get_tree().current_scene.add_child(flash)
+	var tween: Tween = flash.create_tween()
+	tween.tween_property(flash, "scale", Vector3(2.0, 2.0, 2.0), 0.15)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.18)
+	tween.tween_callback(flash.queue_free)
 
 
 func _set_glow(enemy: CharacterBody3D, glow: bool) -> void:
