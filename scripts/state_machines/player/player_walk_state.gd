@@ -14,12 +14,37 @@ func enter() -> void:
 
 func handle_input(event: InputEvent) -> void:
 	var p = player
-	if event.is_action_pressed(&"dash") and p.can_dash:
-		state_machine.transition_to(state_machine.get_node("DashState") as Node)
-	elif event.is_action_pressed(&"attack_primary") and p.can_attack:
-		state_machine.transition_to(state_machine.get_node("AttackState") as Node)
-	elif event.is_action_pressed(&"attack_secondary") and p.can_attack:
-		state_machine.transition_to(state_machine.get_node("ChargeState") as Node)
+	if event.is_action_pressed(&"dash"):
+		if p.can_dash:
+			state_machine.transition_to(state_machine.get_node("DashState") as Node)
+		else:
+			_flash_cooldown(p)
+	elif event.is_action_pressed(&"attack_primary"):
+		if p.can_attack:
+			state_machine.transition_to(state_machine.get_node("AttackState") as Node)
+		else:
+			_flash_cooldown(p)
+	elif event.is_action_pressed(&"attack_secondary"):
+		if p.can_attack:
+			state_machine.transition_to(state_machine.get_node("ChargeState") as Node)
+		else:
+			_flash_cooldown(p)
+
+
+func _flash_cooldown(p: CharacterBody3D) -> void:
+	## Brief red flash on highlight ring when ability is on cooldown
+	if not p.is_inside_tree():
+		return
+	var ring: MeshInstance3D = p.get_node_or_null("HighlightRing") as MeshInstance3D
+	if ring == null or not is_instance_valid(ring):
+		return
+	var mat: StandardMaterial3D = ring.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	var original_color: Color = mat.albedo_color
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(mat, "albedo_color", Color(0.95, 0.3, 0.1, 0.6), 0.05)
+	tween.tween_property(mat, "albedo_color", original_color, 0.2)
 
 
 func physics_update(delta: float) -> void:
