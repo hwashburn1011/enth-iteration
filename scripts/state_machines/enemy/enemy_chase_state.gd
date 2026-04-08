@@ -5,8 +5,16 @@ extends "res://scripts/state_machines/state.gd"
 var _leash_timer: float = 0.0
 
 
+var _initial_burst: bool = false
+var _burst_timer: float = 0.0
+const BURST_DURATION: float = 0.3
+const BURST_SPEED_MULT: float = 1.4
+
+
 func enter() -> void:
 	_leash_timer = 0.0
+	_initial_burst = true
+	_burst_timer = 0.0
 	var enemy = player
 	if enemy and enemy.animation_player.has_animation(&"walk"):
 		enemy.animation_player.play(&"walk")
@@ -36,7 +44,14 @@ func physics_update(delta: float) -> void:
 	var next_pos: Vector3 = enemy.navigation_agent.get_next_path_position()
 	var direction: Vector3 = (next_pos - enemy.global_position).normalized()
 	direction.y = 0.0
-	enemy.velocity = direction * enemy.move_speed
+	# Brief speed burst when first entering chase
+	var speed: float = enemy.move_speed
+	if _initial_burst:
+		_burst_timer += delta
+		speed *= BURST_SPEED_MULT
+		if _burst_timer >= BURST_DURATION:
+			_initial_burst = false
+	enemy.velocity = direction * speed
 	enemy.move_and_slide()
 
 	if direction.length() > 0.1:
