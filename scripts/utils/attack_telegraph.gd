@@ -71,7 +71,7 @@ static func show_line(origin: Vector3, direction: Vector3, length: float, width:
 	return indicator
 
 
-static func show_cone(origin: Vector3, direction: Vector3, radius: float, angle_deg: float, duration: float, parent: Node) -> MeshInstance3D:
+static func show_cone(origin: Vector3, direction: Vector3, radius: float, _angle_deg: float, duration: float, parent: Node) -> MeshInstance3D:
 	## Fan-shaped indicator for sweeping/cone attacks.
 	## Uses a flattened cylinder segment approximation.
 	var indicator: MeshInstance3D = MeshInstance3D.new()
