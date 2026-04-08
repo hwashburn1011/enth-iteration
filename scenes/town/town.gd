@@ -421,11 +421,50 @@ func _add_path(parent: Node3D, pos: Vector3, size: Vector3) -> void:
 	var path: CSGBox3D = CSGBox3D.new()
 	path.size = size
 	path.position = pos
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.65, 0.58, 0.48)
-	mat.roughness = 0.95
-	path.material = mat
+	path.material = _make_dirt_path_material()
 	parent.add_child(path)
+
+
+static func _make_dirt_path_material() -> StandardMaterial3D:
+	## Compacted dirt path with subtle pebble noise.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.62, 0.52, 0.38)
+	# Albedo: warm dirt with pebble specks
+	var dirt_noise: FastNoiseLite = FastNoiseLite.new()
+	dirt_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	dirt_noise.frequency = 0.4
+	dirt_noise.fractal_octaves = 4
+	var dirt_tex: NoiseTexture2D = NoiseTexture2D.new()
+	dirt_tex.noise = dirt_noise
+	dirt_tex.width = 512
+	dirt_tex.height = 512
+	dirt_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.42, 0.32, 0.20))
+	ramp.set_color(1, Color(0.78, 0.66, 0.48))
+	ramp.add_point(0.5, Color(0.60, 0.50, 0.34))
+	dirt_tex.color_ramp = ramp
+	mat.albedo_texture = dirt_tex
+	# Pebble bump
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.7
+	bump_noise.cellular_jitter = 0.85
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 4.5
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.85
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(1.5, 1.5, 1.5)
+	mat.metallic = 0.0
+	mat.roughness = 0.95
+	return mat
 
 
 func _add_roof(building: CSGBox3D) -> void:
