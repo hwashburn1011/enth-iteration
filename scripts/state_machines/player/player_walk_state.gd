@@ -61,9 +61,17 @@ func _spawn_footstep_dust(p: CharacterBody3D) -> void:
 	sphere.height = 0.06
 	dust.mesh = sphere
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.6, 0.55, 0.45, 0.4)
+	# Use floor accent color if in dungeon, otherwise warm dust
+	var dust_color: Color = Color(0.6, 0.55, 0.45, 0.4)
+	if GameManager.has_meta(&"floor_accent_color"):
+		var accent: Color = GameManager.get_meta(&"floor_accent_color") as Color
+		dust_color = Color(accent.r * 0.6 + 0.3, accent.g * 0.6 + 0.3, accent.b * 0.6 + 0.3, 0.4)
+	mat.albedo_color = dust_color
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.emission_enabled = true
+	mat.emission = Color(dust_color.r * 0.5, dust_color.g * 0.5, dust_color.b * 0.5)
+	mat.emission_energy_multiplier = 0.6
 	dust.material_override = mat
 	p.get_tree().current_scene.add_child(dust)
 	dust.global_position = p.global_position + Vector3(randf_range(-0.15, 0.15), 0.05, randf_range(-0.15, 0.15))
