@@ -31,6 +31,7 @@ var _boss_name_label: Label = null
 var _boss_ref: Node = null
 var _controls_hint: PanelContainer = null
 var _prompt_indicator_root: Control = null
+var _room_panel: PanelContainer = null
 
 
 func _ready() -> void:
@@ -273,8 +274,8 @@ func set_combat_visible(combat: bool) -> void:
 			p = p.get_parent()
 		if p is Control:
 			(p as Control).visible = combat
-	if _room_label:
-		_room_label.visible = combat
+	if _room_panel:
+		_room_panel.visible = combat and not _room_label.text.is_empty() if _room_label else combat
 	if _controls_hint and is_instance_valid(_controls_hint):
 		_controls_hint.visible = combat
 	if _streak_label and is_instance_valid(_streak_label):
@@ -284,17 +285,32 @@ func set_combat_visible(combat: bool) -> void:
 
 
 func _create_room_indicator() -> void:
+	# Styled chip panel in the top-right corner
+	_room_panel = PanelContainer.new()
+	_room_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_room_panel.offset_left = -220.0
+	_room_panel.offset_top = 14.0
+	_room_panel.offset_right = -14.0
+	_room_panel.offset_bottom = 46.0
+	var room_style: StyleBoxFlat = StyleBoxFlat.new()
+	room_style.bg_color = Color(0.05, 0.07, 0.12, 0.85)
+	room_style.border_color = Color(0.18, 0.45, 0.55, 0.7)
+	room_style.set_border_width_all(1)
+	room_style.border_width_left = 4
+	room_style.set_corner_radius_all(4)
+	room_style.set_content_margin_all(6)
+	_room_panel.add_theme_stylebox_override(&"panel", room_style)
+	_room_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_room_panel.visible = false  # hidden until set
 	_room_label = Label.new()
 	_room_label.text = ""
-	_room_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_room_label.offset_left = -180.0
-	_room_label.offset_top = 16.0
-	_room_label.offset_right = -16.0
-	_room_label.offset_bottom = 40.0
 	_room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_room_label.add_theme_color_override(&"font_color", Color(0.6, 0.7, 0.8))
+	_room_label.add_theme_color_override(&"font_color", Color(0.65, 0.85, 0.9))
+	_room_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_room_label.add_theme_constant_override(&"outline_size", 2)
 	_room_label.add_theme_font_size_override(&"font_size", 14)
-	_container.add_child(_room_label)
+	_room_panel.add_child(_room_label)
+	_container.add_child(_room_panel)
 	# Connect to floor manager signals
 	EventBus.floor_completed.connect(_on_floor_completed_hud)
 	EventBus.scene_changed.connect(_on_scene_changed_hud)
@@ -303,16 +319,22 @@ func _create_room_indicator() -> void:
 func update_room_indicator(room_index: int, total_rooms: int, floor_name: String) -> void:
 	if _room_label:
 		_room_label.text = "%s — Room %d/%d" % [floor_name, room_index + 1, total_rooms]
+	if _room_panel:
+		_room_panel.visible = true
 
 
 func _on_floor_completed_hud(_floor_num: int) -> void:
 	if _room_label:
 		_room_label.text = "Floor Complete!"
+	if _room_panel:
+		_room_panel.visible = true
 
 
 func _on_scene_changed_hud(_path: String) -> void:
 	if _room_label:
 		_room_label.text = ""
+	if _room_panel:
+		_room_panel.visible = false
 
 
 var _last_health: float = -1.0
