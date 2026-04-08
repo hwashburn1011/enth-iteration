@@ -182,15 +182,25 @@ func _show_tooltip(item: Resource) -> void:
 		_tooltip.queue_free()
 	_tooltip = PanelContainer.new()
 	_tooltip.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
-	_tooltip.offset_left = -250.0
-	_tooltip.offset_top = -100.0
-	_tooltip.offset_right = -10.0
-	_tooltip.offset_bottom = 100.0
+	_tooltip.offset_left = -260.0
+	_tooltip.offset_top = -120.0
+	_tooltip.offset_right = -16.0
+	_tooltip.offset_bottom = 120.0
+	# Sci-fi panel style for tooltip
+	var tooltip_style: StyleBoxFlat = StyleBoxFlat.new()
+	tooltip_style.bg_color = Color(0.05, 0.06, 0.12, 0.95)
+	tooltip_style.border_color = RARITY_COLORS[clampi(item.rarity, 0, 3)]
+	tooltip_style.set_border_width_all(2)
+	tooltip_style.set_corner_radius_all(5)
+	tooltip_style.set_content_margin_all(12)
+	_tooltip.add_theme_stylebox_override(&"panel", tooltip_style)
 
 	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override(&"separation", 6)
 	var name_label: Label = Label.new()
 	name_label.text = item.item_name
-	name_label.modulate = RARITY_COLORS[clampi(item.rarity, 0, 3)]
+	name_label.add_theme_color_override(&"font_color", RARITY_COLORS[clampi(item.rarity, 0, 3)])
+	name_label.add_theme_font_size_override(&"font_size", 18)
 	vbox.add_child(name_label)
 
 	var type_label: Label = Label.new()
