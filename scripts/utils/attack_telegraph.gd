@@ -10,7 +10,6 @@ static func show_circle(position: Vector3, radius: float, duration: float, paren
 	var mesh: PlaneMesh = PlaneMesh.new()
 	mesh.size = Vector2(radius * 2.0, radius * 2.0)
 	indicator.mesh = mesh
-	indicator.global_position = position + Vector3(0, 0.05, 0)
 	indicator.rotation.x = 0  # Flat on ground
 
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
@@ -23,6 +22,7 @@ static func show_circle(position: Vector3, radius: float, duration: float, paren
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	indicator.material_override = mat
 	parent.add_child(indicator)
+	indicator.global_position = position + Vector3(0, 0.05, 0)
 
 	# Animate: fade in while pulsing, then disappear
 	indicator.scale = Vector3(0.1, 1.0, 0.1)
@@ -43,9 +43,6 @@ static func show_line(origin: Vector3, direction: Vector3, length: float, width:
 	var mesh: PlaneMesh = PlaneMesh.new()
 	mesh.size = Vector2(width, length)
 	indicator.mesh = mesh
-	# Position at midpoint along direction
-	var mid: Vector3 = origin + direction.normalized() * (length * 0.5)
-	indicator.global_position = mid + Vector3(0, 0.05, 0)
 	# Rotate to face direction
 	var angle: float = atan2(direction.x, direction.z)
 	indicator.rotation = Vector3(0, angle, 0)
@@ -60,6 +57,9 @@ static func show_line(origin: Vector3, direction: Vector3, length: float, width:
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	indicator.material_override = mat
 	parent.add_child(indicator)
+	# Position AFTER add_child (Position at midpoint along direction)
+	var mid: Vector3 = origin + direction.normalized() * (length * 0.5)
+	indicator.global_position = mid + Vector3(0, 0.05, 0)
 
 	# Animate
 	var tween: Tween = indicator.create_tween()
@@ -78,7 +78,6 @@ static func show_cone(origin: Vector3, direction: Vector3, radius: float, _angle
 	var mesh: PlaneMesh = PlaneMesh.new()
 	mesh.size = Vector2(radius * 2.0, radius)
 	indicator.mesh = mesh
-	indicator.global_position = origin + direction.normalized() * (radius * 0.4) + Vector3(0, 0.05, 0)
 	var face_angle: float = atan2(direction.x, direction.z)
 	indicator.rotation = Vector3(0, face_angle, 0)
 
@@ -92,6 +91,7 @@ static func show_cone(origin: Vector3, direction: Vector3, radius: float, _angle
 	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	indicator.material_override = mat
 	parent.add_child(indicator)
+	indicator.global_position = origin + direction.normalized() * (radius * 0.4) + Vector3(0, 0.05, 0)
 
 	indicator.scale = Vector3(0.1, 1.0, 0.1)
 	var tween: Tween = indicator.create_tween()
