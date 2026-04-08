@@ -87,6 +87,11 @@ func physics_update(delta: float) -> void:
 			_spawn_attack_arc(p)
 			if _is_energy_burst:
 				_spawn_burst_shockwave(p)
+			else:
+				# Subtle screen shake on basic attack
+				var camera: Camera3D = p.get_viewport().get_camera_3d()
+				if camera and camera.has_method(&"shake"):
+					camera.shake(0.04, 12.0)
 		# Poll for overlaps each frame (area_entered may not fire if already overlapping)
 		_poll_hitbox_overlaps(p)
 	elif _hitbox_enabled:
