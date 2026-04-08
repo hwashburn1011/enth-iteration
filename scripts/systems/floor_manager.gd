@@ -77,6 +77,8 @@ func _transition_to_room(index: int) -> void:
 
 	# Show room name briefly
 	_show_room_name()
+	# Brief environmental light pulse on room entry
+	_pulse_environment_light()
 
 
 func _on_room_exit() -> void:
@@ -149,6 +151,22 @@ func _show_room_name() -> void:
 	tween.tween_interval(1.5)
 	tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.5)
 	tween.tween_callback(canvas.queue_free)
+
+
+func _pulse_environment_light() -> void:
+	## Brief ambient light pulse when entering a new room
+	var world_env: WorldEnvironment = null
+	for child: Node in _dungeon_root.get_children():
+		if child is WorldEnvironment:
+			world_env = child as WorldEnvironment
+			break
+	if world_env == null or world_env.environment == null:
+		return
+	var env: Environment = world_env.environment
+	var original_energy: float = env.ambient_light_energy
+	var tween: Tween = create_tween()
+	tween.tween_property(env, "ambient_light_energy", original_energy * 1.6, 0.15)
+	tween.tween_property(env, "ambient_light_energy", original_energy, 0.4)
 
 
 func _fade(from: float, to: float, duration: float) -> void:
