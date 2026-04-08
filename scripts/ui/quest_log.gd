@@ -57,6 +57,7 @@ func _build_ui() -> void:
 		var btn: Button = Button.new()
 		btn.text = cat.capitalize()
 		btn.pressed.connect(_on_category_selected.bind(cat))
+		_style_tab_button(btn)
 		tabs.add_child(btn)
 	hbox.add_child(tabs)
 
@@ -109,6 +110,13 @@ func _populate_quests() -> void:
 
 func _create_quest_entry(quest: QuestData, is_done: bool) -> PanelContainer:
 	var entry: PanelContainer = PanelContainer.new()
+	var entry_style: StyleBoxFlat = StyleBoxFlat.new()
+	entry_style.bg_color = Color(0.06, 0.07, 0.14, 0.8) if not is_done else Color(0.04, 0.05, 0.08, 0.6)
+	entry_style.border_color = Color(0.12, 0.3, 0.4, 0.5) if not is_done else Color(0.1, 0.15, 0.2, 0.3)
+	entry_style.set_border_width_all(1)
+	entry_style.set_corner_radius_all(4)
+	entry_style.set_content_margin_all(8)
+	entry.add_theme_stylebox_override(&"panel", entry_style)
 	var vbox: VBoxContainer = VBoxContainer.new()
 
 	var name_lbl: Label = Label.new()
@@ -141,3 +149,26 @@ func _close() -> void:
 	get_tree().paused = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	queue_free()
+
+
+func _style_tab_button(btn: Button) -> void:
+	var normal: StyleBoxFlat = StyleBoxFlat.new()
+	normal.bg_color = Color(0.08, 0.1, 0.18, 0.9)
+	normal.border_color = Color(0.15, 0.35, 0.45, 0.5)
+	normal.set_border_width_all(1)
+	normal.set_corner_radius_all(4)
+	normal.set_content_margin_all(8)
+	var hover: StyleBoxFlat = StyleBoxFlat.new()
+	hover.bg_color = Color(0.12, 0.15, 0.28, 0.95)
+	hover.border_color = Color(0.25, 0.6, 0.7, 0.8)
+	hover.set_border_width_all(1)
+	hover.set_corner_radius_all(4)
+	hover.set_content_margin_all(8)
+	var focus: StyleBoxFlat = hover.duplicate() as StyleBoxFlat
+	focus.set_border_width_all(2)
+	btn.add_theme_stylebox_override(&"normal", normal)
+	btn.add_theme_stylebox_override(&"hover", hover)
+	btn.add_theme_stylebox_override(&"focus", focus)
+	btn.add_theme_color_override(&"font_color", Color(0.7, 0.75, 0.8))
+	btn.add_theme_color_override(&"font_hover_color", Color(0.3, 0.85, 0.8))
+	btn.add_theme_font_size_override(&"font_size", 16)
