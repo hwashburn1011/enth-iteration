@@ -19,11 +19,13 @@ func enter() -> void:
 	_hitbox_enabled = false
 
 	# Face the player
+	var attack_dir: Vector3 = Vector3.FORWARD
 	if enemy.target_player:
 		var dir: Vector3 = (enemy.target_player.global_position - enemy.global_position).normalized()
 		dir.y = 0.0
 		if dir.length() > 0.1:
 			enemy.model.rotation.y = atan2(dir.x, dir.z)
+			attack_dir = dir
 
 	enemy.velocity = Vector3.ZERO
 	if enemy.animation_player.has_animation(&"attack"):
@@ -31,6 +33,15 @@ func enter() -> void:
 
 	enemy.hitbox_component.set_meta(&"base_damage", base_damage)
 	enemy.hitbox_component.set_meta(&"damage_type", &"physical")
+
+	# Attack telegraph: show ground indicator during wind-up
+	if enemy.is_inside_tree():
+		AttackTelegraph.show_circle(
+			enemy.global_position + attack_dir * 1.0,
+			enemy.attack_range * 0.6,
+			HITBOX_START,
+			enemy.get_tree().current_scene
+		)
 
 
 func physics_update(delta: float) -> void:

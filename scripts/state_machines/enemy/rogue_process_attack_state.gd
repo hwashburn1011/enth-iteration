@@ -53,6 +53,22 @@ func enter() -> void:
 
 	enemy.hitbox_component.set_meta(&"damage_type", &"physical")
 
+	# Ground telegraph based on attack pattern
+	if enemy.is_inside_tree() and _attack_dir.length() > 0.1:
+		var telegraph_time: float = DASH_TELEGRAPH if _current_pattern == AttackPattern.DASH_STRIKE else FLURRY_TELEGRAPH
+		if _current_pattern == AttackPattern.DASH_STRIKE:
+			AttackTelegraph.show_line(
+				enemy.global_position, _attack_dir,
+				DASH_DISTANCE, 1.2, telegraph_time,
+				enemy.get_tree().current_scene
+			)
+		else:
+			AttackTelegraph.show_circle(
+				enemy.global_position,
+				enemy.attack_range * 0.8, telegraph_time,
+				enemy.get_tree().current_scene
+			)
+
 	if enemy.animation_player.has_animation(&"attack"):
 		enemy.animation_player.play(&"attack")
 

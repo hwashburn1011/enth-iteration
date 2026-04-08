@@ -37,6 +37,17 @@ func enter() -> void:
 	# Start telegraph — red flash
 	_set_telegraph_flash(enemy, true)
 
+	# Ground telegraph: line indicator for lunge direction
+	if enemy.is_inside_tree() and _lunge_dir.length() > 0.1:
+		AttackTelegraph.show_line(
+			enemy.global_position,
+			_lunge_dir,
+			3.0,  # lunge distance
+			1.0,  # width
+			TELEGRAPH_DURATION,
+			enemy.get_tree().current_scene
+		)
+
 	if enemy.animation_player.has_animation(&"attack"):
 		enemy.animation_player.play(&"attack")
 

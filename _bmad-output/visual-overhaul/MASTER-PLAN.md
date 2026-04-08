@@ -43,7 +43,7 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 13](epic-13-rogueprocess-full.md) — RogueProcess Full Rebuild ✅ DONE
 - [Epic 14](epic-14-corrupted-compiler-full.md) — Corrupted Compiler Boss Full Rebuild ✅ DONE
 - [Epic 15](epic-15-enemy-shared-vfx.md) — Enemy Shared VFX (spawn, death, hit reactions) ✅ DONE
-- [Epic 16](epic-16-enemy-ai-polish.md) — Enemy AI Visual Polish (telegraph animations, aggro indicators)
+- [Epic 16](epic-16-enemy-ai-polish.md) — Enemy AI Visual Polish (telegraph animations, aggro indicators) ✅ DONE
 - [Epic 17](epic-17-enemy-variants.md) — Enemy Color/Size Variants (elite versions, floor scaling)
 - [Epic 18](epic-18-boss-phases.md) — Boss Phase Visuals (phase transitions, arena effects)
 
