@@ -11,6 +11,9 @@ extends Camera3D
 var _camera_arm: Vector3 = Vector3(10, 14, 10)
 var _shake_intensity: float = 0.0
 var _shake_decay: float = 5.0
+var _lean_offset: Vector3 = Vector3.ZERO
+const LEAN_STRENGTH: float = 1.2
+const LEAN_RESPONSIVENESS: float = 3.0
 
 
 func _ready() -> void:
@@ -27,7 +30,16 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if target == null:
 		return
-	var desired_pos: Vector3 = target.global_position + offset + _camera_arm
+	# Calculate lean based on target velocity (for player CharacterBody3D)
+	var target_lean: Vector3 = Vector3.ZERO
+	if target is CharacterBody3D:
+		var vel: Vector3 = (target as CharacterBody3D).velocity
+		vel.y = 0.0
+		if vel.length() > 0.5:
+			target_lean = vel.normalized() * LEAN_STRENGTH
+	_lean_offset = _lean_offset.lerp(target_lean, LEAN_RESPONSIVENESS * delta)
+
+	var desired_pos: Vector3 = target.global_position + offset + _camera_arm + _lean_offset
 	# Apply screen shake
 	if _shake_intensity > 0.0:
 		desired_pos += Vector3(
@@ -37,8 +49,8 @@ func _process(delta: float) -> void:
 		)
 		_shake_intensity = maxf(0.0, _shake_intensity - _shake_decay * delta)
 	global_position = global_position.lerp(desired_pos, follow_speed * delta)
-	# Keep looking at target
-	look_at(target.global_position + offset, Vector3.UP)
+	# Keep looking at target (with lean)
+	look_at(target.global_position + offset + _lean_offset * 0.3, Vector3.UP)
 
 
 func shake(intensity: float = 0.15, decay: float = 5.0) -> void:
