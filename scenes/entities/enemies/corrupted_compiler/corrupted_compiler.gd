@@ -21,6 +21,31 @@ func _ready() -> void:
 	model.scale = Vector3(2.0, 2.0, 2.0)
 
 	health_component.health_changed.connect(_on_boss_health_changed)
+	# Dramatic HUD boss bar
+	call_deferred(&"_register_with_hud")
+
+
+func _register_with_hud() -> void:
+	if not is_inside_tree():
+		return
+	var hud_nodes: Array[Node] = get_tree().get_nodes_in_group(&"hud")
+	if hud_nodes.is_empty():
+		# Try finding by type
+		for node: Node in get_tree().root.get_children():
+			if node.has_method(&"show_boss_bar"):
+				node.show_boss_bar(self, "CORRUPTED COMPILER")
+				return
+		# Search deeper
+		var root: Node = get_tree().current_scene
+		if root:
+			for child: Node in root.get_children():
+				if child.has_method(&"show_boss_bar"):
+					child.show_boss_bar(self, "CORRUPTED COMPILER")
+					return
+	else:
+		var hud: Node = hud_nodes[0]
+		if hud.has_method(&"show_boss_bar"):
+			hud.show_boss_bar(self, "CORRUPTED COMPILER")
 
 
 func _build_enemy_visual() -> void:
