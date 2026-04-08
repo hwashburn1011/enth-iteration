@@ -127,10 +127,14 @@ func _build_player_extras() -> void:
 	var player_light: OmniLight3D = OmniLight3D.new()
 	player_light.position = Vector3(0, 2.0, 0)
 	player_light.light_color = Color(0.6, 0.9, 0.85)
-	player_light.light_energy = 0.4
-	player_light.omni_range = 3.0
+	player_light.light_energy = 0.6
+	player_light.omni_range = 4.0
 	player_light.omni_attenuation = 2.0
 	add_child(player_light)
+	# Subtle pulse on player light to feel alive
+	var light_tween: Tween = create_tween().set_loops()
+	light_tween.tween_property(player_light, "light_energy", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
+	light_tween.tween_property(player_light, "light_energy", 0.55, 2.0).set_ease(Tween.EASE_IN_OUT)
 
 	# Small arm stubs for silhouette
 	var arm_mat: StandardMaterial3D = StandardMaterial3D.new()
