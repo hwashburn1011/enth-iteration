@@ -24,6 +24,8 @@ var _kill_streak: int = 0
 var _kill_streak_timer: float = 0.0
 var _streak_label: Label = null
 const STREAK_TIMEOUT: float = 3.0
+var _low_health_vignette: ColorRect = null
+var _low_health_time: float = 0.0
 
 
 func _ready() -> void:
@@ -40,6 +42,16 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	_process_streak(delta)
+	_process_low_health(delta)
+
+
+func _process_low_health(delta: float) -> void:
+	if _low_health_vignette == null or not is_instance_valid(_low_health_vignette):
+		return
+	_low_health_time += delta
+	# Pulse between 0.1 and 0.25 alpha at 1.5Hz
+	var pulse: float = 0.175 + sin(_low_health_time * 3.0) * 0.075
+	_low_health_vignette.color.a = pulse
 
 
 func _apply_sci_fi_theme() -> void:
@@ -194,6 +206,33 @@ func _on_health_changed(current: float, max_val: float) -> void:
 	_health_tween = create_tween()
 	_health_tween.tween_property(health_bar, "value", current, TWEEN_DURATION).set_ease(Tween.EASE_OUT)
 	health_label.text = "%d / %d" % [int(current), int(max_val)]
+	# Low-health vignette
+	var pct: float = current / max_val if max_val > 0 else 1.0
+	if pct < 0.25 and current > 0:
+		_ensure_low_health_vignette()
+	elif pct >= 0.35:
+		_remove_low_health_vignette()
+
+
+func _ensure_low_health_vignette() -> void:
+	if _low_health_vignette and is_instance_valid(_low_health_vignette):
+		return
+	_low_health_vignette = ColorRect.new()
+	_low_health_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_low_health_vignette.color = Color(0.85, 0.08, 0.05, 0.0)
+	_low_health_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_container.add_child(_low_health_vignette)
+
+
+func _remove_low_health_vignette() -> void:
+	if _low_health_vignette == null or not is_instance_valid(_low_health_vignette):
+		_low_health_vignette = null
+		return
+	var vignette: ColorRect = _low_health_vignette
+	_low_health_vignette = null
+	var tween: Tween = vignette.create_tween()
+	tween.tween_property(vignette, "color:a", 0.0, 0.3)
+	tween.tween_callback(vignette.queue_free)
 
 
 func _on_compute_changed(current: float, max_val: float) -> void:
