@@ -11,11 +11,50 @@ var _confirm_ui: PanelContainer = null
 @onready var _label: Label3D = %EntranceLabel
 
 
+var _swirl_node: Node3D = null
+
+
 func _ready() -> void:
 	_interaction_area.body_entered.connect(_on_body_entered)
 	_interaction_area.body_exited.connect(_on_body_exited)
 	_label.visible = false
 	_build_entrance_visual()
+	# Portal swirl rotation tween
+	_setup_swirl_rotation()
+
+
+func _setup_swirl_rotation() -> void:
+	# Create a swirl node holding rotating particles
+	_swirl_node = Node3D.new()
+	_swirl_node.position = Vector3(0, 1.5, 0)
+	add_child(_swirl_node)
+	# Create 8 small glowing dots in a circle
+	for i: int in 8:
+		var angle: float = i * TAU / 8.0
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var sphere: SphereMesh = SphereMesh.new()
+		sphere.radius = 0.04
+		sphere.height = 0.08
+		dot.mesh = sphere
+		dot.position = Vector3(cos(angle) * 0.6, 0, sin(angle) * 0.6)
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.3, 0.6, 1.0, 0.9)
+		mat.emission_enabled = true
+		mat.emission = Color(0.25, 0.55, 0.95)
+		mat.emission_energy_multiplier = 3.0
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dot.material_override = mat
+		_swirl_node.add_child(dot)
+
+
+func _process(delta: float) -> void:
+	if _prompt_cooldown > 0.0:
+		pass
+	if _swirl_node:
+		_swirl_node.rotate_y(delta * 0.8)
+
+
+var _prompt_cooldown: float = 0.0
 
 
 func _build_entrance_visual() -> void:
