@@ -325,23 +325,17 @@ func _add_ceiling(geom: Node) -> void:
 	var plane: PlaneMesh = floor_node.mesh as PlaneMesh
 	if plane == null:
 		return
-	# Dark ceiling plane
+	# Procedurally textured ceiling — same panel grid as floor but darker
 	var ceiling: MeshInstance3D = MeshInstance3D.new()
 	var ceil_mesh: PlaneMesh = PlaneMesh.new()
 	ceil_mesh.size = plane.size
 	ceiling.mesh = ceil_mesh
 	ceiling.position = Vector3(0, 3.2, 0)
 	ceiling.rotation.x = PI  # Flip to face downward
-	var ceil_mat: StandardMaterial3D = StandardMaterial3D.new()
-	ceil_mat.albedo_color = Color(0.08, 0.09, 0.14)
-	ceil_mat.roughness = 0.95
-	ceiling.material_override = ceil_mat
+	ceiling.material_override = _make_ceiling_material()
 	geom.add_child(ceiling)
-	# Pipe runs along ceiling edges
-	var pipe_mat: StandardMaterial3D = StandardMaterial3D.new()
-	pipe_mat.albedo_color = Color(0.2, 0.22, 0.28)
-	pipe_mat.roughness = 0.7
-	pipe_mat.metallic = 0.4
+	# Pipe runs along ceiling edges — share the brushed metal prop material
+	var pipe_mat: StandardMaterial3D = _make_tech_prop_material()
 	var half_x: float = plane.size.x / 2.0 - 0.5
 	var half_z: float = plane.size.y / 2.0 - 0.5
 	# Pipes along X edges at ceiling height
@@ -699,6 +693,47 @@ func _apply_prop_texture(root: Node, prop_mat: StandardMaterial3D) -> void:
 				mi.material_override = prop_mat
 		for c in n.get_children():
 			stack.append(c)
+
+
+static func _make_ceiling_material() -> StandardMaterial3D:
+	## Darker version of the floor panel grid for the ceiling — keeps the
+	## panels readable but doesn't compete with the floor visually.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.18, 0.20, 0.26)
+	var panel_noise: FastNoiseLite = FastNoiseLite.new()
+	panel_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	panel_noise.frequency = 0.14
+	panel_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
+	panel_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	panel_noise.cellular_jitter = 0.5
+	var panel_tex: NoiseTexture2D = NoiseTexture2D.new()
+	panel_tex.noise = panel_noise
+	panel_tex.width = 512
+	panel_tex.height = 512
+	panel_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.06, 0.08, 0.12))
+	ramp.set_color(1, Color(0.22, 0.26, 0.34))
+	ramp.add_point(0.5, Color(0.12, 0.14, 0.20))
+	panel_tex.color_ramp = ramp
+	mat.albedo_texture = panel_tex
+	# Bumpy normal
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = panel_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 6.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 1.2
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
+	mat.metallic = 0.5
+	mat.metallic_specular = 0.4
+	mat.roughness = 0.7
+	return mat
 
 
 static func _make_tech_prop_material() -> StandardMaterial3D:
