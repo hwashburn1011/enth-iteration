@@ -297,6 +297,28 @@ func _play_spawn_effect() -> void:
 
 
 func _spawn_assembly_particles() -> void:
+	# Shielded indicator: brief expanding sphere that shrinks
+	var shield: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.6
+	sphere.height = 1.2
+	shield.mesh = sphere
+	shield.global_position = global_position + Vector3(0, 0.5, 0)
+	var shield_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shield_mat.albedo_color = Color(0, 0.85, 1.0, 0.4)
+	shield_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	shield_mat.emission_enabled = true
+	shield_mat.emission = Color(0, 0.7, 1.0)
+	shield_mat.emission_energy_multiplier = 2.0
+	shield_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shield_mat.cull_mode = BaseMaterial3D.CULL_BACK
+	shield.material_override = shield_mat
+	get_tree().current_scene.add_child(shield)
+	var shield_tween: Tween = shield.create_tween()
+	shield_tween.tween_property(shield, "scale", Vector3(0.3, 0.3, 0.3), 0.6).set_ease(Tween.EASE_IN)
+	shield_tween.parallel().tween_property(shield_mat, "albedo_color:a", 0.0, 0.6)
+	shield_tween.tween_callback(shield.queue_free)
+
 	var particles: GPUParticles3D = GPUParticles3D.new()
 	particles.amount = 24
 	particles.lifetime = 0.5
