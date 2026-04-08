@@ -74,7 +74,6 @@ func _play_boss_intro() -> void:
 	torus.rings = 16
 	torus.ring_segments = 20
 	shock.mesh = torus
-	shock.global_position = global_position + Vector3(0, 0.1, 0)
 	shock.scale = Vector3(0.5, 0.5, 0.5)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(0.9, 0.1, 0.05, 0.8)
@@ -85,6 +84,7 @@ func _play_boss_intro() -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	shock.material_override = mat
 	get_tree().current_scene.add_child(shock)
+	shock.global_position = global_position + Vector3(0, 0.1, 0)
 	var tween: Tween = shock.create_tween()
 	tween.tween_property(shock, "scale", Vector3(8.0, 1.0, 8.0), 1.2).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 1.5)
@@ -228,7 +228,6 @@ func _spawn_phase_transition_shockwave(new_phase: int) -> void:
 	torus.rings = 16
 	torus.ring_segments = 20
 	ring.mesh = torus
-	ring.global_position = global_position + Vector3(0, 0.2, 0)
 	ring.scale = Vector3(0.5, 0.5, 0.5)
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
 	mat.albedo_color = Color(color.r, color.g, color.b, 0.8)
@@ -239,6 +238,7 @@ func _spawn_phase_transition_shockwave(new_phase: int) -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	ring.material_override = mat
 	get_tree().current_scene.add_child(ring)
+	ring.global_position = global_position + Vector3(0, 0.2, 0)
 	var tween: Tween = ring.create_tween()
 	tween.tween_property(ring, "scale", Vector3(10.0, 1.0, 10.0), 1.2).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 1.4)
