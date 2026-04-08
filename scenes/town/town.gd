@@ -454,6 +454,7 @@ func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height:
 		tree.scale = Vector3(scale_factor, scale_factor, scale_factor)
 		parent.add_child(tree)
 		tree.global_position = pos
+		_apply_tree_textures(tree)
 	else:
 		# Fallback to CSG
 		var tree: Node3D = Node3D.new()
@@ -729,6 +730,113 @@ func _apply_building_materials(root: Node, body_mat: StandardMaterial3D, roof_ma
 			mi.material_override = roof_mat if is_roof else body_mat
 		for c in n.get_children():
 			stack.append(c)
+
+
+func _apply_tree_textures(root: Node) -> void:
+	## Walk a tree GLB and apply bark / foliage textures by detecting which
+	## meshes are bark (brown) and which are foliage (green).
+	var bark_mat: StandardMaterial3D = _make_bark_material()
+	var leaf_mat: StandardMaterial3D = _make_foliage_material()
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var mi: MeshInstance3D = n as MeshInstance3D
+			var existing: Material = mi.get_active_material(0)
+			var is_foliage: bool = false
+			if existing is StandardMaterial3D:
+				var col: Color = (existing as StandardMaterial3D).albedo_color
+				# Foliage tends to be green-dominant
+				if col.g > col.r and col.g > col.b * 1.2:
+					is_foliage = true
+			mi.material_override = leaf_mat if is_foliage else bark_mat
+		for c in n.get_children():
+			stack.append(c)
+
+
+static func _make_bark_material() -> StandardMaterial3D:
+	## Vertical bark grain via stretched Perlin noise + bumpy normal.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.42, 0.28, 0.18)
+	var grain_noise: FastNoiseLite = FastNoiseLite.new()
+	grain_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	grain_noise.frequency = 0.7
+	grain_noise.fractal_octaves = 4
+	var grain_tex: NoiseTexture2D = NoiseTexture2D.new()
+	grain_tex.noise = grain_noise
+	grain_tex.width = 256
+	grain_tex.height = 512  # tall = stretched grain
+	grain_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.22, 0.14, 0.08))
+	ramp.set_color(1, Color(0.55, 0.38, 0.24))
+	ramp.add_point(0.5, Color(0.38, 0.25, 0.15))
+	grain_tex.color_ramp = ramp
+	mat.albedo_texture = grain_tex
+	# Bumpy normal from cellular noise
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.4
+	bump_noise.cellular_jitter = 0.7
+	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
+	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 256
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 5.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 1.0
+	mat.uv1_triplanar = false  # bark wraps along the trunk axis naturally
+	mat.uv1_scale = Vector3(1.5, 0.7, 1.5)
+	mat.metallic = 0.0
+	mat.roughness = 0.95
+	return mat
+
+
+static func _make_foliage_material() -> StandardMaterial3D:
+	## Layered green foliage with leafy noise variation.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.35, 0.58, 0.30)
+	var leaf_noise: FastNoiseLite = FastNoiseLite.new()
+	leaf_noise.noise_type = FastNoiseLite.TYPE_PERLIN
+	leaf_noise.frequency = 0.6
+	leaf_noise.fractal_octaves = 3
+	var leaf_tex: NoiseTexture2D = NoiseTexture2D.new()
+	leaf_tex.noise = leaf_noise
+	leaf_tex.width = 512
+	leaf_tex.height = 512
+	leaf_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.18, 0.32, 0.14))
+	ramp.set_color(1, Color(0.58, 0.78, 0.42))
+	ramp.add_point(0.4, Color(0.30, 0.50, 0.22))
+	ramp.add_point(0.75, Color(0.45, 0.68, 0.32))
+	leaf_tex.color_ramp = ramp
+	mat.albedo_texture = leaf_tex
+	# Bumpy normal for leaf clusters
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.8
+	bump_noise.cellular_jitter = 0.9
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 4.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 0.9
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(1.2, 1.2, 1.2)
+	mat.metallic = 0.0
+	mat.roughness = 0.85
+	return mat
 
 
 static func _make_stone_material() -> StandardMaterial3D:

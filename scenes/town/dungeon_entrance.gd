@@ -284,3 +284,77 @@ func _style_confirm_button(btn: Button, is_confirm: bool) -> void:
 	btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
 	btn.add_theme_color_override(&"font_hover_color", accent)
 	btn.add_theme_font_size_override(&"font_size", 18)
+
+
+func _apply_archway_textures(root: Node) -> void:
+	## Walk the portal archway mesh tree and override structural meshes with a
+	## bluish ancient-stone material. Skip meshes named PortalGlow / Rune* /
+	## TopRune* — those are glowing decorative meshes that need to keep their
+	## emissive transparent materials.
+	var stone_mat: StandardMaterial3D = _make_archway_stone_material()
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			var nm: String = n.name
+			var is_decorative: bool = (
+				nm.contains("Glow")
+				or nm.begins_with("Rune")
+				or nm.begins_with("TopRune")
+			)
+			if not is_decorative:
+				(n as MeshInstance3D).material_override = stone_mat
+		for c in n.get_children():
+			stack.append(c)
+
+
+static func _make_archway_stone_material() -> StandardMaterial3D:
+	## Cool blue-gray ancient stone with cellular cracks and faint cyan glow.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.42, 0.50, 0.62)
+	# Albedo: cellular noise mapped to a cool stone gradient
+	var stone_noise: FastNoiseLite = FastNoiseLite.new()
+	stone_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	stone_noise.frequency = 0.18
+	stone_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
+	stone_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	stone_noise.cellular_jitter = 0.7
+	var stone_tex: NoiseTexture2D = NoiseTexture2D.new()
+	stone_tex.noise = stone_noise
+	stone_tex.width = 512
+	stone_tex.height = 512
+	stone_tex.seamless = true
+	var ramp: Gradient = Gradient.new()
+	ramp.set_color(0, Color(0.18, 0.25, 0.35))
+	ramp.set_color(1, Color(0.55, 0.65, 0.78))
+	ramp.add_point(0.4, Color(0.30, 0.38, 0.50))
+	ramp.add_point(0.75, Color(0.45, 0.55, 0.70))
+	stone_tex.color_ramp = ramp
+	mat.albedo_texture = stone_tex
+	# Bumpy normal from chunkier cellular noise
+	var bump_noise: FastNoiseLite = FastNoiseLite.new()
+	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
+	bump_noise.frequency = 0.25
+	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
+	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
+	bump_noise.cellular_jitter = 0.8
+	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
+	bump_tex.noise = bump_noise
+	bump_tex.width = 512
+	bump_tex.height = 512
+	bump_tex.seamless = true
+	bump_tex.as_normal_map = true
+	bump_tex.bump_strength = 6.0
+	mat.normal_enabled = true
+	mat.normal_texture = bump_tex
+	mat.normal_scale = 1.2
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.6, 0.6, 0.6)
+	mat.metallic = 0.15
+	mat.metallic_specular = 0.5
+	mat.roughness = 0.7
+	# Faint cyan rim glow as if energy is bleeding out of the runes
+	mat.emission_enabled = true
+	mat.emission = Color(0.10, 0.22, 0.38)
+	mat.emission_energy_multiplier = 0.18
+	return mat
