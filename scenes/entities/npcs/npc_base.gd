@@ -136,6 +136,14 @@ func _build_npc_visual() -> void:
 		if glb:
 			var instance: Node3D = glb.instantiate() as Node3D
 			_model.add_child(instance)
+			# Spawn ambient particles + interact indicator (these used to be
+			# skipped because of an early return when the model loaded)
+			match npc_id:
+				"ai_sage":
+					_add_wisdom_particles()
+				"cache_sprite":
+					_add_sprite_sparkles()
+			_create_interact_indicator()
 			return
 
 	# Fallback: Colors based on NPC ID
@@ -238,16 +246,24 @@ func _build_npc_visual() -> void:
 		"cache_sprite":
 			_add_sprite_sparkles()
 
-	# Interaction indicator (floating !) — hidden by default
+	_create_interact_indicator()
+
+
+func _create_interact_indicator() -> void:
+	## Interaction indicator (floating !) — sits ABOVE the name/prompt labels
+	## so it doesn't crowd them; visible only when player is in range.
 	_interact_indicator = Label3D.new()
 	_interact_indicator.text = "!"
-	_interact_indicator.font_size = 42
+	_interact_indicator.font_size = 36
 	_interact_indicator.modulate = Color(1.0, 0.9, 0.2)
-	_interact_indicator.outline_modulate = Color(0, 0, 0)
-	_interact_indicator.outline_size = 6
+	_interact_indicator.outline_modulate = Color(0, 0, 0, 0.95)
+	_interact_indicator.outline_size = 8
 	_interact_indicator.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	_interact_indicator.position = Vector3(0, 2.2, 0)
-	_indicator_base_y = 2.2
+	_interact_indicator.no_depth_test = true
+	_interact_indicator.fixed_size = true
+	_interact_indicator.pixel_size = 0.0035
+	_interact_indicator.position = Vector3(0, 2.95, 0)
+	_indicator_base_y = 2.95
 	_interact_indicator.visible = false
 	add_child(_interact_indicator)
 
