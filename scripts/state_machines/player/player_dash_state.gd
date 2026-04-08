@@ -44,6 +44,11 @@ func enter() -> void:
 	# Dash ghost trail VFX
 	_spawn_dash_trail(p, from_position, p.global_position)
 
+	# Brief screen shake on dash
+	var camera: Camera3D = p.get_viewport().get_camera_3d()
+	if camera and camera.has_method(&"shake"):
+		camera.shake(0.06, 10.0)
+
 	# Emit event
 	EventBus.player_dashed.emit(from_position, p.global_position)
 
