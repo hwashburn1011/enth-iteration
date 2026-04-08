@@ -187,7 +187,59 @@ func _try_use_prompt() -> void:
 				effect.tick_rate = 1.0
 				effect.potency = 1.0
 				sem.apply_effect(effect)
+				_spawn_buff_vfx()
 	_prompt_cooldown = 0.5
+
+
+func _spawn_buff_vfx() -> void:
+	if not is_inside_tree():
+		return
+	# Purple overclock burst around player
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 20
+	particles.lifetime = 1.0
+	particles.one_shot = true
+	particles.emitting = true
+	particles.global_position = global_position + Vector3(0, 0.5, 0)
+	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	mat.direction = Vector3(0, 0, 0)
+	mat.spread = 180.0
+	mat.initial_velocity_min = 1.0
+	mat.initial_velocity_max = 2.5
+	mat.orbit_velocity_min = 1.0
+	mat.orbit_velocity_max = 1.8
+	mat.gravity = Vector3(0, -1, 0)
+	mat.color = Color(0.8, 0.3, 1.0, 0.8)
+	mat.scale_min = 0.4
+	mat.scale_max = 1.0
+	particles.process_material = mat
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.04, 0.04, 0.04)
+	particles.draw_pass_1 = mesh
+	var vis: StandardMaterial3D = StandardMaterial3D.new()
+	vis.albedo_color = Color(0.85, 0.35, 1.0, 0.8)
+	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis.emission_enabled = true
+	vis.emission = Color(0.75, 0.25, 0.9)
+	vis.emission_energy_multiplier = 3.0
+	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis
+	get_tree().current_scene.add_child(particles)
+	get_tree().create_timer(1.5).timeout.connect(particles.queue_free)
+	# "OVERCLOCKED" text label
+	var label: Label3D = Label3D.new()
+	label.text = "OVERCLOCKED"
+	label.font_size = 20
+	label.modulate = Color(0.85, 0.35, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.7)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = global_position + Vector3(0, 2.0, 0)
+	get_tree().current_scene.add_child(label)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "position:y", label.position.y + 1.5, 1.2).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 1.2).set_delay(0.4)
+	tween.tween_callback(label.queue_free)
 
 
 func _toggle_pause() -> void:
