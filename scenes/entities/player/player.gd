@@ -70,9 +70,38 @@ func _spawn_in_flash() -> void:
 	attack_cooldown_timer.one_shot = true
 	attack_cooldown_timer.timeout.connect(_on_attack_cooldown_timeout)
 	health_component.died.connect(_on_died)
+	health_component.health_changed.connect(_on_health_changed_color)
 	hitbox_component.damage_source = self
 	hurtbox_component.hit_received.connect(_on_hit_received)
 	level_component.leveled_up.connect(_on_leveled_up)
+
+
+func _on_health_changed_color(current: float, max_val: float) -> void:
+	## Update player highlight ring color based on HP percentage
+	var ring: MeshInstance3D = get_node_or_null("HighlightRing") as MeshInstance3D
+	if ring == null or not is_instance_valid(ring):
+		return
+	var mat: StandardMaterial3D = ring.material_override as StandardMaterial3D
+	if mat == null:
+		return
+	var pct: float = current / max_val if max_val > 0 else 1.0
+	var target_color: Color
+	var emission_color: Color
+	if pct > 0.6:
+		# Healthy: cyan (default)
+		target_color = Color(0.15, 0.6, 0.55, 0.35)
+		emission_color = Color(0.1, 0.5, 0.45)
+	elif pct > 0.3:
+		# Medium: yellow-orange
+		target_color = Color(0.7, 0.5, 0.1, 0.4)
+		emission_color = Color(0.6, 0.4, 0.05)
+	else:
+		# Low: red
+		target_color = Color(0.85, 0.15, 0.1, 0.45)
+		emission_color = Color(0.75, 0.1, 0.05)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(mat, "albedo_color", target_color, 0.4)
+	tween.parallel().tween_property(mat, "emission", emission_color, 0.4)
 
 
 func _build_player_extras() -> void:
