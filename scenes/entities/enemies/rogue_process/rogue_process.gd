@@ -86,14 +86,13 @@ func _on_health_changed(current: float, maximum: float) -> void:
 	if not is_enraged and current / maximum <= ENRAGE_THRESHOLD and current > 0.0:
 		is_enraged = true
 		move_speed = _base_move_speed * ENRAGE_SPEED_MULT
-		# Visual indicator — blue glow intensifies
-		var mesh: MeshInstance3D = model.get_child(0) as MeshInstance3D
-		if mesh:
-			var mat: StandardMaterial3D = StandardMaterial3D.new()
-			mat.albedo_color = Color(0.3, 0.3, 1.0)
-			mat.emission_enabled = true
-			mat.emission = Color(0.2, 0.2, 1.0)
-			mat.emission_energy_multiplier = 2.0
+		# Visual indicator — blue glow intensifies on every mesh in the model
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.3, 0.3, 1.0)
+		mat.emission_enabled = true
+		mat.emission = Color(0.2, 0.2, 1.0)
+		mat.emission_energy_multiplier = 2.0
+		for mesh: MeshInstance3D in get_mesh_instances():
 			mesh.material_override = mat
 
 

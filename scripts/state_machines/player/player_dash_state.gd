@@ -151,13 +151,13 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 
 
 func _flash_transparent(p: CharacterBody3D, transparent: bool) -> void:
-	var mesh: MeshInstance3D = p.model.get_child(0) as MeshInstance3D
-	if mesh == null:
-		return
+	var meshes: Array[MeshInstance3D] = p.get_mesh_instances()
 	if transparent:
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.albedo_color = Color(1.0, 1.0, 1.0, 0.3)
-		mesh.material_override = mat
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = mat
 	else:
-		mesh.material_override = null
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = null

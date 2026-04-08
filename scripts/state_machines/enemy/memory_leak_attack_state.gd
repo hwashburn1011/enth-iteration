@@ -164,14 +164,14 @@ func _spawn_muzzle_flash(enemy: CharacterBody3D) -> void:
 
 
 func _set_glow(enemy: CharacterBody3D, glow: bool) -> void:
-	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
-	if mesh == null:
-		return
+	var meshes: Array[MeshInstance3D] = enemy.get_mesh_instances()
 	if glow:
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.emission_enabled = true
 		mat.emission = Color(0.2, 1.0, 0.2)
 		mat.emission_energy_multiplier = 1.5
-		mesh.material_override = mat
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = mat
 	else:
-		mesh.material_override = null
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = null

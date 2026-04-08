@@ -147,24 +147,24 @@ func exit() -> void:
 
 
 func _set_telegraph(enemy: CharacterBody3D, active: bool) -> void:
-	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
-	if mesh == null:
-		return
+	var meshes: Array[MeshInstance3D] = enemy.get_mesh_instances()
 	if active:
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.albedo_color = Color(0.5, 0.5, 1.0)
 		mat.emission_enabled = true
 		mat.emission = Color(0.3, 0.3, 1.0)
 		mat.emission_energy_multiplier = 1.5
-		mesh.material_override = mat
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = mat
 	else:
 		# Restore enraged glow or clear
+		var clear_mat: Material = null
 		if enemy.get(&"is_enraged"):
 			var mat: StandardMaterial3D = StandardMaterial3D.new()
 			mat.albedo_color = Color(0.3, 0.3, 1.0)
 			mat.emission_enabled = true
 			mat.emission = Color(0.2, 0.2, 1.0)
 			mat.emission_energy_multiplier = 2.0
-			mesh.material_override = mat
-		else:
-			mesh.material_override = null
+			clear_mat = mat
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = clear_mat

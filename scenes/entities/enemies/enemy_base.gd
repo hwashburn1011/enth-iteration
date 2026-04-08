@@ -235,6 +235,23 @@ func _build_enemy_visual() -> void:
 	pass
 
 
+func get_mesh_instances() -> Array[MeshInstance3D]:
+	## Walk the model subtree and collect every MeshInstance3D. Works for
+	## both the placeholder fallback meshes (first child is the body mesh)
+	## and the Blender GLB models (first child is a Node3D wrapper).
+	var out: Array[MeshInstance3D] = []
+	if model == null:
+		return out
+	var stack: Array = [model]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			out.append(n as MeshInstance3D)
+		for c in n.get_children():
+			stack.append(c)
+	return out
+
+
 func apply_variant(tier: int) -> void:
 	## Apply elite/champion variant: scale up, tint, add aura particles.
 	variant_tier = tier

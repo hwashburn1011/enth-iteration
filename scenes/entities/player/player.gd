@@ -32,6 +32,23 @@ var can_attack: bool = true
 var _prompt_cooldown: float = 0.0
 
 
+func get_mesh_instances() -> Array[MeshInstance3D]:
+	## Walk the model subtree and collect every MeshInstance3D so visual
+	## effects (dash transparency, charge glow) work for both placeholder
+	## meshes and the Blender GLB body model.
+	var out: Array[MeshInstance3D] = []
+	if model == null:
+		return out
+	var stack: Array = [model]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			out.append(n as MeshInstance3D)
+		for c in n.get_children():
+			stack.append(c)
+	return out
+
+
 func _ready() -> void:
 	add_to_group(&"player")
 	_build_player_extras()
