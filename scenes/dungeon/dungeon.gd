@@ -99,13 +99,13 @@ func _setup_environment() -> void:
 	env.fog_light_color = Color(0.1, 0.12, 0.18)
 	env.fog_density = 0.015
 	# Tonemap for better contrast
-	env.tonemap_mode = Environment.TONE_MAP_FILMIC
+	env.tonemap_mode = 2 as Environment.ToneMapper  # Filmic
 	env.tonemap_white = 6.0
 	# Glow for emission effects — stronger to make edge strips and LEDs pop
 	env.glow_enabled = true
 	env.glow_intensity = 0.5
 	env.glow_bloom = 0.2
-	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
+	env.glow_blend_mode = 0 as Environment.GlowBlendMode  # Additive
 	# SSAO for depth in enclosed rooms
 	env.ssao_enabled = true
 	env.ssao_radius = 0.8
