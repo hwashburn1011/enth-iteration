@@ -48,10 +48,10 @@ Transform the game from programmer-art prototype (~35/100) to Emberville/Stardew
 - [Epic 18](epic-18-boss-phases.md) — Boss Phase Visuals (phase transitions, arena effects) ✅ DONE
 
 ### PHASE 4: NPC Characters (Epics 19-22)
-- [Epic 19](epic-19-ai-sage-full.md) — AI Sage Full Rebuild (model, texture, rig, animate)
-- [Epic 20](epic-20-cache-sprite-full.md) — Cache Sprite Full Rebuild
-- [Epic 21](epic-21-npc-expressions.md) — NPC Expression System (shape keys, emotion indicators)
-- [Epic 22](epic-22-npc-interaction-polish.md) — NPC Interaction Polish (approach animation, dialogue gestures)
+- [Epic 19](epic-19-ai-sage-full.md) — AI Sage Full Rebuild ✅ DONE
+- [Epic 20](epic-20-cache-sprite-full.md) — Cache Sprite Full Rebuild ✅ DONE
+- [Epic 21](epic-21-npc-expressions.md) — NPC Expression System ✅ DONE
+- [Epic 22](epic-22-npc-interaction-polish.md) — NPC Interaction Polish ✅ DONE
 
 ### PHASE 5: Town Environment (Epics 23-30)
 - [Epic 23](epic-23-terrain-system.md) — Town Terrain (sculpted ground mesh, painted grass/dirt/stone)

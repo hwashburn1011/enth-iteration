@@ -104,9 +104,9 @@ func _build_npc_visual() -> void:
 	var model_path: String = ""
 	match npc_id:
 		"ai_sage":
-			model_path = "res://assets/models/characters/ai_sage.glb"
+			model_path = "res://assets/models/characters/npc_ai_sage_v2.glb"
 		"cache_sprite":
-			model_path = "res://assets/models/characters/cache_sprite.glb"
+			model_path = "res://assets/models/characters/npc_cache_sprite_v2.glb"
 	if not model_path.is_empty():
 		var glb: PackedScene = load(model_path) as PackedScene
 		if glb:
