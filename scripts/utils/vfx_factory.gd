@@ -147,25 +147,66 @@ static func spawn_item_sparkle(position: Vector3, rarity: int, parent: Node) -> 
 
 static func spawn_portal_particles(position: Vector3, parent: Node) -> GPUParticles3D:
 	## Rotating particle ring for portals (persistent until freed)
+	# Primary orbiting ring
 	var particles: GPUParticles3D = GPUParticles3D.new()
-	particles.amount = 20
-	particles.lifetime = 1.5
+	particles.amount = 24
+	particles.lifetime = 2.0
 	particles.position = position + Vector3(0, 1, 0)
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
-	mat.direction = Vector3(0, 0, 0)
+	mat.direction = Vector3(0, 0.3, 0)
 	mat.spread = 180.0
-	mat.initial_velocity_min = 0.5
-	mat.initial_velocity_max = 1.0
-	mat.orbit_velocity_min = 1.0
-	mat.orbit_velocity_max = 1.5
+	mat.initial_velocity_min = 0.3
+	mat.initial_velocity_max = 0.8
+	mat.orbit_velocity_min = 1.2
+	mat.orbit_velocity_max = 2.0
 	mat.gravity = Vector3.ZERO
-	mat.color = Color(0.4, 0.7, 1.0, 0.8)
+	mat.color = Color(0.35, 0.65, 1.0, 0.75)
+	mat.scale_min = 0.5
+	mat.scale_max = 1.2
 	particles.process_material = mat
-	var mesh: SphereMesh = SphereMesh.new()
-	mesh.radius = 0.06
-	mesh.height = 0.12
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.05, 0.05, 0.05)
 	particles.draw_pass_1 = mesh
+	var vis: StandardMaterial3D = StandardMaterial3D.new()
+	vis.albedo_color = Color(0.4, 0.7, 1.0, 0.7)
+	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis.emission_enabled = true
+	vis.emission = Color(0.3, 0.6, 0.95)
+	vis.emission_energy_multiplier = 2.5
+	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	particles.material_override = vis
 	parent.add_child(particles)
+
+	# Secondary: slow upward drift particles (data fragments)
+	var drift: GPUParticles3D = GPUParticles3D.new()
+	drift.amount = 10
+	drift.lifetime = 3.0
+	drift.position = position + Vector3(0, 0.5, 0)
+	var drift_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	drift_mat.direction = Vector3(0, 1, 0)
+	drift_mat.spread = 30.0
+	drift_mat.initial_velocity_min = 0.3
+	drift_mat.initial_velocity_max = 0.6
+	drift_mat.gravity = Vector3.ZERO
+	drift_mat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	drift_mat.emission_sphere_radius = 0.8
+	drift_mat.color = Color(0.5, 0.8, 1.0, 0.4)
+	drift_mat.scale_min = 0.2
+	drift_mat.scale_max = 0.6
+	drift.process_material = drift_mat
+	var drift_mesh: BoxMesh = BoxMesh.new()
+	drift_mesh.size = Vector3(0.03, 0.03, 0.03)
+	drift.draw_pass_1 = drift_mesh
+	var drift_vis: StandardMaterial3D = StandardMaterial3D.new()
+	drift_vis.albedo_color = Color(0.5, 0.8, 1.0, 0.3)
+	drift_vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	drift_vis.emission_enabled = true
+	drift_vis.emission = Color(0.4, 0.7, 0.95)
+	drift_vis.emission_energy_multiplier = 1.5
+	drift_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	drift.material_override = drift_vis
+	parent.add_child(drift)
+
 	return particles
 
 
