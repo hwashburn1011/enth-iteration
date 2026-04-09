@@ -2096,55 +2096,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 38 — Quest System v2 (Main + Side + Daily)
 
-1. Design quest bible: types, structure, rewards
-2. Build quest data structure
+1. [x] Design quest bible: types, structure, rewards
+2. [x] Build quest data structure
 3. Build quest log UI v2
 4. Build quest tracker HUD widget
-5. Add quest categories: main, side, daily, hidden, faction
-6. Build main story quest line (40 quests across 9 iterations)
+5. [x] Add quest categories: main, side, daily, hidden, faction
+6. [x] Build main story quest line (40 quests across 9 iterations)
 7. Build side quest pool (60 side quests)
-8. Build daily quest generator (10 templates)
+8. [x] Build daily quest generator (10 templates)
 9. Build hidden quest triggers (15 secret quests)
-10. Add faction quest line (Epic 39)
-11. Implement main quest 1-5
-12. Implement main quest 6-10
-13. Implement main quest 11-15
-14. Implement main quest 16-20
-15. Implement main quest 21-25
-16. Implement main quest 26-30
-17. Implement main quest 31-35
-18. Implement main quest 36-40
+10. [x] Add faction quest line (Epic 39)
+11. [x] Implement main quest 1-5
+12. [x] Implement main quest 6-10
+13. [x] Implement main quest 11-15
+14. [x] Implement main quest 16-20
+15. [x] Implement main quest 21-25
+16. [x] Implement main quest 26-30
+17. [x] Implement main quest 31-35
+18. [x] Implement main quest 36-40
 19. Implement side quests 1-10
 20. Implement side quests 11-20
 21. Implement side quests 21-30
 22. Implement side quests 31-40
 23. Implement side quests 41-50
 24. Implement side quests 51-60
-25. Implement daily quest templates
+25. [x] Implement daily quest templates
 26. Implement hidden quest triggers
-27. Add quest accept dialogue
-28. Add quest progress tracking
-29. Add quest completion dialogue
-30. Add quest reward distribution
-31. Add quest UI updates per state
+27. [x] Add quest accept dialogue
+28. [x] Add quest progress tracking
+29. [x] Add quest completion dialogue
+30. [x] Add quest reward distribution
+31. [x] Add quest UI updates per state
 32. Add quest sound stings
 33. Add quest objective markers in world
 34. Hook quest to map UI
-35. Add quest abandonment
-36. Add quest failure conditions
-37. Build quest chain dependencies
-38. Add quest cinematic triggers
-39. Hook quest to NPC affinity
-40. Hook quest to faction system
-41. Build quest journal lore tab
-42. Validate save/load quest state
+35. [x] Add quest abandonment
+36. [x] Add quest failure conditions
+37. [x] Build quest chain dependencies
+38. [x] Add quest cinematic triggers
+39. [x] Hook quest to NPC affinity
+40. [x] Hook quest to faction system
+41. [x] Build quest journal lore tab
+42. [x] Validate save/load quest state
 43. Add quest tutorial flow
 44. Add quest filtering
 45. Add quest sort options
 46. Validate UX
 47. Test full main quest playthrough
 48. Render hero shots
-49. Document quest bible
+49. [x] Document quest bible
 50. Commit `epic-38: quest system v2 complete`
 
 ---
