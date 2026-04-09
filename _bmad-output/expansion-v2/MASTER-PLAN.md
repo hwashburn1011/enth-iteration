@@ -375,7 +375,7 @@ Loop through epics 1 → 50 in order. For each epic:
 45. Add reactive lean during strafe
 46. [x] Validate AnimTree transitions (RogueProcessAnimTreeBuilder component — programmatically constructs AnimationNodeStateMachine with 12 states and ~18 transitions covering hover_idle/combat_idle locomotion, strafe L/R, charge_ranged → fire_ranged, melee_swipe, dash_forward, teleport_out → teleport_in interrupt, hit_react and death from any state, with graceful skipping of states whose animation isn't in the player)
 47. Hook variant-specific SFX
-48. Document RogueProcess bible
+48. [x] Document RogueProcess bible (epic-06-rogueprocess-variant-bible.md — 8 design knobs body proportions/weapon mounts/sensor count/alert color/hover height/stat modifiers/special behavior/aura, 6 launch variants Scout/Standard/Gunner/Brute/Hacker/Sentinel + 2 post-launch Phantom/Royal, 10-item validation checklist for silhouette + sensor + antenna + thruster compliance, 5 species-specific anti-patterns no-legs/no-mouth/no-friendly/no-symmetric-antennae/no-hit_glitch-shader)
 49. Add per-archetype pickup/drop animation
 50. Commit `epic-06: RogueProcess AAA pass complete`
 
