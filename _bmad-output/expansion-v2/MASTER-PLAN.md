@@ -1335,7 +1335,7 @@ Loop through epics 1 → 50 in order. For each epic:
 11. [x] Add entrance difficulty indicator
 12. [x] Add entrance recommended-level UI
 13. [x] Add entrance chosen-biome confirmation
-14. Add per-entrance loading screen art
+14. [x] Add per-entrance loading screen art (database + themed UI controller)
 15. [x] Build dungeon selection map screen
 16. [x] Hook dungeon selection to FloorManager
 17. [x] Add daily-bonus rotating biome
