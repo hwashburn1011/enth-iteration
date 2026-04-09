@@ -329,7 +329,7 @@ Loop through epics 1 → 50 in order. For each epic:
 ## Epic 06 — RogueProcess Enemy: Photoreal Detail Pass
 
 1. [x] Reference: rogue AI / drone / spectral entity refs (epic-06-rogueprocess-references.md — 5 design pillars + reference families + material zones + 3-way bestiary contrast table + 4 archetype specs)
-2. Concept 6 silhouettes with humanoid-but-wrong feel
+2. [x] Concept 6 silhouettes with humanoid-but-wrong feel (epic-06-rogueprocess-concept-silhouettes.md — hover_idle/combat_idle/charge_fire/melee_swipe/teleport_in/death with bone offsets, sensor color states, hover behavior per pose)
 3. Sculpt floating torso with no legs
 4. Sculpt face with multiple eyes
 5. Sculpt hand-claws
