@@ -120,7 +120,7 @@ Loop through epics 1 → 50 in order. For each epic:
 14. [x] Design "Glitch" cursed/unique set — broken digital corruption look
 15. [x] Model + texture Glitch set with shader distortion (33 pieces, asymmetric corruption with floating fragments)
 16. [x] Design "Cozy" town/social set — non-combat outfit
-17. Model + texture Cozy set
+17. [x] Model + texture Cozy set (29 pieces, autumn knitwear with pom-pom beanie + scarf + cardigan)
 18. [x] Design "Boss Reward" iconic set — drops from Compiler boss
 19. Model + texture Boss Reward set
 20. [x] Build mix-and-match material system so any helmet works with any chest
