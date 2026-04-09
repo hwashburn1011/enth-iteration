@@ -219,7 +219,7 @@ Loop through epics 1 → 50 in order. For each epic:
 **Goal:** Make the most-fought enemy a hero asset.
 
 1. [x] Reference: collect insect/glitch/digital corruption refs (epic-04-glitchbug-references.md — 5 design pillars + reference families + material zones + motion timing + 90s trailer test)
-2. Concept sketch 6 pose silhouettes
+2. [x] Concept sketch 6 pose silhouettes (epic-04-glitchbug-concept-silhouettes.md — idle/alert/aggro_rear/lunge/bite/death_curl with explicit body part positions and rotations driving rig + animation tasks)
 3. Sculpt high-poly carapace with surface detail
 4. Add chitin plate breakup with edge wear
 5. Sculpt 6 leg variants with joint detail
