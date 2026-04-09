@@ -1381,7 +1381,7 @@ Loop through epics 1 → 50 in order. For each epic:
 2. Build underground lounge scene (Blender)
 3. Add lounge furniture props (Blender)
 4. [x] Build lounge bar interactive (9 drink specials, daily rotation, story-flag gating)
-5. Build lounge stage for music
+5. [x] Build lounge stage for music (Sync schedule + spotlight pulse + tip jar)
 6. Add lounge NPCs
 7. Hook lounge dialogue
 8. Build tower top scene
