@@ -149,7 +149,7 @@ Loop through epics 1 → 50 in order. For each epic:
 43. [x] Validate all sets in 5 lighting environments (40 PNGs in lighting_tests/)
 44. [x] Add equipment slot icons to UI matching set art
 45. [x] Build "outfit favorites" save slot system (3 saved looks)
-46. Create the Globbler portrait used in dialogue boxes (high-res render of new model)
+46. [x] Create the Globbler portrait used in dialogue boxes (512x512 with 3-point lighting)
 47. Generate variant portraits per outfit
 48. Animate portrait subtle motion (breathing, blink) as a Sprite2D atlas
 49. [x] Hook portrait into dialogue UI
