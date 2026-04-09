@@ -116,7 +116,7 @@ Loop through epics 1 → 50 in order. For each epic:
 10. [x] Design "Kernel" epic set — sleek warrior aesthetic
 11. [x] Model + texture Kernel set with anim'd glow shader (39 pieces, sleek warrior + cape + fins)
 12. [x] Design "Architect" legendary set — heroic silhouette
-13. Model + texture Architect set with cape/mantle that simulates
+13. [x] Model + texture Architect set with cape/mantle that simulates (54 pieces, ivory + gold + crimson mantle)
 14. [x] Design "Glitch" cursed/unique set — broken digital corruption look
 15. Model + texture Glitch set with shader distortion
 16. [x] Design "Cozy" town/social set — non-combat outfit
