@@ -1344,7 +1344,7 @@ Loop through epics 1 → 50 in order. For each epic:
 20. [x] Add cleared-count tracker per entrance
 21. [x] Add boss-defeated trophy at each entrance
 22. [x] Add per-entrance music sting
-23. Add per-entrance ambient particles
+23. [x] Add per-entrance ambient particles (4 themed profiles + presence-gated component)
 24. Validate readability
 25. [x] Add entrance interaction prompt
 26. [x] Hook to fast-travel from town
