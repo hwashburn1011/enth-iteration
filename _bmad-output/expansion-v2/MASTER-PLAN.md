@@ -235,7 +235,7 @@ Loop through epics 1 → 50 in order. For each epic:
 15. [x] Animate idle (twitchy, twitchy, look around) (60-frame loop — antenna jitters every 6 frames + head occasional yaw look-around + subtle breath chest pitch + abdomen tip wag, IK constraints muted for FK keyframing per Globbler v2 lesson)
 16. [x] Animate walk (6-leg gait) (24-frame loop, alternating tripod gait — Tripod A FR+ML+RR vs Tripod B FL+MR+RL with 25° lift / 40° bend during swing phase, 15° fore-aft swing range during stance, body bob ±2° chest, antenna lead trail)
 17. [x] Animate run (faster gait) (16-frame loop, same alternating tripod as walk but deeper stride 25° fore-aft + bigger lift 35°/55° + body forward-tilted 8° chest + head down 5° + abdomen up 5°, antennae swept back to -8°)
-18. Animate aggro (rear up, hiss)
+18. [x] Animate aggro (rear up, hiss) (50-frame, 12-frame anticipation crouch → 10-frame snap rear up to -45° chest pitch with front legs raised raptorial -110°/-120° + mandibles spread ±30° + antennae erect -25° + wing_case opens -60° to expose underbelly + 4-frame quiver micro-jitter + held pose)
 19. Animate attack lunge
 20. Animate attack bite
 21. Animate hit reaction
