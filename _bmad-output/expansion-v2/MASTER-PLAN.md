@@ -314,7 +314,7 @@ Loop through epics 1 → 50 in order. For each epic:
 39. [x] Animate absorb sequence (150-frame matching LeakAbsorbController 2.5s absorb_duration — F30 lean_down with base spreading 1.20 X/Y crouching wider over the corpse + intent tilted 8° down toward absorbed mass, F60 engulf with spine_01 bulging 1.20 X/Y + 1.05 Z (the corpse is being engulfed at this body section), F100 digest_mid with the bulge moving up the spine chain, F150 end_grown with body settled at 5% scale gain)
 40. [x] Add custom death-puddle that lingers as hazard (already implemented in LeakPuddle component — _on_parent_died converts to hazard mode with damage_per_tick + damage_radius_m, reparents to world scene, holds full opacity for first 60% of hazard_lifetime_s before fading)
 41. [x] Hook environment puddles to slow player movement (already implemented via SlowZone Area3D primitive — LeakTrail drops SlowZones along the leak's path, each calls actor.apply_speed_modifier(&"slow_zone", strength) on entry and removes on exit)
-42. Add "boss tier" giant leak variant for mid-boss
+42. [x] Add "boss tier" giant leak variant for mid-boss (memoryleak_leviathan.tres — 3.2x body scale (mid-boss tier between flood and ocean), 12x HP, 2.5x damage, 0.55x speed, 1.5x plate_density, wobble_amplitude_override 0.038m, deep blue + light blue colors with vein overlay, has_pack_leader_aura at intensity 1.2 + radius 3.2m, applies void_pull status — distinct from the ocean tier by using void mechanics + a deep ocean palette)
 43. Render hero shot for trailer
 44. [x] Add ambient SFX hooks (gurgle, drip) (AmbientEnemySfx component — spatialized continuous loop + randomly-timed accent one-shots, dual AudioStreamPlayer3D children, stops on parent died)
 45. Validate against 5 lighting environments
