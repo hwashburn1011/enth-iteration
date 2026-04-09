@@ -1280,7 +1280,7 @@ Loop through epics 1 → 50 in order. For each epic:
 11. Add path signposts (Blender)
 12. [x] Place wilderness NPC encounters (database + manager + 5 wandering events)
 13. [x] Add wilderness wildlife (13 critters, region/phase/weather-aware spawner)
-14. Add wilderness enemy spawns (overworld combat)
+14. [x] Add wilderness enemy spawns (6 hostile types, exclusion-aware spawner)
 15. Build wilderness ambient SFX (wind, water, leaves)
 16. Build wilderness ambient music
 17. Add weather variation
