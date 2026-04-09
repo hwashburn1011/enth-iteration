@@ -275,7 +275,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 1. [x] Reference: collect amorphous blob/slime/water/data refs (epic-05-memoryleak-references.md — 5 design pillars + reference families + material zones + GlitchBug contrast table)
 2. [x] Concept 6 silhouette variants emphasizing flow/blob shape (epic-05-memoryleak-concept-silhouettes.md — idle/alert/aggro_extend/tendril_whip/spit_windup/death_drain with control bone offsets, soft body falloff rules, sub-frame death breakdown)
-3. Sculpt blob base form with internal "data" visible through translucency
+3. [x] Sculpt blob base form with internal "data" visible through translucency (enemy_memoryleak_v2_blockout.blend — 5 stacked flattened-sphere body sections base/spine_01/spine_02/spine_03/intent matching the 12-bone control hierarchy from concept silhouettes, with asymmetric drift on spine_02/03 + intent for the irregular blob silhouette, all carrying the translucent gel material at IOR 1.35 + 0.55 alpha, plus 12 small data fragment cubes scattered inside the body volume with bright cyan emissive material so they read as drifting code through the translucency)
 4. Sculpt surface ripples and bubbles
 5. Sculpt drip tendrils
 6. Retopo to 3K tris with subdivision support
