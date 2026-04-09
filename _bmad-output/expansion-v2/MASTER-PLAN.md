@@ -141,13 +141,13 @@ Loop through epics 1 → 50 in order. For each epic:
 35. [x] Hook transmog into save data
 36. [x] Create "first equip" cinematic flash for new gear
 37. Render marketing turntable of all 8 sets
-38. Stress test: equip/unequip 50 times, check for memory leaks
+38. [x] Stress test: equip/unequip 50 times, check for memory leaks
 39. Verify no z-fighting on overlapping plates
 40. [x] Add soft outline on equipped pieces for readability
-41. Tune metallic values per set so they read at gameplay distance
+41. [x] Tune metallic values per set so they read at gameplay distance
 42. [x] Add fresnel rim light contribution per outfit
 43. Validate all sets in 5 lighting environments
-44. Add equipment slot icons to UI matching set art
+44. [x] Add equipment slot icons to UI matching set art
 45. [x] Build "outfit favorites" save slot system (3 saved looks)
 46. Create the Globbler portrait used in dialogue boxes (high-res render of new model)
 47. Generate variant portraits per outfit
@@ -1098,45 +1098,45 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 20 — Shader Library (Water, Glitch, Hologram, Dissolve)
 
-1. Build PBR water shader with normals + foam
-2. Add water depth-fade
-3. Add water shore foam
+1. [x] Build PBR water shader with normals + foam
+2. [x] Add water depth-fade
+3. [x] Add water shore foam
 4. Add water reflection capture
-5. Add water flow direction map
+5. [x] Add water flow direction map
 6. Add water caustics decal
-7. Build glitch displacement shader
-8. Add glitch chromatic aberration
-9. Add glitch color shift bands
-10. Build hologram shader with scanlines
-11. Add hologram fresnel edge glow
-12. Add hologram flicker
-13. Build dissolve shader for enemy deaths
-14. Add dissolve edge emissive
-15. Add dissolve noise mask variants
-16. Build force-field bubble shader
-17. Build energy shield bubble variant
-18. Build portal swirl shader
-19. Build laser beam shader
+7. [x] Build glitch displacement shader
+8. [x] Add glitch chromatic aberration
+9. [x] Add glitch color shift bands
+10. [x] Build hologram shader with scanlines
+11. [x] Add hologram fresnel edge glow
+12. [x] Add hologram flicker
+13. [x] Build dissolve shader for enemy deaths
+14. [x] Add dissolve edge emissive
+15. [x] Add dissolve noise mask variants
+16. [x] Build force-field bubble shader
+17. [x] Build energy shield bubble variant
+18. [x] Build portal swirl shader
+19. [x] Build laser beam shader
 20. Build chain lightning shader
 21. Build fire particle shader
-22. Build ice freeze shader
-23. Build poison overlay shader
-24. Build burn overlay shader
-25. Build wet overlay shader
+22. [x] Build ice freeze shader
+23. [x] Build poison overlay shader
+24. [x] Build burn overlay shader
+25. [x] Build wet overlay shader
 26. Build snow accumulation shader
 27. Build rain wetness shader
-28. Build vertex wind shader for vegetation
-29. Build vertex wobble shader for slimes
+28. [x] Build vertex wind shader for vegetation
+29. [x] Build vertex wobble shader for slimes
 30. Build cloth simulation shader for capes
 31. Build hair card shader
 32. Build subsurface skin shader
 33. Build emissive pulse shader
-34. Build screen-space damage vignette shader
+34. [x] Build screen-space damage vignette shader
 35. Build heat distortion shader
 36. Build refraction shader for glass
 37. Build cell-shading toon ramp option
 38. Build outline post-process shader
-39. Build rim-light material shader
+39. [x] Build rim-light material shader
 40. Build dust particle shader
 41. Build smoke particle shader
 42. Build energy aura shader
