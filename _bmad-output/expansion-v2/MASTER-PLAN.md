@@ -303,7 +303,7 @@ Loop through epics 1 → 50 in order. For each epic:
 28. [x] Add absorb-light shader (absorb_light.gdshader using blend_mul + Fresnel falloff + AbsorbLightField component for sphere placement, slow pulse, fade-out on death)
 29. [x] Implement leak-trail system (LeakTrail component drops SlowZone Area3D footprints as parent moves, max_active_slicks cap, larger final slick on death — pairs with LeakPuddle for hazard climax)
 30. [x] Add reflective surface shader (gel_refraction.gdshader — SCREEN_TEXTURE refraction + Fresnel rim reflection + scrolling internal data overlay + tinted alpha rim cleanup)
-31. Validate readability vs other enemies
+31. [x] Validate readability vs other enemies (2 256x256 black-on-white silhouette renders front/side — front shows tall vertical irregular blob with sagging wider base + narrower upper intent bulge + drip protrusions at base, distinctly different from GlitchBug's wide horizontal triangle with mandibles + 6 splayed legs, passes bestiary distinction rule from the variant bibles)
 32. Build LOD chain
 33. Tune shader cost on mobile-spec hardware
 34. Add "engorged" elite variant with internal data churn
