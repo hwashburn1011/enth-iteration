@@ -260,7 +260,7 @@ Loop through epics 1 → 50 in order. For each epic:
 40. [x] Add group call/summon animation (60-frame summon call — anticipation crouch F8 → BROADCAST F16 with body lifted +0.08Z + chest -30° head -40° pointed up + antennae erect + mandibles wide ±32° + wing case half-open → 14-frame held broadcast → F44 head jerk antennae sweep widest ±15° + mandibles ±35° → F50 hold → F60 return rest)
 41. [x] Add corpse persistence (CorpsePersistence component — listens for HealthComponent.died, swaps meshes to dissolve shader, disables physics+AI, lingers N seconds, dissolves with per-enemy edge color)
 42. [x] Tune attack telegraph readability (AttackTelegraph v2 layer — show_circle_telegraph + show_line_telegraph with 3-phase yellow→orange→red color ramp, outline rings via TorusMesh, optional Decal ground projection, audio cue hooks)
-43. Add wing flap loop (idle ambient flutter)
+43. [x] Add wing flap loop (idle ambient flutter) (12-frame high-frequency wing case oscillation ±3° + abdomen counter-jitter ±1° — designed as an additive layer for the AnimationTree blend system, plays on top of any base animation to suggest the wings underneath are vibrating)
 44. Validate against 5 lighting setups
 45. [x] Add per-variant SFX hooks (EnemyVariant Resource with 9 sfx_* fields + EnemyVariantSfx component routing state machine + damage + death events through SfxManager with graceful fallback)
 46. Build spawn-from-egg variant intro
