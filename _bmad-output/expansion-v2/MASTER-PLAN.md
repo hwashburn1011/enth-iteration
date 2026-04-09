@@ -1453,8 +1453,8 @@ Loop through epics 1 → 50 in order. For each epic:
 19. [x] Build star particle layer for night (global NightSkyStarField, camera follow, skybox preset visibility)
 20. [x] Build moon position animation
 21. [x] Build light cookie clouds drifting (CloudCookieDrifter wind + weather coverage)
-22. Add ambient bird SFX in day
-23. Add ambient cricket SFX at night
+22. [x] Add ambient bird SFX in day (AmbientWildlifeSoundLayer day side)
+23. [x] Add ambient cricket SFX at night (AmbientWildlifeSoundLayer night side)
 24. Build window-light flicker on at dusk
 25. Build street lamp light on at dusk
 26. Build NPC bedtime animations
