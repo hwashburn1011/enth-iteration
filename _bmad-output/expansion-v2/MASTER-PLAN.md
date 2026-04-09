@@ -1043,55 +1043,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 19 — PBR Lighting & Atmosphere Overhaul
 
-1. Audit current lighting setup across all scenes
-2. Define PBR material baseline (correct albedo ranges, metallic 0/1, roughness varied)
-3. Re-validate every existing material against PBR baseline
+1. [x] Audit current lighting setup across all scenes
+2. [x] Define PBR material baseline (correct albedo ranges, metallic 0/1, roughness varied)
+3. [x] Re-validate every existing material against PBR baseline
 4. Set up Reflection Probes per major area
 5. Bake lightmaps for town
 6. Bake lightmaps per dungeon biome
-7. Build day-night cycle lighting curves
-8. Set up directional sun light with cascade shadows
-9. Tune shadow distance and bias
-10. Build SSAO settings per environment
-11. Build SSR settings for water + reflective floors
-12. Tune SDFGI for indirect bounce
-13. Build volumetric fog per environment preset
-14. Set up godray volumetrics for sun shafts
-15. Tune bloom thresholds per environment
-16. Tune tonemapper (Filmic) per environment
-17. Set up color grading LUTs per environment
-18. Build "danger" lighting state for combat rooms
-19. Build "safe" lighting state for hubs
-20. Build "story" lighting state for cinematic moments
-21. Add light flicker components for ambience
-22. Add light pulse components for reactive states
-23. Build emissive intensity tuning system
+7. [x] Build day-night cycle lighting curves
+8. [x] Set up directional sun light with cascade shadows
+9. [x] Tune shadow distance and bias
+10. [x] Build SSAO settings per environment
+11. [x] Build SSR settings for water + reflective floors
+12. [x] Tune SDFGI for indirect bounce
+13. [x] Build volumetric fog per environment preset
+14. [x] Set up godray volumetrics for sun shafts
+15. [x] Tune bloom thresholds per environment
+16. [x] Tune tonemapper (Filmic) per environment
+17. [x] Set up color grading LUTs per environment
+18. [x] Build "danger" lighting state for combat rooms
+19. [x] Build "safe" lighting state for hubs
+20. [x] Build "story" lighting state for cinematic moments
+21. [x] Add light flicker components for ambience
+22. [x] Add light pulse components for reactive states
+23. [x] Build emissive intensity tuning system
 24. Add area lights for windows/lamps
 25. Tune indoor lighting for tavern/forge/archive interiors
 26. Build firefly/data-mote particle ambient lights
 27. Add light cookies for window patterns
 28. Validate every scene under 5 environment presets
-29. Test perf budget for SDFGI on midspec hardware
-30. Build fallback lighting profile for low-end
-31. Add dynamic time-of-day in town
-32. Add weather darkening modifier
-33. Validate shadow softness on character
-34. Tune subsurface light contribution on Globbler
-35. Add per-material rim light contribution
-36. Build skybox per environment (town day, town night, dungeon)
+29. [x] Test perf budget for SDFGI on midspec hardware
+30. [x] Build fallback lighting profile for low-end
+31. [x] Add dynamic time-of-day in town
+32. [x] Add weather darkening modifier
+33. [x] Validate shadow softness on character
+34. [x] Tune subsurface light contribution on Globbler
+35. [x] Add per-material rim light contribution
+36. [x] Build skybox per environment (town day, town night, dungeon)
 37. Add cloud layer to town sky
 38. Build aurora-style sky for late-game iterations
 39. Validate sky reflection in water
-40. Build "iteration shift" lighting transition for narrative beats
+40. [x] Build "iteration shift" lighting transition for narrative beats
 41. Render hero lighting comparison shots (before/after)
-42. Tune final intensity ratios so nothing blows out
-43. Validate readability of player in all lighting
+42. [x] Tune final intensity ratios so nothing blows out
+43. [x] Validate readability of player in all lighting
 44. Validate readability of enemies in all lighting
 45. Validate UI legibility in all lighting
 46. Add light pollution glow over town visible from wilderness
 47. Add ambient bird/insect spawners tied to time of day
-48. Performance-profile final lighting cost
-49. Document lighting bible
+48. [x] Performance-profile final lighting cost
+49. [x] Document lighting bible
 50. Commit `epic-19: PBR lighting overhaul complete`
 
 ---
