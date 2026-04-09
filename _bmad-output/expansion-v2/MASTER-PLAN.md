@@ -308,7 +308,7 @@ Loop through epics 1 → 50 in order. For each epic:
 33. Tune shader cost on mobile-spec hardware
 34. Add "engorged" elite variant with internal data churn
 35. Add "starved" weak variant with thin form
-36. Implement merge mechanic: 2 leaks combine into bigger threat
+36. [x] Implement merge mechanic: 2 leaks combine into bigger threat (LeakMergeController scans group for partners, deterministic ownership via instance ID, HP-gated eligibility, windup interruptible by damage, fires EventBus.leak_merged for spawner)
 37. Animate merge sequence
 38. Add absorb-corpse mechanic: leak grows by eating other enemies
 39. Animate absorb sequence
