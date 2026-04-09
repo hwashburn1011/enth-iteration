@@ -1289,8 +1289,8 @@ Loop through epics 1 → 50 in order. For each epic:
 20. [x] Build hidden lake side area (data side; Blender build deferred)
 21. [x] Build hidden cave side area (already in SubAreaDatabase from epic 22)
 22. [x] Place dungeon entrances ×4 (Four Mouths anchored at wild_cliffs)
-23. Build dungeon entrance hero monuments
-24. Add fast-travel waypoints
+23. Build dungeon entrance hero monuments (Blender)
+24. [x] Add fast-travel waypoints (7 wilderness waypoints, manager, trigger)
 25. Build wilderness map UI
 26. Add discovery rewards per landmark
 27. Hook story trigger zones
