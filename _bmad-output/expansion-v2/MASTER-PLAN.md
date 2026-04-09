@@ -286,7 +286,7 @@ Loop through epics 1 → 50 in order. For each epic:
 11. [x] Add subsurface scatter for inner glow (extended gel_refraction.gdshader with SSS_STRENGTH + SSS_TRANSMITTANCE_COLOR uniforms — body now glows from inside via Godot's built-in subsurface scattering pass, default sss_color warmer green 0.40/1.0/0.55 brighter than the outer surface tint so the inner glow reads as a distinct color through thin body areas)
 12. [x] Build vertex-shader wobble for jelly motion (extended gel_refraction.gdshader with vertex() function — sin-wave vertex displacement along NORMAL driven by world position phase + TIME * wobble_frequency, gives the gel surface continuous high-frequency jiggle even when the body is static, sells the references doc's "macro slow + micro jiggle" rule)
 13. [x] Add reactive ripples on hit (shader) (extended gel_refraction.gdshader vertex() with hit ripple — circular bulge expanding from hit_origin_local at hit_ripple_speed_m_s, vertices within hit_ripple_width_m of the current ripple radius get outward NORMAL displacement scaled by lifetime_fade, gameplay code drives hit_age_s 0→lifetime on damage)
-14. Rig with 12 bones for tendril control
+14. [x] Rig with 12 bones for tendril control (Armature_MemoryLeak_v2 — root + base + spine_01/02/03 + intent body chain (6) + tendril_01/02/03 (3) + hotspot_anchor + drip_anchor_R/L (3) = 12 bones, LP skinned via bone envelopes with body 0.30m wide / tendril 0.08m tight / drip 0.10m precise distances)
 15. Animate idle (slow pulse breath)
 16. Animate move (drag/ooze across ground)
 17. Animate attack (extend tendril whip)
