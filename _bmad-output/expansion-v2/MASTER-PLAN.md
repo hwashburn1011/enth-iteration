@@ -373,7 +373,7 @@ Loop through epics 1 → 50 in order. For each epic:
 43. Add "captured" defeated variant for cutscene use
 44. [x] Build hover IK so the unit stays above terrain (HoverTerrainSolver component — single downward raycast each _physics_process, exponential damping smoothing toward ground+target_altitude_m, sin-wave bob layered on top, snap_to_terrain() for spawn/teleport, parent CollisionObject3D excluded from raycast)
 45. Add reactive lean during strafe
-46. Validate AnimTree transitions
+46. [x] Validate AnimTree transitions (RogueProcessAnimTreeBuilder component — programmatically constructs AnimationNodeStateMachine with 12 states and ~18 transitions covering hover_idle/combat_idle locomotion, strafe L/R, charge_ranged → fire_ranged, melee_swipe, dash_forward, teleport_out → teleport_in interrupt, hit_react and death from any state, with graceful skipping of states whose animation isn't in the player)
 47. Hook variant-specific SFX
 48. Document RogueProcess bible
 49. Add per-archetype pickup/drop animation
