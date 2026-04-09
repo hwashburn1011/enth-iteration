@@ -207,7 +207,7 @@ Loop through epics 1 → 50 in order. For each epic:
 44. [x] Animate "hug" emotional moment (90-frame, arms wide open → wrap inward → 28-frame embrace hold → release)
 45. [x] Animate "fall from height" extended fall (120-frame loop, body straight + arms drifting slightly out + subtle wind sway)
 46. [x] Animate "land hard" with stumble (35-frame, snap impact → deepest absorb at -90° thighs → catch breath pause → slow rise)
-47. Animate "sneak" crouched walk
+47. [x] Animate "sneak" crouched walk (80-frame loop, low body crouch + alternating thigh swing + arms hovering forward at sides)
 48. Animate "trip" comedic stumble
 49. Build emote wheel UI exposing 12 of these as player-triggered
 50. Commit `epic-03: animation library deep pass complete`
