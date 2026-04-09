@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://glitchbug_venom"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"glitchbug_venom"
+display_name = "Venom GlitchBug"
+base_enemy_id = &"glitchbug"
+body_scale = 1.0
+mandible_scale = 1.0
+plate_density = 1.0
+crack_color_a = Color(0.95, 0.10, 0.05, 1.0)
+crack_color_b = Color(0.95, 0.55, 0.05, 1.0)
+pattern_overlay = &"spot"
+aura_intensity = 0.0
+aura_radius = 0.0
+hp_mult = 1.1
+damage_mult = 1.2
+speed_mult = 1.0
+aggro_radius_mult = 1.0
+has_pack_leader_aura = false
+leaves_footstep_decal = true
+applies_status_effect = &"poison"
+sfx_idle = &"glitchbug_idle_low"
+sfx_footstep = &"glitchbug_footstep_wet"
+sfx_aggro = &"glitchbug_aggro_hiss_red"
+sfx_attack_strike = &"glitchbug_bite_squelch"
+sfx_hit = &"glitchbug_hit_wet"
+sfx_death = &"glitchbug_death_drip"

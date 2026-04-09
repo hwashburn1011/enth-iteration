@@ -241,7 +241,7 @@ Loop through epics 1 → 50 in order. For each epic:
 21. [x] Animate hit reaction (4 directional 20-frame actions glitchbug_hit_front/back/left/right — F4 peak recoil with body kicked away from hit direction via root translation + chest pitch ±15° / yaw ±12°, antennae jerk back -25°, mandibles snap open ±25°, all 6 legs splay defensively wider, 12-frame fade back to neutral)
 22. [x] Animate death (legs curl, dissolve) (114-frame, F1 rest → F8 final twitch + mandibles open → F18 mid-curl + body sags → F40 fully curled all legs at +60° upper / +80° lower with body dropped 10cm + head lolling + antennae drooping + mandibles slack → F70 held → F114 dissolve handoff to CorpsePersistence)
 23. [x] Animate death variant 2 (explode into glitch fragments) (30-frame fast violent death — F4 sudden inflation pressurizing → F8 BURST root +0.18Z + tumble rotations + mandibles max ±45 + antennae shoot out → F12 dispersal with 3-axis tumbles and legs flailing → F18 held for VFX → F30 end)
-24. Build 4 color variants (red venom, blue cold, green tox, purple elite)
+24. [x] Build 4 color variants (red venom, blue cold, green tox, purple elite) (4 EnemyVariant.tres files in data/enemies/variants/ — venom red+amber poison applier, cold blue+white freeze + slowed speed, tox green+yellow acid, elite purple+gold pack leader 1.15x scale + 2x HP + aura)
 25. Build size variants (small swarm, normal, large alpha)
 26. Add per-variant unique vfx auras
 27. Implement queen/elite GlitchBug visual upgrade
