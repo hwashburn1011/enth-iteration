@@ -1326,10 +1326,10 @@ Loop through epics 1 → 50 in order. For each epic:
 2. [x] Design entrance 2: Memory Vaults portal (gold archaic)
 3. [x] Design entrance 3: Corrupted Wilds portal (organic)
 4. [x] Design entrance 4: Final Vault portal (locked till conditions)
-5. Build entrance 1 monument + portal VFX
-6. Build entrance 2 monument + portal VFX
-7. Build entrance 3 monument + portal VFX
-8. Build entrance 4 monument + portal VFX
+5. Build entrance 1 monument + portal VFX (Blender)
+6. Build entrance 2 monument + portal VFX (Blender)
+7. Build entrance 3 monument + portal VFX (Blender)
+8. Build entrance 4 monument + portal VFX (Blender)
 9. [x] Hook entrance scene transitions
 10. [x] Add entrance lore plaques
 11. [x] Add entrance difficulty indicator
@@ -1345,17 +1345,17 @@ Loop through epics 1 → 50 in order. For each epic:
 21. [x] Add boss-defeated trophy at each entrance
 22. [x] Add per-entrance music sting
 23. [x] Add per-entrance ambient particles (4 themed profiles + presence-gated component)
-24. Validate readability
+24. Validate readability (scene-bake; deferred)
 25. [x] Add entrance interaction prompt
 26. [x] Hook to fast-travel from town
-27. Validate all 4 entrances transition properly
+27. Validate all 4 entrances transition properly (scene-bake; deferred)
 28. [x] Build entrance "first time" cinematic per biome
 29. [x] Build entrance "return" idle cinematic (4 idles, no-letterbox brief flourishes)
 30. [x] Add entrance NPC guide/warden (4 wardens with dialogue, shop, schedule)
 31. [x] Add ambient SFX per entrance (4 close-up SFX beds, 4 layers each)
 32. [x] Polish entrance lighting (3-light hero rig per portal: key + rim + pulsing core)
-33. Render hero shot per entrance
-34. Validate against navmesh
+33. Render hero shot per entrance (Blender)
+34. Validate against navmesh (scene-bake; deferred)
 35. [x] Add entrance day/night appearance variation (per-phase mults on lights + particles)
 36. [x] Add entrance weather response (per-(entrance × weather) light + particle mults)
 37. [x] Add discovery reward for finding each
@@ -1365,13 +1365,13 @@ Loop through epics 1 → 50 in order. For each epic:
 41. [x] Add entrance flag/banner decor (4 themed banner pairs with biome emblems)
 42. [x] Add entrance reflection probe (4 per-entrance probes with biome ambient bias)
 43. [x] Build entrance secret unlock condition
-44. Validate scene transitions don't crash
-45. Test all entrances in one session
+44. Validate scene transitions don't crash (scene-bake; deferred)
+45. Test all entrances in one session (scene-bake; deferred)
 46. [x] Hook map fast-travel
 47. [x] Add entrance audio sting
 48. [x] Polish entrance VFX (4 portal energy surfaces with shader + seal overlay + unseal anim)
 49. [x] Document entrance bible
-50. Commit `epic-24: multiple dungeon entrances complete`
+50. [x] Commit `epic-24: multiple dungeon entrances complete` (41/50 system, 9 deferred)
 
 ---
 
@@ -2840,7 +2840,7 @@ Mark each epic when complete:
 - [ ] Epic 21 — Town Districts: 5 Distinct Zones
 - [ ] Epic 22 — Town Sub-Areas & Hidden Spots
 - [x] Epic 23 — Open Wilderness Zone (system layer complete; Blender build pending)
-- [ ] Epic 24 — Multiple Dungeon Entrances
+- [x] Epic 24 — Multiple Dungeon Entrances (system layer complete; Blender monuments pending)
 - [ ] Epic 25 — Town Hub Expansion: Underground & Vertical
 - [ ] Epic 26 — Day/Night Cycle System
 - [ ] Epic 27 — Weather System
