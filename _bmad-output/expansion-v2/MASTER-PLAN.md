@@ -1291,7 +1291,7 @@ Loop through epics 1 → 50 in order. For each epic:
 22. [x] Place dungeon entrances ×4 (Four Mouths anchored at wild_cliffs)
 23. Build dungeon entrance hero monuments (Blender)
 24. [x] Add fast-travel waypoints (7 wilderness waypoints, manager, trigger)
-25. Build wilderness map UI
+25. [x] Build wilderness map UI (regions, landmarks, waypoints, entrances, player dot)
 26. Add discovery rewards per landmark
 27. Hook story trigger zones
 28. Build wilderness shrine that provides buffs
