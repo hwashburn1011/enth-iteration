@@ -1436,13 +1436,13 @@ Loop through epics 1 → 50 in order. For each epic:
 2. [x] Build sun directional light orbit animation
 3. [x] Build moon directional light alternate
 4. [x] Build skybox interpolation between presets
-5. Build dawn skybox preset
-6. Build noon skybox preset
-7. Build dusk skybox preset
-8. Build night skybox preset
-9. Build night with moon variant
-10. Build cloudy variant
-11. Build storm variant
+5. [x] Build dawn skybox preset (SkyboxPresetDatabase)
+6. [x] Build noon skybox preset (SkyboxPresetDatabase)
+7. [x] Build dusk skybox preset (SkyboxPresetDatabase)
+8. [x] Build night skybox preset (SkyboxPresetDatabase)
+9. [x] Build night with moon variant (SkyboxPresetDatabase)
+10. [x] Build cloudy variant (SkyboxPresetDatabase)
+11. [x] Build storm variant (SkyboxPresetDatabase)
 12. [x] Hook lighting tint to time
 13. [x] Hook fog density to time
 14. [x] Hook ambient SFX shift to time
