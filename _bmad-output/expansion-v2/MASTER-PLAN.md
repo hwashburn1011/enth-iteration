@@ -1400,8 +1400,8 @@ Loop through epics 1 → 50 in order. For each epic:
 21. [x] Add harvesting interaction (floating popup with quality tier + drops + XP + crown celebration)
 22. Build fishing dock at water (Blender)
 23. [x] Add fishing rod prop + animation (cast/wait/bite/reel state machine + line rendering)
-24. Build cooking station
-25. Add cooking interaction
+24. Build cooking station (Blender)
+25. [x] Add cooking interaction (10 recipes across 3 tiers + station with starter book + unlock hooks)
 26. Build crafting workshop area
 27. Add crafting station interactions
 28. Build pet hutch area
