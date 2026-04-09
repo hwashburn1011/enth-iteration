@@ -1309,7 +1309,7 @@ Loop through epics 1 → 50 in order. For each epic:
 40. [x] Add weather particles (code-built GPUParticles3D follower for 5 weathers)
 41. [x] Add wind direction variance (WindDirector + global shader params + region mults)
 42. Validate navmesh on slopes and around obstacles (scene-bake; deferred)
-43. Add cinematic camera reveal shots
+43. [x] Add cinematic camera reveal shots (7 landmark reveals + manager + trigger)
 44. Render hero shots (Blender)
 45. [x] Hook wilderness encounter system (WandererNPCManager + 5 events)
 46. Add reactive enemy alerts
