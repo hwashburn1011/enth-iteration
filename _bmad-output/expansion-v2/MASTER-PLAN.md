@@ -243,7 +243,7 @@ Loop through epics 1 → 50 in order. For each epic:
 23. [x] Animate death variant 2 (explode into glitch fragments) (30-frame fast violent death — F4 sudden inflation pressurizing → F8 BURST root +0.18Z + tumble rotations + mandibles max ±45 + antennae shoot out → F12 dispersal with 3-axis tumbles and legs flailing → F18 held for VFX → F30 end)
 24. [x] Build 4 color variants (red venom, blue cold, green tox, purple elite) (4 EnemyVariant.tres files in data/enemies/variants/ — venom red+amber poison applier, cold blue+white freeze + slowed speed, tox green+yellow acid, elite purple+gold pack leader 1.15x scale + 2x HP + aura)
 25. [x] Build size variants (small swarm, normal, large alpha) (3 EnemyVariant.tres files: swarm 0.5x scale + 0.35x HP fast packs of 6+, alpha 1.7x scale + 4.5x HP mini-boss tier, queen 2.6x scale + 18x HP boss with pack leader aura — base normal already exists as the unmodified GlitchBug)
-26. Add per-variant unique vfx auras
+26. [x] Add per-variant unique vfx auras (VariantAuraAttachment factory component — dispatches by variant_id and applies_status_effect to compose unique signatures: venom drip embers, cold absorb field + frost mist, tox green gas, elite pack leader aura + gold sparkle, swarm minimal flicker, alpha heavy embers + presence field, queen aura + infested decal + queen foam)
 27. Implement queen/elite GlitchBug visual upgrade
 28. Polish material readability at gameplay zoom
 29. Validate silhouette is unique vs other enemies
