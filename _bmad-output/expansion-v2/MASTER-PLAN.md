@@ -246,7 +246,7 @@ Loop through epics 1 → 50 in order. For each epic:
 26. [x] Add per-variant unique vfx auras (VariantAuraAttachment factory component — dispatches by variant_id and applies_status_effect to compose unique signatures: venom drip embers, cold absorb field + frost mist, tox green gas, elite pack leader aura + gold sparkle, swarm minimal flicker, alpha heavy embers + presence field, queen aura + infested decal + queen foam)
 27. [x] Implement queen/elite GlitchBug visual upgrade (VariantBodyUpgrade component — applies body_scale to root, mandible_scale via Skeleton3D bone pose scale, pushes crack_color/crawl_color into the carapace ShaderMaterial uniforms, spawns pattern_overlay decoration scenes from a path lookup, boosts crack/crawl emission for elites)
 28. [x] Polish material readability at gameplay zoom (rendered at ARPG isometric ~7m camera distance, boosted glitchbug_eye_pit emission 2.5→5.0, glitchbug_antenna_tip 3.0→6.0, glitchbug_mandible_inner 1.8→2.88 so the threat-color signals read at gameplay range against dark dungeon backgrounds)
-29. Validate silhouette is unique vs other enemies
+29. [x] Validate silhouette is unique vs other enemies (3 256x256 black-on-white silhouette renders front/side/top — front shows wide horizontal arthropod triangle with mandibles + antennae + 6 splayed legs, top shows segmented body with 6 visible leg pairs, distinctly different from planned MemoryLeak vertical blob and RogueProcess humanoid torso silhouettes per the bestiary contrast table)
 30. Render hero shot for trailer
 31. Optimize: LOD0/LOD1/LOD2 set up
 32. Decimate LOD2 to ~800 tris for distant
