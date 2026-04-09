@@ -129,7 +129,10 @@ func _find_skeleton() -> Skeleton3D:
 
 
 func _apply_carapace_shader_uniforms() -> void:
-	# For each carapace mesh, push the variant colors into its ShaderMaterial
+	# For each carapace mesh, push the variant colors into its ShaderMaterial.
+	# Detects shader type by checking which uniforms exist and routes to the
+	# right uniform names — supports both enemy_carapace.gdshader (GlitchBug)
+	# and gel_refraction.gdshader (MemoryLeak).
 	for mesh_path: NodePath in carapace_mesh_paths:
 		var mesh: MeshInstance3D = get_node_or_null(mesh_path) as MeshInstance3D
 		if mesh == null:
@@ -137,15 +140,44 @@ func _apply_carapace_shader_uniforms() -> void:
 		var mat: Material = mesh.material_override
 		if mat == null and mesh.get_surface_override_material_count() > 0:
 			mat = mesh.get_surface_override_material(0)
-		if mat is ShaderMaterial:
-			var sm: ShaderMaterial = mat as ShaderMaterial
-			# Carapace shader uniforms (Epic 04 task 11-12):
+		if not (mat is ShaderMaterial):
+			continue
+		var sm: ShaderMaterial = mat as ShaderMaterial
+		var shader: Shader = sm.shader
+		if shader == null:
+			continue
+		var shader_path: String = shader.resource_path
+
+		if shader_path.ends_with("enemy_carapace.gdshader"):
+			# GlitchBug carapace shader (Epic 04 task 11-12)
 			sm.set_shader_parameter("crack_color", variant.crack_color_a)
 			sm.set_shader_parameter("crawl_color", variant.crack_color_b)
-			# Boost emission for elites
 			if variant.has_pack_leader_aura:
 				sm.set_shader_parameter("crack_emission", 4.0)
 				sm.set_shader_parameter("crawl_emission_strength", 5.0)
+
+		elif shader_path.ends_with("gel_refraction.gdshader"):
+			# MemoryLeak gel shader (Epic 05 tasks 30, 11, 12, 13, 33, 46) —
+			# the per-variant glow color set covers tint, internal data, sss,
+			# and rim simultaneously so the variant identity is consistent
+			# across every visual layer of the gel
+			sm.set_shader_parameter("tint_color",
+				Color(variant.crack_color_a.r, variant.crack_color_a.g,
+					  variant.crack_color_a.b, 1.0))
+			sm.set_shader_parameter("internal_data_color", variant.crack_color_b)
+			sm.set_shader_parameter("rim_color",
+				Vector3(variant.crack_color_b.r, variant.crack_color_b.g,
+					    variant.crack_color_b.b))
+			sm.set_shader_parameter("sss_color",
+				Vector3(variant.crack_color_a.r * 1.4, variant.crack_color_a.g * 1.4,
+					    variant.crack_color_a.b * 1.4))
+			# Per-variant wobble amplitude override from Epic 05 task 24
+			if variant.wobble_amplitude_override > 0.0:
+				sm.set_shader_parameter("wobble_amplitude", variant.wobble_amplitude_override)
+			# Boost emission for elites + bosses
+			if variant.has_pack_leader_aura:
+				sm.set_shader_parameter("fresnel_intensity", 2.4)
+				sm.set_shader_parameter("internal_data_strength", 0.65)
 
 
 func _apply_pattern_overlay() -> void:
