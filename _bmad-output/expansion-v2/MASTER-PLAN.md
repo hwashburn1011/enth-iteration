@@ -198,7 +198,7 @@ Loop through epics 1 → 50 in order. For each epic:
 35. [x] Animate "throw" projectile (45-frame, wind up → cock back peak → release whip → follow through with body twist → recover)
 36. [x] Animate "kick" attack (30-frame, knee chamber high → snap extend → impact hold → recover chamber → ground)
 37. [x] Animate "block" defensive stance (120-frame loop, forearms crossed at face + tucked body + bent knees + breath shift)
-38. Animate "parry" successful counter
+38. [x] Animate "parry" successful counter (28-frame, snappy whip-deflect across body with body torque counter-twist)
 39. Animate "dodge roll" alt to dash
 40. Animate "execute finisher" cinematic kill
 41. Animate "mounted ride" if pets get implemented
