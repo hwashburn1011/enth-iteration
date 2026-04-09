@@ -2596,54 +2596,54 @@ Loop through epics 1 → 50 in order. For each epic:
 ## Epic 47 — Audio: SFX Overhaul (300+ Sounds)
 
 1. Source/record full SFX library (royalty-free or original)
-2. Player footsteps grass ×4
-3. Player footsteps stone ×4
-4. Player footsteps metal ×4
-5. Player footsteps wood ×4
-6. Player footsteps water ×4
-7. Player jump
-8. Player land
-9. Player dash
-10. Player damaged ×3
-11. Player death
-12. Player level up
-13. Player potion drink
-14. Basic attack swing ×3
-15. Basic attack hit ×3
-16. Charged attack release
-17. Charged attack hit
-18. Module 1 cast
-19. Module 2 cast
-20. Module 3 cast
-21. Module 4 cast (continue per module)
-22. Compile all 40 module sounds
-23. Enemy GlitchBug aggro
-24. Enemy GlitchBug attack
-25. Enemy GlitchBug death
-26. Enemy MemoryLeak aggro
-27. Enemy MemoryLeak attack
-28. Enemy MemoryLeak death
-29. Enemy RogueProcess aggro
-30. Enemy RogueProcess attack
-31. Enemy RogueProcess death
-32. All 8 new enemy sound triples
-33. Boss Compiler intro
-34. Boss Compiler attacks ×4
-35. Boss Compiler death
-36. All 5 boss sound sets
-37. UI button hover
-38. UI button click
-39. UI menu open
-40. UI menu close
-41. UI tab switch
-42. UI inventory open
-43. UI inventory close
-44. UI item pickup
-45. UI item drop
-46. UI item equip
-47. UI item drop on ground
-48. UI gold pickup
-49. UI XP pickup
+2. [x] Player footsteps grass ×4
+3. [x] Player footsteps stone ×4
+4. [x] Player footsteps metal ×4
+5. [x] Player footsteps wood ×4
+6. [x] Player footsteps water ×4
+7. [x] Player jump
+8. [x] Player land
+9. [x] Player dash
+10. [x] Player damaged ×3
+11. [x] Player death
+12. [x] Player level up
+13. [x] Player potion drink
+14. [x] Basic attack swing ×3
+15. [x] Basic attack hit ×3
+16. [x] Charged attack release
+17. [x] Charged attack hit
+18. [x] Module 1 cast
+19. [x] Module 2 cast
+20. [x] Module 3 cast
+21. [x] Module 4 cast (continue per module)
+22. [x] Compile all 40 module sounds
+23. [x] Enemy GlitchBug aggro
+24. [x] Enemy GlitchBug attack
+25. [x] Enemy GlitchBug death
+26. [x] Enemy MemoryLeak aggro
+27. [x] Enemy MemoryLeak attack
+28. [x] Enemy MemoryLeak death
+29. [x] Enemy RogueProcess aggro
+30. [x] Enemy RogueProcess attack
+31. [x] Enemy RogueProcess death
+32. [x] All 8 new enemy sound triples
+33. [x] Boss Compiler intro
+34. [x] Boss Compiler attacks ×4
+35. [x] Boss Compiler death
+36. [x] All 5 boss sound sets
+37. [x] UI button hover
+38. [x] UI button click
+39. [x] UI menu open
+40. [x] UI menu close
+41. [x] UI tab switch
+42. [x] UI inventory open
+43. [x] UI inventory close
+44. [x] UI item pickup
+45. [x] UI item drop
+46. [x] UI item equip
+47. [x] UI item drop on ground
+48. [x] UI gold pickup
+49. [x] UI XP pickup
 50. Commit `epic-47: SFX overhaul complete`
 
 ---
