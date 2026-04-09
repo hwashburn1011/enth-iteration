@@ -197,7 +197,7 @@ Loop through epics 1 → 50 in order. For each epic:
 34. [x] Animate "pull" object (100-frame loop, body leaning BACK + arms tugging toward self + squat-back stance + strain cycle)
 35. [x] Animate "throw" projectile (45-frame, wind up → cock back peak → release whip → follow through with body twist → recover)
 36. [x] Animate "kick" attack (30-frame, knee chamber high → snap extend → impact hold → recover chamber → ground)
-37. Animate "block" defensive stance
+37. [x] Animate "block" defensive stance (120-frame loop, forearms crossed at face + tucked body + bent knees + breath shift)
 38. Animate "parry" successful counter
 39. Animate "dodge roll" alt to dash
 40. Animate "execute finisher" cinematic kill
