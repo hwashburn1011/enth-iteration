@@ -1361,7 +1361,7 @@ Loop through epics 1 → 50 in order. For each epic:
 37. [x] Add discovery reward for finding each
 38. [x] Add achievement for finding all
 39. [x] Add entrance signpost lore
-40. Add per-entrance approach path
+40. [x] Add per-entrance approach path (4 descent paths + biome guide markers + signposts)
 41. Add entrance flag/banner decor
 42. Add entrance reflection probe
 43. [x] Build entrance secret unlock condition
