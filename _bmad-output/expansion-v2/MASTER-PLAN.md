@@ -1384,10 +1384,10 @@ Loop through epics 1 → 50 in order. For each epic:
 5. [x] Build lounge stage for music (Sync schedule + spotlight pulse + tip jar)
 6. [x] Add lounge NPCs (Cache evening shift + 8 regulars rotating pair per night)
 7. [x] Hook lounge dialogue (8 Cache lounge-only confessions, tier-gated)
-8. Build tower top scene
-9. Build tower spiral staircase
-10. Build tower observation deck
-11. Add tower telescope interaction
+8. Build tower top scene (Blender)
+9. Build tower spiral staircase (Blender)
+10. Build tower observation deck (Blender)
+11. [x] Add tower telescope interaction (7 targets, phase + iteration gated, lore/buff/title/countdown reveals)
 12. Build tower ambient lighting
 13. Build sage's tower study room
 14. Build sage's library
