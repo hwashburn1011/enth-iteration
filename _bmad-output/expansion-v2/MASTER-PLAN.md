@@ -242,7 +242,7 @@ Loop through epics 1 → 50 in order. For each epic:
 22. [x] Animate death (legs curl, dissolve) (114-frame, F1 rest → F8 final twitch + mandibles open → F18 mid-curl + body sags → F40 fully curled all legs at +60° upper / +80° lower with body dropped 10cm + head lolling + antennae drooping + mandibles slack → F70 held → F114 dissolve handoff to CorpsePersistence)
 23. [x] Animate death variant 2 (explode into glitch fragments) (30-frame fast violent death — F4 sudden inflation pressurizing → F8 BURST root +0.18Z + tumble rotations + mandibles max ±45 + antennae shoot out → F12 dispersal with 3-axis tumbles and legs flailing → F18 held for VFX → F30 end)
 24. [x] Build 4 color variants (red venom, blue cold, green tox, purple elite) (4 EnemyVariant.tres files in data/enemies/variants/ — venom red+amber poison applier, cold blue+white freeze + slowed speed, tox green+yellow acid, elite purple+gold pack leader 1.15x scale + 2x HP + aura)
-25. Build size variants (small swarm, normal, large alpha)
+25. [x] Build size variants (small swarm, normal, large alpha) (3 EnemyVariant.tres files: swarm 0.5x scale + 0.35x HP fast packs of 6+, alpha 1.7x scale + 4.5x HP mini-boss tier, queen 2.6x scale + 18x HP boss with pack leader aura — base normal already exists as the unmodified GlitchBug)
 26. Add per-variant unique vfx auras
 27. Implement queen/elite GlitchBug visual upgrade
 28. Polish material readability at gameplay zoom
