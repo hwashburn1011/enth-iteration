@@ -236,7 +236,7 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Animate walk (6-leg gait) (24-frame loop, alternating tripod gait — Tripod A FR+ML+RR vs Tripod B FL+MR+RL with 25° lift / 40° bend during swing phase, 15° fore-aft swing range during stance, body bob ±2° chest, antenna lead trail)
 17. [x] Animate run (faster gait) (16-frame loop, same alternating tripod as walk but deeper stride 25° fore-aft + bigger lift 35°/55° + body forward-tilted 8° chest + head down 5° + abdomen up 5°, antennae swept back to -8°)
 18. [x] Animate aggro (rear up, hiss) (50-frame, 12-frame anticipation crouch → 10-frame snap rear up to -45° chest pitch with front legs raised raptorial -110°/-120° + mandibles spread ±30° + antennae erect -25° + wing_case opens -60° to expose underbelly + 4-frame quiver micro-jitter + held pose)
-19. Animate attack lunge
+19. [x] Animate attack lunge (24-frame, chains from aggro_rear at F1 → wind extension F4 → AIRBORNE peak F8 with root displaced +0.30Y +0.10Z and all 6 legs trailing back +45/+60/+75° → contact F14 with mandibles closed and root at peak +0.45Y → recoil drop F18 → settled neutral F24)
 20. Animate attack bite
 21. Animate hit reaction
 22. Animate death (legs curl, dissolve)
