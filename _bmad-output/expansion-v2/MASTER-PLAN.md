@@ -126,17 +126,17 @@ Loop through epics 1 → 50 in order. For each epic:
 20. [x] Build mix-and-match material system so any helmet works with any chest
 21. [x] Create dye system: 16 color variants per slot
 22. [x] Add per-slot wear/dirt slider that increases with damage taken
-23. Hook up equipment preview in inventory screen (3D rotating model)
-24. Create paper-doll UI showing equipped silhouette
+23. [x] Hook up equipment preview in inventory screen (3D rotating model)
+24. [x] Create paper-doll UI showing equipped silhouette
 25. [x] Implement set-bonus visual: matched set glows softly
 26. Add rarity-tier vfx halo on equipped legendary items
 27. Validate all 8 sets animate correctly with all anims from Epic 01
 28. Validate clipping at extreme poses (charged attack, dash, death)
 29. Polish weight painting on attachments
 30. Add subtle physics on cape, antenna, loose straps
-31. Create equipment pickup world model variants (small props on ground)
-32. Create equipment drop sparkle/aura colored by rarity
-33. Build wardrobe NPC in town that previews outfits
+31. [x] Create equipment pickup world model variants (small props on ground)
+32. [x] Create equipment drop sparkle/aura colored by rarity
+33. [x] Build wardrobe NPC in town that previews outfits
 34. [x] Add transmog system: visual one set, stats from another
 35. [x] Hook transmog into save data
 36. Create "first equip" cinematic flash for new gear
