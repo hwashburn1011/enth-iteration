@@ -1395,8 +1395,8 @@ Loop through epics 1 → 50 in order. For each epic:
 16. Build training arena hub area (Blender)
 17. [x] Add target dummies (6 archetypes + DPS window + stagger meter)
 18. [x] Add training reset functionality (lever + leaderboard with personal bests)
-19. Build farm plot area
-20. Add planting interaction
+19. Build farm plot area (Blender)
+20. [x] Add planting interaction (FarmPlotInteractable wrapper + state-aware action picker)
 21. Add harvesting interaction
 22. Build fishing dock at water
 23. Add fishing rod prop + animation
