@@ -223,7 +223,7 @@ Loop through epics 1 → 50 in order. For each epic:
 3. [x] Sculpt high-poly carapace with surface detail (enemy_glitchbug_v2_blockout.blend — 11 separate chitin plate meshes: head/neck/2 thoracic/abdomen/4 shoulder/2 hip, each as a flattened UV sphere with subsurface modifier level 2 for high-poly working surface, dark purple-black PBR material)
 4. [x] Add chitin plate breakup with edge wear (Bevel modifier 5mm width 3 segments 30° angle limit + Solidify 18mm thickness + Displace noise modifier 4mm strength on all 11 plates — verified with render showing distinct plate domes with visible seams)
 5. [x] Sculpt 6 leg variants with joint detail (6 legs in 3 pairs FR/FL/MR/ML/RR/RL, each with 3 tapered cylinder segments coxa+tibia+tarsus and 2 sphere joint balls between, rear pair 1.15x length per reference bible — verified with render)
-6. Sculpt mandibles + sensors
+6. [x] Sculpt mandibles + sensors (2 curved stag-beetle mandibles + 10 red emissive serration teeth + 4 cyan eye pits + 2 antennae with bright cyan emissive tips — verified with front render showing predatory bug face)
 7. Retopo to 4K tris
 8. UV unwrap with carapace on high-res patch
 9. Bake normal/AO/curvature/cavity
