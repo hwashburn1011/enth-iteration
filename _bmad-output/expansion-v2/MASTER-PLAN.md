@@ -330,7 +330,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 1. [x] Reference: rogue AI / drone / spectral entity refs (epic-06-rogueprocess-references.md — 5 design pillars + reference families + material zones + 3-way bestiary contrast table + 4 archetype specs)
 2. [x] Concept 6 silhouettes with humanoid-but-wrong feel (epic-06-rogueprocess-concept-silhouettes.md — hover_idle/combat_idle/charge_fire/melee_swipe/teleport_in/death with bone offsets, sensor color states, hover behavior per pose)
-3. Sculpt floating torso with no legs
+3. [x] Sculpt floating torso with no legs (enemy_rogueprocess_v2_blockout.blend — 6 body section meshes lower_torso/chest/chest_emblem/neck/shoulder_R/L matching the references doc dimensional targets 1.9m height + 0.65m shoulder width, brushed gunmetal armor material + polished chrome chest emblem, NO leg geometry below the lower_torso — the body fades into thruster glow at hover_anchor altitude per the species design pillar)
 4. Sculpt face with multiple eyes
 5. Sculpt hand-claws
 6. Sculpt back exhaust thrusters
