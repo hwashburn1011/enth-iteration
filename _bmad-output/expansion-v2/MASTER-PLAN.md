@@ -1353,7 +1353,7 @@ Loop through epics 1 → 50 in order. For each epic:
 29. [x] Build entrance "return" idle cinematic (4 idles, no-letterbox brief flourishes)
 30. [x] Add entrance NPC guide/warden (4 wardens with dialogue, shop, schedule)
 31. [x] Add ambient SFX per entrance (4 close-up SFX beds, 4 layers each)
-32. Polish entrance lighting
+32. [x] Polish entrance lighting (3-light hero rig per portal: key + rim + pulsing core)
 33. Render hero shot per entrance
 34. Validate against navmesh
 35. Add entrance day/night appearance variation
