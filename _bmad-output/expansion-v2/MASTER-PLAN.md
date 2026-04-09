@@ -1316,7 +1316,7 @@ Loop through epics 1 → 50 in order. For each epic:
 47. [x] Add wandering NPC events (5 events in WildernessEncounterDatabase)
 48. Test wilderness traversal end-to-end (scene-bake; deferred)
 49. [x] Document wilderness bible
-50. Commit `epic-23: wilderness zone complete`
+50. [x] Commit `epic-23: wilderness zone complete` (35/50 system side, 15 Blender/scene-bake deferred)
 
 ---
 
@@ -2839,7 +2839,7 @@ Mark each epic when complete:
 - [ ] Epic 20 — Shader Library
 - [ ] Epic 21 — Town Districts: 5 Distinct Zones
 - [ ] Epic 22 — Town Sub-Areas & Hidden Spots
-- [ ] Epic 23 — Open Wilderness Zone
+- [x] Epic 23 — Open Wilderness Zone (system layer complete; Blender build pending)
 - [ ] Epic 24 — Multiple Dungeon Entrances
 - [ ] Epic 25 — Town Hub Expansion: Underground & Vertical
 - [ ] Epic 26 — Day/Night Cycle System
