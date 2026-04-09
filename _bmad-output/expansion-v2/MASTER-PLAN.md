@@ -167,7 +167,7 @@ Loop through epics 1 → 50 in order. For each epic:
 4. [x] Animate "shake head no" (30-frame, 3 swings with decay)
 5. [x] Animate "shrug" uncertain (50-frame, both arms out + elbows bent + head tilt; muted IK constraints to allow FK animation)
 6. [x] Animate "point" directional gesture (50-frame, right arm extends forward via upperarm X=-95, head/chest follow direction)
-7. Animate "facepalm"
+7. [x] Animate "facepalm" (80-frame, anticipation→contact→long-suffering hold→head shake→release→neutral)
 8. Animate "laugh" full body
 9. Animate "cry" sad sequence
 10. Animate "anger" stomp + fist clench
