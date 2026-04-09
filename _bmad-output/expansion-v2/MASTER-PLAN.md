@@ -1417,10 +1417,10 @@ Loop through epics 1 → 50 in order. For each epic:
 38. [x] Build hidden treasure room (chest interaction + 3 bible rewards + cinematic; room scene Blender)
 39. [x] Add new fast-travel points (17 hub points + reactive unlock manager)
 40. [x] Validate all hub additions tie to systems (validator script + audit report; PASS)
-41. Render hero shots per area
-42. Optimize draw calls
-43. Bake lighting
-44. Hook ambient SFX
+41. Render hero shots per area (Blender)
+42. Optimize draw calls (scene-bake; deferred)
+43. Bake lighting (scene-bake; deferred)
+44. [x] Hook ambient SFX (14 hub space soundscapes consumed by AmbientSoundscapeMixer)
 45. Hook ambient music transitions
 46. Validate navmesh throughout
 47. Test full hub traversal

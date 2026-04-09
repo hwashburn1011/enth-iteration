@@ -56,7 +56,12 @@ func apply_region(region_id: StringName) -> void:
 		return
 	_current_region = region_id
 
+	# Try the wilderness catalog first, then the hub catalog. Lets the
+	# same mixer drive both wild_* regions and hub_* spaces with the
+	# same slot-aware crossfade behavior.
 	var soundscape: Dictionary = AmbientSoundscapeDatabase.get_soundscape(region_id)
+	if soundscape.is_empty():
+		soundscape = HubAmbientSoundscapeDatabase.get_soundscape(region_id)
 	if soundscape.is_empty():
 		_stop_all_non_weather_slots()
 		return
@@ -90,6 +95,8 @@ func apply_region(region_id: StringName) -> void:
 
 func _apply_phase_overlay() -> void:
 	var soundscape: Dictionary = AmbientSoundscapeDatabase.get_soundscape(_current_region)
+	if soundscape.is_empty():
+		soundscape = HubAmbientSoundscapeDatabase.get_soundscape(_current_region)
 	if soundscape.is_empty():
 		return
 	var overlays: Dictionary = soundscape.get("phase_overlays", {})
