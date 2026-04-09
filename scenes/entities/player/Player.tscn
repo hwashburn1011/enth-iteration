@@ -1,5 +1,6 @@
-[gd_scene load_steps=44 format=3 uid="uid://player00001"]
+[gd_scene load_steps=45 format=3 uid="uid://player00001"]
 
+[ext_resource type="PackedScene" path="res://assets/models/characters/char_globbler_v2.glb" id="20_globbler_v2"]
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_idle_state.gd" id="3_idle"]
@@ -227,22 +228,29 @@ shape = SubResource("CapsuleShape3D_col")
 [node name="Model" type="Node3D" parent="."]
 unique_name_in_owner = true
 
+[node name="GlobblerV2" parent="Model" instance=ExtResource("20_globbler_v2")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Model"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0)
 mesh = SubResource("SphereMesh_body")
 surface_material_override/0 = SubResource("Material_player")
 
 [node name="Head" type="MeshInstance3D" parent="Model"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
 mesh = SubResource("SphereMesh_head")
 surface_material_override/0 = SubResource("Material_player_head")
 
 [node name="EyeLeft" type="MeshInstance3D" parent="Model"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.12, 1.1, -0.28)
 mesh = SubResource("SphereMesh_eye")
 surface_material_override/0 = SubResource("Material_eye")
 
 [node name="EyeRight" type="MeshInstance3D" parent="Model"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.12, 1.1, -0.28)
 mesh = SubResource("SphereMesh_eye")
 surface_material_override/0 = SubResource("Material_eye")

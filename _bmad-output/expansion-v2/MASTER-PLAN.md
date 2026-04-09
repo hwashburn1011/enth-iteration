@@ -92,11 +92,11 @@ Loop through epics 1 → 50 in order. For each epic:
 43. [x] Animate jump / fall / land trio
 44. [x] Animate interact (lean forward, reach hand)
 45. [x] Animate dialogue talk loop (subtle head/jaw motion)
-46. Export all anims with proper naming and root motion separation
-47. Hook up new model + anims in Godot AnimationTree, validate transitions
-48. Tune blend times for snappy ARPG feel (no slop)
-49. Trailer shot test: render 5 hero shots in Blender Cycles for marketing
-50. Commit `epic-01: Globbler hero remake complete` with before/after screenshots
+46. [x] Export all anims with proper naming and root motion separation
+47. [x] Hook up new model + anims in Godot AnimationTree, validate transitions
+48. [x] Tune blend times for snappy ARPG feel (no slop)
+49. [x] Trailer shot test: render 5 hero shots in Blender Cycles for marketing
+50. [x] Commit `epic-01: Globbler hero remake complete` with before/after screenshots
 
 ---
 
