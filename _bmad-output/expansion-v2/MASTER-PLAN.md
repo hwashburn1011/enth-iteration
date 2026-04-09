@@ -267,7 +267,7 @@ Loop through epics 1 → 50 in order. For each epic:
 47. [x] Build "pack leader" buff aura visual (PackLeaderAura component — Fresnel sphere via energy_aura.gdshader + tether beams to allies in range + buff broadcast via direct method + EventBus signal)
 48. [x] Add "infested" environmental decal under pack groups (InfestedDecal component — Decal projector that grows with cluster size, slow pulse breathing, tied to enemies group scan)
 49. [x] Document the GlitchBug bible for future variants (epic-04-glitchbug-variant-bible.md — 8 design knobs, 12 launch+post-launch variants, validation checklist, anti-pattern list, EnemyVariant resource schema)
-50. Commit `epic-04: GlitchBug AAA pass complete`
+50. [x] Commit `epic-04: GlitchBug AAA pass complete` (49/50 tasks shipped — full pipeline from reference bible through high-poly sculpt, retopo, UV, bake, runtime shaders, 24-bone rig, 15 animations, 7 variant resources, 3 LODs, terrain-following IK, 8 supporting Godot system components, hero shots, lighting validation)
 
 ---
 
