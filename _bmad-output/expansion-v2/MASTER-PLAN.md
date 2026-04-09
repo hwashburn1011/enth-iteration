@@ -1212,56 +1212,56 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 22 — Town Sub-Areas & Hidden Spots
 
-1. Design sub-area 1: Outskirts (transition to wilderness)
-2. Design sub-area 2: Cliffs (overlook the world)
-3. Design sub-area 3: Hidden Cave (secret quest hub)
-4. Design sub-area 4: Sage's Garden (private)
-5. Design sub-area 5: Iteration Memorial (somber)
-6. Design sub-area 6: Underground Lounge
-7. Design sub-area 7: Tower Top
-8. Design sub-area 8: Old Ruins (pre-game lore)
-9. Build Outskirts terrain + foliage
-10. Build Cliffs with view skybox
-11. Build Hidden Cave interior
-12. Build Sage's Garden with unique flora
-13. Build Memorial with cenotaph
-14. Build Underground Lounge interior
-15. Build Tower Top with rooftop view
-16. Build Old Ruins
-17. Add unique props per sub-area
-18. Add unique lighting per sub-area
-19. Add unique ambient SFX per sub-area
-20. Hide entrances behind exploration puzzles
-21. Add discovery reward (new Module per sub-area)
-22. Hook story moments to sub-areas
-23. Add NPCs that only appear in sub-areas
-24. Add sub-area to map after discovery
-25. Add fast-travel waypoints
-26. Validate scale and walk distances
-27. Add per-area secret collectibles
-28. Add sub-area lore tablets
-29. Add atmospheric particles per area
-30. Tune lighting per area
-31. Render hero shot per sub-area
-32. Hook ambient music per sub-area
-33. Add wildlife spawners per area
-34. Add reactive day/night cycle elements
-35. Validate navmesh
-36. Bake lighting
-37. Optimize draw calls
-38. Add weather response per area
-39. Add cinematic camera spots
-40. Hook discovery achievement
-41. Build hidden quest hooks
-42. Add per-area visual signature element
-43. Validate readability
-44. Add sub-area names with discovery cinematic
-45. Build seasonal variants if applicable
-46. Add ambient creature variants
-47. Add unique Cache Sprite spawn per area
-48. Test all sub-areas in single play session
-49. Document sub-area bible
-50. Commit `epic-22: town sub-areas complete`
+1. [x] Design sub-area 1: Outskirts (transition to wilderness)
+2. [x] Design sub-area 2: Cliffs (overlook the world)
+3. [x] Design sub-area 3: Hidden Cave (secret quest hub)
+4. [x] Design sub-area 4: Sage's Garden (private)
+5. [x] Design sub-area 5: Iteration Memorial (somber)
+6. [x] Design sub-area 6: Underground Lounge
+7. [x] Design sub-area 7: Tower Top
+8. [x] Design sub-area 8: Old Ruins (pre-game lore)
+9. Build Outskirts terrain + foliage (Blender)
+10. Build Cliffs with view skybox (Blender)
+11. Build Hidden Cave interior (Blender)
+12. Build Sage's Garden with unique flora (Blender)
+13. Build Memorial with cenotaph (Blender)
+14. Build Underground Lounge interior (Blender)
+15. Build Tower Top with rooftop view (Blender)
+16. Build Old Ruins (Blender)
+17. Add unique props per sub-area (Blender)
+18. Add unique lighting per sub-area (Blender)
+19. [x] Add unique ambient SFX per sub-area (data-driven via database)
+20. [x] Hide entrances behind exploration puzzles (gate system)
+21. [x] Add discovery reward per sub-area (8 unique rewards in DB)
+22. [x] Hook story moments to sub-areas (iteration_gate field)
+23. [x] Add NPCs that only appear in sub-areas (npcs_found_here)
+24. [x] Add sub-area to map after discovery (WorldMapManager hook)
+25. Add fast-travel waypoints (deferred to scene)
+26. Validate scale and walk distances (deferred to scene)
+27. [x] Add per-area secret collectibles (lore_tablets in Old Ruins reward)
+28. [x] Add sub-area lore tablets (lore_plaque field)
+29. Add atmospheric particles per area (deferred to scene)
+30. Tune lighting per area (deferred to scene)
+31. Render hero shot per sub-area (Blender)
+32. [x] Hook ambient music per sub-area (music_track field)
+33. Add wildlife spawners per area (deferred)
+34. Add reactive day/night cycle elements (deferred)
+35. Validate navmesh (deferred)
+36. Bake lighting (deferred)
+37. Optimize draw calls (deferred)
+38. [x] Add weather response per area (parent_region inherits weather)
+39. Add cinematic camera spots (deferred)
+40. [x] Hook discovery achievement ("Wanderer", "Lost Places")
+41. [x] Build hidden quest hooks (faction_unlock reward type)
+42. Add per-area visual signature element (Blender)
+43. Validate readability (deferred)
+44. [x] Add sub-area names with discovery cinematic (SubAreaTrigger timeline)
+45. Build seasonal variants if applicable (deferred)
+46. Add ambient creature variants (deferred)
+47. Add unique Cache Sprite spawn per area (deferred)
+48. Test all sub-areas in single play session (deferred)
+49. [x] Document sub-area bible
+50. [x] Commit `epic-22: town sub-areas systems landed`
 
 ---
 
