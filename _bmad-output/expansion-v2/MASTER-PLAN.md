@@ -1271,14 +1271,14 @@ Loop through epics 1 → 50 in order. For each epic:
 2. Build heightmap terrain at large scale (Blender)
 3. Sculpt river course (Blender)
 4. [x] Build river water with flow shader
-5. Sculpt cliff walls
-6. Place forest vegetation density
-7. Build clearing variants ×6
-8. Build ruin prop set
-9. Place ruin clusters
-10. Build wilderness path network
-11. Add path signposts
-12. Place wilderness NPC encounters
+5. Sculpt cliff walls (Blender)
+6. Place forest vegetation density (Blender)
+7. Build clearing variants ×6 (Blender)
+8. Build ruin prop set (Blender)
+9. Place ruin clusters (Blender)
+10. Build wilderness path network (Blender)
+11. Add path signposts (Blender)
+12. [x] Place wilderness NPC encounters (database + manager + 5 wandering events)
 13. Add wilderness wildlife (passive critters)
 14. Add wilderness enemy spawns (overworld combat)
 15. Build wilderness ambient SFX (wind, water, leaves)
