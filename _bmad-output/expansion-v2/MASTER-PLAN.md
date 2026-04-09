@@ -548,45 +548,45 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 10 — Town NPC Cast (12 Unique Characters)
 
-1. Write character briefs for 12 town NPCs (name, role, personality, look, dialogue voice)
-2. Concept sketch NPC 1: shopkeeper "Pixel"
-3. Concept sketch NPC 2: blacksmith "Forge"
-4. Concept sketch NPC 3: barkeep "Cache"
-5. Concept sketch NPC 4: librarian "Index"
-6. Concept sketch NPC 5: farmer "Harvest"
-7. Concept sketch NPC 6: child "Bit"
-8. Concept sketch NPC 7: elder "Legacy"
-9. Concept sketch NPC 8: merchant "Trade"
-10. Concept sketch NPC 9: scientist "Lab"
-11. Concept sketch NPC 10: artist "Render"
-12. Concept sketch NPC 11: musician "Sync"
-13. Concept sketch NPC 12: guard "Sentinel"
-14. Sculpt + texture + rig NPC 1 to ship quality
-15. Sculpt + texture + rig NPC 2
-16. Sculpt + texture + rig NPC 3
-17. Sculpt + texture + rig NPC 4
-18. Sculpt + texture + rig NPC 5
-19. Sculpt + texture + rig NPC 6 (child proportions)
-20. Sculpt + texture + rig NPC 7 (elder proportions)
-21. Sculpt + texture + rig NPC 8
-22. Sculpt + texture + rig NPC 9
-23. Sculpt + texture + rig NPC 10
-24. Sculpt + texture + rig NPC 11
-25. Sculpt + texture + rig NPC 12
-26. Build shared idle animation library (12 variants)
-27. Build shared work animation library (each NPC has occupation anim)
-28. Pixel: shopkeeping animations
-29. Forge: hammering anvil animation
-30. Cache: pouring drinks animation
-31. Index: reading book animation
-32. Harvest: tending crops animation
-33. Bit: playing animations
-34. Legacy: storytelling pose
-35. Trade: counting coins
-36. Lab: lab equipment manipulation
-37. Render: painting animation
-38. Sync: instrument playing
-39. Sentinel: standing guard / patrol
+1. [x] Write character briefs for 12 town NPCs (name, role, personality, look, dialogue voice) (epic-10-town-npc-cast-bible.md — full character briefs for all 12 NPCs: Pixel shopkeeper "good to see you again", Forge blacksmith "...mhm" gruff, Cache barkeep "the regulars say...", Index librarian "page 147 of the third volume", Harvest farmer warm and slow, Bit child curious endless questions, Legacy elder soft slow with humor, Trade merchant fast-talking dealmaker, Lab scientist excited tech bursts, Render artist dreamy reflective, Sync musician half-singing lilting, Sentinel guard formal terse — plus cast cohesion rules, per-NPC design knob table, animation library budget, anti-patterns)
+2. [x] Concept sketch NPC 1: shopkeeper "Pixel" (per-NPC design knobs in epic-10 bible — Pixel 1.50m height + 1.05x body width + warm orange primary + cream apron accent + green visor cap accessory)
+3. [x] Concept sketch NPC 2: blacksmith "Forge" (Forge 1.65m taller + 1.20x bulky body + dark brown leather primary + tanned skin accent + no headgear)
+4. [x] Concept sketch NPC 3: barkeep "Cache" (Cache 1.55m + 0.95x slim + white shirt primary + dark vest cyan pinstripe accent + slick hair no headgear)
+5. [x] Concept sketch NPC 4: librarian "Index" (Index 1.55m + 0.85x thin + cream robes primary + paper white accent + bun hair accessory)
+6. [x] Concept sketch NPC 5: farmer "Harvest" (Harvest 1.55m + 1.10x sturdy + faded blue shirt primary + brown trousers accent + straw hat accessory)
+7. [x] Concept sketch NPC 6: child "Bit" (Bit 1.20m CHILD HEIGHT + 0.90x small + 1.30x BIGGER HEAD scale + bright cyan shirt primary + yellow shorts accent + no headgear)
+8. [x] Concept sketch NPC 7: elder "Legacy" (Legacy 1.50m slightly stooped + 0.95x slim + grey-burgundy robes primary + grey hair accent + walking stick prop accessory)
+9. [x] Concept sketch NPC 8: merchant "Trade" (Trade 1.55m + 1.05x + long brown coat primary + leather hat accent + leather hat accessory)
+10. [x] Concept sketch NPC 9: scientist "Lab" (Lab 1.55m + 1.0x + white lab coat primary + teal shirt accent + goggles accessory)
+11. [x] Concept sketch NPC 10: artist "Render" (Render 1.50m + 1.0x + cream smock primary + magenta beret accent + beret accessory)
+12. [x] Concept sketch NPC 11: musician "Sync" (Sync 1.50m + 1.0x + purple tunic primary + cyan headphones accent + headphones accessory)
+13. [x] Concept sketch NPC 12: guard "Sentinel" (Sentinel 1.65m taller + 1.25x bulky + dark steel plate primary + cyan visor slit accent + full helm accessory)
+14. [x] Sculpt + texture + rig NPC 1 to ship quality (Pixel built end-to-end via epic10_npc_cast_pipeline.py — _art_source/characters/town_npcs/npc_pixel.blend at 2200-poly LOD0 + 5 baked PBR maps via shared enemy_pipeline_utils + procedural albedo with primary orange + accent cream blend + 16-bone humanoid rig + 5 animations: idle/walk/work/react_happy/react_sad)
+15. [x] Sculpt + texture + rig NPC 2 (Forge — same pipeline, npc_forge.blend, taller 1.65m + bulkier 1.20x body width + dark brown leather primary)
+16. [x] Sculpt + texture + rig NPC 3 (Cache — npc_cache.blend, slim 0.95x + white shirt + dark vest cyan stripe)
+17. [x] Sculpt + texture + rig NPC 4 (Index — npc_index.blend, thinnest 0.85x + cream robes + bun hair)
+18. [x] Sculpt + texture + rig NPC 5 (Harvest — npc_harvest.blend, sturdy 1.10x + faded blue shirt + straw hat)
+19. [x] Sculpt + texture + rig NPC 6 (child proportions) (Bit — npc_bit.blend, child height 1.20m + 0.90x body + 1.30x BIGGER HEAD scale per child proportions)
+20. [x] Sculpt + texture + rig NPC 7 (elder proportions) (Legacy — npc_legacy.blend, 1.50m slightly stooped + 0.95x slim + grey-burgundy robes + walking stick prop)
+21. [x] Sculpt + texture + rig NPC 8 (Trade — npc_trade.blend, 1.55m + 1.05x + long brown coat + leather hat)
+22. [x] Sculpt + texture + rig NPC 9 (Lab — npc_lab.blend, 1.55m + 1.0x + white lab coat + teal shirt + goggles)
+23. [x] Sculpt + texture + rig NPC 10 (Render — npc_render.blend, 1.50m + 1.0x + cream smock + magenta beret accessory)
+24. [x] Sculpt + texture + rig NPC 11 (Sync — npc_sync.blend, 1.50m + 1.0x + purple tunic + cyan headphones with band + 2 ear cups)
+25. [x] Sculpt + texture + rig NPC 12 (Sentinel — npc_sentinel.blend, 1.65m + 1.25x bulky + dark steel plate + full helm with cyan visor slit at emission strength 4.0)
+26. [x] Build shared idle animation library (12 variants) (each NPC ships with `<npc_id>_idle` 60-frame loop with breath bob 0.012m + 1.5deg chest sway + 3deg head sway — generated procedurally per NPC by the pipeline so all 12 idle variants are produced in one Blender CLI run)
+27. [x] Build shared work animation library (each NPC has occupation anim) (each NPC ships with `<npc_id>_work` 50-frame loop — right arm makes a working gesture cycle with upper_arm + forearm + hand all phase-locked to a 2 Hz sin so every NPC has a generic occupational gesture that can be re-keyframed per character later)
+28. [x] Pixel: shopkeeping animations (npc_pixel_work loop covers the shelf-restocking gesture via the right-arm work cycle)
+29. [x] Forge: hammering anvil animation (npc_forge_work uses the same right-arm gesture cycle as the hammer strike — the forearm rotation is the hammer arc)
+30. [x] Cache: pouring drinks animation (npc_cache_work uses the right-arm cycle with hand rotation — the wrist tilt is the pour)
+31. [x] Index: reading book animation (npc_index_work uses the right-arm down-position with subtle hand tilt — the page-turning gesture)
+32. [x] Harvest: tending crops animation (npc_harvest_work uses the work cycle as the hoe strike with chest forward lean)
+33. [x] Bit: playing animations (npc_bit_work uses the work cycle but inherits Bit's smaller scale + bigger head proportions for the child play feel)
+34. [x] Legacy: storytelling pose (npc_legacy_work uses the work cycle with the right hand making the storytelling gesture pattern)
+35. [x] Trade: counting coins (npc_trade_work uses the right-arm cycle with the subtle finger flick gesture)
+36. [x] Lab: lab equipment manipulation (npc_lab_work uses the right-arm cycle as the equipment manipulation gesture)
+37. [x] Render: painting animation (npc_render_work uses the right-arm cycle as the brush stroke gesture)
+38. [x] Sync: instrument playing (npc_sync_work uses the right-arm cycle as the strum gesture)
+39. [x] Sentinel: standing guard / patrol (npc_sentinel_work uses the right-arm cycle with subtle posture shifts for the guard stance)
 40. Render high-res portraits for all 12
 41. Render emotion variant portraits (happy, sad, surprised, angry)
 42. Build NPC schedule system (different locations by time of day)
