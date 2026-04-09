@@ -188,7 +188,7 @@ Loop through epics 1 → 50 in order. For each epic:
 25. [x] Animate "build" hammering (101-frame loop, 4 hammer strokes — wind up overhead → strike down → bounce, head ducks on impact)
 26. [x] Animate "dig" shovel (75-frame, grip → raise → drive down → push → lift dirt → side toss with body twist → return)
 27. [x] Animate "swim" water surface (120-frame loop, alternating front-crawl arm strokes + flutter kick)
-28. Animate "swim under" submerged
+28. [x] Animate "swim under" submerged (120-frame loop, symmetric breaststroke — glide → pull wide → frog kick sweep)
 29. Animate "climb" ladder
 30. Animate "vault" over obstacle
 31. Animate "slide" under obstacle
