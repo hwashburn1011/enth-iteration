@@ -173,7 +173,7 @@ Loop through epics 1 → 50 in order. For each epic:
 10. [x] Animate "anger" stomp + fist clench (50-frame, tension build → knee raise → STOMP at 18 → tense hold → seething shake)
 11. [x] Animate "fear" recoil + hands up (55-frame, snap flinch → peak recoil → 2 trembles → tentative recovery)
 12. [x] Animate "thinking" hand on chin (170-frame loop, hand-to-chin pose with weight-shift cycling for the contemplative state)
-13. Animate "salute"
+13. [x] Animate "salute" (50-frame, attention → snap up to brow → 18-frame hold → snap down to side → relax)
 14. Animate "dance 1" cozy bop
 15. Animate "dance 2" victory shuffle
 16. Animate "sleep" curled up
