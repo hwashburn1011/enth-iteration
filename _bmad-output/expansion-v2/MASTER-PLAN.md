@@ -104,8 +104,8 @@ Loop through epics 1 → 50 in order. For each epic:
 
 **Goal:** Equipment slots actually show on the character. 8 unique outfit sets across the rarity tiers.
 
-1. Define equipment slot mounts on rig (head, chest, back, hands L/R, hip L/R, feet)
-2. Build attachment system in Godot: equipment swaps mesh+material at runtime
+1. [x] Define equipment slot mounts on rig (head, chest, back, hands L/R, hip L/R, feet)
+2. [x] Build attachment system in Godot: equipment swaps mesh+material at runtime
 3. Design "Initiate" common set — concept sketch
 4. Model Initiate set (head visor, chest plate, gloves, boots) low poly clean
 5. Texture Initiate set with neutral palette
