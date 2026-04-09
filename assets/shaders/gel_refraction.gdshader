@@ -68,6 +68,20 @@ uniform float wobble_amplitude : hint_range(0.0, 0.10) = 0.012;
 uniform float wobble_frequency : hint_range(0.5, 16.0) = 6.0;
 uniform float wobble_spatial_scale : hint_range(0.5, 16.0) = 4.0;
 
+// === Reactive ripples on hit (Epic 05 task 13) ===
+// When the body is hit, gameplay code sets hit_origin_local (a point
+// in object space where the impact happened) and starts a hit_age_s
+// timer. The shader expands a circular ripple from that origin: a
+// brief outward bulge that travels across the surface, peaks, and
+// fades over hit_ripple_lifetime_s. Multiple hits stack since each
+// only lives until the timer exceeds the lifetime.
+uniform vec3 hit_origin_local = vec3(0.0, 0.0, 0.0);
+uniform float hit_age_s : hint_range(0.0, 4.0) = 999.0;  // 999 = no active hit
+uniform float hit_ripple_lifetime_s : hint_range(0.1, 4.0) = 0.6;
+uniform float hit_ripple_speed_m_s : hint_range(0.5, 8.0) = 3.0;
+uniform float hit_ripple_amplitude : hint_range(0.0, 0.30) = 0.10;
+uniform float hit_ripple_width_m : hint_range(0.05, 1.0) = 0.25;
+
 void vertex() {
 	// Vertex wobble — displaces each vertex along its normal by a sin
 	// wave driven by world position + TIME. Each vertex gets a different
@@ -81,6 +95,23 @@ void vertex() {
 				+ TIME * wobble_frequency;
 	float displacement = sin(phase) * wobble_amplitude;
 	VERTEX += NORMAL * displacement;
+
+	// Hit ripple — when hit_age_s is within the ripple lifetime, expand
+	// a circular bulge from hit_origin_local outward at hit_ripple_speed.
+	// Vertices within hit_ripple_width_m of the current ripple radius
+	// get a brief outward push along their normal.
+	if (hit_age_s < hit_ripple_lifetime_s) {
+		float ripple_radius = hit_age_s * hit_ripple_speed_m_s;
+		float dist_from_hit = distance(VERTEX, hit_origin_local);
+		float dist_from_ripple = abs(dist_from_hit - ripple_radius);
+		if (dist_from_ripple < hit_ripple_width_m) {
+			// Falloff: 1.0 at the ripple peak, 0 at the edge of the band
+			float ripple_strength = 1.0 - (dist_from_ripple / hit_ripple_width_m);
+			// Lifetime fade: amplitude scales down as the ripple ages
+			float lifetime_fade = 1.0 - (hit_age_s / hit_ripple_lifetime_s);
+			VERTEX += NORMAL * hit_ripple_amplitude * ripple_strength * lifetime_fade;
+		}
+	}
 }
 
 void fragment() {
