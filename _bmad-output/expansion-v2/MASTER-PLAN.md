@@ -2481,55 +2481,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 45 — Difficulty & Modifier System
 
-1. Design difficulty bible: 5 difficulty tiers
-2. Define Easy preset
-3. Define Normal preset
-4. Define Hard preset
-5. Define Expert preset
-6. Define Nightmare preset
-7. Build difficulty selector at new game
-8. Build difficulty change menu (limited)
-9. Hook difficulty to enemy HP/damage
-10. Hook difficulty to loot quality
-11. Hook difficulty to economy
-12. Build modifier system
-13. Define 30 modifiers (positive and negative)
-14. Implement modifier 1-10 effects
-15. Implement modifier 11-20 effects
-16. Implement modifier 21-30 effects
-17. Build modifier selection UI
-18. Hook modifiers to dungeon runs
-19. Add modifier reward bonuses
-20. Add modifier risk indicators
+1. [x] Design difficulty bible: 5 difficulty tiers
+2. [x] Define Easy preset
+3. [x] Define Normal preset
+4. [x] Define Hard preset
+5. [x] Define Expert preset
+6. [x] Define Nightmare preset
+7. [x] Build difficulty selector at new game
+8. [x] Build difficulty change menu (limited)
+9. [x] Hook difficulty to enemy HP/damage
+10. [x] Hook difficulty to loot quality
+11. [x] Hook difficulty to economy
+12. [x] Build modifier system
+13. [x] Define 30 modifiers (positive and negative)
+14. [x] Implement modifier 1-10 effects
+15. [x] Implement modifier 11-20 effects
+16. [x] Implement modifier 21-30 effects
+17. [x] Build modifier selection UI
+18. [x] Hook modifiers to dungeon runs
+19. [x] Add modifier reward bonuses
+20. [x] Add modifier risk indicators
 21. Render modifier icons
-22. Add modifier tooltips
-23. Add modifier stacking rules
-24. Validate balance per combination
-25. Build modifier history tracker
-26. Add modifier achievements
-27. Add modifier leaderboard tags
-28. Hook to save data
-29. Test full difficulty matrix
-30. Test modifier combinations
+22. [x] Add modifier tooltips
+23. [x] Add modifier stacking rules
+24. [x] Validate balance per combination
+25. [x] Build modifier history tracker
+26. [x] Add modifier achievements
+27. [x] Add modifier leaderboard tags
+28. [x] Hook to save data
+29. [x] Test full difficulty matrix
+30. [x] Test modifier combinations
 31. Polish UI
 32. Add controller support
-33. Add accessibility settings (auto-aim, slow time)
-34. Add colorblind modes
-35. Add screen-shake toggle
-36. Add hit-stop intensity slider
-37. Add UI scale option
-38. Add subtitle option
+33. [x] Add accessibility settings (auto-aim, slow time)
+34. [x] Add colorblind modes
+35. [x] Add screen-shake toggle
+36. [x] Add hit-stop intensity slider
+37. [x] Add UI scale option
+38. [x] Add subtitle option
 39. Add language placeholder system
 40. Add input rebinding
-41. Add aim assist toggle
-42. Add damage number toggle
-43. Add HUD opacity slider
+41. [x] Add aim assist toggle
+42. [x] Add damage number toggle
+43. [x] Add HUD opacity slider
 44. Validate accessibility against demo
 45. Add tutorial for difficulty
-46. Document difficulty bible
+46. [x] Document difficulty bible
 47. Render difficulty showcase
 48. Test perf at all settings
-49. Add settings save/load
+49. [x] Add settings save/load
 50. Commit `epic-45: difficulty & accessibility complete`
 
 ---
