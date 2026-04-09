@@ -310,7 +310,7 @@ Loop through epics 1 → 50 in order. For each epic:
 35. Add "starved" weak variant with thin form
 36. [x] Implement merge mechanic: 2 leaks combine into bigger threat (LeakMergeController scans group for partners, deterministic ownership via instance ID, HP-gated eligibility, windup interruptible by damage, fires EventBus.leak_merged for spawner)
 37. Animate merge sequence
-38. Add absorb-corpse mechanic: leak grows by eating other enemies
+38. [x] Add absorb-corpse mechanic: leak grows by eating other enemies (LeakAbsorbController scans absorbable group, pulls + shrinks corpse over absorb_duration_s, gains HP + scale per absorb, capped at max_absorbs, signals for animation hooks)
 39. Animate absorb sequence
 40. Add custom death-puddle that lingers as hazard
 41. Hook environment puddles to slow player movement
