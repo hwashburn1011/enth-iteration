@@ -227,7 +227,7 @@ Loop through epics 1 → 50 in order. For each epic:
 7. [x] Retopo to 4K tris (GlitchBug_v2_LP single joined mesh exactly 4,000 tris via Decimate ratio 0.0316 from 126,580 source tris, in GlitchBug_LP collection — high-poly source preserved for normal/AO baking, verified silhouette survives in render)
 8. [x] UV unwrap with carapace on high-res patch (Smart UV Project on GlitchBug_v2_LP, angle_limit 66°, area_weight 0.5, island_margin 0.01 — 11,870 UV verts packed within [0.008, 0.992] bounds, 34% coverage area)
 9. [x] Bake normal/AO/curvature/cavity (4 1024x1024 PNG textures saved to assets/textures/enemies/ via Cycles selected-to-active bake from 61 HP source meshes onto GlitchBug_v2_LP, cage_extrusion 0.05, margin 8 — curvature/cavity baked via Geometry Pointiness through ColorRamp into a Diffuse pass)
-10. Paint base color: dark insectoid base + glitch accent stripes
+10. [x] Paint base color: dark insectoid base + glitch accent stripes (procedural paint shader → bake DIFFUSE COLOR onto LP — base purple-black 0.04/0.025/0.06, cyan crack lines via Pointiness ColorRamp 0.42-0.50, magenta voronoi accents via 8-scale Voronoi noise + ColorRamp; saved as glitchbug_v2_albedo.png)
 11. Add iridescent shader pass on carapace
 12. Add emissive crawling glitch pattern
 13. Build subsurface for translucent wing membranes
