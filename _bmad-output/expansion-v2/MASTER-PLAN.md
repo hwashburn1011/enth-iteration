@@ -180,7 +180,7 @@ Loop through epics 1 → 50 in order. For each epic:
 17. [x] Animate "wake up" yawn + stretch (130-frame, curled→uncurl→sit→big stretch with arms back+up→settle to standing)
 18. [x] Animate "eat" prompt consume (65-frame, hand to mouth → 3 chew bobs → swallow with head tip back → satisfied settle)
 19. [x] Animate "drink" healing prompt (65-frame, hand to mouth → head tips back -25° → swallow bob → satisfied exhale)
-20. Animate "read" hold up data tablet
+20. [x] Animate "read" hold up data tablet (200-frame loop, both hands at chest, head bowed scanning left/right with comprehension nod)
 21. Animate "write" jotting notes
 22. Animate "craft" hands working
 23. Animate "fish" idle with rod
