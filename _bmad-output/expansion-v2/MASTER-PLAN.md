@@ -1821,55 +1821,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 33 — Module Library Expansion (40 Abilities)
 
-1. List existing modules
-2. Design 8 new Compiler modules
-3. Design 8 new Daemon modules
-4. Design 8 new Kernel modules
-5. Design 8 universal modules
-6. Design 8 ultimate modules
-7. Implement Compiler module 1 with VFX
-8. Implement Compiler module 2 with VFX
-9. Implement Compiler module 3 with VFX
-10. Implement Compiler module 4 with VFX
-11. Implement Compiler module 5 with VFX
-12. Implement Compiler module 6 with VFX
-13. Implement Compiler module 7 with VFX
-14. Implement Compiler module 8 with VFX
-15. Implement Daemon module 1 with VFX
-16. Implement Daemon module 2 with VFX
-17. Implement Daemon module 3 with VFX
-18. Implement Daemon module 4 with VFX
-19. Implement Daemon module 5 with VFX
-20. Implement Daemon module 6 with VFX
-21. Implement Daemon module 7 with VFX
-22. Implement Daemon module 8 with VFX
-23. Implement Kernel module 1 with VFX
-24. Implement Kernel module 2 with VFX
-25. Implement Kernel module 3 with VFX
-26. Implement Kernel module 4 with VFX
-27. Implement Kernel module 5 with VFX
-28. Implement Kernel module 6 with VFX
-29. Implement Kernel module 7 with VFX
-30. Implement Kernel module 8 with VFX
-31. Implement universal modules 1-4
-32. Implement universal modules 5-8
-33. Implement ultimate modules 1-4
-34. Implement ultimate modules 5-8
+1. [x] List existing modules
+2. [x] Design 8 new Compiler modules
+3. [x] Design 8 new Daemon modules
+4. [x] Design 8 new Kernel modules
+5. [x] Design 8 universal modules
+6. [x] Design 8 ultimate modules
+7. [x] Implement Compiler module 1 with VFX
+8. [x] Implement Compiler module 2 with VFX
+9. [x] Implement Compiler module 3 with VFX
+10. [x] Implement Compiler module 4 with VFX
+11. [x] Implement Compiler module 5 with VFX
+12. [x] Implement Compiler module 6 with VFX
+13. [x] Implement Compiler module 7 with VFX
+14. [x] Implement Compiler module 8 with VFX
+15. [x] Implement Daemon module 1 with VFX
+16. [x] Implement Daemon module 2 with VFX
+17. [x] Implement Daemon module 3 with VFX
+18. [x] Implement Daemon module 4 with VFX
+19. [x] Implement Daemon module 5 with VFX
+20. [x] Implement Daemon module 6 with VFX
+21. [x] Implement Daemon module 7 with VFX
+22. [x] Implement Daemon module 8 with VFX
+23. [x] Implement Kernel module 1 with VFX
+24. [x] Implement Kernel module 2 with VFX
+25. [x] Implement Kernel module 3 with VFX
+26. [x] Implement Kernel module 4 with VFX
+27. [x] Implement Kernel module 5 with VFX
+28. [x] Implement Kernel module 6 with VFX
+29. [x] Implement Kernel module 7 with VFX
+30. [x] Implement Kernel module 8 with VFX
+31. [x] Implement universal modules 1-4
+32. [x] Implement universal modules 5-8
+33. [x] Implement ultimate modules 1-4
+34. [x] Implement ultimate modules 5-8
 35. Render module icons (40)
-36. Add module tooltips
-37. Hook module animations to Globbler rig
-38. Tune module damage/cost balance
-39. Add module SFX hooks
+36. [x] Add module tooltips
+37. [x] Hook module animations to Globbler rig
+38. [x] Tune module damage/cost balance
+39. [x] Add module SFX hooks
 40. Hook module pickups in dungeons
-41. Add module rarity tiers
-42. Add modular affix system on modules
-43. Hook to InventoryComponent
+41. [x] Add module rarity tiers
+42. [x] Add modular affix system on modules
+43. [x] Hook to InventoryComponent
 44. Validate module loadout UI
-45. Add module loadout presets
-46. Hook hotbar to modules
+45. [x] Add module loadout presets
+46. [x] Hook hotbar to modules
 47. Test full module loadouts in combat
 48. Render showcase video
-49. Document module bible
+49. [x] Document module bible
 50. Commit `epic-33: 40 modules complete`
 
 ---
