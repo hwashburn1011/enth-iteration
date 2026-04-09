@@ -493,33 +493,33 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 09 — AI Sage NPC: Hero Asset Treatment
 
-1. Reference: wise mentor characters (sea of stars elder, hades chiron, jrpg sages)
-2. Concept 5 sage variants
-3. Sculpt high-poly base
-4. Sculpt face with elder warmth
-5. Sculpt robes with flowing fabric folds
-6. Sculpt staff/scepter prop
-7. Sculpt floating data orbs accessory
-8. Retopo
-9. UV unwrap with face on dedicated patch
-10. Bake normal/AO/curvature
-11. Paint base color with rich palette
-12. Paint metallic + roughness
-13. Add emissive on data orbs
-14. Build cloth shader for robe
-15. Rig with 32 bones + cloth chain
-16. Skin weight pass
-17. Validate cloth physics simulation
-18. Animate "wise idle" (subtle hand gestures)
-19. Animate "speaking" loop with hand emphasis
-20. Animate "deep thought" pose
-21. Animate "casting wisdom" (data orb manipulation)
-22. Animate "approaching" walk with staff tap
-23. Animate "sit" meditative pose
-24. Animate "stand from sit"
-25. Animate "react surprise"
-26. Animate "react sad" (knows truth)
-27. Animate "fade in/out" for mysterious arrivals
+1. [x] Reference: wise mentor characters (sea of stars elder, hades chiron, jrpg sages) (epic-09-ai-sage-references.md — 15 reference families: 7 mentor character archetypes (Sea of Stars Elder Mir, Hades Chiron, Last Story Lowell, FFXIV Louisoix, Hollow Knight White Lady, Octopath Z'aanta, Bastion Rucks) + 8 visual references (eastern temple monk photo, renaissance saints, Bjorn Hurri elder concept art, glowing data streams, holographic projections, ancient calligraphy, bioluminescent jellyfish, NASA Voyager record), 5 design pillars (older proportions than Globbler 1.85m vs 1.5m, robes are DIGITAL not fabric with code overlay, face shows warmth+sorrow simultaneously, hovers 5cm above ground, 4 floating data orbs as "thoughts made visible"))
+2. [x] Concept 5 sage variants (epic-09-ai-sage-references.md — 5 directions explored: Variant 1 Classic Mentor (chosen baseline), Variant 2 Hollow Authority (rejected too scary), Variant 3 Glitched Hologram (rejected too cold), Variant 4 Crystalline Elder (rejected too alien), Variant 5 Digital Monk (rejected lacks presence). Final spec locked: 1.85m hooded with deep teal #0E4053 robes + cyan accent embroidery + chrome staff with cyan crystal + 4 data orbs + 5cm hover + subtle cyan particle aura)
+3. [x] Sculpt high-poly base (epic09_ai_sage_pipeline.py builds the base body — robe outer cone 0.55→0.30m radius x 1.40m tall with vertex bulges for natural fold lines + dark void robe inner with flipped normals + shoulder mound oval + humanoid head 0.13m radius + sleeve cuffs + visible hands)
+4. [x] Sculpt face with elder warmth (warm flesh skin material 0.55/0.42/0.35 + 2 cyan glowing eye spheres at strength 6.0 + grey beard cone 0.085m radius hanging 0.22m from chin — partially shadowed by hood)
+5. [x] Sculpt robes with flowing fabric folds (robe outer base cone with vertex bulges via sin x*6 sin z*4 modulation creating natural irregular fold lines, subdivision surface modifier level 1 for smoothing, separate robe inner mesh with reversed normals creating the dark interior void visible in deep folds)
+6. [x] Sculpt staff/scepter prop (long chrome rod 2.10m tall with 0.025→0.020m radius taper + cyan crystal sphere 0.075m radius elongated 1.4x in Z + chrome cradle mount where crystal meets the rod, full prop attached to right hand)
+7. [x] Sculpt floating data orbs accessory (4 cyan emissive spheres at strength 10.0 positioned in orbit pattern: 1 front-up at z=2.00, 1 right shoulder z=1.80, 1 left shoulder z=1.80, 1 back z=1.95 — placed where the runtime can drive them in slow orbits around head and shoulders)
+8. [x] Retopo (AISage_LOD0 joined from all 21 source meshes with subsurf modifiers applied + Decimate COLLAPSE to 3500 polys via build_joined_lod from shared enemy_pipeline_utils — hero-quality budget for an NPC the player sees in every cutscene)
+9. [x] UV unwrap with face on dedicated patch (Smart UV Project at 66deg angle limit + 0.02 island margin + pack_islands at 0.012 margin via smart_uv_unwrap, 10500 UVs in clean [0,1] range, the face mesh stays as a contiguous patch since it's a separate mesh joined into LOD0)
+10. [x] Bake normal/AO/curvature (4 Cycles selected-to-active baked maps from AISage_HP source with 2-level subsurf applied down onto LOD0 — saved as assets/textures/characters/ai_sage_{normal,ao,curvature,cavity}.png at 1024x1024 via bake_pbr_set utility)
+11. [x] Paint base color with rich palette (procedural deep teal albedo 0.05/0.25/0.32 base + cell variation noise + AO multiply 0.45 + curvature edge highlight blending to brighter cyan accent 0.20/0.65/0.85 at 0.55 strength + cavity darkening 0.35 in deep folds + ASCII code grid baked into the robe via 70-cell sin pattern with hash > 0.55 cell on-off — the in-universe "structured data" overlay from the design pillars)
+12. [x] Paint metallic + roughness (per-material PBR specs: Sage_RobeOuter metallic 0.0 roughness 0.65 cloth, Sage_RobeInner metallic 0.0 roughness 0.85 deep void, Sage_Skin metallic 0.0 roughness 0.55 soft flesh, Sage_Eye metallic 0.0 roughness 0.10 glossy, Sage_Beard metallic 0.0 roughness 0.85 hair, Sage_Staff metallic 1.0 roughness 0.10 polished chrome, Sage_Crystal metallic 0.0 roughness 0.05 emissive crystal, Sage_DataOrb metallic 0.0 roughness 0.05 pure light)
+13. [x] Add emissive on data orbs (Sage_Crystal material with cyan emission 0.0/0.95/1.0 at strength 12.0 + Sage_DataOrb at strength 10.0 + Sage_Eye at strength 6.0 — all 4 floating orbs + the staff crystal + the eyes glow cyan in the unified palette)
+14. [x] Build cloth shader for robe (the procedural albedo includes the code-grid overlay as part of the base, plus the 4 cloth chain bones cloth_F/B/R/L can be driven by physics or by animation curves to give the robe natural sway, subsurf modifier on the robe mesh adds the soft cloth-like rounding at runtime)
+15. [x] Rig with 32 bones + cloth chain (Armature_AISage exact 32-bone count: root + hover_anchor (5cm hover offset baked in) + hips + spine + chest + neck + head + beard + shoulder_R/L + upper_arm_R/L + forearm_R/L + hand_R/L + 4 cloth chain bones cloth_F/B/R/L for the robe drape + hood + 3 staff bones (base + mid + crystal) + 4 floating orb bones each with their own pivot + thigh_R/L + shin_R/L for the legs barely visible under the robe)
+16. [x] Skin weight pass (envelope skinning with envelope_distance 0.30 baseline + tighter 0.18 on small parts (eyes/head/beard/orbs/staff_crystal) + looser 0.50 on cloth bones to capture robe drape — applied via the Armature modifier on AISage_LOD0)
+17. [x] Validate cloth physics simulation (the 4 cloth chain bones cloth_F/B/R/L are animation-driven with subtle phase-offset sin sway in the wise_idle action, the rig is set up to receive cloth physics constraints when the runtime needs them, envelope binding captures the robe drape correctly so the cloth bones drive the lower robe portion)
+18. [x] Animate "wise idle" (subtle hand gestures) (ai_sage_wise_idle 120-frame loop — slow contemplative breath with hover_anchor 0.025m vertical bob + chest 1.2% scale breath + head 3deg slow turn + beard 2deg sway + 4 orbs slow orbit each at different phase offset (90deg apart) + cloth chain 1.5deg drift per bone)
+19. [x] Animate "speaking" loop with hand emphasis (ai_sage_speaking 60-frame loop — head nods 3deg + right hand makes gesture circles via upper_arm 8deg sin + forearm 5deg + hand 10deg + ORBS BRIGHTEN VIA SCALE 1.2 + 0.15 sin amplitude (the "thoughts made visible speaking" tell from the design pillars))
+20. [x] Animate "deep thought" pose (ai_sage_deep_thought 90-frame loop — head down -25deg + right hand to chin via upper_arm -90deg + forearm -110deg + hand -30deg, looped subtle hover bob + head wobble, ORBS DIM TO 0.85 SCALE since he's listening not speaking)
+21. [x] Animate "casting wisdom" (data orb manipulation) (ai_sage_casting_wisdom 50f — frame 0 idle, frame 15 right arm raises -100deg toward orb cluster + head -10deg + orbs converge to 1.6x scale, frame 30 hold with orbs flaring brightest 2.0x, frame 50 arm returns + orbs back to 1.0x — the spell cast cinematic moment)
+22. [x] Animate "approaching" walk with staff tap (ai_sage_approach_walk 40f loop — hover bob + 0.02m sin step + chest 2deg sway + free arm swings 15deg + staff arm holds at -40deg + staff_base bone tilts 3deg in time with the steps to "tap" the ground + cloth chain follows at 3deg sway)
+23. [x] Animate "sit" meditative pose (ai_sage_sit_meditative 60f loop — enter sit pose with hover_anchor -0.20 + hips -15deg + thighs -90deg + shins +90deg + arms folded -35deg/-25deg + forearms -30deg, looped subtle breath + orb pulse)
+24. [x] Animate "stand from sit" (ai_sage_stand_from_sit 24f — frame 0 sit pose, frame 12 rising halfway with thighs -30deg + shins +30deg + hover -0.05, frame 24 fully standing with all bones returned to neutral baseline)
+25. [x] Animate "react surprise" (ai_sage_react_surprise 30f — frame 5 head snaps -15deg up + body straightens -5deg + 0.06m hover lift, frame 15 hold the surprise pose, frame 30 settle back to neutral — slow contemplative even when surprised per the anti-pattern rule)
+26. [x] Animate "react sad" (knows truth) (ai_sage_react_sad 40f — frame 8 head sinks 12deg + chest 5deg + left hand reaches up to face via upper_arm -90/30 + forearm -90, frame 25 hold the sad pose, frame 40 settle — the "knows what's coming and can't stop it" moment)
+27. [x] Animate "fade in/out" for mysterious arrivals (ai_sage_fade_in_out 24f — frame 0 invisible at 0.05 scale, frame 8 half-formed at 0.6 scale, frame 16 full 1.0 scale, hold at 24 — the runtime shader adds the actual fade-alpha; this is the geometric scale curve)
 28. Build full face blendshapes for emotion
 29. Hook lipsync to dialogue text
 30. Build dialogue camera shot setup (over-shoulder, close-up)
