@@ -110,7 +110,7 @@ Loop through epics 1 → 50 in order. For each epic:
 4. [x] Model Initiate set (head visor, chest plate, gloves, boots) low poly clean
 5. [x] Texture Initiate set with neutral palette
 6. [x] Design "Patcher" uncommon set — utility/repair theme
-7. Model + texture Patcher set
+7. [x] Model + texture Patcher set (36 pieces, hi-vis orange utility theme)
 8. [x] Design "Compiler" rare set — ornate, geometric
 9. Model + texture Compiler set with emissive accents
 10. [x] Design "Kernel" epic set — sleek warrior aesthetic
