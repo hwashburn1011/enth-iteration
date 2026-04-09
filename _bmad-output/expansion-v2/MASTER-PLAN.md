@@ -1322,34 +1322,34 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 24 — Multiple Dungeon Entrances & Biome Selection
 
-1. Design entrance 1: Server Room portal (cold tech)
-2. Design entrance 2: Memory Vaults portal (gold archaic)
-3. Design entrance 3: Corrupted Wilds portal (organic)
-4. Design entrance 4: Final Vault portal (locked till conditions)
+1. [x] Design entrance 1: Server Room portal (cold tech)
+2. [x] Design entrance 2: Memory Vaults portal (gold archaic)
+3. [x] Design entrance 3: Corrupted Wilds portal (organic)
+4. [x] Design entrance 4: Final Vault portal (locked till conditions)
 5. Build entrance 1 monument + portal VFX
 6. Build entrance 2 monument + portal VFX
 7. Build entrance 3 monument + portal VFX
 8. Build entrance 4 monument + portal VFX
-9. Hook entrance scene transitions
-10. Add entrance lore plaques
-11. Add entrance difficulty indicator
-12. Add entrance recommended-level UI
-13. Add entrance chosen-biome confirmation
+9. [x] Hook entrance scene transitions
+10. [x] Add entrance lore plaques
+11. [x] Add entrance difficulty indicator
+12. [x] Add entrance recommended-level UI
+13. [x] Add entrance chosen-biome confirmation
 14. Add per-entrance loading screen art
-15. Build dungeon selection map screen
-16. Hook dungeon selection to FloorManager
-17. Add daily-bonus rotating biome
-18. Add story-locked entrance reveals
-19. Add visual "this entrance has been cleared" markers
-20. Add cleared-count tracker per entrance
-21. Add boss-defeated trophy at each entrance
-22. Add per-entrance music sting
+15. [x] Build dungeon selection map screen
+16. [x] Hook dungeon selection to FloorManager
+17. [x] Add daily-bonus rotating biome
+18. [x] Add story-locked entrance reveals
+19. [x] Add visual "this entrance has been cleared" markers
+20. [x] Add cleared-count tracker per entrance
+21. [x] Add boss-defeated trophy at each entrance
+22. [x] Add per-entrance music sting
 23. Add per-entrance ambient particles
 24. Validate readability
-25. Add entrance interaction prompt
-26. Hook to fast-travel from town
+25. [x] Add entrance interaction prompt
+26. [x] Hook to fast-travel from town
 27. Validate all 4 entrances transition properly
-28. Build entrance "first time" cinematic per biome
+28. [x] Build entrance "first time" cinematic per biome
 29. Build entrance "return" idle cinematic
 30. Add entrance NPC guide/warden
 31. Add ambient SFX per entrance
@@ -1358,19 +1358,19 @@ Loop through epics 1 → 50 in order. For each epic:
 34. Validate against navmesh
 35. Add entrance day/night appearance variation
 36. Add entrance weather response
-37. Add discovery reward for finding each
-38. Add achievement for finding all
-39. Add entrance signpost lore
+37. [x] Add discovery reward for finding each
+38. [x] Add achievement for finding all
+39. [x] Add entrance signpost lore
 40. Add per-entrance approach path
 41. Add entrance flag/banner decor
 42. Add entrance reflection probe
-43. Build entrance secret unlock condition
+43. [x] Build entrance secret unlock condition
 44. Validate scene transitions don't crash
 45. Test all entrances in one session
-46. Hook map fast-travel
-47. Add entrance audio sting
+46. [x] Hook map fast-travel
+47. [x] Add entrance audio sting
 48. Polish entrance VFX
-49. Document entrance bible
+49. [x] Document entrance bible
 50. Commit `epic-24: multiple dungeon entrances complete`
 
 ---
