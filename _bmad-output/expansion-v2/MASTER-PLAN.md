@@ -192,7 +192,7 @@ Loop through epics 1 → 50 in order. For each epic:
 29. [x] Animate "climb" ladder (30-frame loop, contralateral arm/leg climb cycle — root motion added in engine)
 30. [x] Animate "vault" over obstacle (45-frame, crouch → reach → hands plant + knees up → airborne tuck → land absorb → rise)
 31. [x] Animate "slide" under obstacle (42-frame, drop → low slide pose with lead leg out + trailing tuck → hold → rise)
-32. Animate "carry heavy"
+32. [x] Animate "carry heavy" (120-frame loop, both arms forward holding load + body lean back + knee bend + struggle settle)
 33. Animate "push" object
 34. Animate "pull" object
 35. Animate "throw" projectile
