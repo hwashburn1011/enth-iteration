@@ -1487,55 +1487,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 27 — Weather System
 
-1. Design weather types: clear, cloudy, rain, storm, fog, glitch storm
-2. Build clear preset
-3. Build cloudy preset
-4. Build rain preset with particle system
-5. Build rain shader (wet ground)
+1. [x] Design weather types: clear, cloudy, rain, storm, fog, glitch storm
+2. [x] Build clear preset
+3. [x] Build cloudy preset
+4. [x] Build rain preset with particle system
+5. [x] Build rain shader (wet ground)
 6. Build rain ripple decals
-7. Build storm preset (rain + wind + lightning)
-8. Build lightning flash post-process
-9. Build fog preset with dense volumetric
-10. Build glitch storm preset (digital corruption visual)
-11. Build wind direction system
-12. Hook foliage wind shader to wind direction
-13. Hook particle drift to wind direction
-14. Build wind audio variation
-15. Build rain audio loop
-16. Build thunder SFX random triggers
-17. Build storm SFX bed
-18. Build glitch storm SFX
-19. Build weather transition system (smooth interpolation)
-20. Hook weather to time of day patterns
-21. Build per-zone weather defaults
-22. Build per-iteration weather changes (later iterations have more glitch storms)
-23. Add weather UI indicator
-24. Hook weather to combat (rain affects fire damage, etc)
-25. Add weather-locked content
-26. Add reactive NPC dialogue about weather
-27. Add NPC indoor refuge during storms
+7. [x] Build storm preset (rain + wind + lightning)
+8. [x] Build lightning flash post-process
+9. [x] Build fog preset with dense volumetric
+10. [x] Build glitch storm preset (digital corruption visual)
+11. [x] Build wind direction system
+12. [x] Hook foliage wind shader to wind direction
+13. [x] Hook particle drift to wind direction
+14. [x] Build wind audio variation
+15. [x] Build rain audio loop
+16. [x] Build thunder SFX random triggers
+17. [x] Build storm SFX bed
+18. [x] Build glitch storm SFX
+19. [x] Build weather transition system (smooth interpolation)
+20. [x] Hook weather to time of day patterns
+21. [x] Build per-zone weather defaults
+22. [x] Build per-iteration weather changes (later iterations have more glitch storms)
+23. [x] Add weather UI indicator
+24. [x] Hook weather to combat (rain affects fire damage, etc)
+25. [x] Add weather-locked content
+26. [x] Add reactive NPC dialogue about weather
+27. [x] Add NPC indoor refuge during storms
 28. Build umbrella prop / accessory
 29. Build cloak weather wear visual
-30. Hook player wet/dry shader
-31. Add puddles forming during rain
-32. Add fog draw distance reduction
-33. Build sun shafts during clear weather
+30. [x] Hook player wet/dry shader
+31. [x] Add puddles forming during rain
+32. [x] Add fog draw distance reduction
+33. [x] Build sun shafts during clear weather
 34. Build rainbow after rain rare event
-35. Add weather particle perf budget
-36. Build low-spec fallback weather
-37. Validate weather under day and night
-38. Add seasonal weather patterns
-39. Hook fishing bonus during certain weather
-40. Add weather radar UI for predictions
-41. Validate weather doesn't break combat readability
+35. [x] Add weather particle perf budget
+36. [x] Build low-spec fallback weather
+37. [x] Validate weather under day and night
+38. [x] Add seasonal weather patterns
+39. [x] Hook fishing bonus during certain weather
+40. [x] Add weather radar UI for predictions
+41. [x] Validate weather doesn't break combat readability
 42. Render weather showcase shots
-43. Add reactive enemy behaviors per weather
-44. Hook weather to save state
+43. [x] Add reactive enemy behaviors per weather
+44. [x] Hook weather to save state
 45. Add cinematic storm rolling in
-46. Validate transitions are smooth
-47. Add ambient lightning for storms
-48. Document weather bible
-49. Performance test all weather types
+46. [x] Validate transitions are smooth
+47. [x] Add ambient lightning for storms
+48. [x] Document weather bible
+49. [x] Performance test all weather types
 50. Commit `epic-27: weather system complete`
 
 ---
