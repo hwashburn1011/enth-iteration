@@ -140,7 +140,7 @@ Loop through epics 1 → 50 in order. For each epic:
 34. [x] Add transmog system: visual one set, stats from another
 35. [x] Hook transmog into save data
 36. [x] Create "first equip" cinematic flash for new gear
-37. Render marketing turntable of all 8 sets
+37. [x] Render marketing turntable of all 8 sets (8 hero PNGs in _art_source/outfits/hero_shots/)
 38. [x] Stress test: equip/unequip 50 times, check for memory leaks
 39. Verify no z-fighting on overlapping plates
 40. [x] Add soft outline on equipped pieces for readability
