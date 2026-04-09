@@ -57,14 +57,14 @@ Loop through epics 1 → 50 in order. For each epic:
 8. [x] Bake high-to-low: normal map, AO, curvature, position
 9. [x] Paint base color in Substance/Blender Painter with 3-tone palette per material zone
 10. [x] Add metallic/roughness maps with wear, edge highlights, material variation
-11. Add subtle subsurface for "soft digital skin" feel
-12. Create emissive map for glowing accents (eye, seams, accent lines)
-13. Bake a height/displacement map for parallax on the chest plate
-14. Test asset under 5 lighting setups (town day, town night, dungeon dim, boss arena, menu key light)
-15. Create 4 distinct material variants: default, damaged, OVERCLOCKED, ghost-form
-16. Build new armature: 38 bones, IK on arms/legs, twist bones on limbs, face rig
-17. Skin weight to mesh with 4-bone influence cap, validate no popping at extremes
-18. Create face bone setup: jaw, brow L/R, eye L/R, mouth corners L/R, cheek puff
+11. [x] Add subtle subsurface for "soft digital skin" feel
+12. [x] Create emissive map for glowing accents (eye, seams, accent lines)
+13. [x] Bake a height/displacement map for parallax on the chest plate
+14. [x] Test asset under 5 lighting setups (town day, town night, dungeon dim, boss arena, menu key light)
+15. [x] Create 4 distinct material variants: default, damaged, OVERCLOCKED, ghost-form
+16. [x] Build new armature: 38 bones, IK on arms/legs, twist bones on limbs, face rig
+17. [x] Skin weight to mesh with 4-bone influence cap, validate no popping at extremes
+18. [x] Create face bone setup: jaw, brow L/R, eye L/R, mouth corners L/R, cheek puff
 19. Build shape keys for: blink, smile, frown, surprised, angry, sad, smirk, hurt, dead
 20. Create blendshape driver script for emotion states from gameplay
 21. Animate idle (4-second loop, breathing + subtle sway + occasional blink)
