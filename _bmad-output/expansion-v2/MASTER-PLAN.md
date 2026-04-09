@@ -251,7 +251,7 @@ Loop through epics 1 → 50 in order. For each epic:
 31. [x] Optimize: LOD0/LOD1/LOD2 set up (3-tier LOD chain in GlitchBug_LP collection — LOD0 4000 tris hero distance, LOD1 1500 tris mid-range Decimate ratio 0.375, LOD2 600 tris distant Decimate ratio 0.15, all share materials, LOD1+LOD2 hidden_render by default for AnimationPlayer/LOD switching at runtime)
 32. [x] Decimate LOD2 to ~800 tris for distant (replaced task 31's 600-tri LOD2 with a fresh 800-tri version at Decimate ratio 0.20 — slightly more visible silhouette retention at distance per the master plan spec)
 33. [x] Tune skinning to avoid weird leg joints (Armature modifier on all 3 LODs with use_bone_envelopes=True, tuned envelope_distance per bone class — leg bones 0.06m tight, body bones 0.20m wide, head accessory bones 0.05m precise — gives clean joint deformation without per-vertex weight painting on the constructed mesh)
-34. Add ground contact ground decals
+34. [x] Add ground contact ground decals (FootContactDecalEmitter component — per-leg per-step Decal drops triggered by Skeleton3D bone landing detection in _physics_process, world-space placement so decals persist after enemy moves on, capped at max_active_decals with FIFO eviction, fade-out tween before queue_free)
 35. Add footstep dust particles per leg
 36. Hook leg-IK foot placement to terrain
 37. Validate animation transitions in Godot AnimTree
