@@ -371,7 +371,7 @@ Loop through epics 1 → 50 in order. For each epic:
 41. Add scanning eye-laser idle behavior
 42. Add interrogation pose for story moments
 43. Add "captured" defeated variant for cutscene use
-44. Build hover IK so the unit stays above terrain
+44. [x] Build hover IK so the unit stays above terrain (HoverTerrainSolver component — single downward raycast each _physics_process, exponential damping smoothing toward ground+target_altitude_m, sin-wave bob layered on top, snap_to_terrain() for spawn/teleport, parent CollisionObject3D excluded from raycast)
 45. Add reactive lean during strafe
 46. Validate AnimTree transitions
 47. Hook variant-specific SFX
