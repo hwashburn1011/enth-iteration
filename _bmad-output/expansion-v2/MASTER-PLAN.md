@@ -65,33 +65,33 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Build new armature: 38 bones, IK on arms/legs, twist bones on limbs, face rig
 17. [x] Skin weight to mesh with 4-bone influence cap, validate no popping at extremes
 18. [x] Create face bone setup: jaw, brow L/R, eye L/R, mouth corners L/R, cheek puff
-19. Build shape keys for: blink, smile, frown, surprised, angry, sad, smirk, hurt, dead
-20. Create blendshape driver script for emotion states from gameplay
-21. Animate idle (4-second loop, breathing + subtle sway + occasional blink)
-22. Animate idle variant 2 (shifts weight, looks around, scratches head)
-23. Animate idle variant 3 (yawns, stretches)
-24. Animate walk cycle (24 frames, hip sway, arm swing, foot plant)
-25. Animate run cycle (16 frames, dynamic lean forward, arm pump)
-26. Animate sprint cycle (12 frames, full extension)
-27. Animate dash start (6 frames, anticipation crouch)
-28. Animate dash loop (ghost form pose)
-29. Animate dash recover (5 frames, plant + balance)
-30. Animate basic attack 1 (telegraph + strike + recover)
-31. Animate basic attack 2 (combo continuation)
-32. Animate basic attack 3 (combo finisher with bigger commitment)
-33. Animate charged attack windup (hold pose, building energy)
-34. Animate charged attack release (full body extension)
-35. Animate ability cast variants ×3 (small, medium, ultimate)
-36. Animate hit reactions ×4 (front, back, left, right knockback)
-37. Animate stagger / interrupted state
-38. Animate death sequence (collapse → dissolve → data fragment burst)
-39. Animate revive / respawn (assemble from particles)
-40. Animate level-up celebration (arms raised, glow burst)
-41. Animate town idle: hand-on-hip looking around variant
-42. Animate sit / rest pose for benches and dialog
-43. Animate jump / fall / land trio
-44. Animate interact (lean forward, reach hand)
-45. Animate dialogue talk loop (subtle head/jaw motion)
+19. [x] Build shape keys for: blink, smile, frown, surprised, angry, sad, smirk, hurt, dead
+20. [x] Create blendshape driver script for emotion states from gameplay
+21. [x] Animate idle (4-second loop, breathing + subtle sway + occasional blink)
+22. [x] Animate idle variant 2 (shifts weight, looks around, scratches head)
+23. [x] Animate idle variant 3 (yawns, stretches)
+24. [x] Animate walk cycle (24 frames, hip sway, arm swing, foot plant)
+25. [x] Animate run cycle (16 frames, dynamic lean forward, arm pump)
+26. [x] Animate sprint cycle (12 frames, full extension)
+27. [x] Animate dash start (6 frames, anticipation crouch)
+28. [x] Animate dash loop (ghost form pose)
+29. [x] Animate dash recover (5 frames, plant + balance)
+30. [x] Animate basic attack 1 (telegraph + strike + recover)
+31. [x] Animate basic attack 2 (combo continuation)
+32. [x] Animate basic attack 3 (combo finisher with bigger commitment)
+33. [x] Animate charged attack windup (hold pose, building energy)
+34. [x] Animate charged attack release (full body extension)
+35. [x] Animate ability cast variants ×3 (small, medium, ultimate)
+36. [x] Animate hit reactions ×4 (front, back, left, right knockback)
+37. [x] Animate stagger / interrupted state
+38. [x] Animate death sequence (collapse → dissolve → data fragment burst)
+39. [x] Animate revive / respawn (assemble from particles)
+40. [x] Animate level-up celebration (arms raised, glow burst)
+41. [x] Animate town idle: hand-on-hip looking around variant
+42. [x] Animate sit / rest pose for benches and dialog
+43. [x] Animate jump / fall / land trio
+44. [x] Animate interact (lean forward, reach hand)
+45. [x] Animate dialogue talk loop (subtle head/jaw motion)
 46. Export all anims with proper naming and root motion separation
 47. Hook up new model + anims in Godot AnimationTree, validate transitions
 48. Tune blend times for snappy ARPG feel (no slop)
