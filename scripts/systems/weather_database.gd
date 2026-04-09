@@ -133,6 +133,25 @@ const ZONE_DEFAULTS: Dictionary = {
 	&"town_workshop":       {&"clear": 0.65, &"cloudy": 0.30, &"rain": 0.05},
 	&"town_docks":          {&"clear": 0.50, &"cloudy": 0.30, &"rain": 0.15, &"storm": 0.05},
 	&"wilderness":          {&"clear": 0.40, &"cloudy": 0.30, &"rain": 0.15, &"storm": 0.10, &"fog": 0.05},
+
+	# === Wilderness sub-regions (per the wilderness bible) ===
+	# Plateau is the "safety beach" — the calmest weather profile, easing
+	# new-iteration players into the wild.
+	&"wild_plateau":        {&"clear": 0.65, &"cloudy": 0.25, &"rain": 0.08, &"fog": 0.02},
+	# River valley sits low; mist rises off water at dawn/dusk so fog rate
+	# is doubled vs the open plateau, and rain frequency is up.
+	&"wild_river":          {&"clear": 0.35, &"cloudy": 0.25, &"rain": 0.20, &"fog": 0.15, &"storm": 0.05},
+	# Forest fringe traps humidity under the canopy; rain leans heavier.
+	&"wild_forest":         {&"clear": 0.30, &"cloudy": 0.30, &"rain": 0.25, &"fog": 0.10, &"storm": 0.05},
+	# Ruin field is a glitch hotspot — leaks of corruption raise the
+	# baseline glitch storm rate even at iteration 1.
+	&"wild_ruins":          {&"clear": 0.30, &"cloudy": 0.25, &"fog": 0.20, &"rain": 0.10, &"storm": 0.05, &"glitch_storm": 0.10},
+	# Cliffs catch the high-altitude winds — storms break on this region
+	# more than anywhere else in the world.
+	&"wild_cliffs":         {&"clear": 0.30, &"cloudy": 0.25, &"storm": 0.25, &"rain": 0.15, &"fog": 0.05},
+	# Pasture is the wilderness's gift back to the player — almost as
+	# calm as the plateau, slightly more rain (good for the crops there).
+	&"wild_pasture":        {&"clear": 0.55, &"cloudy": 0.25, &"rain": 0.15, &"fog": 0.05},
 	&"server_room":         {&"clear": 1.0},
 	&"memory_vaults":       {&"fog": 0.60, &"clear": 0.40},
 	&"corrupted_wilds":     {&"glitch_storm": 0.40, &"storm": 0.30, &"cloudy": 0.20, &"fog": 0.10},

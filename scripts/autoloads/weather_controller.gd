@@ -20,11 +20,14 @@ var current_zone_id: StringName = &"town_center"
 var weather_locked: bool = false
 var iteration_glitch_bonus: float = 0.0  ## scales with current iteration
 
+const REGION_REROLL_COOLDOWN_MINUTES: int = 4
+
 var _next_change_at_minute: int = 0
 var _last_change_minute: int = 0
 var _thunder_timer: float = 0.0
 var _transitioning: bool = false
 var _wind_direction: Vector3 = Vector3.ZERO
+var _last_zone_roll_minute: Dictionary = {}  ## zone_id → in-game minute of last roll
 
 
 func _ready() -> void:
@@ -36,6 +39,8 @@ func _subscribe_to_events() -> void:
 		var bus: Node = get_node("/root/EventBus")
 		if bus.has_signal("zone_entered"):
 			bus.zone_entered.connect(_on_zone_entered)
+		if bus.has_signal("region_entered"):
+			bus.region_entered.connect(_on_region_entered)
 		if bus.has_signal("hour_changed"):
 			bus.hour_changed.connect(_on_hour_changed)
 		if bus.has_signal("iteration_changed"):
@@ -114,11 +119,45 @@ func _apply_weather_audio(weather_id: StringName) -> void:
 # === ZONE / TIME / ITERATION HOOKS ===
 
 func _on_zone_entered(zone_id: StringName, _env_preset: StringName) -> void:
+	_handle_zone_or_region_entry(zone_id, true)
+
+
+func _on_region_entered(region_id: StringName, _meta: Dictionary) -> void:
+	# Wilderness sub-regions live in `region_entered` events; honor them
+	# the same way we honor zone entries, but with a debounce so walking
+	# back and forth across a boundary doesn't constantly re-roll.
+	_handle_zone_or_region_entry(region_id, false)
+
+
+func _handle_zone_or_region_entry(zone_id: StringName, force_roll: bool) -> void:
 	current_zone_id = zone_id
-	# Roll a fresh weather for this zone
+	if not force_roll and not _should_reroll_for_zone(zone_id):
+		return
 	var new_weather: StringName = WeatherDatabase.roll_weather_for_zone(zone_id, iteration_glitch_bonus)
 	set_weather(new_weather, true)
+	_record_zone_roll(zone_id)
 	_schedule_next_change()
+
+
+func _should_reroll_for_zone(zone_id: StringName) -> bool:
+	if not _last_zone_roll_minute.has(zone_id):
+		return true
+	if not has_node("/root/DayNightController"):
+		return true
+	var dnc: Node = get_node("/root/DayNightController")
+	var now_min: int = int(dnc.current_in_game_minute)
+	var last_min: int = int(_last_zone_roll_minute[zone_id])
+	var elapsed: int = now_min - last_min
+	if elapsed < 0:
+		elapsed += 1440  # day rollover
+	return elapsed >= REGION_REROLL_COOLDOWN_MINUTES
+
+
+func _record_zone_roll(zone_id: StringName) -> void:
+	if not has_node("/root/DayNightController"):
+		return
+	var dnc: Node = get_node("/root/DayNightController")
+	_last_zone_roll_minute[zone_id] = int(dnc.current_in_game_minute)
 
 
 func _on_hour_changed(_h: int) -> void:

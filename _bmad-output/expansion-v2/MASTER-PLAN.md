@@ -1283,7 +1283,7 @@ Loop through epics 1 → 50 in order. For each epic:
 14. [x] Add wilderness enemy spawns (6 hostile types, exclusion-aware spawner)
 15. [x] Build wilderness ambient SFX (6 region beds, slot-aware crossfade mixer)
 16. [x] Build wilderness ambient music (4-layer stack: base+region+combat+weather)
-17. Add weather variation
+17. [x] Add weather variation (6 wilderness region profiles + region debounce)
 18. Add day/night cycle
 19. Build hidden grove side area
 20. Build hidden lake side area
