@@ -1397,7 +1397,7 @@ Loop through epics 1 → 50 in order. For each epic:
 18. [x] Add training reset functionality (lever + leaderboard with personal bests)
 19. Build farm plot area (Blender)
 20. [x] Add planting interaction (FarmPlotInteractable wrapper + state-aware action picker)
-21. Add harvesting interaction
+21. [x] Add harvesting interaction (floating popup with quality tier + drops + XP + crown celebration)
 22. Build fishing dock at water
 23. Add fishing rod prop + animation
 24. Build cooking station
