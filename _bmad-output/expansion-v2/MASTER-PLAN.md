@@ -1357,7 +1357,7 @@ Loop through epics 1 → 50 in order. For each epic:
 33. Render hero shot per entrance
 34. Validate against navmesh
 35. [x] Add entrance day/night appearance variation (per-phase mults on lights + particles)
-36. Add entrance weather response
+36. [x] Add entrance weather response (per-(entrance × weather) light + particle mults)
 37. [x] Add discovery reward for finding each
 38. [x] Add achievement for finding all
 39. [x] Add entrance signpost lore
