@@ -228,7 +228,7 @@ Loop through epics 1 → 50 in order. For each epic:
 8. [x] UV unwrap with carapace on high-res patch (Smart UV Project on GlitchBug_v2_LP, angle_limit 66°, area_weight 0.5, island_margin 0.01 — 11,870 UV verts packed within [0.008, 0.992] bounds, 34% coverage area)
 9. [x] Bake normal/AO/curvature/cavity (4 1024x1024 PNG textures saved to assets/textures/enemies/ via Cycles selected-to-active bake from 61 HP source meshes onto GlitchBug_v2_LP, cage_extrusion 0.05, margin 8 — curvature/cavity baked via Geometry Pointiness through ColorRamp into a Diffuse pass)
 10. [x] Paint base color: dark insectoid base + glitch accent stripes (procedural paint shader → bake DIFFUSE COLOR onto LP — base purple-black 0.04/0.025/0.06, cyan crack lines via Pointiness ColorRamp 0.42-0.50, magenta voronoi accents via 8-scale Voronoi noise + ColorRamp; saved as glitchbug_v2_albedo.png)
-11. Add iridescent shader pass on carapace
+11. [x] Add iridescent shader pass on carapace (enemy_carapace.gdshader — PBR base consuming albedo/normal/AO/cavity bakes + 3-color iridescent oil-slick Fresnel layer with cavity boost + cyan crack detection from albedo with TIME-based pulse for emission)
 12. Add emissive crawling glitch pattern
 13. Build subsurface for translucent wing membranes
 14. Rig with 24 bones including individual leg IK
