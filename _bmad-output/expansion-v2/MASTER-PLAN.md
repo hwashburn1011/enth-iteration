@@ -225,7 +225,7 @@ Loop through epics 1 → 50 in order. For each epic:
 5. [x] Sculpt 6 leg variants with joint detail (6 legs in 3 pairs FR/FL/MR/ML/RR/RL, each with 3 tapered cylinder segments coxa+tibia+tarsus and 2 sphere joint balls between, rear pair 1.15x length per reference bible — verified with render)
 6. [x] Sculpt mandibles + sensors (2 curved stag-beetle mandibles + 10 red emissive serration teeth + 4 cyan eye pits + 2 antennae with bright cyan emissive tips — verified with front render showing predatory bug face)
 7. [x] Retopo to 4K tris (GlitchBug_v2_LP single joined mesh exactly 4,000 tris via Decimate ratio 0.0316 from 126,580 source tris, in GlitchBug_LP collection — high-poly source preserved for normal/AO baking, verified silhouette survives in render)
-8. UV unwrap with carapace on high-res patch
+8. [x] UV unwrap with carapace on high-res patch (Smart UV Project on GlitchBug_v2_LP, angle_limit 66°, area_weight 0.5, island_margin 0.01 — 11,870 UV verts packed within [0.008, 0.992] bounds, 34% coverage area)
 9. Bake normal/AO/curvature/cavity
 10. Paint base color: dark insectoid base + glitch accent stripes
 11. Add iridescent shader pass on carapace
