@@ -1392,8 +1392,8 @@ Loop through epics 1 → 50 in order. For each epic:
 13. Build sage's tower study room (Blender)
 14. Build sage's library (Blender)
 15. [x] Add archive crystal interactions (4 sections + 9 sage journal + 9 forgotten index)
-16. Build training arena hub area
-17. Add target dummies
+16. Build training arena hub area (Blender)
+17. [x] Add target dummies (6 archetypes + DPS window + stagger meter)
 18. Add training reset functionality
 19. Build farm plot area
 20. Add planting interaction
