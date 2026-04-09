@@ -273,7 +273,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 05 — MemoryLeak Enemy: Photoreal Detail Pass
 
-1. Reference: collect amorphous blob/slime/water/data refs
+1. [x] Reference: collect amorphous blob/slime/water/data refs (epic-05-memoryleak-references.md — 5 design pillars + reference families + material zones + GlitchBug contrast table)
 2. Concept 6 silhouette variants emphasizing flow/blob shape
 3. Sculpt blob base form with internal "data" visible through translucency
 4. Sculpt surface ripples and bubbles
