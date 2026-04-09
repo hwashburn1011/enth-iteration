@@ -240,7 +240,7 @@ Loop through epics 1 → 50 in order. For each epic:
 20. [x] Animate attack bite (14-frame, F1 entry raised + open → F4 slamming down → F8 BITE peak with chest +15° mandibles CLOSED head +30° down + all 6 legs in wide brace → F11 hold damage frame → F14 recover open slightly)
 21. [x] Animate hit reaction (4 directional 20-frame actions glitchbug_hit_front/back/left/right — F4 peak recoil with body kicked away from hit direction via root translation + chest pitch ±15° / yaw ±12°, antennae jerk back -25°, mandibles snap open ±25°, all 6 legs splay defensively wider, 12-frame fade back to neutral)
 22. [x] Animate death (legs curl, dissolve) (114-frame, F1 rest → F8 final twitch + mandibles open → F18 mid-curl + body sags → F40 fully curled all legs at +60° upper / +80° lower with body dropped 10cm + head lolling + antennae drooping + mandibles slack → F70 held → F114 dissolve handoff to CorpsePersistence)
-23. Animate death variant 2 (explode into glitch fragments)
+23. [x] Animate death variant 2 (explode into glitch fragments) (30-frame fast violent death — F4 sudden inflation pressurizing → F8 BURST root +0.18Z + tumble rotations + mandibles max ±45 + antennae shoot out → F12 dispersal with 3-axis tumbles and legs flailing → F18 held for VFX → F30 end)
 24. Build 4 color variants (red venom, blue cold, green tox, purple elite)
 25. Build size variants (small swarm, normal, large alpha)
 26. Add per-variant unique vfx auras
