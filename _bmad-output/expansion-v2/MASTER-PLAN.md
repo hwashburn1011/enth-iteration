@@ -2151,47 +2151,47 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 39 — Faction System
 
-1. Design faction bible: 4 factions, ideologies, rewards
-2. Define faction 1: Optimizers (efficiency, order)
-3. Define faction 2: Glitchers (chaos, freedom)
-4. Define faction 3: Archivists (preservation, history)
-5. Define faction 4: Dreamers (creativity, hope)
-6. Build faction reputation tracker
-7. Define faction reputation gains
-8. Define faction reputation losses
+1. [x] Design faction bible: 4 factions, ideologies, rewards
+2. [x] Define faction 1: Optimizers (efficiency, order)
+3. [x] Define faction 2: Glitchers (chaos, freedom)
+4. [x] Define faction 3: Archivists (preservation, history)
+5. [x] Define faction 4: Dreamers (creativity, hope)
+6. [x] Build faction reputation tracker
+7. [x] Define faction reputation gains
+8. [x] Define faction reputation losses
 9. Build faction UI screen
 10. Render faction emblems
-11. Build faction NPC representatives in town
+11. [x] Build faction NPC representatives in town
 12. Build faction headquarters scenes
-13. Add faction quest lines (10 per faction)
-14. Implement Optimizer quest line
-15. Implement Glitcher quest line
-16. Implement Archivist quest line
-17. Implement Dreamer quest line
-18. Add faction-specific rewards (gear, modules)
-19. Add faction-specific cosmetics
-20. Add faction reputation rank system
+13. [x] Add faction quest lines (10 per faction)
+14. [x] Implement Optimizer quest line
+15. [x] Implement Glitcher quest line
+16. [x] Implement Archivist quest line
+17. [x] Implement Dreamer quest line
+18. [x] Add faction-specific rewards (gear, modules)
+19. [x] Add faction-specific cosmetics
+20. [x] Add faction reputation rank system
 21. Add faction rank-up cinematic
-22. Build faction merchant
-23. Add faction shop inventory
-24. Add faction-locked content
-25. Add reputation conflict mechanic (rising in one lowers others)
-26. Add neutral faction option
+22. [x] Build faction merchant
+23. [x] Add faction shop inventory
+24. [x] Add faction-locked content
+25. [x] Add reputation conflict mechanic (rising in one lowers others)
+26. [x] Add neutral faction option
 27. Build faction war event
 28. Add faction-aligned NPCs in dungeons
 29. Add faction-aligned enemies
 30. Add faction prayer/buff system
-31. Hook faction to story branches
-32. Add achievement triggers
-33. Add faction lore tab
-34. Build faction insignia overlay on equipped gear
-35. Add faction-specific dialogue greetings
-36. Add faction reaction to player choices
-37. Hook to save data
+31. [x] Hook faction to story branches
+32. [x] Add achievement triggers
+33. [x] Add faction lore tab
+34. [x] Build faction insignia overlay on equipped gear
+35. [x] Add faction-specific dialogue greetings
+36. [x] Add faction reaction to player choices
+37. [x] Hook to save data
 38. Validate balance across factions
 39. Test playthrough rising in each faction
 40. Render hero shot per faction HQ
-41. Document faction bible
+41. [x] Document faction bible
 42. Add faction tutorial
 43. Add faction selection UI at intro
 44. Add faction-tagged loot drops
