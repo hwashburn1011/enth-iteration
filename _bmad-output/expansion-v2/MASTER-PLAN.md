@@ -255,7 +255,7 @@ Loop through epics 1 → 50 in order. For each epic:
 35. Add footstep dust particles per leg
 36. Hook leg-IK foot placement to terrain
 37. Validate animation transitions in Godot AnimTree
-38. Add custom shader: glitch displacement on hit
+38. [x] Add custom shader: glitch displacement on hit (enemy_hit_glitch.gdshader + HitGlitchDriver component — pulse-driven vertex band fragmentation + chromatic ghost + cyan/magenta crack lines + emission flash, fades over 0.25s)
 39. Add "scared" backpedal anim when low HP
 40. Add group call/summon animation
 41. Add corpse persistence (lays on ground 10s before fade)
