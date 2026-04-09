@@ -438,32 +438,32 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 08 — New Enemy Roster (8 New Enemies)
 
-1. Design Crash Daemon — fast charging melee. Concept sketch.
+1. [x] Design Crash Daemon — fast charging melee. Concept sketch. (epic-08-new-enemy-roster-bible.md — 1.2m quadruped low-slung with hunched back + coiled-spring hindlimbs + single horizontal LED slit eye + charred black metal + crimson cracks + hot orange spine engine vents, 0.3s coil wind-up before 8m straight-line dash deals 25 damage + stagger, 1.0s skid recovery is the player's punish window, packs of 3 coordinate angle attacks)
 2. Sculpt + texture + rig + animate Crash Daemon (full pipeline)
 3. Polish Crash Daemon to ship quality
-4. Design Null Pointer — invisible/teleport ranged. Concept sketch.
+4. [x] Design Null Pointer — invisible/teleport ranged. Concept sketch. (epic-08-new-enemy-roster-bible.md — 1.6m humanoid with body parts that fade in and out 50% visible at any moment + pure void black with cyan rim + 0.2s cyan flash teleport telegraph at destination, every 4s teleports to 8-10m random angle then charges 1.5s ranged shot for 35 damage, counter-play is shoot during charge or close to melee to break concentration)
 5. Sculpt + texture + rig + animate Null Pointer
 6. Polish Null Pointer
-7. Design Stack Overflow — towers vertically, shoots downward. Concept.
+7. [x] Design Stack Overflow — towers vertically, shoots downward. Concept. (epic-08-new-enemy-roster-bible.md — 4.5m towering vertical stack of 6-8 cubes decreasing in size, polished chrome with cyan LED edges + dark gunmetal base, immobile rooted to base, top cube color rotates indicating next attack: red AOE blast 1.5s windup, cyan slow column to side-step, yellow 5-projectile fan, 300% HP fixed danger meant for player to work around)
 8. Sculpt + texture + rig + animate Stack Overflow
 9. Polish Stack Overflow
-10. Design Race Condition — splits constantly. Concept.
+10. [x] Design Race Condition — splits constantly. Concept. (epic-08-new-enemy-roster-bible.md — 1.0m sphere with 4 limbs at irregular angles + glitchy magenta+cyan striping + visible chromatic aberration outline, splits at 50% HP into 2 copies with 50% scale + 50% HP, those split again at 25% HP, max 4 generations, 0.5s split invuln window, fast melee charge with no telegraph, dangerous in groups since killing creates more, packs of 2 can become 8)
 11. Sculpt + texture + rig + animate Race Condition
 12. Polish Race Condition
-13. Design Deadlock — immobile turret with chain attack. Concept.
+13. [x] Design Deadlock — immobile turret with chain attack. Concept. (epic-08-new-enemy-roster-bible.md — 2.0m 4-armed spider turret rooted to ground + 4 visible chain attachments hanging from forearms + dark steel with crimson chains, fires chain that locks onto player and pulls them dragging 5 dmg/sec, chain breaks when player runs perpendicular for 1.5s OR melees the Deadlock, multiple Deadlocks can chain simultaneously making escape impossible)
 14. Sculpt + texture + rig + animate Deadlock
 15. Polish Deadlock
-16. Design Buffer Overflow — bloats and explodes. Concept.
+16. [x] Design Buffer Overflow — bloats and explodes. Concept. (epic-08-new-enemy-roster-bible.md — 1.8m starting growing to 3.5m bloated sphere with thin spider legs + sickly green-yellow with magenta crack lines that grow visibly, walks slowly toward player while inflating, explodes at full inflation OR on death dealing 60 damage in 5m radius with NO animation telegraph just the size growth, counter-play kill from 6m+ range or run away before triggering)
 17. Sculpt + texture + rig + animate Buffer Overflow
 18. Polish Buffer Overflow
-19. Design Phantom Cache — appears/disappears, drops loot when killed quickly. Concept.
+19. [x] Design Phantom Cache — appears/disappears, drops loot when killed quickly. Concept. (epic-08-new-enemy-roster-bible.md — 1.4m floating gold treasure chest with 4 dangling spider legs + glowing cyan keyhole + translucent ghost shimmer, doesn't attack and runs from player at 90% speed, drops 3x loot + guaranteed rare item if killed within 8s of detection, escapes off-screen with the loot if it outruns the player, the loot puzzle that pulls players away from safer fight areas)
 20. Sculpt + texture + rig + animate Phantom Cache
 21. Polish Phantom Cache
-22. Design Iteration Echo — clone of player. Concept.
+22. [x] Design Iteration Echo — clone of player. Concept. (epic-08-new-enemy-roster-bible.md — 1.5m perfect Globbler silhouette with inverted monochrome features + black with cyan rim + scrolling code rivulets where Globbler's accent stripes are, uses player skeleton for the actual mesh, mirrors player's CURRENT loadout at 60% damage and 75% HP, dodges in player's direction with 0.2s reaction delay so it can be outplayed, the boss-fight-feel encounter where the player has to fight their own build)
 23. Sculpt + texture + rig + animate Iteration Echo (uses player skeleton)
 24. Polish Iteration Echo
 25. Each enemy: build 3 elite variants (color + scale + buff)
-26. Each enemy: write AI behavior brief
+26. [x] Each enemy: write AI behavior brief (epic-08-new-enemy-roster-bible.md — full AI behavior brief per enemy includes combat role + tracking range + telegraph timing + counter-play recipe + standard pack size, plus a cross-cutting design rules section enforcing unique combat role, learnable telegraph, available counter-play, 3 elite variants per Knob 25, side-by-side 64x64 silhouette validation per task 43, and 4 anti-patterns: no reskins, no cheap one-shots, no unwinnable fights, no can't-be-meleed enemies)
 27. Implement Crash Daemon AI in StateMachine
 28. Implement Null Pointer AI
 29. Implement Stack Overflow AI
