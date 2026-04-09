@@ -301,7 +301,7 @@ Loop through epics 1 → 50 in order. For each epic:
 26. [x] Add bubbling foam particles (BubblingFoamEmitter component — GPUParticles3D with sphere volume emission, scale curve + alpha gradient for grow-rise-pop life cycle, burst() API for "boiling intensifies" beats)
 27. [x] Add splat particles on hit (HitSplatEmitter component — one-shot directional GPUParticles3D burst on damage_taken, sprays away from camera with arc gravity, configurable count/speed/lifetime/size)
 28. [x] Add absorb-light shader (absorb_light.gdshader using blend_mul + Fresnel falloff + AbsorbLightField component for sphere placement, slow pulse, fade-out on death)
-29. Implement leak-trail system (leaves slick on ground that slows player)
+29. [x] Implement leak-trail system (LeakTrail component drops SlowZone Area3D footprints as parent moves, max_active_slicks cap, larger final slick on death — pairs with LeakPuddle for hazard climax)
 30. Add reflective surface shader
 31. Validate readability vs other enemies
 32. Build LOD chain
