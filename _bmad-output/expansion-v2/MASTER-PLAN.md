@@ -322,7 +322,7 @@ Loop through epics 1 → 50 in order. For each epic:
 47. [x] Add per-variant glow color matching element (extended VariantBodyUpgrade._apply_carapace_shader_uniforms with shader_path detection — routes crack_color_a/b into both enemy_carapace.gdshader (GlitchBug) and gel_refraction.gdshader (MemoryLeak) uniform sets, drives gel tint_color + internal_data_color + rim_color + sss_color from a single variant Resource so the gel's glow identity is consistent across all visual layers, also pushes wobble_amplitude_override and elite emission boosts)
 48. [x] Add "freezing" status: leak crystallizes (FreezeStatus component — stack-based with decay, applies ice tint + glass material override + AI pause + shatter damage multiplier on hit while frozen)
 49. [x] Document MemoryLeak bible (epic-05-memoryleak-variant-bible.md — 8 design knobs, 12 launch+post-launch variants, validation checklist, anti-pattern list, bestiary cross-contrast enforcement)
-50. Commit `epic-05: MemoryLeak AAA pass complete`
+50. [x] Commit `epic-05: MemoryLeak AAA pass complete` (50/50 tasks shipped — references + silhouettes + variant bible + 5-section soft body + 12 internal data + tendril + 8 drips + UVs + 4 bakes + procedural albedo + code stream texture + 12-bone rig + 9 animations + 11 variant resources + 3 LODs + 7 supporting Godot system components + gel_refraction shader with refraction/SSS/wobble/hit ripple/quality scaling/seam polish + hero shots + 5-environment lighting validation + per-variant glow color routing)
 
 ---
 
