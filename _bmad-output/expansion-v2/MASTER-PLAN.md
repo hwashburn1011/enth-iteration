@@ -354,7 +354,7 @@ Loop through epics 1 → 50 in order. For each epic:
 24. Build 4 archetype variants: scout, gunner, brute, hacker
 25. Texture each archetype distinctively
 26. Add archetype-specific weapons mounted on body
-27. Add hover trail particles
+27. [x] Add hover trail particles (HoverTrailEmitter component — continuous downward GPUParticles3D ember stream with gravity, world-space coords so particles lag the moving parent for visible wake)
 28. Add thruster heat distortion shader
 29. Build holographic damage flash
 30. Build LOD chain
