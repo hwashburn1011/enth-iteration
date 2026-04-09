@@ -113,6 +113,137 @@ func clear_all() -> void:
 		detach_equipment(slot_name)
 
 
+# === WHOLE-OUTFIT ATTACHMENT (for the Epic 02 outfit GLBs) ===
+
+## Slot resolver — maps an outfit piece's name fragment to a slot name.
+## Each outfit GLB exports 16-54 pieces named like
+##   outfit_kernel_chest_pauldron_L
+##   outfit_kernel_glove_forearm_R
+##   outfit_kernel_back_cape
+## This method parses each name and routes the piece to the right
+## slot mount on the rig.
+const OUTFIT_PIECE_TO_SLOT: Dictionary = {
+	# Hands — match before chest so 'glove_forearm' doesn't fall to chest
+	&"glove":     &"slot_hand_R",  # default; L variant overridden below
+	&"hand":      &"slot_hand_R",
+	&"forearm":   &"slot_hand_R",
+	&"knuckle":   &"slot_hand_R",
+	&"wrap":      &"slot_hand_R",
+	# Feet
+	&"boot":      &"slot_foot_R",
+	&"greave":    &"slot_foot_R",
+	# Hip
+	&"hip":       &"slot_hip_R",
+	&"belt":      &"slot_hip_R",
+	&"pants":     &"slot_hip_R",
+	# Back
+	&"back":      &"slot_back",
+	&"cape":      &"slot_back",
+	&"mantle":    &"slot_back",
+	&"tendril":   &"slot_back",
+	# Chest (catch-all for shoulder/pauldron/collar/chest)
+	&"shoulder":  &"slot_shoulder_R",
+	&"pauldron":  &"slot_shoulder_R",
+	&"collar":    &"slot_chest",
+	&"chest":     &"slot_chest",
+	&"neck":      &"slot_chest",
+	&"scarf":     &"slot_chest",
+	# Head
+	&"head":      &"slot_head",
+}
+
+## Resolves the slot mount for a given outfit piece name. Honors the
+## L/R suffix on the piece name (handles _L vs _R, _0 vs _1).
+func resolve_slot_for_piece(piece_name: String) -> StringName:
+	var lower: String = piece_name.to_lower()
+	# Check for left-side indicators FIRST so we override the default _R fallback
+	var is_left: bool = lower.ends_with("_l") or "_l_" in lower or "left" in lower
+	# Check name fragments in order — first match wins
+	for fragment in OUTFIT_PIECE_TO_SLOT.keys():
+		if fragment in lower:
+			var base_slot: StringName = OUTFIT_PIECE_TO_SLOT[fragment]
+			if is_left:
+				# Swap _R for _L if applicable
+				var s: String = String(base_slot)
+				if s.ends_with("_R"):
+					return StringName(s.substr(0, s.length() - 2) + "_L")
+			return base_slot
+	return &""
+
+
+## Attaches a whole outfit GLB by walking its child mesh pieces and
+## parenting each piece to the appropriate bone slot mount on the rig.
+## Returns the count of pieces successfully attached.
+##
+## Use this for the Epic 02 outfit GLBs (outfit_initiate.glb,
+## outfit_patcher.glb, etc) which export ALL pieces under one root.
+func attach_outfit_set(scene: PackedScene, set_id: StringName = &"") -> int:
+	if scene == null or _model_root == null:
+		return 0
+
+	# First, detach any previously-attached outfit pieces
+	clear_all()
+
+	var root: Node = scene.instantiate()
+	if root == null:
+		return 0
+
+	var attached_count: int = 0
+	var pieces_by_slot: Dictionary = {}
+
+	# Walk the tree, find every MeshInstance3D, route it to a slot
+	var pieces: Array[MeshInstance3D] = _walk_meshes(root)
+	for piece in pieces:
+		var slot: StringName = resolve_slot_for_piece(piece.name)
+		if slot == &"":
+			continue
+		# Group pieces by slot so we can attach them as one parent per slot
+		pieces_by_slot.get_or_add(slot, []).append(piece)
+
+	# For each slot, create an empty container, reparent the pieces under it,
+	# then add the container to the slot mount
+	for slot in pieces_by_slot.keys():
+		if not _slots.has(slot):
+			continue
+		var slot_mount: Node3D = _slots[slot]
+		var container: Node3D = Node3D.new()
+		container.name = "outfit_pieces_%s" % String(slot)
+		slot_mount.add_child(container)
+		for piece in pieces_by_slot[slot]:
+			# Reparent the piece to the container while preserving its
+			# world transform — this is the key step that makes weight
+			# painting unnecessary: each piece keeps its modeled position
+			# relative to the rig's root, then the slot mount handles the
+			# bone follow.
+			var piece_world_transform: Transform3D = piece.global_transform
+			piece.get_parent().remove_child(piece)
+			container.add_child(piece)
+			piece.global_transform = piece_world_transform
+			attached_count += 1
+
+		_attached[slot] = container
+
+	# Free the now-empty original root
+	if is_instance_valid(root):
+		root.queue_free()
+
+	# Apply set bonus check after the whole outfit is attached
+	if set_id != &"":
+		# Mark all 6 set slots as carrying this set so the bonus check passes
+		var set_slots: Array[StringName] = [
+			&"slot_head", &"slot_chest", &"slot_hand_R",
+			&"slot_hand_L", &"slot_foot_R", &"slot_foot_L",
+		]
+		for s in set_slots:
+			if _attached.has(s):
+				var dummy_item: OutfitItem = OutfitItem.new()
+				dummy_item.set_id = set_id
+				_equipped_items[s] = dummy_item
+
+	_update_set_bonus()
+	return attached_count
+
+
 func set_transmog(slot_name: StringName, visual_item: OutfitItem) -> void:
 	## Visual override — slot still uses the equipped item's stats but
 	## displays a different outfit piece.
