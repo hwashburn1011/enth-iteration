@@ -262,7 +262,7 @@ Loop through epics 1 → 50 in order. For each epic:
 42. [x] Tune attack telegraph readability (AttackTelegraph v2 layer — show_circle_telegraph + show_line_telegraph with 3-phase yellow→orange→red color ramp, outline rings via TorusMesh, optional Decal ground projection, audio cue hooks)
 43. Add wing flap loop (idle ambient flutter)
 44. Validate against 5 lighting setups
-45. Add per-variant SFX hooks
+45. [x] Add per-variant SFX hooks (EnemyVariant Resource with 9 sfx_* fields + EnemyVariantSfx component routing state machine + damage + death events through SfxManager with graceful fallback)
 46. Build spawn-from-egg variant intro
 47. [x] Build "pack leader" buff aura visual (PackLeaderAura component — Fresnel sphere via energy_aura.gdshader + tether beams to allies in range + buff broadcast via direct method + EventBus signal)
 48. [x] Add "infested" environmental decal under pack groups (InfestedDecal component — Decal projector that grows with cluster size, slow pulse breathing, tied to enemies group scan)
