@@ -2041,53 +2041,53 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 37 — NPC Affinity & Relationships
 
-1. Design affinity bible: levels, gates, rewards
-2. Define 5 affinity levels (Stranger → Friend → Confidant → Bond → Soul-Linked)
-3. Build affinity tracker per NPC
-4. Define affinity gain triggers (gifts, dialogue, quests)
-5. Define gift preferences per NPC (loved, liked, neutral, disliked, hated)
-6. Build gift giving interaction
+1. [x] Design affinity bible: levels, gates, rewards
+2. [x] Define 5 affinity levels (Stranger → Friend → Confidant → Bond → Soul-Linked)
+3. [x] Build affinity tracker per NPC
+4. [x] Define affinity gain triggers (gifts, dialogue, quests)
+5. [x] Define gift preferences per NPC (loved, liked, neutral, disliked, hated)
+6. [x] Build gift giving interaction
 7. Add gift reaction animations
 8. Add gift dialogue variants
-9. Hook affinity rewards (new dialogue, quests, items)
+9. [x] Hook affinity rewards (new dialogue, quests, items)
 10. Build affinity UI screen
 11. Render affinity heart icons
 12. Add affinity progression sound
-13. Build per-NPC unique reward unlocks
-14. Add NPC backstory dialogue locked behind affinity
-15. Add NPC personal quests at higher affinity
+13. [x] Build per-NPC unique reward unlocks
+14. [x] Add NPC backstory dialogue locked behind affinity
+15. [x] Add NPC personal quests at higher affinity
 16. Build relationship cinematic for max affinity
 17. Add NPC visit player home interactions
 18. Add player visit NPC home interactions
-19. Build NPC-specific gifts
-20. Add daily-gift cap
-21. Add NPC birthday system
+19. [x] Build NPC-specific gifts
+20. [x] Add daily-gift cap
+21. [x] Add NPC birthday system
 22. Add gift-giving etiquette tutorial
-23. Build NPC mood states
-24. Hook mood to dialogue
-25. Add NPC schedule integration with affinity
-26. Add affinity-based merchant discounts
-27. Add affinity-based crafting bonuses
-28. Add affinity-based quest unlocks
-29. Add affinity decay if ignored too long
-30. Build "favorite NPC" tracking achievement
+23. [x] Build NPC mood states
+24. [x] Hook mood to dialogue
+25. [x] Add NPC schedule integration with affinity
+26. [x] Add affinity-based merchant discounts
+27. [x] Add affinity-based crafting bonuses
+28. [x] Add affinity-based quest unlocks
+29. [x] Add affinity decay if ignored too long
+30. [x] Build "favorite NPC" tracking achievement
 31. Add per-NPC affinity hint dialogue
 32. Add gift wrap visual on giving
 33. Add reactive NPC poses for affinity levels
-34. Hook to save data
-35. Add achievement triggers
-36. Validate against all 12 NPCs
-37. Add NPC-NPC relationship layer (some NPCs are friends/rivals)
-38. Add NPC group events
-39. Build town festival event
-40. Build town crisis event
-41. Add affinity-locked town events
+34. [x] Hook to save data
+35. [x] Add achievement triggers
+36. [x] Validate against all 12 NPCs
+37. [x] Add NPC-NPC relationship layer (some NPCs are friends/rivals)
+38. [x] Add NPC group events
+39. [x] Build town festival event
+40. [x] Build town crisis event
+41. [x] Add affinity-locked town events
 42. Render hero shots of relationship moments
 43. Validate UX with all 12 NPCs maxed
 44. Test gift inventory management
 45. Tune affinity gain rates
 46. Add UX hints for missed gifts
-47. Document affinity bible
+47. [x] Document affinity bible
 48. Add affinity history log
 49. Validate against story flags
 50. Commit `epic-37: NPC affinity complete`
