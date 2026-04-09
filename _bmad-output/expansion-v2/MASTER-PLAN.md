@@ -1363,7 +1363,7 @@ Loop through epics 1 → 50 in order. For each epic:
 39. [x] Add entrance signpost lore
 40. [x] Add per-entrance approach path (4 descent paths + biome guide markers + signposts)
 41. [x] Add entrance flag/banner decor (4 themed banner pairs with biome emblems)
-42. Add entrance reflection probe
+42. [x] Add entrance reflection probe (4 per-entrance probes with biome ambient bias)
 43. [x] Build entrance secret unlock condition
 44. Validate scene transitions don't crash
 45. Test all entrances in one session
