@@ -1244,7 +1244,7 @@ Loop through epics 1 → 50 in order. For each epic:
 30. Tune lighting per area (deferred to scene)
 31. Render hero shot per sub-area (Blender)
 32. [x] Hook ambient music per sub-area (music_track field)
-33. Add wildlife spawners per area (deferred)
+33. [x] Add wildlife spawners per area (AmbientLifeSpawner: swarms, formations, calls) (deferred)
 34. Add reactive day/night cycle elements (deferred)
 35. Validate navmesh (deferred)
 36. Bake lighting (deferred)
