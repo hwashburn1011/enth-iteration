@@ -1398,8 +1398,8 @@ Loop through epics 1 → 50 in order. For each epic:
 19. Build farm plot area (Blender)
 20. [x] Add planting interaction (FarmPlotInteractable wrapper + state-aware action picker)
 21. [x] Add harvesting interaction (floating popup with quality tier + drops + XP + crown celebration)
-22. Build fishing dock at water
-23. Add fishing rod prop + animation
+22. Build fishing dock at water (Blender)
+23. [x] Add fishing rod prop + animation (cast/wait/bite/reel state machine + line rendering)
 24. Build cooking station
 25. Add cooking interaction
 26. Build crafting workshop area
