@@ -1294,7 +1294,7 @@ Loop through epics 1 → 50 in order. For each epic:
 25. [x] Build wilderness map UI (regions, landmarks, waypoints, entrances, player dot)
 26. [x] Add discovery rewards per landmark (9 landmarks, manager, waypoint hookup)
 27. [x] Hook story trigger zones (8 one-shot story beats across the 9 iterations)
-28. Build wilderness shrine that provides buffs
+28. [x] Build wilderness shrine that provides buffs (9 buffs, 4 tiers, daily offering)
 29. Build resource gathering nodes (for crafting)
 30. Add fishing spots
 31. Add foraging spots
