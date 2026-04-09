@@ -1268,9 +1268,9 @@ Loop through epics 1 → 50 in order. For each epic:
 ## Epic 23 — Open Wilderness Zone (Between Town & Dungeons)
 
 1. [x] Design wilderness zone: river, forest, ruins, dungeon entrances
-2. Build heightmap terrain at large scale
-3. Sculpt river course
-4. Build river water with flow shader
+2. Build heightmap terrain at large scale (Blender)
+3. Sculpt river course (Blender)
+4. [x] Build river water with flow shader
 5. Sculpt cliff walls
 6. Place forest vegetation density
 7. Build clearing variants ×6

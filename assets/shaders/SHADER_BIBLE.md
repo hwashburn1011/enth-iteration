@@ -13,8 +13,15 @@ All shaders target the **Forward+ renderer** in Godot 4.4 on midspec hardware
 ### water_pbr.gdshader
 **Purpose:** PBR water surface with dual normal scroll, depth fade, shore foam, flow direction map.
 **Key uniforms:** `deep_color`, `shallow_color`, `wave_speed`, `depth_fade_distance`, `foam_distance`.
-**Used in:** Town Docks district, Wilderness river, dungeon flooded rooms.
+**Used in:** Town Docks district, dungeon flooded rooms, ponds, lakes.
 **Cost:** Medium — uses depth + screen texture sampling. ~4 ms/frame on full-screen plane.
+
+### water_river_flow.gdshader
+**Purpose:** Directional river water using Tom Forsyth flow mapping. Phase-blended normal scroll prevents UV stretching, plus shore foam, rapids whitewater, refraction, caustics, and vertex ripple displacement.
+**Key uniforms:** `flow_speed`, `flow_strength`, `rapids_threshold`, `caustic_intensity`, `shore_foam_distance`, `ripple_amplitude`.
+**Flow map encoding:** RG = local flow direction, B = local flow speed multiplier, A = rapids/turbulence amount.
+**Used in:** Wilderness river (Epic 23), any directional waterway.
+**Cost:** Medium-high — flow mapping doubles normal samples vs `water_pbr`. ~3 ms on GTX 1060 at 1080p for a 200m river plane. Use a single mesh per river; do not stack planes.
 
 ### glitch_displacement.gdshader
 **Purpose:** Vertex displacement bands + chromatic aberration + horizontal color shift bands.
