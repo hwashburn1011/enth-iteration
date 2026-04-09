@@ -1388,7 +1388,7 @@ Loop through epics 1 → 50 in order. For each epic:
 9. Build tower spiral staircase (Blender)
 10. Build tower observation deck (Blender)
 11. [x] Add tower telescope interaction (7 targets, phase + iteration gated, lore/buff/title/countdown reveals)
-12. Build tower ambient lighting
+12. [x] Build tower ambient lighting (4-phase rig + star field + wind whip particles)
 13. Build sage's tower study room
 14. Build sage's library
 15. Add archive crystal interactions
