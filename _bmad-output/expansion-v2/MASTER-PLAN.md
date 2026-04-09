@@ -1292,7 +1292,7 @@ Loop through epics 1 → 50 in order. For each epic:
 23. Build dungeon entrance hero monuments (Blender)
 24. [x] Add fast-travel waypoints (7 wilderness waypoints, manager, trigger)
 25. [x] Build wilderness map UI (regions, landmarks, waypoints, entrances, player dot)
-26. Add discovery rewards per landmark
+26. [x] Add discovery rewards per landmark (9 landmarks, manager, waypoint hookup)
 27. Hook story trigger zones
 28. Build wilderness shrine that provides buffs
 29. Build resource gathering nodes (for crafting)
