@@ -265,7 +265,7 @@ Loop through epics 1 → 50 in order. For each epic:
 45. Add per-variant SFX hooks
 46. Build spawn-from-egg variant intro
 47. [x] Build "pack leader" buff aura visual (PackLeaderAura component — Fresnel sphere via energy_aura.gdshader + tether beams to allies in range + buff broadcast via direct method + EventBus signal)
-48. Add "infested" environmental decal under pack groups
+48. [x] Add "infested" environmental decal under pack groups (InfestedDecal component — Decal projector that grows with cluster size, slow pulse breathing, tied to enemies group scan)
 49. Document the GlitchBug bible for future variants
 50. Commit `epic-04: GlitchBug AAA pass complete`
 
