@@ -221,7 +221,7 @@ Loop through epics 1 → 50 in order. For each epic:
 1. [x] Reference: collect insect/glitch/digital corruption refs (epic-04-glitchbug-references.md — 5 design pillars + reference families + material zones + motion timing + 90s trailer test)
 2. [x] Concept sketch 6 pose silhouettes (epic-04-glitchbug-concept-silhouettes.md — idle/alert/aggro_rear/lunge/bite/death_curl with explicit body part positions and rotations driving rig + animation tasks)
 3. [x] Sculpt high-poly carapace with surface detail (enemy_glitchbug_v2_blockout.blend — 11 separate chitin plate meshes: head/neck/2 thoracic/abdomen/4 shoulder/2 hip, each as a flattened UV sphere with subsurface modifier level 2 for high-poly working surface, dark purple-black PBR material)
-4. Add chitin plate breakup with edge wear
+4. [x] Add chitin plate breakup with edge wear (Bevel modifier 5mm width 3 segments 30° angle limit + Solidify 18mm thickness + Displace noise modifier 4mm strength on all 11 plates — verified with render showing distinct plate domes with visible seams)
 5. Sculpt 6 leg variants with joint detail
 6. Sculpt mandibles + sensors
 7. Retopo to 4K tris
