@@ -171,7 +171,7 @@ Loop through epics 1 → 50 in order. For each epic:
 8. [x] Animate "laugh" full body (80-frame, 4 ha-ha-ha pulses with body bob, head back, hand-to-belly + waving arm, decaying amplitude)
 9. [x] Animate "cry" sad sequence (90-frame, head bow + hands to face + chest collapse + 3 sob shakes + slow recovery)
 10. [x] Animate "anger" stomp + fist clench (50-frame, tension build → knee raise → STOMP at 18 → tense hold → seething shake)
-11. Animate "fear" recoil + hands up
+11. [x] Animate "fear" recoil + hands up (55-frame, snap flinch → peak recoil → 2 trembles → tentative recovery)
 12. Animate "thinking" hand on chin
 13. Animate "salute"
 14. Animate "dance 1" cozy bop
