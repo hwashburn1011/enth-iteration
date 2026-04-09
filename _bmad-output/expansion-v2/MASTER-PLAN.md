@@ -200,7 +200,7 @@ Loop through epics 1 → 50 in order. For each epic:
 37. [x] Animate "block" defensive stance (120-frame loop, forearms crossed at face + tucked body + bent knees + breath shift)
 38. [x] Animate "parry" successful counter (28-frame, snappy whip-deflect across body with body torque counter-twist)
 39. [x] Animate "dodge roll" alt to dash (30-frame, pre-tuck → ball curl → mid-roll peak curl → emerging → land crouch → rise)
-40. Animate "execute finisher" cinematic kill
+40. [x] Animate "execute finisher" cinematic kill (100-frame, slow dramatic raise → 18-frame hold → coil → SLAM → impact lingerframe → rise → victory exhale)
 41. Animate "mounted ride" if pets get implemented
 42. Animate "petting pet" affection
 43. Animate "high five" with NPC
