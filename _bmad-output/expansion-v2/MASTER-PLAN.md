@@ -232,7 +232,7 @@ Loop through epics 1 → 50 in order. For each epic:
 12. [x] Add emissive crawling glitch pattern (extended enemy_carapace.gdshader with crawl_noise_texture sampled at TIME-scrolled UVs, smoothstep threshold for sparse streaks, magenta emission overlay drifts continuously across the carapace surface — independent of crack mask)
 13. [x] Build subsurface for translucent wing membranes (enemy_wing_membrane.gdshader using BACKLIGHT for fake SSS + Fresnel rim + animated UV-scrolling code overlay + reveal uniform for gameplay-controlled wing reveal during aggro rear-up pose)
 14. [x] Rig with 24 bones including individual leg IK (Armature_GlitchBug_v2 — body chain root/hips/spine/chest/head 5 + mandible.R/L + antenna.R/L 4 + 6 leg pairs of upper+lower 12 + abdomen_tip + wing_case + hover_offset 3 = 24 bones; 6 IK constraints chain_count 2 with separate IK_target_leg_* empties for each leg)
-15. Animate idle (twitchy, twitchy, look around)
+15. [x] Animate idle (twitchy, twitchy, look around) (60-frame loop — antenna jitters every 6 frames + head occasional yaw look-around + subtle breath chest pitch + abdomen tip wag, IK constraints muted for FK keyframing per Globbler v2 lesson)
 16. Animate walk (6-leg gait)
 17. Animate run (faster gait)
 18. Animate aggro (rear up, hiss)
