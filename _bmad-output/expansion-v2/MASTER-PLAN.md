@@ -290,7 +290,7 @@ Loop through epics 1 → 50 in order. For each epic:
 15. [x] Animate idle (slow pulse breath) (90-frame loop — bone scale animation per body section: base/intent ±5% scale + spine_02/03 micro Z-rotation sway, peak inhale at F22 with body wider+slightly shorter, peak exhale at F67 with body narrower+slightly taller, the macro slow body motion that the vertex wobble shader's micro jiggle plays on top of)
 16. [x] Animate move (drag/ooze across ground) (30-frame loop — push_forward F8 with progressive Y offsets up the spine chain (0.04→0.10m) so the upper sections lean ahead, base widens 5/8% to spread weight, mid_drag F14, catch_up F20 with negative Y offsets and base contracting as it pulls forward, mid_drag F26, rest F30 — root translation handled by AnimationTree)
 17. [x] Animate attack (extend tendril whip) (34-frame: F1 rest → F8/12 windup with body recoiling inward and tendril pulling back → F16 STRIKE peak with body fully recoiled and tendril segments stretched along Y by progressive offsets 0.40/1.20/2.20m + scale stretch (1.5/2.5/3.5) so the tendril tip reaches 3.5m from body center → F24 viscous recover midpoint → F34 rest)
-18. Animate ranged spit attack
+18. [x] Animate ranged spit attack (60-frame: F8 inflate_start uniform body scale 1.02 → F16 inflate_peak intent bulge at 1.15 scale + tilted forward + hotspot_anchor enlarged to 1.4 cluster → F24 held at peak → F30 RELEASE 6-frame snap with whole-body contraction to 0.94 + intent narrowing on X/Y but stretching on Z + hotspot empties → F45 settle → F60 rest)
 19. Animate hit reaction (jiggle wave)
 20. Animate death (collapse into puddle, drain)
 21. Animate split (spawns 2 smaller leaks)
