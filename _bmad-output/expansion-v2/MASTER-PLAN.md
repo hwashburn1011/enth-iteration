@@ -1382,7 +1382,7 @@ Loop through epics 1 → 50 in order. For each epic:
 3. Add lounge furniture props (Blender)
 4. [x] Build lounge bar interactive (9 drink specials, daily rotation, story-flag gating)
 5. [x] Build lounge stage for music (Sync schedule + spotlight pulse + tip jar)
-6. Add lounge NPCs
+6. [x] Add lounge NPCs (Cache evening shift + 8 regulars rotating pair per night)
 7. Hook lounge dialogue
 8. Build tower top scene
 9. Build tower spiral staircase
