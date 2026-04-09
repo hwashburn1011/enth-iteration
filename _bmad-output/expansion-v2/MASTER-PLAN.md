@@ -118,7 +118,7 @@ Loop through epics 1 → 50 in order. For each epic:
 12. [x] Design "Architect" legendary set — heroic silhouette
 13. [x] Model + texture Architect set with cape/mantle that simulates (54 pieces, ivory + gold + crimson mantle)
 14. [x] Design "Glitch" cursed/unique set — broken digital corruption look
-15. Model + texture Glitch set with shader distortion
+15. [x] Model + texture Glitch set with shader distortion (33 pieces, asymmetric corruption with floating fragments)
 16. [x] Design "Cozy" town/social set — non-combat outfit
 17. Model + texture Cozy set
 18. [x] Design "Boss Reward" iconic set — drops from Compiler boss
