@@ -1369,7 +1369,7 @@ Loop through epics 1 → 50 in order. For each epic:
 45. Test all entrances in one session
 46. [x] Hook map fast-travel
 47. [x] Add entrance audio sting
-48. Polish entrance VFX
+48. [x] Polish entrance VFX (4 portal energy surfaces with shader + seal overlay + unseal anim)
 49. [x] Document entrance bible
 50. Commit `epic-24: multiple dungeon entrances complete`
 
