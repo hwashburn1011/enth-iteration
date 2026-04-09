@@ -122,7 +122,7 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Design "Cozy" town/social set — non-combat outfit
 17. [x] Model + texture Cozy set (29 pieces, autumn knitwear with pom-pom beanie + scarf + cardigan)
 18. [x] Design "Boss Reward" iconic set — drops from Compiler boss
-19. Model + texture Boss Reward set
+19. [x] Model + texture Boss Reward set (54 pieces, Compiler crown + boss emblem + battle scar)
 20. [x] Build mix-and-match material system so any helmet works with any chest
 21. [x] Create dye system: 16 color variants per slot
 22. [x] Add per-slot wear/dirt slider that increases with damage taken
