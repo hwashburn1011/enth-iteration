@@ -1296,7 +1296,7 @@ Loop through epics 1 → 50 in order. For each epic:
 27. [x] Hook story trigger zones (8 one-shot story beats across the 9 iterations)
 28. [x] Build wilderness shrine that provides buffs (9 buffs, 4 tiers, daily offering)
 29. [x] Build resource gathering nodes (8 node types, harvest + respawn component)
-30. Add fishing spots
+30. [x] Add fishing spots (FishingResolver wrapping 15-fish DB + bait weighting + spot component)
 31. Add foraging spots
 32. Build campsite prop with rest function
 33. Add ambient bird/insect spawners
