@@ -1455,8 +1455,8 @@ Loop through epics 1 → 50 in order. For each epic:
 21. [x] Build light cookie clouds drifting (CloudCookieDrifter wind + weather coverage)
 22. [x] Add ambient bird SFX in day (AmbientWildlifeSoundLayer day side)
 23. [x] Add ambient cricket SFX at night (AmbientWildlifeSoundLayer night side)
-24. Build window-light flicker on at dusk
-25. Build street lamp light on at dusk
+24. [x] Build window-light flicker on at dusk (DuskLight CANDLE mode)
+25. [x] Build street lamp light on at dusk (DuskLight NONE mode)
 26. Build NPC bedtime animations
 27. Build NPC wake-up animations
 28. [x] Hook quest gating to time of day
