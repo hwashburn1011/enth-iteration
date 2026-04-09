@@ -1383,7 +1383,7 @@ Loop through epics 1 → 50 in order. For each epic:
 4. [x] Build lounge bar interactive (9 drink specials, daily rotation, story-flag gating)
 5. [x] Build lounge stage for music (Sync schedule + spotlight pulse + tip jar)
 6. [x] Add lounge NPCs (Cache evening shift + 8 regulars rotating pair per night)
-7. Hook lounge dialogue
+7. [x] Hook lounge dialogue (8 Cache lounge-only confessions, tier-gated)
 8. Build tower top scene
 9. Build tower spiral staircase
 10. Build tower observation deck
