@@ -1406,8 +1406,8 @@ Loop through epics 1 → 50 in order. For each epic:
 27. [x] Add crafting station interactions (forge/bench/shaper + iteration upgrade tiers)
 28. Build pet hutch area (Blender)
 29. [x] Add pet feeding interaction (4-slot trough + per-pet hunger + decay + bonus)
-30. Build memorial gallery
-31. Add iteration memorial plaques
+30. Build memorial gallery (Blender)
+31. [x] Add iteration memorial plaques (9 alcoves with unseal animation + lore paragraphs)
 32. Build trophy display hall
 33. Add trophy mount points
 34. Build wardrobe room
