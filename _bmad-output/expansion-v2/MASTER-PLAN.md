@@ -2650,13 +2650,13 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 48 — Voice Acting / NPC Voice Treatment
 
-1. Decide voice approach: real VAs, AI TTS, or text-only with grunts
-2. Build "voice grunts" library per NPC (6 unique grunts)
-3. Hook grunts to dialogue lines (per character pitch)
-4. Build emotion-tagged grunts (happy, sad, surprised, angry)
-5. Add typewriter SFX per dialogue letter
-6. Add per-character text speed
-7. Add per-character font choice
+1. [x] Decide voice approach: real VAs, AI TTS, or text-only with grunts
+2. [x] Build "voice grunts" library per NPC (6 unique grunts)
+3. [x] Hook grunts to dialogue lines (per character pitch)
+4. [x] Build emotion-tagged grunts (happy, sad, surprised, angry)
+5. [x] Add typewriter SFX per dialogue letter
+6. [x] Add per-character text speed
+7. [x] Add per-character font choice
 8. Render Globbler grunts (6 emotional)
 9. Render Sage grunts (warm, low)
 10. Render NPC 1 (Pixel) grunts
@@ -2671,34 +2671,34 @@ Loop through epics 1 → 50 in order. For each epic:
 19. Render NPC 10 (Render) grunts
 20. Render NPC 11 (Sync) grunts (musical)
 21. Render NPC 12 (Sentinel) grunts (gruff)
-22. Hook all grunts to dialogue system
-23. Add audio mixing per NPC
-24. Add reverb per environment
-25. Add UI volume slider for voice
-26. Build voice mute toggle
-27. Add cinematic voiceover slots (post-MVP placeholders)
-28. Build narrator voice for iteration intros
-29. Add narrator track for opening cinematic
-30. Add narrator track for iteration 2 reveal
-31. Add narrator for iteration 9 ending
-32. Validate voice balance
-33. Build voice attribution credits
-34. Add per-line voice variation (don't repeat same grunt)
-35. Add silence for very short dialogue lines
+22. [x] Hook all grunts to dialogue system
+23. [x] Add audio mixing per NPC
+24. [x] Add reverb per environment
+25. [x] Add UI volume slider for voice
+26. [x] Build voice mute toggle
+27. [x] Add cinematic voiceover slots (post-MVP placeholders)
+28. [x] Build narrator voice for iteration intros
+29. [x] Add narrator track for opening cinematic
+30. [x] Add narrator track for iteration 2 reveal
+31. [x] Add narrator for iteration 9 ending
+32. [x] Validate voice balance
+33. [x] Build voice attribution credits
+34. [x] Add per-line voice variation (don't repeat same grunt)
+35. [x] Add silence for very short dialogue lines
 36. Build voice editor tool for tuning
-37. Validate against all dialogue
+37. [x] Validate against all dialogue
 38. Test full dialogue playthrough
-39. Polish per-character timing
-40. Add reactive grunt-on-hit
-41. Add reactive grunt-on-death
-42. Add ambient NPC chatter (background)
-43. Add NPC singing in tavern
-44. Add child NPC giggle
-45. Add elder NPC sigh
-46. Add boss roars
-47. Add combat callouts ("look out!")
+39. [x] Polish per-character timing
+40. [x] Add reactive grunt-on-hit
+41. [x] Add reactive grunt-on-death
+42. [x] Add ambient NPC chatter (background)
+43. [x] Add NPC singing in tavern
+44. [x] Add child NPC giggle
+45. [x] Add elder NPC sigh
+46. [x] Add boss roars
+47. [x] Add combat callouts ("look out!")
 48. Render voice showcase clip
-49. Document voice bible
+49. [x] Document voice bible
 50. Commit `epic-48: voice treatment complete`
 
 ---
