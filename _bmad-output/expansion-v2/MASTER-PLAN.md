@@ -165,7 +165,7 @@ Loop through epics 1 → 50 in order. For each epic:
 2. [x] Animate "wave" hello gesture (60-frame friendly wave with arm lift, 3 hand swings, lower)
 3. [x] Animate "thumbs up" affirmation (40-frame raise + double nod + hold)
 4. [x] Animate "shake head no" (30-frame, 3 swings with decay)
-5. Animate "shrug" uncertain
+5. [x] Animate "shrug" uncertain (50-frame, both arms out + elbows bent + head tilt; muted IK constraints to allow FK animation)
 6. Animate "point" directional gesture
 7. Animate "facepalm"
 8. Animate "laugh" full body
