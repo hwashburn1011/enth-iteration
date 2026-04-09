@@ -328,7 +328,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 06 — RogueProcess Enemy: Photoreal Detail Pass
 
-1. Reference: rogue AI / drone / spectral entity refs
+1. [x] Reference: rogue AI / drone / spectral entity refs (epic-06-rogueprocess-references.md — 5 design pillars + reference families + material zones + 3-way bestiary contrast table + 4 archetype specs)
 2. Concept 6 silhouettes with humanoid-but-wrong feel
 3. Sculpt floating torso with no legs
 4. Sculpt face with multiple eyes
