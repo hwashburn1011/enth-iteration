@@ -1356,7 +1356,7 @@ Loop through epics 1 → 50 in order. For each epic:
 32. [x] Polish entrance lighting (3-light hero rig per portal: key + rim + pulsing core)
 33. Render hero shot per entrance
 34. Validate against navmesh
-35. Add entrance day/night appearance variation
+35. [x] Add entrance day/night appearance variation (per-phase mults on lights + particles)
 36. Add entrance weather response
 37. [x] Add discovery reward for finding each
 38. [x] Add achievement for finding all
