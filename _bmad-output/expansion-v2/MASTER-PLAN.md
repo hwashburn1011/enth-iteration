@@ -50,8 +50,8 @@ Loop through epics 1 → 50 in order. For each epic:
 1. [x] Collect 20 reference images (Hades Zagreus, Sea of Stars protag, Emberville hero, Clive Barker AI mascots, charming digital characters)
 2. [x] Write a 1-page character art bible: silhouette, color hierarchy, material rules, "what makes Globbler iconic in 1 frame"
 3. [x] Block out new base mesh in Blender at high poly (~30K tris) with proper topology loops around face/joints
-4. Sculpt face: brow, cheeks, mouth, "eye" optical sensor, distinctive ear/antenna shape
-5. Sculpt body forms with clear large/medium/small detail hierarchy
+4. [x] Sculpt face: brow, cheeks, mouth, "eye" optical sensor, distinctive ear/antenna shape
+5. [x] Sculpt body forms with clear large/medium/small detail hierarchy
 6. Retopologize to game-ready mesh (~6K tris) with clean quad flow
 7. UV unwrap with face on dedicated 1K patch, body on 2K patch
 8. Bake high-to-low: normal map, AO, curvature, position
