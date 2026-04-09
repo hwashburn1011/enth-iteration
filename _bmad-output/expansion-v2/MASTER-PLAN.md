@@ -112,7 +112,7 @@ Loop through epics 1 → 50 in order. For each epic:
 6. [x] Design "Patcher" uncommon set — utility/repair theme
 7. [x] Model + texture Patcher set (36 pieces, hi-vis orange utility theme)
 8. [x] Design "Compiler" rare set — ornate, geometric
-9. Model + texture Compiler set with emissive accents
+9. [x] Model + texture Compiler set with emissive accents (43 pieces, dual cyan/violet rune theme)
 10. [x] Design "Kernel" epic set — sleek warrior aesthetic
 11. Model + texture Kernel set with anim'd glow shader
 12. [x] Design "Architect" legendary set — heroic silhouette
