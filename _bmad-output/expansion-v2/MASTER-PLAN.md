@@ -133,7 +133,7 @@ Loop through epics 1 → 50 in order. For each epic:
 27. [x] Validate all 8 sets animate correctly with all anims from Epic 01 (7/8 clean, 1 false positive on a wrench prop)
 28. [x] Validate clipping at extreme poses (0 critical, 21 expected high-risk on body-wrap pieces)
 29. [x] Polish weight painting on attachments (attach_outfit_set + name-based slot routing)
-30. Add subtle physics on cape, antenna, loose straps
+30. [x] Add subtle physics on cape, antenna, loose straps (SwingingPiece spring-damper)
 31. [x] Create equipment pickup world model variants (small props on ground)
 32. [x] Create equipment drop sparkle/aura colored by rarity
 33. [x] Build wardrobe NPC in town that previews outfits
