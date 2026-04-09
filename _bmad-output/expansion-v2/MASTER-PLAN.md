@@ -184,7 +184,7 @@ Loop through epics 1 → 50 in order. For each epic:
 21. [x] Animate "write" jotting notes (135-frame, hands-up writing pose with 7 wrist scribble cycles + thinking pause look-up)
 22. [x] Animate "craft" hands working (121-frame loop, 8-beat asymmetric tool/workpiece motions with assessment head tilt)
 23. [x] Animate "fish" idle with rod (150-frame loop, both-hands grip pose with subtle rod twitch + reel-in micro-action)
-24. Animate "farm" planting/harvest
+24. [x] Animate "farm" planting/harvest (90-frame, crouch → dig → plant drop → 2 soil pats → rise to neutral)
 25. Animate "build" hammering
 26. Animate "dig" shovel
 27. Animate "swim" water surface
