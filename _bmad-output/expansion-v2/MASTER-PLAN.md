@@ -153,7 +153,7 @@ Loop through epics 1 → 50 in order. For each epic:
 47. [x] Generate variant portraits per outfit (8 portraits with appended outfit pieces, 50mm wider framing)
 48. [x] Animate portrait subtle motion (breathing, blink) as a Sprite2D atlas (8 frames + PortraitAnimator)
 49. [x] Hook portrait into dialogue UI
-50. Commit `epic-02: outfits & equipment viz complete`
+50. [x] Commit `epic-02: outfits & equipment viz complete` (50/50 tasks)
 
 ---
 
@@ -2818,7 +2818,7 @@ Loop through epics 1 → 50 in order. For each epic:
 Mark each epic when complete:
 
 - [x] Epic 01 — Globbler Hero Character: AAA Remake
-- [ ] Epic 02 — Globbler Outfits & Equipment Visualization
+- [x] Epic 02 — Globbler Outfits & Equipment Visualization (8 outfit sets + portrait pipeline + runtime attach)
 - [ ] Epic 03 — Globbler Animation Library Deep Pass
 - [ ] Epic 04 — GlitchBug Enemy: Photoreal Detail Pass
 - [ ] Epic 05 — MemoryLeak Enemy: Photoreal Detail Pass
