@@ -2371,36 +2371,36 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 43 — Boss Roster Expansion (5 New Bosses)
 
-1. Design boss 2: Memory Warden (memory vault biome)
-2. Design boss 3: Root Heart (corrupted wilds biome)
-3. Design boss 4: Sentinel Prime (server room elite)
-4. Design boss 5: Iteration Phantom (mirror match)
-5. Design boss 6: The Compiler Reborn (final iteration boss)
-6. Concept boss 2 with phase forms
+1. [x] Design boss 2: Memory Warden (memory vault biome)
+2. [x] Design boss 3: Root Heart (corrupted wilds biome)
+3. [x] Design boss 4: Sentinel Prime (server room elite)
+4. [x] Design boss 5: Iteration Phantom (mirror match)
+5. [x] Design boss 6: The Compiler Reborn (final iteration boss)
+6. [x] Concept boss 2 with phase forms
 7. Sculpt boss 2 high-poly
 8. Texture + rig boss 2
 9. Animate boss 2 (intro, idle, attacks ×4, transitions, death)
-10. Implement boss 2 AI + arena hooks
-11. Concept boss 3 with phase forms
+10. [x] Implement boss 2 AI + arena hooks
+11. [x] Concept boss 3 with phase forms
 12. Sculpt boss 3 high-poly
 13. Texture + rig boss 3
 14. Animate boss 3 full set
-15. Implement boss 3 AI
-16. Concept boss 4
+15. [x] Implement boss 3 AI
+16. [x] Concept boss 4
 17. Sculpt boss 4
 18. Texture + rig boss 4
 19. Animate boss 4 full set
-20. Implement boss 4 AI
-21. Concept boss 5 (uses player rig variant)
+20. [x] Implement boss 4 AI
+21. [x] Concept boss 5 (uses player rig variant)
 22. Sculpt boss 5
 23. Texture + rig boss 5
 24. Animate boss 5 full set
-25. Implement boss 5 AI
-26. Concept boss 6 (final boss, ultra detail)
+25. [x] Implement boss 5 AI
+26. [x] Concept boss 6 (final boss, ultra detail)
 27. Sculpt boss 6 high-poly with subdivision detail
 28. Texture + rig boss 6
 29. Animate boss 6 full set
-30. Implement boss 6 AI with multi-phase
+30. [x] Implement boss 6 AI with multi-phase
 31. Build per-boss arena (5 unique scenes)
 32. Build per-boss intro cinematic
 33. Build per-boss outro cinematic
@@ -2408,18 +2408,18 @@ Loop through epics 1 → 50 in order. For each epic:
 35. Build per-boss reward chest
 36. Build per-boss bestiary entry
 37. Build per-boss lore tablet
-38. Validate boss balance
-39. Tune attack patterns
-40. Add boss telegraphs
-41. Add boss VFX libraries
+38. [x] Validate boss balance
+39. [x] Tune attack patterns
+40. [x] Add boss telegraphs
+41. [x] Add boss VFX libraries
 42. Render boss hero shots
-43. Build boss-bar HUD per boss
-44. Add boss phase markers
+43. [x] Build boss-bar HUD per boss
+44. [x] Add boss phase markers
 45. Test full bosses
-46. Add boss achievements
-47. Hook to quest system
-48. Document boss bible
-49. Build boss rush mode
+46. [x] Add boss achievements
+47. [x] Hook to quest system
+48. [x] Document boss bible
+49. [x] Build boss rush mode
 50. Commit `epic-43: 5 new bosses complete`
 
 ---
