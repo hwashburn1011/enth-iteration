@@ -321,7 +321,7 @@ Loop through epics 1 → 50 in order. For each epic:
 46. Polish vertex animation seams
 47. Add per-variant glow color matching element
 48. [x] Add "freezing" status: leak crystallizes (FreezeStatus component — stack-based with decay, applies ice tint + glass material override + AI pause + shatter damage multiplier on hit while frozen)
-49. Document MemoryLeak bible
+49. [x] Document MemoryLeak bible (epic-05-memoryleak-variant-bible.md — 8 design knobs, 12 launch+post-launch variants, validation checklist, anti-pattern list, bestiary cross-contrast enforcement)
 50. Commit `epic-05: MemoryLeak AAA pass complete`
 
 ---
