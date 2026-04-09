@@ -394,7 +394,7 @@ Loop through epics 1 → 50 in order. For each epic:
 9. Paint phase 1 textures (clean, crisp)
 10. Paint phase 2 textures (glitching, color-shifted)
 11. Paint phase 3 textures (corrupted, broken, emissive cracks)
-12. Build emissive transition shader between phases
+12. [x] Build emissive transition shader between phases (compiler_phase_transition.gdshader — single shader interpolates P1→P2→P3 over time via phase_value uniform 0..2 with smooth lerp during transitions, samples baked albedo + normal + AO + crack_mask + code_rivulet maps, P1 produces clean PBR with cyan LED detection emission strength 5.0 and pulse, P2 adds RGB chromatic aberration via offset R/B UV samples + magenta crack overlay strength 6.0 + glitch_intensity hash-driven UV jitter at 5.5 Hz, P3 darkens base by corruption_tint + crimson cracks strength 8.0 + scrolling code rivulet sample with code_zone AO mask + 1.6x emission strength, low_hp_rage uniform multiplies all emission by 1.0 + 1.5x as the boss approaches death — single shader covers the entire boss body across all 3 phases driven by one uniform)
 13. Add tessellated displacement on key surfaces
 14. Build 50-bone rig with face, multiple arms, core, ground tethers
 15. Animate phase 1 idle (imposing presence)
@@ -415,19 +415,19 @@ Loop through epics 1 → 50 in order. For each epic:
 30. Animate hit reactions
 31. Animate stagger when broken
 32. Animate death sequence: 8-second cinematic collapse
-33. Build dust + debris particles for slams
-34. Build telegraph VFX per attack
-35. Build phase-transition full-screen flash
+33. [x] Build dust + debris particles for slams (BossSlamDustEmitter Node3D component — spawns 2 GPUParticles3D bursts on emit() call: 80-particle dust cloud with sphere emission shape + gravity -1.5 + scale curve 0.2→1.4→0 + alpha gradient billboard quads, 24-chunk debris with high velocity 4-9 m/s + gravity -14 + 360deg/s spin + box meshes, plus 4.5m scorch decal that fades over 12s, plus boss_slam_impact SFX hook, auto-frees after longest particle lifetime + scorch fade — reusable for all 4 P1 arms and the P3 8-arm variant)
+34. [x] Build telegraph VFX per attack (BossAttackTelegraph Node3D component — 5 telegraph types CIRCLE/CONE/SCATTERED/LINE/FULL_ARENA spawning Decal projectors with floor textures, animates modulate from white → yellow → red over the windup duration with brighter pulse in the final 0.3s + final 0.15s flash before fire, FULL_ARENA inverts to safe-zone-only with green color for the P3 ultimate, exposes show_circle/show_cone/show_scattered/show_line/show_full_arena_safe_zones methods + clear_all() — drives the player's attack-readability for the entire boss fight)
+35. [x] Build phase-transition full-screen flash (BossPhaseTransitionFX CanvasLayer component — full-screen ColorRect that ramps to 85% white-cyan alpha over 0.25s + holds 0.10s + fades over 0.65s, drives camera shake via EventBus camera_shake_requested signal, applies hitstop at 0.05x time scale for 0.4s using a process-mode-always timer so it ticks during the slowed game, plays boss_phase_transition_rumble SFX, frees self after the flash completes)
 36. Build boss intro cinematic camera move
 37. Build outro: boss collapses, chest spawns
-38. Add "low HP" rage visual: emissive intensifies
-39. Add per-phase ambient SFX hook
+38. [x] Add "low HP" rage visual: emissive intensifies (BossLowHpRage Node component — listens for HealthComponent health_changed signal, computes hp_pct vs rage_threshold default 0.25, ramps low_hp_rage from 0 → 1 across the bottom 25% HP range, pushes the value into every body mesh's compiler_phase_transition shader low_hp_rage uniform which boosts emission by 1.5x at full rage, also escalates a child rage_particles GPUParticles3D from rage_base_amount 30 to rage_max_amount 200, change-detection at 0.005 epsilon to avoid per-frame overhead)
+39. [x] Add per-phase ambient SFX hook (BossPhaseAmbientSfx Node component — 3 child AudioStreamPlayer3D loops, set_phase(0/1/2) crossfades between phase 1 server-rack hum + phase 2 distorted glitch tone + phase 3 corrupted low rumble + scrolling code-rivulet whisper over a 1.5s parallel volume_db tween, max_volume 0 dB → -80 dB silence per stem, auto-loops via AudioStreamOggVorbis loop = true, max_distance 60m for arena coverage)
 40. Validate against arena lighting (built in Epic 17)
 41. Optimize: LOD chain, draw distance
 42. Test under sustained combat (3-min full fight)
 43. Polish skinning at extreme poses
-44. Add custom hitstop curve per attack hit
-45. Add boss-bar phase markers in HUD
+44. [x] Add custom hitstop curve per attack hit (BossAttackHitstop Node component — per-attack hitstop profile table mapping attack_id StringName to {low_scale, hold_duration_s, recover_duration_s}: ground_slam 0.05/0.10/0.18 heavy, sweep_beam 0.20/0.04/0.10 sustained-light, multi_projectile 0.40/0.02/0.06 volley, teleport_strike 0.05/0.12/0.20 heavy delayed, chase_laser 0.50/0.01/0.04 continuous tick, gravity_well 0.10/0.15/0.25 catastrophic, ultimate 0.02/0.30/0.50 DOOM tier — fires Engine.time_scale to low_scale, holds via process-mode-always timer, recovers via tween with set_ignore_time_scale so it ticks during the slowed game)
+45. [x] Add boss-bar phase markers in HUD (BossHealthBarPhases Control component — TextureProgressBar with phase threshold notches at 66% and 33% drawn via _draw() so they sit ON the bar, listens for HealthComponent health_changed and detects threshold crossings to trigger _trigger_phase_break() which flashes the notch color from white to yellow + scales the notch width from 3px to 7px over 1.5s tween, optional %BossNameLabel + %PhaseLabel update with the new phase string from phase_labels array)
 46. Render hero shot from below-up angle
 47. Render trailer-quality dramatic angle
 48. Capture full fight playthrough video
