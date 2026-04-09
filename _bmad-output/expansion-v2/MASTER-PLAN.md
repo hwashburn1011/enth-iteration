@@ -1542,55 +1542,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 28 — World Map & Fast Travel
 
-1. Design world map UI layout
+1. [x] Design world map UI layout
 2. Sketch hand-drawn map style reference
 3. Render world map background art
-4. Build map UI scene with pan/zoom
-5. Add region markers
-6. Add fast-travel point markers
-7. Add quest markers
-8. Add player current-position marker
-9. Add visited/unvisited fog of war
-10. Hook map open/close keybind
-11. Add map legend
-12. Add region detail tooltips
-13. Add fast-travel confirmation dialog
-14. Build fast-travel cinematic transition
-15. Hook to actual scene loading
-16. Add map state save/load
-17. Add discovery animations when new region found
+4. [x] Build map UI scene with pan/zoom
+5. [x] Add region markers
+6. [x] Add fast-travel point markers
+7. [x] Add quest markers
+8. [x] Add player current-position marker
+9. [x] Add visited/unvisited fog of war
+10. [x] Hook map open/close keybind
+11. [x] Add map legend
+12. [x] Add region detail tooltips
+13. [x] Add fast-travel confirmation dialog
+14. [x] Build fast-travel cinematic transition
+15. [x] Hook to actual scene loading
+16. [x] Add map state save/load
+17. [x] Add discovery animations when new region found
 18. Add hand-drawn style icons for landmarks
 19. Add region name typography
 20. Build animated map elements (waving flags, smoke)
-21. Add per-region weather indicator on map
-22. Add NPC location markers
-23. Add quest objective markers
-24. Build mini-map HUD overlay
-25. Hook mini-map to player position
-26. Add mini-map north indicator
-27. Add mini-map enemy radar
-28. Add mini-map interactable highlights
-29. Build "compass" heading display
-30. Add waypoint placement system
-31. Hook waypoint navigation arrow
-32. Build map filtering options
-33. Add map note placement (player annotations)
-34. Save player notes
-35. Add region completion percentages
-36. Add achievement indicators on map
-37. Add lore unlock markers
-38. Add hidden room discovery markers
+21. [x] Add per-region weather indicator on map
+22. [x] Add NPC location markers
+23. [x] Add quest objective markers
+24. [x] Build mini-map HUD overlay
+25. [x] Hook mini-map to player position
+26. [x] Add mini-map north indicator
+27. [x] Add mini-map enemy radar
+28. [x] Add mini-map interactable highlights
+29. [x] Build "compass" heading display
+30. [x] Add waypoint placement system
+31. [x] Hook waypoint navigation arrow
+32. [x] Build map filtering options
+33. [x] Add map note placement (player annotations)
+34. [x] Save player notes
+35. [x] Add region completion percentages
+36. [x] Add achievement indicators on map
+37. [x] Add lore unlock markers
+38. [x] Add hidden room discovery markers
 39. Polish map illustration art
-40. Add map music sting
-41. Validate map UX with 30+ markers
-42. Add scrollbar for marker list
-43. Build search filter for markers
-44. Add per-iteration map evolution (revealed details)
+40. [x] Add map music sting
+41. [x] Validate map UX with 30+ markers
+42. [x] Add scrollbar for marker list
+43. [x] Build search filter for markers
+44. [x] Add per-iteration map evolution (revealed details)
 45. Render hero shot of full discovered map
-46. Validate against all zones
+46. [x] Validate against all zones
 47. Hook map to controller navigation
 48. Add tutorial for first-time map open
-49. Document map bible
+49. [x] Document map bible
 50. Commit `epic-28: world map & fast travel complete`
 
 ---
