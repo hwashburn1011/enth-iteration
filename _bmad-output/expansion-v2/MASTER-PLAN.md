@@ -259,7 +259,7 @@ Loop through epics 1 → 50 in order. For each epic:
 39. Add "scared" backpedal anim when low HP
 40. Add group call/summon animation
 41. [x] Add corpse persistence (CorpsePersistence component — listens for HealthComponent.died, swaps meshes to dissolve shader, disables physics+AI, lingers N seconds, dissolves with per-enemy edge color)
-42. Tune attack telegraph readability
+42. [x] Tune attack telegraph readability (AttackTelegraph v2 layer — show_circle_telegraph + show_line_telegraph with 3-phase yellow→orange→red color ramp, outline rings via TorusMesh, optional Decal ground projection, audio cue hooks)
 43. Add wing flap loop (idle ambient flutter)
 44. Validate against 5 lighting setups
 45. Add per-variant SFX hooks
