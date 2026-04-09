@@ -107,8 +107,8 @@ Loop through epics 1 → 50 in order. For each epic:
 1. [x] Define equipment slot mounts on rig (head, chest, back, hands L/R, hip L/R, feet)
 2. [x] Build attachment system in Godot: equipment swaps mesh+material at runtime
 3. [x] Design "Initiate" common set — concept sketch
-4. Model Initiate set (head visor, chest plate, gloves, boots) low poly clean
-5. Texture Initiate set with neutral palette
+4. [x] Model Initiate set (head visor, chest plate, gloves, boots) low poly clean
+5. [x] Texture Initiate set with neutral palette
 6. [x] Design "Patcher" uncommon set — utility/repair theme
 7. Model + texture Patcher set
 8. [x] Design "Compiler" rare set — ornate, geometric
@@ -2817,7 +2817,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 Mark each epic when complete:
 
-- [ ] Epic 01 — Globbler Hero Character: AAA Remake
+- [x] Epic 01 — Globbler Hero Character: AAA Remake
 - [ ] Epic 02 — Globbler Outfits & Equipment Visualization
 - [ ] Epic 03 — Globbler Animation Library Deep Pass
 - [ ] Epic 04 — GlitchBug Enemy: Photoreal Detail Pass
