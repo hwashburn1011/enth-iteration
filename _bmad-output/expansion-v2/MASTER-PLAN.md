@@ -261,7 +261,7 @@ Loop through epics 1 → 50 in order. For each epic:
 41. [x] Add corpse persistence (CorpsePersistence component — listens for HealthComponent.died, swaps meshes to dissolve shader, disables physics+AI, lingers N seconds, dissolves with per-enemy edge color)
 42. [x] Tune attack telegraph readability (AttackTelegraph v2 layer — show_circle_telegraph + show_line_telegraph with 3-phase yellow→orange→red color ramp, outline rings via TorusMesh, optional Decal ground projection, audio cue hooks)
 43. [x] Add wing flap loop (idle ambient flutter) (12-frame high-frequency wing case oscillation ±3° + abdomen counter-jitter ±1° — designed as an additive layer for the AnimationTree blend system, plays on top of any base animation to suggest the wings underneath are vibrating)
-44. Validate against 5 lighting setups
+44. [x] Validate against 5 lighting setups (5 768x768 Cycles renders in _art_source/enemies/lighting_tests/ — dungeon warm key+cool fill, boss arena magenta+cyan high contrast, sunlit blue sky entrance, torchlit single warm point, ice cavern blue area lights — carapace material reads correctly across all 5)
 45. [x] Add per-variant SFX hooks (EnemyVariant Resource with 9 sfx_* fields + EnemyVariantSfx component routing state machine + damage + death events through SfxManager with graceful fallback)
 46. Build spawn-from-egg variant intro
 47. [x] Build "pack leader" buff aura visual (PackLeaderAura component — Fresnel sphere via energy_aura.gdshader + tether beams to allies in range + buff broadcast via direct method + EventBus signal)
