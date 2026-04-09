@@ -2426,43 +2426,43 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 44 — Endgame Modes (Challenge Tower, Infinite, etc)
 
-1. Design endgame bible
-2. Design Challenge Tower (50 floors, escalating)
-3. Design Infinite Mode (procedural endless)
-4. Design Boss Rush Mode
-5. Design Daily Challenge mode
-6. Design Hardcore Mode (permadeath)
-7. Build Challenge Tower scene structure
+1. [x] Design endgame bible
+2. [x] Design Challenge Tower (50 floors, escalating)
+3. [x] Design Infinite Mode (procedural endless)
+4. [x] Design Boss Rush Mode
+5. [x] Design Daily Challenge mode
+6. [x] Design Hardcore Mode (permadeath)
+7. [x] Build Challenge Tower scene structure
 8. Build tower entry NPC
-9. Build tower modifier system per floor
-10. Build tower reward tier system
-11. Build tower leaderboard local
-12. Build Infinite Mode generation
-13. Add infinite scaling difficulty
-14. Add infinite seed system
-15. Add infinite reward currency
-16. Add infinite shop unlocks
-17. Build Boss Rush mode scene
-18. Add boss rush time tracking
-19. Add boss rush rank system
-20. Build Daily Challenge generator
-21. Add daily seed system
-22. Add daily reward
-23. Add daily leaderboard slot
-24. Build Hardcore mode toggle
-25. Add hardcore save handling
+9. [x] Build tower modifier system per floor
+10. [x] Build tower reward tier system
+11. [x] Build tower leaderboard local
+12. [x] Build Infinite Mode generation
+13. [x] Add infinite scaling difficulty
+14. [x] Add infinite seed system
+15. [x] Add infinite reward currency
+16. [x] Add infinite shop unlocks
+17. [x] Build Boss Rush mode scene
+18. [x] Add boss rush time tracking
+19. [x] Add boss rush rank system
+20. [x] Build Daily Challenge generator
+21. [x] Add daily seed system
+22. [x] Add daily reward
+23. [x] Add daily leaderboard slot
+24. [x] Build Hardcore mode toggle
+25. [x] Add hardcore save handling
 26. Add hardcore death cinematic
-27. Add hardcore unique rewards
+27. [x] Add hardcore unique rewards
 28. Build endgame mode select UI
 29. Render mode hero icons
 30. Add mode-specific music
 31. Add mode-specific tutorial
 32. Add mode-specific achievements
-33. Build mode statistics
-34. Hook all modes to save data
-35. Add mode quick-restart
-36. Add mode pause handling
-37. Validate balance per mode
+33. [x] Build mode statistics
+34. [x] Hook all modes to save data
+35. [x] Add mode quick-restart
+36. [x] Add mode pause handling
+37. [x] Validate balance per mode
 38. Test full Challenge Tower run
 39. Test full Infinite Mode run
 40. Test Boss Rush
@@ -2470,11 +2470,11 @@ Loop through epics 1 → 50 in order. For each epic:
 42. Test Hardcore Mode
 43. Polish UX
 44. Render endgame showcase video
-45. Document endgame bible
-46. Add mode unlock conditions
-47. Validate save isolation per mode
-48. Add per-mode high-score display
-49. Add per-mode trophies
+45. [x] Document endgame bible
+46. [x] Add mode unlock conditions
+47. [x] Validate save isolation per mode
+48. [x] Add per-mode high-score display
+49. [x] Add per-mode trophies
 50. Commit `epic-44: endgame modes complete`
 
 ---
