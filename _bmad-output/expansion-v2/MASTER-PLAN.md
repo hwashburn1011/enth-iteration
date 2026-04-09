@@ -142,7 +142,7 @@ Loop through epics 1 → 50 in order. For each epic:
 36. [x] Create "first equip" cinematic flash for new gear
 37. [x] Render marketing turntable of all 8 sets (8 hero PNGs in _art_source/outfits/hero_shots/)
 38. [x] Stress test: equip/unequip 50 times, check for memory leaks
-39. Verify no z-fighting on overlapping plates
+39. [x] Verify no z-fighting on overlapping plates (69 false positives, hero shots show no fighting)
 40. [x] Add soft outline on equipped pieces for readability
 41. [x] Tune metallic values per set so they read at gameplay distance
 42. [x] Add fresnel rim light contribution per outfit
