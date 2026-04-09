@@ -318,7 +318,7 @@ Loop through epics 1 → 50 in order. For each epic:
 43. [x] Render hero shot for trailer (2 1920x1080 Cycles 128-sample renders in _art_source/enemies/hero_shots/ — memoryleak_v2_hero_3q.png 70mm 3/4 view + memoryleak_v2_hero_side.png 85mm side profile, 3-point lighting magenta key + cyan rim + green underglow fill, internal data fragment cubes clearly visible inside the translucent body — trailer-quality)
 44. [x] Add ambient SFX hooks (gurgle, drip) (AmbientEnemySfx component — spatialized continuous loop + randomly-timed accent one-shots, dual AudioStreamPlayer3D children, stops on parent died)
 45. [x] Validate against 5 lighting environments (5 768x768 Cycles 64-sample renders in _art_source/enemies/lighting_tests/ — dungeon warm key+cool fill, boss arena magenta+cyan high contrast, sunlit blue sky, torchlit single warm point, ice cavern blue area lights — gel material translucency reads correctly across all 5)
-46. Polish vertex animation seams
+46. [x] Polish vertex animation seams (rewrote gel_refraction vertex wobble phase from world_pos-based to UV-based — UV coordinates are continuous within UV islands by design so the wobble pattern flows smoothly within each body section, plus added wobble_seam_dampen uniform that reduces amplitude near UV island borders via a clamped distance-from-edge ramp)
 47. Add per-variant glow color matching element
 48. [x] Add "freezing" status: leak crystallizes (FreezeStatus component — stack-based with decay, applies ice tint + glass material override + AI pause + shatter damage multiplier on hit while frozen)
 49. [x] Document MemoryLeak bible (epic-05-memoryleak-variant-bible.md — 8 design knobs, 12 launch+post-launch variants, validation checklist, anti-pattern list, bestiary cross-contrast enforcement)

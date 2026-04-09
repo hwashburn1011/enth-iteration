@@ -76,9 +76,18 @@ uniform float sss_brightness : hint_range(0.0, 4.0) = 1.4;
 // references doc calls this "macro slow + micro jiggle" — the body
 // itself moves slowly via animation, but the surface skin oscillates
 // at a faster rate, sold by this vertex wobble.
+//
+// Phase coordinate (Epic 05 task 46 polish): the phase is computed
+// from UV coordinates (which are continuous within UV islands by
+// definition) PLUS a small contribution from rest VERTEX position.
+// This avoids the visible wobble seams that the previous world_pos
+// version produced at bone envelope boundaries — vertices at the
+// same UV coordinate get the same phase regardless of which bone
+// they're weighted to.
 uniform float wobble_amplitude : hint_range(0.0, 0.10) = 0.012;
 uniform float wobble_frequency : hint_range(0.5, 16.0) = 6.0;
 uniform float wobble_spatial_scale : hint_range(0.5, 16.0) = 4.0;
+uniform float wobble_seam_dampen : hint_range(0.0, 1.0) = 0.4;
 
 // === Reactive ripples on hit (Epic 05 task 13) ===
 // When the body is hit, gameplay code sets hit_origin_local (a point
@@ -101,16 +110,22 @@ void vertex() {
 	}
 
 	// Vertex wobble — displaces each vertex along its normal by a sin
-	// wave driven by world position + TIME. Each vertex gets a different
-	// phase based on its world position so the wobble looks like a
-	// continuous traveling wave across the surface, not a uniform
-	// breathing pulse.
-	vec3 world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
-	float phase = world_pos.x * wobble_spatial_scale
-				+ world_pos.y * wobble_spatial_scale * 0.7
-				+ world_pos.z * wobble_spatial_scale * 1.3
+	// wave. Phase computed from UV coordinates (continuous within UV
+	// islands by design) + small rest VERTEX contribution for variety.
+	// This is the seam-polished version from Epic 05 task 46 — the
+	// previous world_pos version produced visible wobble seams at bone
+	// envelope boundaries.
+	float phase = UV.x * wobble_spatial_scale * 6.28
+				+ UV.y * wobble_spatial_scale * 6.28 * 0.7
+				+ VERTEX.z * 0.5
 				+ TIME * wobble_frequency;
-	float displacement = sin(phase) * wobble_amplitude;
+	// Cross-island seam dampening: vertices near UV island borders
+	// (UV.x or UV.y near 0 or 1) get reduced amplitude so any
+	// discontinuities at island edges are less visible
+	float seam_factor = min(min(UV.x, 1.0 - UV.x), min(UV.y, 1.0 - UV.y));
+	seam_factor = clamp(seam_factor * 8.0, 0.0, 1.0);  // sharp ramp into 0..1
+	float seam_amplitude = mix(wobble_amplitude * (1.0 - wobble_seam_dampen), wobble_amplitude, seam_factor);
+	float displacement = sin(phase) * seam_amplitude;
 	VERTEX += NORMAL * displacement;
 
 	// Hit ripple — when hit_age_s is within the ripple lifetime, expand
