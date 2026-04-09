@@ -253,7 +253,7 @@ Loop through epics 1 → 50 in order. For each epic:
 33. [x] Tune skinning to avoid weird leg joints (Armature modifier on all 3 LODs with use_bone_envelopes=True, tuned envelope_distance per bone class — leg bones 0.06m tight, body bones 0.20m wide, head accessory bones 0.05m precise — gives clean joint deformation without per-vertex weight painting on the constructed mesh)
 34. [x] Add ground contact ground decals (FootContactDecalEmitter component — per-leg per-step Decal drops triggered by Skeleton3D bone landing detection in _physics_process, world-space placement so decals persist after enemy moves on, capped at max_active_decals with FIFO eviction, fade-out tween before queue_free)
 35. [x] Add footstep dust particles per leg (FootDustEmitter component — pooled GPUParticles3D with manual emit_particle() per-bone landing detection, world-space coords for persistence after enemy moves, scale curve grow→pop + alpha gradient fade, pairs with FootContactDecalEmitter for the "the bug walked here" combined visual)
-36. Hook leg-IK foot placement to terrain
+36. [x] Hook leg-IK foot placement to terrain (LegIkTerrainSolver component — per-leg downward raycasts on each _physics_process from nominal foot rest positions in body-relative space, pushes IK target empty positions to ground hit point + foot_clearance, falls back to nominal height when no ground hit, parent rid excluded so the bug doesn't ray-hit itself)
 37. Validate animation transitions in Godot AnimTree
 38. [x] Add custom shader: glitch displacement on hit (enemy_hit_glitch.gdshader + HitGlitchDriver component — pulse-driven vertex band fragmentation + chromatic ghost + cyan/magenta crack lines + emission flash, fades over 0.25s)
 39. Add "scared" backpedal anim when low HP
