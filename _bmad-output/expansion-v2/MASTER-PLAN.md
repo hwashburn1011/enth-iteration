@@ -1312,7 +1312,7 @@ Loop through epics 1 → 50 in order. For each epic:
 43. [x] Add cinematic camera reveal shots (7 landmark reveals + manager + trigger)
 44. Render hero shots (Blender)
 45. [x] Hook wilderness encounter system (WandererNPCManager + 5 events)
-46. Add reactive enemy alerts
+46. [x] Add reactive enemy alerts (4 social profiles, type-filtered chain broadcast)
 47. [x] Add wandering NPC events (5 events in WildernessEncounterDatabase)
 48. Test wilderness traversal end-to-end (scene-bake; deferred)
 49. [x] Document wilderness bible
