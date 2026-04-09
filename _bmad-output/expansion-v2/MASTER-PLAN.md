@@ -2574,20 +2574,20 @@ Loop through epics 1 → 50 in order. For each epic:
 32. Compose tavern music
 33. Compose forge music
 34. Compose archive music
-35. Build Godot music manager autoload
-36. Hook music to scene transitions
-37. Hook music to combat state
-38. Hook music to boss fight
-39. Add smooth crossfade between tracks
-40. Validate volume balance
-41. Add per-zone fadein/fadeout
-42. Hook music to time of day
-43. Hook music to weather
-44. Add reactive music intensity
-45. Build music settings (volume slider, mute)
+35. [x] Build Godot music manager autoload
+36. [x] Hook music to scene transitions
+37. [x] Hook music to combat state
+38. [x] Hook music to boss fight
+39. [x] Add smooth crossfade between tracks
+40. [x] Validate volume balance
+41. [x] Add per-zone fadein/fadeout
+42. [x] Hook music to time of day
+43. [x] Hook music to weather
+44. [x] Add reactive music intensity
+45. [x] Build music settings (volume slider, mute)
 46. Test full music coverage
 47. Render music showcase video
-48. Document music bible
+48. [x] Document music bible
 49. Add music attribution credits
 50. Commit `epic-46: original soundtrack complete`
 
