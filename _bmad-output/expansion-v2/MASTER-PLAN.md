@@ -1389,9 +1389,9 @@ Loop through epics 1 → 50 in order. For each epic:
 10. Build tower observation deck (Blender)
 11. [x] Add tower telescope interaction (7 targets, phase + iteration gated, lore/buff/title/countdown reveals)
 12. [x] Build tower ambient lighting (4-phase rig + star field + wind whip particles)
-13. Build sage's tower study room
-14. Build sage's library
-15. Add archive crystal interactions
+13. Build sage's tower study room (Blender)
+14. Build sage's library (Blender)
+15. [x] Add archive crystal interactions (4 sections + 9 sage journal + 9 forgotten index)
 16. Build training arena hub area
 17. Add target dummies
 18. Add training reset functionality
