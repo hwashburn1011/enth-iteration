@@ -277,7 +277,7 @@ Loop through epics 1 → 50 in order. For each epic:
 2. [x] Concept 6 silhouette variants emphasizing flow/blob shape (epic-05-memoryleak-concept-silhouettes.md — idle/alert/aggro_extend/tendril_whip/spit_windup/death_drain with control bone offsets, soft body falloff rules, sub-frame death breakdown)
 3. [x] Sculpt blob base form with internal "data" visible through translucency (enemy_memoryleak_v2_blockout.blend — 5 stacked flattened-sphere body sections base/spine_01/spine_02/spine_03/intent matching the 12-bone control hierarchy from concept silhouettes, with asymmetric drift on spine_02/03 + intent for the irregular blob silhouette, all carrying the translucent gel material at IOR 1.35 + 0.55 alpha, plus 12 small data fragment cubes scattered inside the body volume with bright cyan emissive material so they read as drifting code through the translucency)
 4. [x] Sculpt surface ripples and bubbles (2 Displace modifiers per body section: high-frequency NOISE texture at 1.2cm strength for fine ripples + larger CLOUDS texture at 2.5cm strength for surface bubbles, applied to all 5 stacked sections — verified with render showing the textured gel surface)
-5. Sculpt drip tendrils
+5. [x] Sculpt drip tendrils (3-segment tendril at REST position tucked against body front matching the silhouettes doc tendril_01/02/03 chain — tapered capsules with subsurface modifiers + 8 random drip droplet spheres squashed into teardrop shape at the body base)
 6. Retopo to 3K tris with subdivision support
 7. UV unwrap as cylindrical projection
 8. Bake normal/AO/curvature
