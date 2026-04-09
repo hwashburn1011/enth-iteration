@@ -205,7 +205,7 @@ Loop through epics 1 → 50 in order. For each epic:
 42. [x] Animate "petting pet" affection (120-frame loop, crouched + right hand stroking + left hand on knee + 8 alternating wrist arcs)
 43. [x] Animate "high five" with NPC (35-frame, wind down → snap up overhead → contact hold → lower → neutral)
 44. [x] Animate "hug" emotional moment (90-frame, arms wide open → wrap inward → 28-frame embrace hold → release)
-45. Animate "fall from height" extended fall
+45. [x] Animate "fall from height" extended fall (120-frame loop, body straight + arms drifting slightly out + subtle wind sway)
 46. Animate "land hard" with stumble
 47. Animate "sneak" crouched walk
 48. Animate "trip" comedic stumble
