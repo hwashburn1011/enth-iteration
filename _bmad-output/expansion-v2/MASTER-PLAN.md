@@ -52,11 +52,11 @@ Loop through epics 1 → 50 in order. For each epic:
 3. [x] Block out new base mesh in Blender at high poly (~30K tris) with proper topology loops around face/joints
 4. [x] Sculpt face: brow, cheeks, mouth, "eye" optical sensor, distinctive ear/antenna shape
 5. [x] Sculpt body forms with clear large/medium/small detail hierarchy
-6. Retopologize to game-ready mesh (~6K tris) with clean quad flow
-7. UV unwrap with face on dedicated 1K patch, body on 2K patch
-8. Bake high-to-low: normal map, AO, curvature, position
-9. Paint base color in Substance/Blender Painter with 3-tone palette per material zone
-10. Add metallic/roughness maps with wear, edge highlights, material variation
+6. [x] Retopologize to game-ready mesh (~6K tris) with clean quad flow
+7. [x] UV unwrap with face on dedicated 1K patch, body on 2K patch
+8. [x] Bake high-to-low: normal map, AO, curvature, position
+9. [x] Paint base color in Substance/Blender Painter with 3-tone palette per material zone
+10. [x] Add metallic/roughness maps with wear, edge highlights, material variation
 11. Add subtle subsurface for "soft digital skin" feel
 12. Create emissive map for glowing accents (eye, seams, accent lines)
 13. Bake a height/displacement map for parallax on the chest plate
