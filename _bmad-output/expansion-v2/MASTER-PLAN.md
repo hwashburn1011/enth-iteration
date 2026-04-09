@@ -189,7 +189,7 @@ Loop through epics 1 → 50 in order. For each epic:
 26. [x] Animate "dig" shovel (75-frame, grip → raise → drive down → push → lift dirt → side toss with body twist → return)
 27. [x] Animate "swim" water surface (120-frame loop, alternating front-crawl arm strokes + flutter kick)
 28. [x] Animate "swim under" submerged (120-frame loop, symmetric breaststroke — glide → pull wide → frog kick sweep)
-29. Animate "climb" ladder
+29. [x] Animate "climb" ladder (30-frame loop, contralateral arm/leg climb cycle — root motion added in engine)
 30. Animate "vault" over obstacle
 31. Animate "slide" under obstacle
 32. Animate "carry heavy"
