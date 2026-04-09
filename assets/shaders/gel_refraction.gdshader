@@ -58,6 +58,31 @@ uniform float sss_strength : hint_range(0.0, 1.0) = 0.45;
 uniform vec3 sss_color : source_color = vec3(0.40, 1.0, 0.55);
 uniform float sss_brightness : hint_range(0.0, 4.0) = 1.4;
 
+// === Vertex jelly wobble (Epic 05 task 12) ===
+// Continuous high-frequency vertex displacement that makes the gel
+// surface jiggle constantly even when the body is at rest. The
+// references doc calls this "macro slow + micro jiggle" — the body
+// itself moves slowly via animation, but the surface skin oscillates
+// at a faster rate, sold by this vertex wobble.
+uniform float wobble_amplitude : hint_range(0.0, 0.10) = 0.012;
+uniform float wobble_frequency : hint_range(0.5, 16.0) = 6.0;
+uniform float wobble_spatial_scale : hint_range(0.5, 16.0) = 4.0;
+
+void vertex() {
+	// Vertex wobble — displaces each vertex along its normal by a sin
+	// wave driven by world position + TIME. Each vertex gets a different
+	// phase based on its world position so the wobble looks like a
+	// continuous traveling wave across the surface, not a uniform
+	// breathing pulse.
+	vec3 world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	float phase = world_pos.x * wobble_spatial_scale
+				+ world_pos.y * wobble_spatial_scale * 0.7
+				+ world_pos.z * wobble_spatial_scale * 1.3
+				+ TIME * wobble_frequency;
+	float displacement = sin(phase) * wobble_amplitude;
+	VERTEX += NORMAL * displacement;
+}
+
 void fragment() {
 	// Compute view-space refraction offset from the surface normal.
 	// Surfaces facing the camera get small offsets; angled surfaces get

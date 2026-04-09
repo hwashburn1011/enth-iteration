@@ -284,7 +284,7 @@ Loop through epics 1 → 50 in order. For each epic:
 9. [x] Paint base translucent shader (refraction-style) (procedural paint shader → bake DIFFUSE COLOR onto LP — base bright green 0.30/0.95/0.55, cavity-darker green via Pointiness ColorRamp 0.42-0.55, cyan voronoi data spots via ADD blend; saved as memoryleak_v2_albedo.png to feed gel_refraction shader's tint_color uniform)
 10. [x] Add internal "code stream" texture animated via UV scroll (memoryleak_code_stream.png 512x512 — procedural hex-character row pattern at random brightness with ~35% blank rows for visual rhythm, designed to be sampled by gel_refraction.gdshader's internal_data_texture uniform with TIME-scrolled UVs)
 11. [x] Add subsurface scatter for inner glow (extended gel_refraction.gdshader with SSS_STRENGTH + SSS_TRANSMITTANCE_COLOR uniforms — body now glows from inside via Godot's built-in subsurface scattering pass, default sss_color warmer green 0.40/1.0/0.55 brighter than the outer surface tint so the inner glow reads as a distinct color through thin body areas)
-12. Build vertex-shader wobble for jelly motion
+12. [x] Build vertex-shader wobble for jelly motion (extended gel_refraction.gdshader with vertex() function — sin-wave vertex displacement along NORMAL driven by world position phase + TIME * wobble_frequency, gives the gel surface continuous high-frequency jiggle even when the body is static, sells the references doc's "macro slow + micro jiggle" rule)
 13. Add reactive ripples on hit (shader)
 14. Rig with 12 bones for tendril control
 15. Animate idle (slow pulse breath)
