@@ -281,7 +281,7 @@ Loop through epics 1 → 50 in order. For each epic:
 6. [x] Retopo to 3K tris with subdivision support (MemoryLeak_v2_LOD0 single joined mesh exactly 3,000 tris via Decimate ratio 0.0455 from 65,904 source tris, plus Subdivision Surface modifier at viewport 0 / render 1 levels for runtime subdivision boost during close-ups)
 7. [x] UV unwrap as cylindrical projection (uv.cylinder_project on MemoryLeak_v2_LOD0 with align POLAR_ZX, then pack_islands at 0.01 margin to fit within [0.003, 0.997] U / [0.003, 0.907] V — vertical-axis cylindrical projection appropriate for the irregular blob shape)
 8. [x] Bake normal/AO/curvature (3 1024x1024 PNG textures saved to assets/textures/enemies/ via Cycles selected-to-active bake from 28 HP source meshes onto MemoryLeak_v2_LOD0, cage_extrusion 0.06, margin 8 — curvature via Geometry Pointiness through ColorRamp into a Diffuse pass)
-9. Paint base translucent shader (refraction-style)
+9. [x] Paint base translucent shader (refraction-style) (procedural paint shader → bake DIFFUSE COLOR onto LP — base bright green 0.30/0.95/0.55, cavity-darker green via Pointiness ColorRamp 0.42-0.55, cyan voronoi data spots via ADD blend; saved as memoryleak_v2_albedo.png to feed gel_refraction shader's tint_color uniform)
 10. Add internal "code stream" texture animated via UV scroll
 11. Add subsurface scatter for inner glow
 12. Build vertex-shader wobble for jelly motion
