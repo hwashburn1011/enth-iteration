@@ -1421,7 +1421,7 @@ Loop through epics 1 → 50 in order. For each epic:
 42. Optimize draw calls (scene-bake; deferred)
 43. Bake lighting (scene-bake; deferred)
 44. [x] Hook ambient SFX (14 hub space soundscapes consumed by AmbientSoundscapeMixer)
-45. Hook ambient music transitions
+45. [x] Hook ambient music transitions (HubMusicDirector + 21 new tracks + first-entry stings)
 46. Validate navmesh throughout
 47. Test full hub traversal
 48. Add map markers for new areas

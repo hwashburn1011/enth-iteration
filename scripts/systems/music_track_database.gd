@@ -39,6 +39,31 @@ const TRACKS: Array = [
 	{"id": &"wild_weather_fog",     "title": "Lost in the White",    "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
 	{"id": &"wild_weather_glitch",  "title": "Sky Cracks Open",      "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
 
+	# Hub expansion — town hub spaces
+	{"id": &"hub_lounge_jukebox",      "title": "Smoke Room (Jukebox)",      "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+	{"id": &"hub_lounge_live_set",     "title": "Sync Plays the Second Set", "category": &"hub", "length": 240, "loop": true, "volume": 0.95},
+	{"id": &"hub_tower_top_day",       "title": "Above the Clouds (Day)",    "category": &"hub", "length": 180, "loop": true, "volume": 0.95},
+	{"id": &"hub_tower_top_night",     "title": "Above the Clouds (Night)",  "category": &"hub", "length": 180, "loop": true, "volume": 0.95},
+	{"id": &"hub_sage_study",          "title": "Where Sage Writes",         "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+	{"id": &"hub_sage_library",        "title": "The Archive Crystal",       "category": &"hub", "length": 210, "loop": true, "volume": 0.85},
+	{"id": &"hub_training_arena",      "title": "Six Dummies and a Lever",   "category": &"hub", "length": 150, "loop": true, "volume": 0.90},
+	{"id": &"hub_farm_day",            "title": "Sixteen Plots (Day)",       "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+	{"id": &"hub_farm_night",          "title": "Sixteen Plots (Night)",     "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+	{"id": &"hub_fishing_dock",        "title": "L-Shaped Pier",             "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+	{"id": &"hub_cooking",             "title": "Cache's Kitchen",           "category": &"hub", "length": 150, "loop": true, "volume": 0.90},
+	{"id": &"hub_workshop",            "title": "Forge, Bench, Shaper",      "category": &"hub", "length": 150, "loop": true, "volume": 0.90},
+	{"id": &"hub_pet_hutch",           "title": "Four Small Huts",           "category": &"hub", "length": 150, "loop": true, "volume": 0.85},
+	{"id": &"hub_memorial_gallery",    "title": "Nine Alcoves",              "category": &"hub", "length": 240, "loop": true, "volume": 0.80},
+	{"id": &"hub_memorial_gallery_night", "title": "Nine Alcoves (Night)",   "category": &"hub", "length": 240, "loop": true, "volume": 0.80},
+	{"id": &"hub_trophy_hall",         "title": "Twelve Mounts",             "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+	{"id": &"hub_wardrobe",            "title": "Mirror, Mannequins, Dye",   "category": &"hub", "length": 150, "loop": true, "volume": 0.80},
+	{"id": &"hub_hidden_treasure",     "title": "The Inheritor's Room",      "category": &"hub", "length": 180, "loop": true, "volume": 0.85},
+
+	# Hub stings
+	{"id": &"sting_memorial_first_entry", "title": "Memorial First Entry",   "category": &"sting", "length": 8, "loop": false, "volume": 1.0},
+	{"id": &"sting_treasure_first_entry", "title": "Treasure First Entry",   "category": &"sting", "length": 6, "loop": false, "volume": 1.0},
+	{"id": &"sting_tower_first_entry",    "title": "Tower First Entry",      "category": &"sting", "length": 6, "loop": false, "volume": 1.0},
+
 	# Dungeon biomes
 	{"id": &"biome_server_room",     "title": "The Server",          "category": &"dungeon",    "length": 180, "loop": true,  "volume": 1.0},
 	{"id": &"biome_memory_vaults",   "title": "Memory Vault",        "category": &"dungeon",    "length": 180, "loop": true,  "volume": 1.0},
