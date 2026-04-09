@@ -162,7 +162,7 @@ Loop through epics 1 → 50 in order. For each epic:
 **Goal:** Triple the animation count beyond Epic 01 — every micro-expression a player might see.
 
 1. [x] Animate "look around" head turn variations ×4 (look_left/right/up/down, 30-frame loops)
-2. Animate "wave" hello gesture
+2. [x] Animate "wave" hello gesture (60-frame friendly wave with arm lift, 3 hand swings, lower)
 3. Animate "thumbs up" affirmation
 4. Animate "shake head no"
 5. Animate "shrug" uncertain
