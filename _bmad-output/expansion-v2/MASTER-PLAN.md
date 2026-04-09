@@ -202,7 +202,7 @@ Loop through epics 1 → 50 in order. For each epic:
 39. [x] Animate "dodge roll" alt to dash (30-frame, pre-tuck → ball curl → mid-roll peak curl → emerging → land crouch → rise)
 40. [x] Animate "execute finisher" cinematic kill (100-frame, slow dramatic raise → 18-frame hold → coil → SLAM → impact lingerframe → rise → victory exhale)
 41. [x] Animate "mounted ride" (120-frame loop, sitting astride pose with legs splayed forward + reins grip + 4 gallop bobs)
-42. Animate "petting pet" affection
+42. [x] Animate "petting pet" affection (120-frame loop, crouched + right hand stroking + left hand on knee + 8 alternating wrist arcs)
 43. Animate "high five" with NPC
 44. Animate "hug" emotional moment
 45. Animate "fall from height" extended fall
