@@ -1295,7 +1295,7 @@ Loop through epics 1 → 50 in order. For each epic:
 26. [x] Add discovery rewards per landmark (9 landmarks, manager, waypoint hookup)
 27. [x] Hook story trigger zones (8 one-shot story beats across the 9 iterations)
 28. [x] Build wilderness shrine that provides buffs (9 buffs, 4 tiers, daily offering)
-29. Build resource gathering nodes (for crafting)
+29. [x] Build resource gathering nodes (8 node types, harvest + respawn component)
 30. Add fishing spots
 31. Add foraging spots
 32. Build campsite prop with rest function
