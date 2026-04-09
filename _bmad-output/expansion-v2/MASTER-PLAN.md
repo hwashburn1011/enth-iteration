@@ -312,15 +312,15 @@ Loop through epics 1 → 50 in order. For each epic:
 37. Animate merge sequence
 38. [x] Add absorb-corpse mechanic: leak grows by eating other enemies (LeakAbsorbController scans absorbable group, pulls + shrinks corpse over absorb_duration_s, gains HP + scale per absorb, capped at max_absorbs, signals for animation hooks)
 39. Animate absorb sequence
-40. Add custom death-puddle that lingers as hazard
-41. Hook environment puddles to slow player movement
+40. [x] Add custom death-puddle that lingers as hazard (already implemented in LeakPuddle component — _on_parent_died converts to hazard mode with damage_per_tick + damage_radius_m, reparents to world scene, holds full opacity for first 60% of hazard_lifetime_s before fading)
+41. [x] Hook environment puddles to slow player movement (already implemented via SlowZone Area3D primitive — LeakTrail drops SlowZones along the leak's path, each calls actor.apply_speed_modifier(&"slow_zone", strength) on entry and removes on exit)
 42. Add "boss tier" giant leak variant for mid-boss
 43. Render hero shot for trailer
 44. Add ambient SFX hooks (gurgle, drip)
 45. Validate against 5 lighting environments
 46. Polish vertex animation seams
 47. Add per-variant glow color matching element
-48. Add "freezing" status: leak crystallizes
+48. [x] Add "freezing" status: leak crystallizes (FreezeStatus component — stack-based with decay, applies ice tint + glass material override + AI pause + shatter damage multiplier on hit while frozen)
 49. Document MemoryLeak bible
 50. Commit `epic-05: MemoryLeak AAA pass complete`
 
