@@ -1986,14 +1986,14 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 36 — Town Building & Decoration
 
-1. Design town building bible: what player can place
-2. Design 50 placeable decorations
-3. Build placement system (mouse drag, snap-to-grid optional)
-4. Build rotation control
-5. Build delete control
-6. Build move control
-7. Add building budget/limit per zone
-8. Add buildable zones (player-owned plots)
+1. [x] Design town building bible: what player can place
+2. [x] Design 50 placeable decorations
+3. [x] Build placement system (mouse drag, snap-to-grid optional)
+4. [x] Build rotation control
+5. [x] Build delete control
+6. [x] Build move control
+7. [x] Add building budget/limit per zone
+8. [x] Add buildable zones (player-owned plots)
 9. Build plot purchase NPC
 10. Render decoration icons (50)
 11. Build small decor props ×15
@@ -2001,40 +2001,40 @@ Loop through epics 1 → 50 in order. For each epic:
 13. Build large decor props ×10
 14. Build interactive decor props ×10
 15. Add decor variation colors
-16. Build placement preview ghost
-17. Add valid/invalid placement feedback
-18. Build undo system
-19. Add decor save state
-20. Add decor inventory
+16. [x] Build placement preview ghost
+17. [x] Add valid/invalid placement feedback
+18. [x] Build undo system
+19. [x] Add decor save state
+20. [x] Add decor inventory
 21. Add decor shop NPC
-22. Build decor crafting (use crafting system)
-23. Add decor unlocks via story
+22. [x] Build decor crafting (use crafting system)
+23. [x] Add decor unlocks via story
 24. Add seasonal decor sets
-25. Build "house" upgrade system for player home
+25. [x] Build "house" upgrade system for player home
 26. Build interior decoration mode
 27. Build floor/wall painting customization
-28. Add furniture set collections
-29. Add visitor reactions to decor
-30. Add NPC affinity bonus from decor
-31. Build photo mode for showing off
-32. Add screenshot save
+28. [x] Add furniture set collections
+29. [x] Add visitor reactions to decor
+30. [x] Add NPC affinity bonus from decor
+31. [x] Build photo mode for showing off
+32. [x] Add screenshot save
 33. Add lighting placement props
 34. Add ambient effect props (smoke, fire, water)
 35. Hook props to physics (lightweight)
 36. Add validation: don't block paths
 37. Add navmesh rebuild after placement
 38. Build community share placeholder
-39. Add building achievement triggers
+39. [x] Add building achievement triggers
 40. Add decor showcase NPC
 41. Build decor showcase area in town
 42. Render hero shot of decorated home
 43. Add controller support
 44. Validate UX with 100+ placed items
 45. Performance test
-46. Document town building bible
+46. [x] Document town building bible
 47. Add tutorial flow
-48. Test save/load with decorations
-49. Add per-iteration decoration evolution
+48. [x] Test save/load with decorations
+49. [x] Add per-iteration decoration evolution
 50. Commit `epic-36: town building & decoration complete`
 
 ---
