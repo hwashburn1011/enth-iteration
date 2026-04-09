@@ -1414,7 +1414,7 @@ Loop through epics 1 → 50 in order. For each epic:
 35. [x] Add wardrobe interaction (mirror + 8 mannequins + chest + dye station)
 36. Build "hub of mysteries" room with secrets (Blender)
 37. [x] Add hidden door puzzles (5-book sequence puzzle hinted by 5 lore tablets)
-38. Build hidden treasure room
+38. [x] Build hidden treasure room (chest interaction + 3 bible rewards + cinematic; room scene Blender)
 39. Add new fast-travel points
 40. Validate all hub additions tie to systems
 41. Render hero shots per area
