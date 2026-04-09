@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=2 format=3 uid="uid://class_daemon001"]
+
+[ext_resource type="Script" path="res://scripts/resources/class_definition.gd" id="1_class_def"]
+
+[resource]
+script = ExtResource("1_class_def")
+class_id = &"daemon"
+display_name = "Daemon"
+tagline = "Fast, fragile, lethal."
+description = "High crit, high mobility, low margin for error. The class for players who want to feel quick on the trigger. Punishes mistakes."
+max_hp = 75.0
+max_compute = 120.0
+move_speed = 6.0
+crit_chance = 0.15
+damage_modifier = 1.1
+defense_modifier = 0.85
+dash_cooldown = 1.0
+charge_time = 0.4
+color_primary = Color(0.40, 0.05, 0.20, 1.0)
+color_accent = Color(0.95, 0.20, 0.20, 1.0)
+hud_theme = &"daemon"
+starting_modules = [&"phase_strike", &"backstab_combo", &"smoke_veil"]
+starting_passives = [&"first_strike_bleed"]
+signature_ability_id = &"hunters_mark"
+ultimate_ability_id = &"massacre_protocol"
+damage_type_bonuses = {
+	&"chaos": 1.20,
+}
+milestones = [
+	{"level": 5, "unlock_id": &"smoke_veil_plus", "unlock_name": "Smoke Veil+ (3s)"},
+	{"level": 10, "unlock_id": &"hunters_mark", "unlock_name": "Signature: Hunter's Mark"},
+	{"level": 15, "unlock_id": &"daemon_passive", "unlock_name": "Class Passive"},
+	{"level": 20, "unlock_id": &"chaos_bonus", "unlock_name": "Damage Type Bonus"},
+	{"level": 25, "unlock_id": &"vanish", "unlock_name": "Iteration 3 Unlock Available"},
+	{"level": 30, "unlock_id": &"massacre_protocol", "unlock_name": "Ultimate: Massacre Protocol"},
+	{"level": 40, "unlock_id": &"daemon_mastery", "unlock_name": "Mastery: Hunter's Mark refunds compute"},
+	{"level": 50, "unlock_id": &"title_reaper", "unlock_name": "Title: The Reaper"},
+]
+iteration3_unlock_id = &"vanish"
+iteration3_unlock_name = "Vanish"
+iteration3_unlock_description = "Taking lethal damage triggers automatic Smoke Veil and 2s invulnerability. 60s cooldown."
+restricted_item_ids = [&"cape_shadow_cloak"]

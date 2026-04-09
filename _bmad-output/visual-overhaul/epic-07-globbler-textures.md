@@ -2,7 +2,7 @@
 epic_id: 07
 title: "Epic 07: Globbler Textures"
 phase: 3
-status: TODO
+status: IN_PROGRESS
 priority: high
 estimated_tasks: 20
 ---

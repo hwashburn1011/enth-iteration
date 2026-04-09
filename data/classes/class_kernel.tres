@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=2 format=3 uid="uid://class_kernel001"]
+
+[ext_resource type="Script" path="res://scripts/resources/class_definition.gd" id="1_class_def"]
+
+[resource]
+script = ExtResource("1_class_def")
+class_id = &"kernel"
+display_name = "Kernel"
+tagline = "Slow, heavy, immovable."
+description = "The class for players who want to feel indestructible. Trades mobility for raw stopping power."
+max_hp = 140.0
+max_compute = 80.0
+move_speed = 3.8
+crit_chance = 0.05
+damage_modifier = 0.9
+defense_modifier = 1.25
+dash_cooldown = 2.5
+charge_time = 0.9
+color_primary = Color(0.15, 0.10, 0.30, 1.0)
+color_accent = Color(0.90, 0.75, 0.20, 1.0)
+hud_theme = &"kernel"
+starting_modules = [&"bulwark", &"gravity_well", &"thunder_strike"]
+starting_passives = [&"low_hp_dr"]
+signature_ability_id = &"aegis_protocol"
+ultimate_ability_id = &"overclock_reactor"
+damage_type_bonuses = {
+	&"boss": 1.25,
+}
+milestones = [
+	{"level": 5, "unlock_id": &"bulwark_plus", "unlock_name": "Bulwark+ (60% def)"},
+	{"level": 10, "unlock_id": &"aegis_protocol", "unlock_name": "Signature: Aegis Protocol"},
+	{"level": 15, "unlock_id": &"kernel_passive", "unlock_name": "Class Passive"},
+	{"level": 20, "unlock_id": &"boss_bonus", "unlock_name": "Damage Type Bonus"},
+	{"level": 25, "unlock_id": &"counter_stance", "unlock_name": "Iteration 3 Unlock Available"},
+	{"level": 30, "unlock_id": &"overclock_reactor", "unlock_name": "Ultimate: Overclock Reactor"},
+	{"level": 40, "unlock_id": &"kernel_mastery", "unlock_name": "Mastery: Aegis grants 50 compute on block"},
+	{"level": 50, "unlock_id": &"title_wall", "unlock_name": "Title: The Wall"},
+]
+iteration3_unlock_id = &"counter_stance"
+iteration3_unlock_name = "Counter Stance"
+iteration3_unlock_description = "Successful blocks trigger an automatic 15-dmg shockwave around the Kernel."
+restricted_item_ids = [&"boots_anchor_plates"]

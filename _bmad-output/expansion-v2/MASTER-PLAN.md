@@ -1711,40 +1711,40 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 31 — Class System (3 Specializations)
 
-1. Design class 1: Compiler — balanced melee+ranged
-2. Design class 2: Daemon — fast assassin
-3. Design class 3: Kernel — tank/control
-4. Write class bible with stat baselines
-5. Build class selection UI
+1. [x] Design class 1: Compiler — balanced melee+ranged
+2. [x] Design class 2: Daemon — fast assassin
+3. [x] Design class 3: Kernel — tank/control
+4. [x] Write class bible with stat baselines
+5. [x] Build class selection UI
 6. Hook class selection at character creation
-7. Build class-specific starting stats
-8. Build class-specific starting modules
+7. [x] Build class-specific starting stats
+8. [x] Build class-specific starting modules
 9. Build class-specific visual variant of Globbler
 10. Build class-specific HUD theme
-11. Build class-specific ability cooldowns
+11. [x] Build class-specific ability cooldowns
 12. Hook class to AbilityManager
-13. Add class swap unlocked at iteration 3
-14. Add respec system
-15. Build respec NPC in town
+13. [x] Add class swap unlocked at iteration 3
+14. [x] Add respec system
+15. [x] Build respec NPC in town
 16. Add class-specific dialogue options
 17. Add class-specific quest hooks
-18. Build class progression milestones
-19. Build class-specific passives
-20. Hook class to damage type bonuses
-21. Add class signature ability ×3
-22. Add class ultimate ability ×3
+18. [x] Build class progression milestones
+19. [x] Build class-specific passives
+20. [x] Hook class to damage type bonuses
+21. [x] Add class signature ability ×3
+22. [x] Add class ultimate ability ×3
 23. Animate class signatures
 24. Animate class ultimates
 25. Add class-specific death anim variants
 26. Add class-specific level-up effects
-27. Hook class to save data
-28. Add class swap UI
+27. [x] Hook class to save data
+28. [x] Add class swap UI
 29. Build class tutorial flow
 30. Add class info screen
 31. Add class lore tab
 32. Render class hero portraits
 33. Add class flavor music sting
-34. Hook EventBus class signals
+34. [x] Hook EventBus class signals
 35. Validate class balance across floors
 36. Test each class through full demo run
 37. Polish class-specific VFX
@@ -1753,12 +1753,12 @@ Loop through epics 1 → 50 in order. For each epic:
 40. Build class quick-swap loadouts
 41. Validate UI for class switching
 42. Add class bonus stat displays
-43. Hook to inventory class restrictions
-44. Add class restricted items
-45. Add class shared items
+43. [x] Hook to inventory class restrictions
+44. [x] Add class restricted items
+45. [x] Add class shared items
 46. Build class community rankings (placeholder)
 47. Render class showcase video
-48. Document class bible
+48. [x] Document class bible
 49. Test new game with each class
 50. Commit `epic-31: class system complete`
 

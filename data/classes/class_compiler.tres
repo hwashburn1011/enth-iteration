@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="ClassDefinition" load_steps=2 format=3 uid="uid://class_compiler001"]
+
+[ext_resource type="Script" path="res://scripts/resources/class_definition.gd" id="1_class_def"]
+
+[resource]
+script = ExtResource("1_class_def")
+class_id = &"compiler"
+display_name = "Compiler"
+tagline = "The disciplined craftsman."
+description = "Equal parts melee and ranged. Adapts to any situation. The default class for new players who haven't decided what they want to be."
+max_hp = 100.0
+max_compute = 100.0
+move_speed = 4.5
+crit_chance = 0.08
+damage_modifier = 1.0
+defense_modifier = 1.0
+dash_cooldown = 1.5
+charge_time = 0.6
+color_primary = Color(0.20, 0.30, 0.70, 1.0)
+color_accent = Color(0.90, 0.90, 0.95, 1.0)
+hud_theme = &"compiler"
+starting_modules = [&"data_pulse", &"energy_burst", &"pattern_lock"]
+starting_passives = []
+signature_ability_id = &"recompile"
+ultimate_ability_id = &"logic_bomb"
+damage_type_bonuses = {
+	&"order": 1.15,
+}
+milestones = [
+	{"level": 5, "unlock_id": &"pattern_lock_plus", "unlock_name": "Pattern Lock+ (2 targets)"},
+	{"level": 10, "unlock_id": &"recompile", "unlock_name": "Signature: Recompile"},
+	{"level": 15, "unlock_id": &"compiler_passive", "unlock_name": "Class Passive"},
+	{"level": 20, "unlock_id": &"order_bonus", "unlock_name": "Damage Type Bonus"},
+	{"level": 25, "unlock_id": &"subroutine", "unlock_name": "Iteration 3 Unlock Available"},
+	{"level": 30, "unlock_id": &"logic_bomb", "unlock_name": "Ultimate: Logic Bomb"},
+	{"level": 40, "unlock_id": &"compiler_mastery", "unlock_name": "Mastery: Auto Pattern Lock on crit"},
+	{"level": 50, "unlock_id": &"title_architect", "unlock_name": "Title: The Architect"},
+]
+iteration3_unlock_id = &"subroutine"
+iteration3_unlock_name = "Subroutine"
+iteration3_unlock_description = "Swap between melee and ranged stance with no animation lock via left/right click."
+restricted_item_ids = [&"core_logic_engine"]

@@ -2,7 +2,7 @@
 epic: 11
 title: "GlitchBug Full Rebuild"
 phase: 3
-status: TODO
+status: IN_PROGRESS
 priority: high
 estimated_hours: 60
 dependencies: [1, 2, 3, 4]
