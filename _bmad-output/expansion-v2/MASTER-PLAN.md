@@ -244,7 +244,7 @@ Loop through epics 1 → 50 in order. For each epic:
 24. [x] Build 4 color variants (red venom, blue cold, green tox, purple elite) (4 EnemyVariant.tres files in data/enemies/variants/ — venom red+amber poison applier, cold blue+white freeze + slowed speed, tox green+yellow acid, elite purple+gold pack leader 1.15x scale + 2x HP + aura)
 25. [x] Build size variants (small swarm, normal, large alpha) (3 EnemyVariant.tres files: swarm 0.5x scale + 0.35x HP fast packs of 6+, alpha 1.7x scale + 4.5x HP mini-boss tier, queen 2.6x scale + 18x HP boss with pack leader aura — base normal already exists as the unmodified GlitchBug)
 26. [x] Add per-variant unique vfx auras (VariantAuraAttachment factory component — dispatches by variant_id and applies_status_effect to compose unique signatures: venom drip embers, cold absorb field + frost mist, tox green gas, elite pack leader aura + gold sparkle, swarm minimal flicker, alpha heavy embers + presence field, queen aura + infested decal + queen foam)
-27. Implement queen/elite GlitchBug visual upgrade
+27. [x] Implement queen/elite GlitchBug visual upgrade (VariantBodyUpgrade component — applies body_scale to root, mandible_scale via Skeleton3D bone pose scale, pushes crack_color/crawl_color into the carapace ShaderMaterial uniforms, spawns pattern_overlay decoration scenes from a path lookup, boosts crack/crawl emission for elites)
 28. Polish material readability at gameplay zoom
 29. Validate silhouette is unique vs other enemies
 30. Render hero shot for trailer
