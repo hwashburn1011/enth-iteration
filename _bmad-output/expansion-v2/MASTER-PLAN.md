@@ -1450,7 +1450,7 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Hook enemy spawn variation to time
 17. [x] Build "night enemies" stronger at night
 18. [x] Hook player buffs to time of day
-19. Build star particle layer for night
+19. [x] Build star particle layer for night (global NightSkyStarField, camera follow, skybox preset visibility)
 20. [x] Build moon position animation
 21. Build light cookie clouds drifting
 22. Add ambient bird SFX in day
