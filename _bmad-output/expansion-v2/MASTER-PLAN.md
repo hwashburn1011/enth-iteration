@@ -1416,7 +1416,7 @@ Loop through epics 1 → 50 in order. For each epic:
 37. [x] Add hidden door puzzles (5-book sequence puzzle hinted by 5 lore tablets)
 38. [x] Build hidden treasure room (chest interaction + 3 bible rewards + cinematic; room scene Blender)
 39. [x] Add new fast-travel points (17 hub points + reactive unlock manager)
-40. Validate all hub additions tie to systems
+40. [x] Validate all hub additions tie to systems (validator script + audit report; PASS)
 41. Render hero shots per area
 42. Optimize draw calls
 43. Bake lighting
