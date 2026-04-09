@@ -9,7 +9,15 @@ const ENTRANCES: Array = [
 		"id": &"server_room",
 		"display_name": "Server Room Portal",
 		"biome_id": &"server_room",
-		"location_zone": &"wilderness_clearings",
+		"location_zone": &"wild_cliffs",
+		"parent_region": &"wild_cliffs",
+		# Westmost mouth in the row of four (-4m elevation along the cliff line)
+		"wilderness_position": Vector3(-45.0, -4.0, -90.0),
+		"cliff_position_index": 0,
+		"monument_silhouette": &"server_arch_geometric",
+		"glow_color": Color(0.30, 0.55, 1.00),
+		"glow_visible_from_distance": 180.0,
+		"locked_visible": false,
 		"difficulty_stars": 1,
 		"max_difficulty_stars": 5,
 		"recommended_level": 1,
@@ -27,7 +35,14 @@ const ENTRANCES: Array = [
 		"id": &"memory_vaults",
 		"display_name": "Memory Vaults Portal",
 		"biome_id": &"memory_vaults",
-		"location_zone": &"wilderness_lake",
+		"location_zone": &"wild_cliffs",
+		"parent_region": &"wild_cliffs",
+		"wilderness_position": Vector3(-15.0, -4.0, -90.0),
+		"cliff_position_index": 1,
+		"monument_silhouette": &"vault_door_archaic",
+		"glow_color": Color(1.00, 0.78, 0.30),
+		"glow_visible_from_distance": 180.0,
+		"locked_visible": true,  # visible-but-locked until iteration 2
 		"difficulty_stars": 2,
 		"max_difficulty_stars": 5,
 		"recommended_level": 8,
@@ -45,7 +60,14 @@ const ENTRANCES: Array = [
 		"id": &"corrupted_wilds",
 		"display_name": "Corrupted Wilds Portal",
 		"biome_id": &"corrupted_wilds",
-		"location_zone": &"wilderness_cave",
+		"location_zone": &"wild_cliffs",
+		"parent_region": &"wild_cliffs",
+		"wilderness_position": Vector3(15.0, -4.0, -90.0),
+		"cliff_position_index": 2,
+		"monument_silhouette": &"wilds_organic_maw",
+		"glow_color": Color(0.85, 0.30, 1.00),
+		"glow_visible_from_distance": 180.0,
+		"locked_visible": true,
 		"difficulty_stars": 3,
 		"max_difficulty_stars": 5,
 		"recommended_level": 15,
@@ -63,7 +85,17 @@ const ENTRANCES: Array = [
 		"id": &"final_vault",
 		"display_name": "Final Vault Portal",
 		"biome_id": &"final_vault",
-		"location_zone": &"town_commons",
+		"location_zone": &"wild_cliffs",
+		"parent_region": &"wild_cliffs",
+		# Eastmost mouth — the constant visible reminder of where the loop ends.
+		# Sealed by glowing chains until iteration 8.
+		"wilderness_position": Vector3(45.0, -4.0, -90.0),
+		"cliff_position_index": 3,
+		"monument_silhouette": &"final_seven_seals",
+		"glow_color": Color(0.95, 0.95, 1.00),
+		"glow_visible_from_distance": 220.0,  # visible from anywhere in wilderness
+		"locked_visible": true,  # always visible, locked by 7 seals
+		"locked_visual_id": &"final_vault_chains",
 		"difficulty_stars": 5,
 		"max_difficulty_stars": 5,
 		"recommended_level": 30,
@@ -98,6 +130,20 @@ static func get_for_biome(biome_id: StringName) -> Dictionary:
 		if e["biome_id"] == biome_id:
 			return e
 	return {}
+
+
+static func get_for_region(region_id: StringName) -> Array:
+	## Returns all entrances anchored in the given region, sorted by
+	## cliff_position_index so the wilderness scene can place them in
+	## a stable left-to-right order along the cliff line.
+	var result: Array = []
+	for e in ENTRANCES:
+		if e.get("parent_region", &"") == region_id:
+			result.append(e)
+	result.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		return int(a.get("cliff_position_index", 0)) < int(b.get("cliff_position_index", 0))
+	)
+	return result
 
 
 static func count() -> int:
