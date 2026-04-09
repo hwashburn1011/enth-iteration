@@ -1299,23 +1299,23 @@ Loop through epics 1 → 50 in order. For each epic:
 30. [x] Add fishing spots (FishingResolver wrapping 15-fish DB + bait weighting + spot component)
 31. [x] Add foraging spots (6 region tables, luck-biased roll, skill-gated rares)
 32. [x] Build campsite prop with rest function (cinematic + heal + buff + herb pulse)
-33. Add ambient bird/insect spawners
-34. Add ground decals for wear
-35. Validate scale: 5x current dungeon room size
-36. Optimize draw calls + LODs
-37. Bake lighting
-38. Add lighting variation per region
+33. [x] Add ambient bird/insect spawners (AmbientLifeSpawner: swarms, formations, calls)
+34. [x] Add ground decals for wear (10 decal types, path + region scatter, weather reactive)
+35. Validate scale: 5x current dungeon room size (scene-bake; deferred)
+36. Optimize draw calls + LODs (scene-bake; deferred)
+37. Bake lighting (scene-bake; deferred)
+38. [x] Add lighting variation per region (24 presets via WildernessLightingDirector)
 39. Add fog volume per region
 40. Add weather particles
 41. Add wind direction variance
-42. Validate navmesh on slopes and around obstacles
+42. Validate navmesh on slopes and around obstacles (scene-bake; deferred)
 43. Add cinematic camera reveal shots
-44. Render hero shots
-45. Hook wilderness encounter system
+44. Render hero shots (Blender)
+45. [x] Hook wilderness encounter system (WandererNPCManager + 5 events)
 46. Add reactive enemy alerts
-47. Add wandering NPC events
-48. Test wilderness traversal end-to-end
-49. Document wilderness bible
+47. [x] Add wandering NPC events (5 events in WildernessEncounterDatabase)
+48. Test wilderness traversal end-to-end (scene-bake; deferred)
+49. [x] Document wilderness bible
 50. Commit `epic-23: wilderness zone complete`
 
 ---
