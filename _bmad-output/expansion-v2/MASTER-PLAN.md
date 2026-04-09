@@ -106,29 +106,29 @@ Loop through epics 1 → 50 in order. For each epic:
 
 1. [x] Define equipment slot mounts on rig (head, chest, back, hands L/R, hip L/R, feet)
 2. [x] Build attachment system in Godot: equipment swaps mesh+material at runtime
-3. Design "Initiate" common set — concept sketch
+3. [x] Design "Initiate" common set — concept sketch
 4. Model Initiate set (head visor, chest plate, gloves, boots) low poly clean
 5. Texture Initiate set with neutral palette
-6. Design "Patcher" uncommon set — utility/repair theme
+6. [x] Design "Patcher" uncommon set — utility/repair theme
 7. Model + texture Patcher set
-8. Design "Compiler" rare set — ornate, geometric
+8. [x] Design "Compiler" rare set — ornate, geometric
 9. Model + texture Compiler set with emissive accents
-10. Design "Kernel" epic set — sleek warrior aesthetic
+10. [x] Design "Kernel" epic set — sleek warrior aesthetic
 11. Model + texture Kernel set with anim'd glow shader
-12. Design "Architect" legendary set — heroic silhouette
+12. [x] Design "Architect" legendary set — heroic silhouette
 13. Model + texture Architect set with cape/mantle that simulates
-14. Design "Glitch" cursed/unique set — broken digital corruption look
+14. [x] Design "Glitch" cursed/unique set — broken digital corruption look
 15. Model + texture Glitch set with shader distortion
-16. Design "Cozy" town/social set — non-combat outfit
+16. [x] Design "Cozy" town/social set — non-combat outfit
 17. Model + texture Cozy set
-18. Design "Boss Reward" iconic set — drops from Compiler boss
+18. [x] Design "Boss Reward" iconic set — drops from Compiler boss
 19. Model + texture Boss Reward set
-20. Build mix-and-match material system so any helmet works with any chest
-21. Create dye system: 16 color variants per slot
-22. Add per-slot wear/dirt slider that increases with damage taken
+20. [x] Build mix-and-match material system so any helmet works with any chest
+21. [x] Create dye system: 16 color variants per slot
+22. [x] Add per-slot wear/dirt slider that increases with damage taken
 23. Hook up equipment preview in inventory screen (3D rotating model)
 24. Create paper-doll UI showing equipped silhouette
-25. Implement set-bonus visual: matched set glows softly
+25. [x] Implement set-bonus visual: matched set glows softly
 26. Add rarity-tier vfx halo on equipped legendary items
 27. Validate all 8 sets animate correctly with all anims from Epic 01
 28. Validate clipping at extreme poses (charged attack, dash, death)
@@ -137,8 +137,8 @@ Loop through epics 1 → 50 in order. For each epic:
 31. Create equipment pickup world model variants (small props on ground)
 32. Create equipment drop sparkle/aura colored by rarity
 33. Build wardrobe NPC in town that previews outfits
-34. Add transmog system: visual one set, stats from another
-35. Hook transmog into save data
+34. [x] Add transmog system: visual one set, stats from another
+35. [x] Hook transmog into save data
 36. Create "first equip" cinematic flash for new gear
 37. Render marketing turntable of all 8 sets
 38. Stress test: equip/unequip 50 times, check for memory leaks
@@ -148,7 +148,7 @@ Loop through epics 1 → 50 in order. For each epic:
 42. Add fresnel rim light contribution per outfit
 43. Validate all sets in 5 lighting environments
 44. Add equipment slot icons to UI matching set art
-45. Build "outfit favorites" save slot system (3 saved looks)
+45. [x] Build "outfit favorites" save slot system (3 saved looks)
 46. Create the Globbler portrait used in dialogue boxes (high-res render of new model)
 47. Generate variant portraits per outfit
 48. Animate portrait subtle motion (breathing, blink) as a Sprite2D atlas
