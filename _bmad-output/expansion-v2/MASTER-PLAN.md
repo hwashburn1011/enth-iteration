@@ -187,7 +187,7 @@ Loop through epics 1 → 50 in order. For each epic:
 24. [x] Animate "farm" planting/harvest (90-frame, crouch → dig → plant drop → 2 soil pats → rise to neutral)
 25. [x] Animate "build" hammering (101-frame loop, 4 hammer strokes — wind up overhead → strike down → bounce, head ducks on impact)
 26. [x] Animate "dig" shovel (75-frame, grip → raise → drive down → push → lift dirt → side toss with body twist → return)
-27. Animate "swim" water surface
+27. [x] Animate "swim" water surface (120-frame loop, alternating front-crawl arm strokes + flutter kick)
 28. Animate "swim under" submerged
 29. Animate "climb" ladder
 30. Animate "vault" over obstacle
