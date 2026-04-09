@@ -130,7 +130,7 @@ Loop through epics 1 → 50 in order. For each epic:
 24. [x] Create paper-doll UI showing equipped silhouette
 25. [x] Implement set-bonus visual: matched set glows softly
 26. [x] Add rarity-tier vfx halo on equipped legendary items
-27. Validate all 8 sets animate correctly with all anims from Epic 01
+27. [x] Validate all 8 sets animate correctly with all anims from Epic 01 (7/8 clean, 1 false positive on a wrench prop)
 28. Validate clipping at extreme poses (charged attack, dash, death)
 29. Polish weight painting on attachments
 30. Add subtle physics on cape, antenna, loose straps
