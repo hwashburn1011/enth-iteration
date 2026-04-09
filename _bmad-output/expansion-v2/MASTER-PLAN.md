@@ -176,7 +176,7 @@ Loop through epics 1 → 50 in order. For each epic:
 13. [x] Animate "salute" (50-frame, attention → snap up to brow → 18-frame hold → snap down to side → relax)
 14. [x] Animate "dance 1" cozy bop (120-frame loop, 8-beat side-to-side hip sway with arm flourishes on beats 5+7)
 15. [x] Animate "dance 2" victory shuffle (97-frame loop, foot-shuffle + hip rock + arms-up V flourish + clap + arms wide)
-16. Animate "sleep" curled up
+16. [x] Animate "sleep" curled up (120-frame breathing loop, fetal pose with knees-to-chest, arms tucked, head bowed)
 17. Animate "wake up" yawn + stretch
 18. Animate "eat" prompt consume
 19. Animate "drink" healing prompt
