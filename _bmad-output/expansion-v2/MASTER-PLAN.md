@@ -151,7 +151,7 @@ Loop through epics 1 → 50 in order. For each epic:
 45. [x] Build "outfit favorites" save slot system (3 saved looks)
 46. [x] Create the Globbler portrait used in dialogue boxes (512x512 with 3-point lighting)
 47. [x] Generate variant portraits per outfit (8 portraits with appended outfit pieces, 50mm wider framing)
-48. Animate portrait subtle motion (breathing, blink) as a Sprite2D atlas
+48. [x] Animate portrait subtle motion (breathing, blink) as a Sprite2D atlas (8 frames + PortraitAnimator)
 49. [x] Hook portrait into dialogue UI
 50. Commit `epic-02: outfits & equipment viz complete`
 
