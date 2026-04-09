@@ -1377,7 +1377,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 25 — Town Hub Expansion: Underground & Vertical
 
-1. Design underground lounge concept
+1. [x] Design underground lounge concept (covered in full hub expansion bible)
 2. Build underground lounge scene
 3. Add lounge furniture props
 4. Build lounge bar interactive
