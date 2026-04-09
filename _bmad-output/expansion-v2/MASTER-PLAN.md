@@ -1351,7 +1351,7 @@ Loop through epics 1 → 50 in order. For each epic:
 27. Validate all 4 entrances transition properly
 28. [x] Build entrance "first time" cinematic per biome
 29. [x] Build entrance "return" idle cinematic (4 idles, no-letterbox brief flourishes)
-30. Add entrance NPC guide/warden
+30. [x] Add entrance NPC guide/warden (4 wardens with dialogue, shop, schedule)
 31. Add ambient SFX per entrance
 32. Polish entrance lighting
 33. Render hero shot per entrance
