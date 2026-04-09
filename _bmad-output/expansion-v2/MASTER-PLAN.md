@@ -129,7 +129,7 @@ Loop through epics 1 → 50 in order. For each epic:
 23. [x] Hook up equipment preview in inventory screen (3D rotating model)
 24. [x] Create paper-doll UI showing equipped silhouette
 25. [x] Implement set-bonus visual: matched set glows softly
-26. Add rarity-tier vfx halo on equipped legendary items
+26. [x] Add rarity-tier vfx halo on equipped legendary items
 27. Validate all 8 sets animate correctly with all anims from Epic 01
 28. Validate clipping at extreme poses (charged attack, dash, death)
 29. Polish weight painting on attachments
@@ -139,20 +139,20 @@ Loop through epics 1 → 50 in order. For each epic:
 33. [x] Build wardrobe NPC in town that previews outfits
 34. [x] Add transmog system: visual one set, stats from another
 35. [x] Hook transmog into save data
-36. Create "first equip" cinematic flash for new gear
+36. [x] Create "first equip" cinematic flash for new gear
 37. Render marketing turntable of all 8 sets
 38. Stress test: equip/unequip 50 times, check for memory leaks
 39. Verify no z-fighting on overlapping plates
-40. Add soft outline on equipped pieces for readability
+40. [x] Add soft outline on equipped pieces for readability
 41. Tune metallic values per set so they read at gameplay distance
-42. Add fresnel rim light contribution per outfit
+42. [x] Add fresnel rim light contribution per outfit
 43. Validate all sets in 5 lighting environments
 44. Add equipment slot icons to UI matching set art
 45. [x] Build "outfit favorites" save slot system (3 saved looks)
 46. Create the Globbler portrait used in dialogue boxes (high-res render of new model)
 47. Generate variant portraits per outfit
 48. Animate portrait subtle motion (breathing, blink) as a Sprite2D atlas
-49. Hook portrait into dialogue UI
+49. [x] Hook portrait into dialogue UI
 50. Commit `epic-02: outfits & equipment viz complete`
 
 ---
