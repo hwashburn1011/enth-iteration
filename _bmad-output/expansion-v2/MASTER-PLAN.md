@@ -1157,11 +1157,11 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 21 — Town Districts: 5 Distinct Zones
 
-1. Design district 1: Residential District (homes, gardens, quiet)
-2. Design district 2: Market District (shops, stalls, busy)
-3. Design district 3: Commons District (tavern, archive, social)
-4. Design district 4: Workshop District (forge, lab, industrial)
-5. Design district 5: Docks District (water edge, boats, exotic goods)
+1. [x] Design district 1: Residential District (homes, gardens, quiet)
+2. [x] Design district 2: Market District (shops, stalls, busy)
+3. [x] Design district 3: Commons District (tavern, archive, social)
+4. [x] Design district 4: Workshop District (forge, lab, industrial)
+5. [x] Design district 5: Docks District (water edge, boats, exotic goods)
 6. Block out Residential District layout (4x larger than current town)
 7. Block out Market District layout
 8. Block out Commons District layout
@@ -1171,17 +1171,17 @@ Loop through epics 1 → 50 in order. For each epic:
 12. Populate with modular fillers from Epic 12
 13. Build paths connecting districts
 14. Build district-archway entry markers
-15. Add district-specific ambient SFX
+15. [x] Add district-specific ambient SFX
 16. Add district-specific particle ambient
-17. Add district-specific NPC residents
-18. Add district name signage
-19. Build district map UI
-20. Hook fast-travel between districts
-21. Add district-specific lighting profile
-22. Add district-specific music
-23. Validate scale: walk time across town is 2-3 minutes
+17. [x] Add district-specific NPC residents
+18. [x] Add district name signage
+19. [x] Build district map UI
+20. [x] Hook fast-travel between districts
+21. [x] Add district-specific lighting profile
+22. [x] Add district-specific music
+23. [x] Validate scale: walk time across town is 2-3 minutes
 24. Validate readability of district boundaries
-25. Add district-specific quest hubs
+25. [x] Add district-specific quest hubs
 26. Build Residential gardens with farm patches
 27. Build Market stall props with rotating inventory
 28. Build Commons gathering plaza with benches
@@ -1189,15 +1189,15 @@ Loop through epics 1 → 50 in order. For each epic:
 30. Build Docks with water, boats, fishing spots
 31. Add water shader to Docks
 32. Add boat dock interaction
-33. Add district-specific weather variations
-34. Add district-specific day/night transitions
+33. [x] Add district-specific weather variations
+34. [x] Add district-specific day/night transitions
 35. Build connecting bridges between districts
 36. Build elevation changes (Workshop is on a hill, Docks at sea level)
 37. Validate navmesh across full town
 38. Optimize draw calls per district
 39. Bake lightmaps per district
 40. Add ambient wildlife per district
-41. Place all 12 NPCs in their home districts
+41. [x] Place all 12 NPCs in their home districts
 42. Add district-specific lore objects
 43. Build town hall central plaza connecting all districts
 44. Add fountains, statues, monuments
@@ -1205,7 +1205,7 @@ Loop through epics 1 → 50 in order. For each epic:
 46. Validate full town walking tour
 47. Render aerial overview shot of full town
 48. Render hero shots per district
-49. Document town bible
+49. [x] Document town bible
 50. Commit `epic-21: 5 town districts complete`
 
 ---
