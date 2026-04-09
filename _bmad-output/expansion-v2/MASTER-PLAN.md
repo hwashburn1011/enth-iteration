@@ -279,7 +279,7 @@ Loop through epics 1 → 50 in order. For each epic:
 4. [x] Sculpt surface ripples and bubbles (2 Displace modifiers per body section: high-frequency NOISE texture at 1.2cm strength for fine ripples + larger CLOUDS texture at 2.5cm strength for surface bubbles, applied to all 5 stacked sections — verified with render showing the textured gel surface)
 5. [x] Sculpt drip tendrils (3-segment tendril at REST position tucked against body front matching the silhouettes doc tendril_01/02/03 chain — tapered capsules with subsurface modifiers + 8 random drip droplet spheres squashed into teardrop shape at the body base)
 6. [x] Retopo to 3K tris with subdivision support (MemoryLeak_v2_LOD0 single joined mesh exactly 3,000 tris via Decimate ratio 0.0455 from 65,904 source tris, plus Subdivision Surface modifier at viewport 0 / render 1 levels for runtime subdivision boost during close-ups)
-7. UV unwrap as cylindrical projection
+7. [x] UV unwrap as cylindrical projection (uv.cylinder_project on MemoryLeak_v2_LOD0 with align POLAR_ZX, then pack_islands at 0.01 margin to fit within [0.003, 0.997] U / [0.003, 0.907] V — vertical-axis cylindrical projection appropriate for the irregular blob shape)
 8. Bake normal/AO/curvature
 9. Paint base translucent shader (refraction-style)
 10. Add internal "code stream" texture animated via UV scroll
