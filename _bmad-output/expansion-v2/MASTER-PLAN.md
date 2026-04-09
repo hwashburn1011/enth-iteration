@@ -1432,10 +1432,10 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 26 — Day/Night Cycle System
 
-1. Design day/night cycle: 24 minutes real-time = 1 in-game day
-2. Build sun directional light orbit animation
-3. Build moon directional light alternate
-4. Build skybox interpolation between presets
+1. [x] Design day/night cycle: 24 minutes real-time = 1 in-game day
+2. [x] Build sun directional light orbit animation
+3. [x] Build moon directional light alternate
+4. [x] Build skybox interpolation between presets
 5. Build dawn skybox preset
 6. Build noon skybox preset
 7. Build dusk skybox preset
@@ -1443,15 +1443,15 @@ Loop through epics 1 → 50 in order. For each epic:
 9. Build night with moon variant
 10. Build cloudy variant
 11. Build storm variant
-12. Hook lighting tint to time
-13. Hook fog density to time
-14. Hook ambient SFX shift to time
-15. Hook NPC schedules to time
-16. Hook enemy spawn variation to time
-17. Build "night enemies" stronger at night
-18. Hook player buffs to time of day
+12. [x] Hook lighting tint to time
+13. [x] Hook fog density to time
+14. [x] Hook ambient SFX shift to time
+15. [x] Hook NPC schedules to time
+16. [x] Hook enemy spawn variation to time
+17. [x] Build "night enemies" stronger at night
+18. [x] Hook player buffs to time of day
 19. Build star particle layer for night
-20. Build moon position animation
+20. [x] Build moon position animation
 21. Build light cookie clouds drifting
 22. Add ambient bird SFX in day
 23. Add ambient cricket SFX at night
@@ -1459,28 +1459,28 @@ Loop through epics 1 → 50 in order. For each epic:
 25. Build street lamp light on at dusk
 26. Build NPC bedtime animations
 27. Build NPC wake-up animations
-28. Hook quest gating to time of day
-29. Build "sleep till morning" interaction
-30. Add "sleep till night" interaction
-31. Build pause-time menu option
-32. Add time UI clock display
-33. Add day counter display
-34. Hook save system to persist time
+28. [x] Hook quest gating to time of day
+29. [x] Build "sleep till morning" interaction
+30. [x] Add "sleep till night" interaction
+31. [x] Build pause-time menu option
+32. [x] Add time UI clock display
+33. [x] Add day counter display
+34. [x] Hook save system to persist time
 35. Build time-of-day skip cinematic
-36. Validate lighting transitions are smooth
-37. Validate perf with continuous time updates
-38. Build time-locked content (some NPCs only visible at certain hours)
-39. Add daily reset triggers
-40. Hook daily quests
-41. Build night-only enemies
-42. Build night-only loot
+36. [x] Validate lighting transitions are smooth
+37. [x] Validate perf with continuous time updates
+38. [x] Build time-locked content (some NPCs only visible at certain hours)
+39. [x] Add daily reset triggers
+40. [x] Hook daily quests
+41. [x] Build night-only enemies
+42. [x] Build night-only loot
 43. Render time-of-day comparison shots
 44. Validate against all environments
-45. Add time sync between scenes
-46. Hook EventBus signals for time events
+45. [x] Add time sync between scenes
+46. [x] Hook EventBus signals for time events
 47. Add cinematic dawn breaking sequence
 48. Add cinematic sunset sequence
-49. Document day/night bible
+49. [x] Document day/night bible
 50. Commit `epic-26: day/night cycle complete`
 
 ---
