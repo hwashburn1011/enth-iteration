@@ -146,7 +146,7 @@ Loop through epics 1 → 50 in order. For each epic:
 40. [x] Add soft outline on equipped pieces for readability
 41. [x] Tune metallic values per set so they read at gameplay distance
 42. [x] Add fresnel rim light contribution per outfit
-43. Validate all sets in 5 lighting environments
+43. [x] Validate all sets in 5 lighting environments (40 PNGs in lighting_tests/)
 44. [x] Add equipment slot icons to UI matching set art
 45. [x] Build "outfit favorites" save slot system (3 saved looks)
 46. Create the Globbler portrait used in dialogue boxes (high-res render of new model)
