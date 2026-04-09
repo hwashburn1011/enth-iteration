@@ -464,8 +464,8 @@ Loop through epics 1 → 50 in order. For each epic:
 24. Polish Iteration Echo
 25. Each enemy: build 3 elite variants (color + scale + buff)
 26. [x] Each enemy: write AI behavior brief (epic-08-new-enemy-roster-bible.md — full AI behavior brief per enemy includes combat role + tracking range + telegraph timing + counter-play recipe + standard pack size, plus a cross-cutting design rules section enforcing unique combat role, learnable telegraph, available counter-play, 3 elite variants per Knob 25, side-by-side 64x64 silhouette validation per task 43, and 4 anti-patterns: no reskins, no cheap one-shots, no unwinnable fights, no can't-be-meleed enemies)
-27. Implement Crash Daemon AI in StateMachine
-28. Implement Null Pointer AI
+27. [x] Implement Crash Daemon AI in StateMachine (CrashDaemonAI Node — 7-state machine IDLE/APPROACH/WIND_UP/CHARGE/RECOVER/STAGGER/DEAD, circles target at 6m preferred range with tangent + radial velocity blend, 0.3s coil wind-up locks the dash direction at end-of-windup, 8m straight-line dash at 18 m/s with AttackHitbox area-collision dealing 25 dmg + 0.4s stagger to player, 1.0s recover skid is the punish window, hits during recover or wind-up trigger the STAGGER state, charge cooldown 1.5s flips circle direction so the next charge comes from a different angle)
+28. [x] Implement Null Pointer AI (NullPointerAI Node — 8-state machine IDLE/REPOSITION/TELEPORT_OUT/TELEPORT_IN/CHARGE_SHOT/FIRE/STAGGER/DEAD, every 4s picks random angle 8-10m from target and emits teleport_telegraph signal at the destination 0.2s before TELEPORT_OUT, 0.15s fade out + instant position swap + 0.15s fade in, 1.5s charge_shot windup interruptible by hits or player closing to melee_break_range 3m, FIRE spawns projectile via projectile_spawner_path with shot_damage 35 in target direction)
 29. Implement Stack Overflow AI
 30. Implement Race Condition AI
 31. Implement Deadlock AI
