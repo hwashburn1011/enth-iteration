@@ -1297,7 +1297,7 @@ Loop through epics 1 → 50 in order. For each epic:
 28. [x] Build wilderness shrine that provides buffs (9 buffs, 4 tiers, daily offering)
 29. [x] Build resource gathering nodes (8 node types, harvest + respawn component)
 30. [x] Add fishing spots (FishingResolver wrapping 15-fish DB + bait weighting + spot component)
-31. Add foraging spots
+31. [x] Add foraging spots (6 region tables, luck-biased roll, skill-gated rares)
 32. Build campsite prop with rest function
 33. Add ambient bird/insect spawners
 34. Add ground decals for wear
