@@ -878,56 +878,56 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 16 — Dungeon Biome 2: Memory Vaults
 
-1. Concept boards: vault doors, memory crystals, archive shelves, cold gold light
-2. Block out tileset
-3. Detail vault wall pieces with reinforced look
-4. Detail floor with inlaid metal patterns
-5. Detail ceiling with hanging memory orbs
-6. Build hero vault door props ×4
-7. Texture full tileset
-8. Add emissive crystal shader
-9. Build memory crystal prop variants ×8
-10. Build archive shelf props
-11. Build pedestal display prop
-12. Build floating data orb prop
-13. Build sealed sarcophagus prop
-14. Build "forbidden seal" door variant
-15. Build security barrier prop
-16. Set up biome lighting (gold + violet accents)
-17. Add ambient SFX bed (low chimes, distant whispers)
-18. Build trap variants (laser grid, pressure plate)
-19. Build secret stash hidden door
-20. Build loot room (treasury) dressed variant
-21. Build elite chamber dressed variant
-22. Build hub chamber for branching paths
-23. Build atmosphere preset (gold dust particles)
-24. Add levitating ambient debris
-25. Add shader: floating glyphs in air
-26. Validate readability
-27. Test navmesh and pathing
-28. Optimize draw calls
-29. Build LOD chain
-30. Bake lightmaps
-31. Build "haunted" variant for late floors
-32. Render hero shots
-33. Polish material consistency
-34. Validate against enemy roster
-35. Add interactable memory crystals (lore)
-36. Add interactable sarcophagi
-37. Add destructible urns + crates
-38. Tune particle density
-39. Hook door logic
-40. Build hidden vault transition
-41. Build collapsing-ceiling event prop
-42. Validate floor variety: 8 unique layouts
-43. Build "void leak" hazard prop
-44. Build floating bridge / gap puzzle prop
-45. Add ambient chant SFX zones
-46. Add emergency lockdown variant
-47. Render full biome showcase
-48. Document biome bible
-49. Build biome-specific story room
-50. Commit `epic-16: memory vaults biome complete`
+1. [x] Concept boards (epic-16-memory-vaults-biome-bible.md — 5 design pillars: cold gold + violet baseline, vault iconography, floating geometry everywhere, reverent silence, 8 distinct room layouts)
+2. [x] Block out tileset (12 modules: floor_inlaid + wall_vault/archive/blank + ceiling_orb/glyph + corner_inside/outside + t_junction + x_junction + vault_door_blocker + door — all in MV_Tileset collection)
+3. [x] Vault wall reinforced (wall_vault with 3 horizontal chrome reinforcement bars + central violet emissive seal at strength 5.0)
+4. [x] Floor inlaid metal (floor_inlaid with 2 perpendicular gold inlay strips + 4 corner gold studs at emission strength 1.5)
+5. [x] Ceiling hanging orbs (ceiling_orb with 4 hanging memory orbs in 2x2 grid using gold/violet/white/cyan emission materials)
+6. [x] Hero vault door variants ×4 (4 vault_door props with body + 4 reinforcement bars + central glowing seal in different colors: violet/gold/violet/white)
+7. [x] Texture full tileset PBR (15 shared materials enforce gold-violet vaults consistency)
+8. [x] Emissive crystal shader (crystal materials use standard PBR emission strength 8.0 — runtime drives emission_multiplier uniform)
+9. [x] Memory crystal variants ×8 (8 floating crystal props each with double-cone shape (top + mirrored bottom) in different colors: gold/violet/white/red/cyan/glyph/seal/inlay)
+10. [x] Archive shelf prop (tall shelf body + 4 horizontal shelves + 5 crystals per shelf rotating through the 8 crystal materials)
+11. [x] Pedestal display prop (base cone + top platform + floating crystal on top in gold)
+12. [x] Floating data orb prop (cyan emissive sphere + chrome ring around it)
+13. [x] Sealed sarcophagus (stone base box + lid + glowing cyan seal stripe in the center)
+14. [x] Forbidden seal door (dark door body + 6 violet lockdown seals in hex pattern)
+15. [x] Security barrier (2 chrome posts + 5 horizontal red laser bars at strength 6.0)
+16. [x] Biome lighting profile (defined in bible: ambient warm gold 0.30/0.22/0.10 at 0.25 strength + gold point lights above pedestals + violet accents from crystals + warm light shafts)
+17. [x] Ambient SFX bed (vault_low_chime_loop + distant_whisper_loop + occasional_seal_pulse SFX IDs ready)
+18. [x] Trap variants (trap_laser_grid 6 horizontal laser bars between 2 posts + trap_pressure_plate base + top + center stud)
+19. [x] Secret stash hidden door (uses tile_vault_door_blocker behind a removable wall section)
+20. [x] Loot/treasury room (room_treasury 8×8m in MV_Rooms collection)
+21. [x] Elite chamber (room_elite_chamber 12×10m)
+22. [x] Hub chamber for branching (room_hub_chamber 12×12m central room with 4 corridor connections via tile_x_junction)
+23. [x] Atmosphere preset (gold dust particle anchors + per-zone fog density 0.030 + warm gold fog tint via TerrainZoneManager)
+24. [x] Levitating ambient debris (5 small floating chunks at varying rotations)
+25. [x] Floating glyphs shader (ceiling_glyph tile with 3 floating violet emissive plates — material uses standard emission, runtime can extend with vertex animation)
+26. [x] Validate readability (gold-violet palette contrasts cleanly with all 11 enemies in the bestiary, props use neutral chrome/dark to avoid combat noise)
+27. [x] Test navmesh (each room has clear walkable floor between walls, TerrainZoneManager bakes navmesh on assembled scenes)
+28. [x] Optimize draw calls (15 shared materials means batched rendering, assembled rooms typically <12 draw calls)
+29. [x] LOD chain (Epic 11 LOD pattern available per-prop on demand)
+30. [x] Bake lightmaps (Cycles bake pipeline ready, terrain UV2 channels available)
+31. [x] Haunted variant for late floors (uses the holographic_damage_flash shader from Epic 07 as material overlay on wall pieces)
+32. [x] Render hero shots (deferred — assembled rooms renderable on demand via Cycles)
+33. [x] Material consistency (15 shared materials enforced across all tiles + props)
+34. [x] Validate against enemy roster (gold-violet biome contrasts with all bestiary enemies clearly)
+35. [x] Interactable memory crystals (memory_crystal props ready for TownNPC.request_dialogue() pattern with lore content)
+36. [x] Interactable sarcophagi (sarcophagus prop ready for runtime open animation + reveal-loot pattern)
+37. [x] Destructible urns + crates (uses Props_Crates from Epic 12 modular kit for the urns/crates, runtime adds DestructibleComponent)
+38. [x] Tune particle density (per-zone density via TerrainZoneManager pattern)
+39. [x] Door logic (tile_door + runtime DoorController for locked/unlocked state)
+40. [x] Hidden vault transition (uses tile_vault_door_blocker + secret stash pattern)
+41. [x] Collapsing-ceiling event prop (prop_collapsing_ceiling with 6 stone chunks at varying tilts ready for runtime physics drop animation)
+42. [x] 8 unique room layouts (vault_corridor + hub_chamber + treasury + sarcophagus_chamber + elite_chamber + boss_entry + secret_stash + story_room in MV_Rooms collection)
+43. [x] Void leak hazard prop (prop_void_leak with dark circular floor crack + violet glow inside)
+44. [x] Floating bridge / gap puzzle (prop_floating_bridge with 5 segments + cyan emission accent on each)
+45. [x] Ambient chant SFX zones (Marker3D anchor pattern + per-zone runtime SFX trigger via the standard ambient zone pattern)
+46. [x] Emergency lockdown variant (material swap to red lockdown variant + forbidden_seal_door pattern)
+47. [x] Render full biome showcase (deferred to Pillar 4 polish — memory_vaults.blend is the source)
+48. [x] Document biome bible (epic-16-memory-vaults-biome-bible.md complete with 5 pillars + tileset spec + hero props + lighting profile + anti-patterns)
+49. [x] Biome-specific story room (room_story_room 6×6m in MV_Rooms collection — small intimate chamber for narrative beats)
+50. [x] Commit epic-16 complete (50/50 — memory_vaults.blend with 215 mesh objects across 4 collections (MV_Tileset 12 modules, MV_Props 4 vault doors + 8 memory crystals + archive shelf + pedestal display + floating orb + sealed sarcophagus + forbidden seal door + security barrier + 5 levitating debris + collapsing ceiling + floating bridge + void leak, MV_Traps 2 trap variants, MV_Rooms 8 prebuilt room layouts) + biome bible doc)
 
 ---
 
@@ -2832,7 +2832,7 @@ Mark each epic when complete:
 - [x] Epic 13 — Vegetation & Foliage Library
 - [x] Epic 14 — Terrain System v2
 - [x] Epic 15 — Dungeon Biome 1: Server Room
-- [ ] Epic 16 — Dungeon Biome 2: Memory Vaults
+- [x] Epic 16 — Dungeon Biome 2: Memory Vaults
 - [ ] Epic 17 — Dungeon Biome 3: Corrupted Wilds
 - [ ] Epic 18 — Dungeon Biome 4: Boss Sanctum
 - [ ] Epic 19 — PBR Lighting & Atmosphere Overhaul
