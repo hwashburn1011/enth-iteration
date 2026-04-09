@@ -167,6 +167,48 @@ const SUB_AREAS: Array[Dictionary] = [
 		"music_track": &"old_ruins_ancient",
 		"discovery_iteration_gate": 0,
 	},
+	{
+		"id": &"hidden_grove",
+		"display_name": "The Hidden Grove",
+		"parent_region": &"wild_forest",
+		"connects_from": &"forest_firefly_trail",
+		"hidden_behind": &"firefly_trail_at_night",
+		"hidden_hint": "After dark, fireflies in the forest gather in a line. Follow them.",
+		"discovery_reward": {
+			"type": &"bundle",
+			"items": [
+				{"type": &"fishing_spot_unlock", "id": &"grove_pond"},
+				{"type": &"recipe", "id": &"recipe_glow_lure"},
+				{"type": &"lore_tablet", "id": &"lore_grove_caretaker"},
+			],
+		},
+		"lore_plaque": "Where the fireflies remember the way.",
+		"npcs_found_here": [],
+		"ambient_sfx": [&"amb_grove_pond_lap", &"amb_fireflies_wing_hum", &"amb_choir_hum_low"],
+		"music_track": &"wild_forest_night",
+		"discovery_iteration_gate": 0,
+	},
+	{
+		"id": &"hidden_lake",
+		"display_name": "The Hidden Lake",
+		"parent_region": &"wild_cliffs",
+		"connects_from": &"cliffs_ne_vine_ladder",
+		"hidden_behind": &"vine_ladder_past_waterfall",
+		"hidden_hint": "Past the northeast waterfall, a vine ladder climbs to a still lake.",
+		"discovery_reward": {
+			"type": &"bundle",
+			"items": [
+				{"type": &"outfit_piece", "set": &"drowned", "slot": &"top"},
+				{"type": &"fishing_spot_unlock", "id": &"hidden_lake"},
+				{"type": &"lore_tablet", "id": &"lore_drowned_set"},
+			],
+		},
+		"lore_plaque": "Still water. Stiller than memory.",
+		"npcs_found_here": [],
+		"ambient_sfx": [&"amb_lake_still", &"amb_wind_high_altitude", &"amb_distant_waterfall"],
+		"music_track": &"wild_cliffs",
+		"discovery_iteration_gate": 0,
+	},
 ]
 
 static var _index: Dictionary = {}

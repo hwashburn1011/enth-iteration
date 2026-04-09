@@ -1285,9 +1285,9 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Build wilderness ambient music (4-layer stack: base+region+combat+weather)
 17. [x] Add weather variation (6 wilderness region profiles + region debounce)
 18. [x] Add day/night cycle (24 wilderness lighting presets, 6 regions × 4 phases)
-19. Build hidden grove side area
-20. Build hidden lake side area
-21. Build hidden cave side area
+19. [x] Build hidden grove side area (data side; Blender build deferred)
+20. [x] Build hidden lake side area (data side; Blender build deferred)
+21. [x] Build hidden cave side area (already in SubAreaDatabase from epic 22)
 22. Place dungeon entrances ×4 (one per biome)
 23. Build dungeon entrance hero monuments
 24. Add fast-travel waypoints
