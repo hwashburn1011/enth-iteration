@@ -258,7 +258,7 @@ Loop through epics 1 → 50 in order. For each epic:
 38. [x] Add custom shader: glitch displacement on hit (enemy_hit_glitch.gdshader + HitGlitchDriver component — pulse-driven vertex band fragmentation + chromatic ghost + cyan/magenta crack lines + emission flash, fades over 0.25s)
 39. Add "scared" backpedal anim when low HP
 40. Add group call/summon animation
-41. Add corpse persistence (lays on ground 10s before fade)
+41. [x] Add corpse persistence (CorpsePersistence component — listens for HealthComponent.died, swaps meshes to dissolve shader, disables physics+AI, lingers N seconds, dissolves with per-enemy edge color)
 42. Tune attack telegraph readability
 43. Add wing flap loop (idle ambient flutter)
 44. Validate against 5 lighting setups
