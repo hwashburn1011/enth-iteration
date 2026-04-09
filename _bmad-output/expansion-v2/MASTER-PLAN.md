@@ -195,7 +195,7 @@ Loop through epics 1 → 50 in order. For each epic:
 32. [x] Animate "carry heavy" (120-frame loop, both arms forward holding load + body lean back + knee bend + struggle settle)
 33. [x] Animate "push" object (100-frame loop, body forward + arms extended into object + wide stance with effort strain cycle)
 34. [x] Animate "pull" object (100-frame loop, body leaning BACK + arms tugging toward self + squat-back stance + strain cycle)
-35. Animate "throw" projectile
+35. [x] Animate "throw" projectile (45-frame, wind up → cock back peak → release whip → follow through with body twist → recover)
 36. Animate "kick" attack
 37. Animate "block" defensive stance
 38. Animate "parry" successful counter
