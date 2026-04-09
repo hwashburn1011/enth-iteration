@@ -2316,55 +2316,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 42 — Mini-Games & Puzzles
 
-1. Design minigame bible: 8 distinct minigames
-2. Design minigame 1: Terminal Hacking (sequence puzzle)
-3. Design minigame 2: Memory Match (lore unlock)
-4. Design minigame 3: Code Compile (logic puzzle)
-5. Design minigame 4: Data Sort (timed)
-6. Design minigame 5: Fishing (rhythm)
-7. Design minigame 6: Cooking (resource management)
-8. Design minigame 7: Lockpicking (precision)
-9. Design minigame 8: Music Sync (rhythm)
-10. Build Terminal Hacking minigame
-11. Build Memory Match minigame
+1. [x] Design minigame bible: 8 distinct minigames
+2. [x] Design minigame 1: Terminal Hacking (sequence puzzle)
+3. [x] Design minigame 2: Memory Match (lore unlock)
+4. [x] Design minigame 3: Code Compile (logic puzzle)
+5. [x] Design minigame 4: Data Sort (timed)
+6. [x] Design minigame 5: Fishing (rhythm)
+7. [x] Design minigame 6: Cooking (resource management)
+8. [x] Design minigame 7: Lockpicking (precision)
+9. [x] Design minigame 8: Music Sync (rhythm)
+10. [x] Build Terminal Hacking minigame
+11. [x] Build Memory Match minigame
 12. Build Code Compile minigame
 13. Build Data Sort minigame
-14. Build Fishing minigame
+14. [x] Build Fishing minigame
 15. Build Cooking minigame
-16. Build Lockpicking minigame
-17. Build Music Sync minigame
-18. Add minigame difficulty tiers
-19. Add minigame rewards
+16. [x] Build Lockpicking minigame
+17. [x] Build Music Sync minigame
+18. [x] Add minigame difficulty tiers
+19. [x] Add minigame rewards
 20. Add minigame leaderboard local
 21. Add minigame tutorials
-22. Hook minigames to world objects
-23. Place hacking terminals in dungeons
-24. Place memory crystals in vaults
-25. Place code consoles in story rooms
-26. Place fishing spots in town
-27. Place cooking station in town
-28. Place locked containers throughout
-29. Place music station in lounge
-30. Add minigame UI per game
+22. [x] Hook minigames to world objects
+23. [x] Place hacking terminals in dungeons
+24. [x] Place memory crystals in vaults
+25. [x] Place code consoles in story rooms
+26. [x] Place fishing spots in town
+27. [x] Place cooking station in town
+28. [x] Place locked containers throughout
+29. [x] Place music station in lounge
+30. [x] Add minigame UI per game
 31. Render minigame hero icons
 32. Add minigame SFX
 33. Add minigame VFX
-34. Add minigame failure handling
-35. Add minigame retry system
-36. Hook to quest system
-37. Hook to crafting outputs
-38. Hook to lore unlocks
-39. Add achievement triggers
+34. [x] Add minigame failure handling
+35. [x] Add minigame retry system
+36. [x] Hook to quest system
+37. [x] Hook to crafting outputs
+38. [x] Hook to lore unlocks
+39. [x] Add achievement triggers
 40. Validate UX per minigame
 41. Add controller support
 42. Test all 8 minigames
 43. Render gameplay screenshots
-44. Add minigame practice mode
+44. [x] Add minigame practice mode
 45. Add minigame help text
 46. Polish minigame visuals
-47. Document minigame bible
-48. Add minigame statistics tracker
-49. Add minigame mastery rewards
+47. [x] Document minigame bible
+48. [x] Add minigame statistics tracker
+49. [x] Add minigame mastery rewards
 50. Commit `epic-42: minigames complete`
 
 ---
