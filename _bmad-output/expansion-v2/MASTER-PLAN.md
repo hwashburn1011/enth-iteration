@@ -1404,8 +1404,8 @@ Loop through epics 1 → 50 in order. For each epic:
 25. [x] Add cooking interaction (10 recipes across 3 tiers + station with starter book + unlock hooks)
 26. Build crafting workshop area (Blender)
 27. [x] Add crafting station interactions (forge/bench/shaper + iteration upgrade tiers)
-28. Build pet hutch area
-29. Add pet feeding interaction
+28. Build pet hutch area (Blender)
+29. [x] Add pet feeding interaction (4-slot trough + per-pet hunger + decay + bonus)
 30. Build memorial gallery
 31. Add iteration memorial plaques
 32. Build trophy display hall
