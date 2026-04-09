@@ -164,7 +164,7 @@ Loop through epics 1 → 50 in order. For each epic:
 1. [x] Animate "look around" head turn variations ×4 (look_left/right/up/down, 30-frame loops)
 2. [x] Animate "wave" hello gesture (60-frame friendly wave with arm lift, 3 hand swings, lower)
 3. [x] Animate "thumbs up" affirmation (40-frame raise + double nod + hold)
-4. Animate "shake head no"
+4. [x] Animate "shake head no" (30-frame, 3 swings with decay)
 5. Animate "shrug" uncertain
 6. Animate "point" directional gesture
 7. Animate "facepalm"
