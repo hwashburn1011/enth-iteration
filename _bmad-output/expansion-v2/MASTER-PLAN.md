@@ -2705,55 +2705,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 49 — Cinematics & Cutscenes
 
-1. Design cinematic bible: in-engine vs prerendered
-2. Design opening cinematic (Globbler awakens)
-3. Design iteration 1 → 2 transition
-4. Design iteration 2 → 3 transition
-5. Design iteration 3 → 4 transition
-6. Design iteration 4 → 5 transition
-7. Design iteration 5 → 6 transition
-8. Design iteration 6 → 7 transition
-9. Design iteration 7 → 8 transition
-10. Design iteration 8 → 9 transition
-11. Design final ending cinematic
-12. Build cinematic camera system
-13. Build cinematic dolly tracks
-14. Build cinematic camera shake
+1. [x] Design cinematic bible: in-engine vs prerendered
+2. [x] Design opening cinematic (Globbler awakens)
+3. [x] Design iteration 1 → 2 transition
+4. [x] Design iteration 2 → 3 transition
+5. [x] Design iteration 3 → 4 transition
+6. [x] Design iteration 4 → 5 transition
+7. [x] Design iteration 5 → 6 transition
+8. [x] Design iteration 6 → 7 transition
+9. [x] Design iteration 7 → 8 transition
+10. [x] Design iteration 8 → 9 transition
+11. [x] Design final ending cinematic
+12. [x] Build cinematic camera system
+13. [x] Build cinematic dolly tracks
+14. [x] Build cinematic camera shake
 15. Build cinematic depth of field
-16. Build cinematic letterbox bars
-17. Build cinematic timeline tool
-18. Implement opening cinematic in-engine
-19. Implement iteration 1 → 2 transition
-20. Implement iteration 2 → 3
-21. Implement iteration 3 → 4
-22. Implement iteration 4 → 5
-23. Implement iteration 5 → 6
-24. Implement iteration 6 → 7
-25. Implement iteration 7 → 8
-26. Implement iteration 8 → 9
+16. [x] Build cinematic letterbox bars
+17. [x] Build cinematic timeline tool
+18. [x] Implement opening cinematic in-engine
+19. [x] Implement iteration 1 → 2 transition
+20. [x] Implement iteration 2 → 3
+21. [x] Implement iteration 3 → 4
+22. [x] Implement iteration 4 → 5
+23. [x] Implement iteration 5 → 6
+24. [x] Implement iteration 6 → 7
+25. [x] Implement iteration 7 → 8
+26. [x] Implement iteration 8 → 9
 27. Implement final ending
-28. Add cinematic skip option
-29. Hook cinematics to story flags
-30. Add cinematic save/restore
-31. Add subtitle support
-32. Add cinematic music sync
-33. Add cinematic SFX hooks
-34. Polish opening cinematic
+28. [x] Add cinematic skip option
+29. [x] Hook cinematics to story flags
+30. [x] Add cinematic save/restore
+31. [x] Add subtitle support
+32. [x] Add cinematic music sync
+33. [x] Add cinematic SFX hooks
+34. [x] Polish opening cinematic
 35. Polish closing cinematic
-36. Build "first compaction" cinematic
-37. Build "first boss kill" cinematic
-38. Build "town arrival" cinematic
-39. Build NPC recruit cinematics ×6
-40. Build affinity max cinematics
-41. Build death cinematic dramatization
-42. Build secret discovery cinematics
-43. Validate cinematics on multiple aspect ratios
+36. [x] Build "first compaction" cinematic
+37. [x] Build "first boss kill" cinematic
+38. [x] Build "town arrival" cinematic
+39. [x] Build NPC recruit cinematics ×6
+40. [x] Build affinity max cinematics
+41. [x] Build death cinematic dramatization
+42. [x] Build secret discovery cinematics
+43. [x] Validate cinematics on multiple aspect ratios
 44. Render cinematic showcase reel
-45. Add post-credits scene
-46. Hook to achievement system
+45. [x] Add post-credits scene
+46. [x] Hook to achievement system
 47. Test full cinematic playback
-48. Optimize cinematic playback perf
-49. Document cinematic bible
+48. [x] Optimize cinematic playback perf
+49. [x] Document cinematic bible
 50. Commit `epic-49: cinematics complete`
 
 ---
