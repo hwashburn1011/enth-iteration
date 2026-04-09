@@ -1394,7 +1394,7 @@ Loop through epics 1 → 50 in order. For each epic:
 15. [x] Add archive crystal interactions (4 sections + 9 sage journal + 9 forgotten index)
 16. Build training arena hub area (Blender)
 17. [x] Add target dummies (6 archetypes + DPS window + stagger meter)
-18. Add training reset functionality
+18. [x] Add training reset functionality (lever + leaderboard with personal bests)
 19. Build farm plot area
 20. Add planting interaction
 21. Add harvesting interaction
