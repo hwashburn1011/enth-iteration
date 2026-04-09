@@ -1766,34 +1766,34 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 32 — Skill Tree (50+ Nodes Per Class)
 
-1. Design skill tree topology (hub-and-spoke vs chain vs grid)
-2. Sketch tree layout for Compiler class
-3. Sketch tree layout for Daemon class
-4. Sketch tree layout for Kernel class
-5. Define 50 nodes for Compiler tree
-6. Define 50 nodes for Daemon tree
-7. Define 50 nodes for Kernel tree
-8. Build skill tree UI with pan/zoom
+1. [x] Design skill tree topology (hub-and-spoke vs chain vs grid)
+2. [x] Sketch tree layout for Compiler class
+3. [x] Sketch tree layout for Daemon class
+4. [x] Sketch tree layout for Kernel class
+5. [x] Define 50 nodes for Compiler tree
+6. [x] Define 50 nodes for Daemon tree
+7. [x] Define 50 nodes for Kernel tree
+8. [x] Build skill tree UI with pan/zoom
 9. Render skill node icons (50 per class = 150 icons)
-10. Hook skill point allocation
-11. Add skill point earn from level-up
-12. Add skill point earn from milestones
-13. Build skill node prerequisites validation
-14. Build refund/respec system
-15. Add visual highlight for available nodes
-16. Add lock/unlock state visual
-17. Add tooltip with full description
-18. Add stat preview when hovering
-19. Build keystone "major" nodes with bigger effects
-20. Add 5 keystone nodes per class
-21. Implement Compiler nodes 1-25 effects in code
+10. [x] Hook skill point allocation
+11. [x] Add skill point earn from level-up
+12. [x] Add skill point earn from milestones
+13. [x] Build skill node prerequisites validation
+14. [x] Build refund/respec system
+15. [x] Add visual highlight for available nodes
+16. [x] Add lock/unlock state visual
+17. [x] Add tooltip with full description
+18. [x] Add stat preview when hovering
+19. [x] Build keystone "major" nodes with bigger effects
+20. [x] Add 5 keystone nodes per class
+21. [x] Implement Compiler nodes 1-25 effects in code
 22. Implement Compiler nodes 26-50 effects in code
-23. Implement Daemon nodes 1-25 effects in code
+23. [x] Implement Daemon nodes 1-25 effects in code
 24. Implement Daemon nodes 26-50 effects in code
-25. Implement Kernel nodes 1-25 effects in code
+25. [x] Implement Kernel nodes 1-25 effects in code
 26. Implement Kernel nodes 26-50 effects in code
-27. Hook node effects to combat pipeline
-28. Build skill tree save/load
+27. [x] Hook node effects to combat pipeline
+28. [x] Build skill tree save/load
 29. Validate node math doesn't break balance
 30. Add skill tree open/close anim
 31. Hook skill tree to character menu
@@ -1802,9 +1802,9 @@ Loop through epics 1 → 50 in order. For each epic:
 34. Add SFX on allocate
 35. Build skill tree tutorial
 36. Add skill tree summary view
-37. Add build sharing (export/import codes)
-38. Build preset builds (3 per class)
-39. Add preset apply button
+37. [x] Add build sharing (export/import codes)
+38. [x] Build preset builds (3 per class)
+39. [x] Add preset apply button
 40. Hook achievements to tree completion
 41. Validate UI on different screen sizes
 42. Add controller navigation
@@ -1812,9 +1812,9 @@ Loop through epics 1 → 50 in order. For each epic:
 44. Render hero shot of fully unlocked tree
 45. Test full builds through demo
 46. Validate respec works mid-run
-47. Add respec cost (compute or item)
+47. [x] Add respec cost (compute or item)
 48. Add new node tutorial popup
-49. Document skill tree bible
+49. [x] Document skill tree bible
 50. Commit `epic-32: skill tree complete`
 
 ---
