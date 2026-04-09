@@ -280,7 +280,7 @@ Loop through epics 1 → 50 in order. For each epic:
 5. [x] Sculpt drip tendrils (3-segment tendril at REST position tucked against body front matching the silhouettes doc tendril_01/02/03 chain — tapered capsules with subsurface modifiers + 8 random drip droplet spheres squashed into teardrop shape at the body base)
 6. [x] Retopo to 3K tris with subdivision support (MemoryLeak_v2_LOD0 single joined mesh exactly 3,000 tris via Decimate ratio 0.0455 from 65,904 source tris, plus Subdivision Surface modifier at viewport 0 / render 1 levels for runtime subdivision boost during close-ups)
 7. [x] UV unwrap as cylindrical projection (uv.cylinder_project on MemoryLeak_v2_LOD0 with align POLAR_ZX, then pack_islands at 0.01 margin to fit within [0.003, 0.997] U / [0.003, 0.907] V — vertical-axis cylindrical projection appropriate for the irregular blob shape)
-8. Bake normal/AO/curvature
+8. [x] Bake normal/AO/curvature (3 1024x1024 PNG textures saved to assets/textures/enemies/ via Cycles selected-to-active bake from 28 HP source meshes onto MemoryLeak_v2_LOD0, cage_extrusion 0.06, margin 8 — curvature via Geometry Pointiness through ColorRamp into a Diffuse pass)
 9. Paint base translucent shader (refraction-style)
 10. Add internal "code stream" texture animated via UV scroll
 11. Add subsurface scatter for inner glow
