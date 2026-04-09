@@ -238,7 +238,7 @@ Loop through epics 1 → 50 in order. For each epic:
 18. [x] Animate aggro (rear up, hiss) (50-frame, 12-frame anticipation crouch → 10-frame snap rear up to -45° chest pitch with front legs raised raptorial -110°/-120° + mandibles spread ±30° + antennae erect -25° + wing_case opens -60° to expose underbelly + 4-frame quiver micro-jitter + held pose)
 19. [x] Animate attack lunge (24-frame, chains from aggro_rear at F1 → wind extension F4 → AIRBORNE peak F8 with root displaced +0.30Y +0.10Z and all 6 legs trailing back +45/+60/+75° → contact F14 with mandibles closed and root at peak +0.45Y → recoil drop F18 → settled neutral F24)
 20. [x] Animate attack bite (14-frame, F1 entry raised + open → F4 slamming down → F8 BITE peak with chest +15° mandibles CLOSED head +30° down + all 6 legs in wide brace → F11 hold damage frame → F14 recover open slightly)
-21. Animate hit reaction
+21. [x] Animate hit reaction (4 directional 20-frame actions glitchbug_hit_front/back/left/right — F4 peak recoil with body kicked away from hit direction via root translation + chest pitch ±15° / yaw ±12°, antennae jerk back -25°, mandibles snap open ±25°, all 6 legs splay defensively wider, 12-frame fade back to neutral)
 22. Animate death (legs curl, dissolve)
 23. Animate death variant 2 (explode into glitch fragments)
 24. Build 4 color variants (red venom, blue cold, green tox, purple elite)
