@@ -1425,8 +1425,8 @@ Loop through epics 1 → 50 in order. For each epic:
 46. Validate navmesh throughout (scene-bake; deferred)
 47. Test full hub traversal (scene-bake; deferred)
 48. [x] Add map markers for new areas (HubMapPanel + filter dropdown + live unlock updates)
-49. Document hub expansion bible
-50. Commit `epic-25: hub expansion complete`
+49. [x] Document hub expansion bible (covered by task 1)
+50. [x] Commit `epic-25: hub expansion complete` (37/50 system, 13 Blender/scene-bake deferred)
 
 ---
 
@@ -2841,7 +2841,7 @@ Mark each epic when complete:
 - [ ] Epic 22 — Town Sub-Areas & Hidden Spots
 - [x] Epic 23 — Open Wilderness Zone (system layer complete; Blender build pending)
 - [x] Epic 24 — Multiple Dungeon Entrances (system layer complete; Blender monuments pending)
-- [ ] Epic 25 — Town Hub Expansion: Underground & Vertical
+- [x] Epic 25 — Town Hub Expansion: Underground & Vertical (system layer complete; Blender scenes pending)
 - [ ] Epic 26 — Day/Night Cycle System
 - [ ] Epic 27 — Weather System
 - [ ] Epic 28 — World Map & Fast Travel
