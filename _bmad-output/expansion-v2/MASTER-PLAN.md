@@ -114,7 +114,7 @@ Loop through epics 1 → 50 in order. For each epic:
 8. [x] Design "Compiler" rare set — ornate, geometric
 9. [x] Model + texture Compiler set with emissive accents (43 pieces, dual cyan/violet rune theme)
 10. [x] Design "Kernel" epic set — sleek warrior aesthetic
-11. Model + texture Kernel set with anim'd glow shader
+11. [x] Model + texture Kernel set with anim'd glow shader (39 pieces, sleek warrior + cape + fins)
 12. [x] Design "Architect" legendary set — heroic silhouette
 13. Model + texture Architect set with cape/mantle that simulates
 14. [x] Design "Glitch" cursed/unique set — broken digital corruption look
