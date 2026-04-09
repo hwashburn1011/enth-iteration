@@ -1410,8 +1410,8 @@ Loop through epics 1 → 50 in order. For each epic:
 31. [x] Add iteration memorial plaques (9 alcoves with unseal animation + lore paragraphs)
 32. Build trophy display hall (Blender)
 33. [x] Add trophy mount points (12 mounts: 6 boss heads + 3 rare fish + 3 hidden treasures)
-34. Build wardrobe room
-35. Add wardrobe interaction
+34. Build wardrobe room (Blender)
+35. [x] Add wardrobe interaction (mirror + 8 mannequins + chest + dye station)
 36. Build "hub of mysteries" room with secrets
 37. Add hidden door puzzles
 38. Build hidden treasure room
