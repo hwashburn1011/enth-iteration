@@ -26,6 +26,10 @@ extends Resource
 @export_range(0.5, 2.0) var mandible_scale: float = 1.0
 ## Plate breakup density multiplier (drives procedural plate generator)
 @export_range(0.5, 2.0) var plate_density: float = 1.0
+## Vertex jelly wobble amplitude override in meters (gel_refraction.gdshader
+## uniform). 0 = use shader default 0.012m. Per-size-tier tuning so small
+## variants don't over-wobble and large variants don't under-wobble.
+@export_range(0.0, 0.20) var wobble_amplitude_override: float = 0.0
 ## Glitch crack hue A (the primary identifier color)
 @export var crack_color_a: Color = Color(0.0, 0.95, 0.95)
 ## Glitch crack hue B (the secondary)

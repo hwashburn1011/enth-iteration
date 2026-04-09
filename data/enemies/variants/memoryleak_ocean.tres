@@ -10,6 +10,7 @@ base_enemy_id = &"memoryleak"
 body_scale = 4.0
 mandible_scale = 1.0
 plate_density = 1.6
+wobble_amplitude_override = 0.048
 crack_color_a = Color(0.10, 0.40, 0.85, 1.0)
 crack_color_b = Color(0.55, 0.85, 1.0, 1.0)
 pattern_overlay = &"symbol"
