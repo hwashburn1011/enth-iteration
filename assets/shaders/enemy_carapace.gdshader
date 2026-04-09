@@ -47,6 +47,21 @@ uniform vec3 crack_color : source_color = vec3(0.0, 0.95, 0.95);
 uniform float crack_pulse_speed : hint_range(0.0, 8.0) = 1.5;
 uniform float crack_emission : hint_range(0.0, 6.0) = 2.5;
 
+// === Emissive crawling glitch pattern (Epic 04 task 12) ===
+// A separate emission overlay that uses a noise texture sampled at
+// TIME-scrolled UVs. The noise is masked to faint streaks along the
+// carapace surface and slowly drifts so the player sees the glitch
+// pattern crawling continuously. Not tied to the crack mask — this
+// is a separate, broader visual layer that hits the WHOLE surface
+// occasionally rather than just the seams.
+uniform sampler2D crawl_noise_texture : hint_default_white, repeat_enable;
+uniform float crawl_speed : hint_range(0.0, 4.0) = 0.18;
+uniform vec2 crawl_direction = vec2(0.10, 0.65);
+uniform float crawl_scale : hint_range(0.5, 16.0) = 4.0;
+uniform float crawl_threshold : hint_range(0.0, 1.0) = 0.78;
+uniform float crawl_emission_strength : hint_range(0.0, 8.0) = 3.5;
+uniform vec3 crawl_color : source_color = vec3(0.95, 0.05, 0.55);
+
 void fragment() {
 	vec4 base_sample = texture(albedo_texture, UV);
 	vec3 albedo_col = base_sample.rgb * base_color.rgb;
@@ -85,6 +100,14 @@ void fragment() {
 	float cyan_detect = clamp((base_sample.g + base_sample.b - base_sample.r * 2.0) * 2.0, 0.0, 1.0);
 	float pulse = 0.5 + 0.5 * sin(TIME * crack_pulse_speed);
 	vec3 emission = crack_color * cyan_detect * crack_emission * (0.7 + pulse * 0.3);
+
+	// Crawling glitch pattern overlay — sample noise at TIME-scrolled UVs
+	// and threshold to bright streaks. The streaks crawl across the
+	// surface continuously, sold by the offset that grows with TIME.
+	vec2 crawl_uv = UV * crawl_scale + TIME * crawl_speed * crawl_direction;
+	float crawl_sample = texture(crawl_noise_texture, crawl_uv).r;
+	float crawl_mask = smoothstep(crawl_threshold, 1.0, crawl_sample);
+	emission += crawl_color * crawl_mask * crawl_emission_strength;
 
 	ALBEDO = final_albedo;
 	NORMAL_MAP = nrm * 0.5 + 0.5;
