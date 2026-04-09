@@ -2206,55 +2206,55 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 40 — Companion System (NPCs Join Runs)
 
-1. Design companion bible: 4 companions, abilities, AI
-2. Define companion 1: melee tank
-3. Define companion 2: ranged DPS
-4. Define companion 3: support healer
-5. Define companion 4: utility CC
-6. Build companion AI state machine
-7. Implement companion follow behavior
-8. Implement companion combat behavior
-9. Implement companion ability selection
-10. Implement companion targeting
-11. Add companion HP system
-12. Add companion downed state
-13. Add companion revive interaction
-14. Build companion command UI (attack, defend, use ability)
-15. Add companion loadout customization
-16. Add companion gear slots
-17. Add companion XP system
-18. Add companion level-up
+1. [x] Design companion bible: 4 companions, abilities, AI
+2. [x] Define companion 1: melee tank
+3. [x] Define companion 2: ranged DPS
+4. [x] Define companion 3: support healer
+5. [x] Define companion 4: utility CC
+6. [x] Build companion AI state machine
+7. [x] Implement companion follow behavior
+8. [x] Implement companion combat behavior
+9. [x] Implement companion ability selection
+10. [x] Implement companion targeting
+11. [x] Add companion HP system
+12. [x] Add companion downed state
+13. [x] Add companion revive interaction
+14. [x] Build companion command UI (attack, defend, use ability)
+15. [x] Add companion loadout customization
+16. [x] Add companion gear slots
+17. [x] Add companion XP system
+18. [x] Add companion level-up
 19. Add companion skill tree (small, 15 nodes each)
-20. Build companion summon at dungeon entry
-21. Build companion dismiss
-22. Add companion dialogue during runs
-23. Add companion idle banter
-24. Add companion combat callouts
-25. Add companion victory cheer
-26. Add companion defeat reaction
-27. Build companion-specific quest lines
-28. Add companion gift preferences
-29. Hook companion to NPC affinity system
+20. [x] Build companion summon at dungeon entry
+21. [x] Build companion dismiss
+22. [x] Add companion dialogue during runs
+23. [x] Add companion idle banter
+24. [x] Add companion combat callouts
+25. [x] Add companion victory cheer
+26. [x] Add companion defeat reaction
+27. [x] Build companion-specific quest lines
+28. [x] Add companion gift preferences
+29. [x] Hook companion to NPC affinity system
 30. Add companion-Globbler relationship cutscenes
-31. Add per-companion ultimate ability
-32. Add companion VFX themes
+31. [x] Add per-companion ultimate ability
+32. [x] Add companion VFX themes
 33. Build companion model variants
 34. Add companion gear visual swap
 35. Add companion pet support
-36. Build companion party limit (1 active, future 2-3)
-37. Hook companion to save data
-38. Add companion presence affecting boss fights
-39. Tune companion balance
+36. [x] Build companion party limit (1 active, future 2-3)
+37. [x] Hook companion to save data
+38. [x] Add companion presence affecting boss fights
+39. [x] Tune companion balance
 40. Test full run with each companion
 41. Render hero shots per companion
-42. Add companion lore tab
-43. Add companion achievements
-44. Hook to faction system
+42. [x] Add companion lore tab
+43. [x] Add companion achievements
+44. [x] Hook to faction system
 45. Validate UX
 46. Build companion tutorial
-47. Document companion bible
+47. [x] Document companion bible
 48. Add companion respec
-49. Polish companion AI navigation
+49. [x] Polish companion AI navigation
 50. Commit `epic-40: companion system complete`
 
 ---
