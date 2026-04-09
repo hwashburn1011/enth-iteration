@@ -20,6 +20,8 @@ var _zone_player: AudioStreamPlayer
 var _combat_layer_players: Array[AudioStreamPlayer] = []
 var _boss_player: AudioStreamPlayer
 var _sting_player: AudioStreamPlayer
+var _base_layer_player: AudioStreamPlayer  ## always-on ambient bed (e.g. wilderness wind drone)
+var _weather_layer_player: AudioStreamPlayer  ## situational weather music layer
 var _fade_tweens: Dictionary = {}  ## player_node -> Tween
 
 
@@ -52,6 +54,18 @@ func _setup_players() -> void:
 	_sting_player.name = "StingPlayer"
 	_sting_player.bus = &"Music"
 	add_child(_sting_player)
+
+	_base_layer_player = AudioStreamPlayer.new()
+	_base_layer_player.name = "BaseLayerPlayer"
+	_base_layer_player.bus = &"Music"
+	_base_layer_player.volume_db = -80.0
+	add_child(_base_layer_player)
+
+	_weather_layer_player = AudioStreamPlayer.new()
+	_weather_layer_player.name = "WeatherLayerPlayer"
+	_weather_layer_player.bus = &"Music"
+	_weather_layer_player.volume_db = -80.0
+	add_child(_weather_layer_player)
 
 
 func _subscribe_to_events() -> void:
@@ -164,6 +178,32 @@ func _resolve_boss_track(boss_id: StringName) -> StringName:
 		&"compiler_reborn":     &"boss_compiler_reborn",
 	}
 	return MAP.get(boss_id, &"boss_compiler")
+
+
+# === BASE / WEATHER LAYERS (used by WildernessMusicDirector) ===
+
+func play_base_layer(track_id: StringName, target_db: float = -18.0, fade_s: float = 4.0) -> void:
+	if track_id == &"":
+		_fade_player(_base_layer_player, -80.0, fade_s)
+		return
+	_play_track_on_player(_base_layer_player, track_id)
+	_fade_player(_base_layer_player, target_db, fade_s)
+
+
+func stop_base_layer(fade_s: float = 4.0) -> void:
+	_fade_player(_base_layer_player, -80.0, fade_s)
+
+
+func play_weather_layer(track_id: StringName, target_db: float = -9.0, fade_s: float = 3.0) -> void:
+	if track_id == &"":
+		_fade_player(_weather_layer_player, -80.0, fade_s)
+		return
+	_play_track_on_player(_weather_layer_player, track_id)
+	_fade_player(_weather_layer_player, target_db, fade_s)
+
+
+func stop_weather_layer(fade_s: float = 3.0) -> void:
+	_fade_player(_weather_layer_player, -80.0, fade_s)
 
 
 # === STINGS ===

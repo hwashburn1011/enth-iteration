@@ -15,10 +15,29 @@ const TRACKS: Array = [
 	{"id": &"district_docks",       "title": "Down by the Docks",    "category": &"district",   "length": 90,  "loop": true,  "volume": 0.9},
 	{"id": &"tavern_music",         "title": "Cache's Tavern",       "category": &"interior",   "length": 120, "loop": true,  "volume": 1.0},
 
-	# Wilderness
+	# Wilderness — generic (legacy / fallback)
 	{"id": &"wilderness_day",       "title": "Open Sky",             "category": &"wilderness", "length": 150, "loop": true,  "volume": 1.0},
 	{"id": &"wilderness_night",     "title": "Stars Above",          "category": &"wilderness", "length": 150, "loop": true,  "volume": 1.0},
 	{"id": &"wilderness_storm",     "title": "The Glitch Storm",     "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
+
+	# Wilderness — base wind drone (always-on bed at -18 dB beneath any region track)
+	{"id": &"wild_base_wind_drone", "title": "The Long Wind",        "category": &"wilderness", "length": 240, "loop": true,  "volume": 1.0},
+
+	# Wilderness — region tracks (one per sub-region in the bible)
+	{"id": &"wild_plateau",         "title": "The Edge of Safe",     "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_river",           "title": "Half-Built Bridge",    "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_forest",          "title": "The Listening Tree",   "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_forest_night",    "title": "Choir of the Canopy",  "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_ruins",           "title": "Tilted Spire",         "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_ruins_night",     "title": "Glyphs at Midnight",   "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_cliffs",          "title": "The Four Mouths",      "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+	{"id": &"wild_pasture",         "title": "Where the Deer Come",  "category": &"wilderness", "length": 180, "loop": true,  "volume": 1.0},
+
+	# Wilderness — weather music layers (sit on the weather slot above the base + region)
+	{"id": &"wild_weather_rain",    "title": "Soft Rain Over Steel", "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
+	{"id": &"wild_weather_storm",   "title": "Thunder Falls West",   "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
+	{"id": &"wild_weather_fog",     "title": "Lost in the White",    "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
+	{"id": &"wild_weather_glitch",  "title": "Sky Cracks Open",      "category": &"wilderness", "length": 120, "loop": true,  "volume": 1.0},
 
 	# Dungeon biomes
 	{"id": &"biome_server_room",     "title": "The Server",          "category": &"dungeon",    "length": 180, "loop": true,  "volume": 1.0},
