@@ -305,7 +305,7 @@ Loop through epics 1 → 50 in order. For each epic:
 30. [x] Add reflective surface shader (gel_refraction.gdshader — SCREEN_TEXTURE refraction + Fresnel rim reflection + scrolling internal data overlay + tinted alpha rim cleanup)
 31. [x] Validate readability vs other enemies (2 256x256 black-on-white silhouette renders front/side — front shows tall vertical irregular blob with sagging wider base + narrower upper intent bulge + drip protrusions at base, distinctly different from GlitchBug's wide horizontal triangle with mandibles + 6 splayed legs, passes bestiary distinction rule from the variant bibles)
 32. [x] Build LOD chain (3-tier MemoryLeak LOD chain in MemoryLeak_LP collection — LOD0 3000 tris hero distance, LOD1 1200 tris mid-range Decimate ratio 0.40, LOD2 500 tris distant Decimate ratio 0.167, all share materials, LOD1+LOD2 hidden_render by default for runtime LOD switching)
-33. Tune shader cost on mobile-spec hardware
+33. [x] Tune shader cost on mobile-spec hardware (added quality_level uniform 0..2 to gel_refraction.gdshader — quality 0 skips per-vertex computation entirely AND uses solid tint instead of SCREEN_TEXTURE refraction sample, quality 1 keeps refraction but skips wobble/hit ripple, quality 2 default full quality. Mobile renderer can drop quality_level via material override per-instance)
 34. Add "engorged" elite variant with internal data churn
 35. Add "starved" weak variant with thin form
 36. [x] Implement merge mechanic: 2 leaks combine into bigger threat (LeakMergeController scans group for partners, deterministic ownership via instance ID, HP-gated eligibility, windup interruptible by damage, fires EventBus.leak_merged for spawner)

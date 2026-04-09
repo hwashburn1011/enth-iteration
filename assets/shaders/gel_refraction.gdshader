@@ -49,6 +49,18 @@ uniform float metallic : hint_range(0.0, 1.0) = 0.05;
 uniform float roughness : hint_range(0.0, 1.0) = 0.10;
 uniform float specular : hint_range(0.0, 1.0) = 0.55;
 
+// === Quality level (Epic 05 task 33) ===
+// Mobile-spec hardware can't afford SCREEN_TEXTURE refraction sampling
+// or per-vertex displacement loops. Drop quality_level to disable the
+// most expensive features:
+//   2 = full quality (default — desktop)
+//   1 = skip refraction (use solid tint instead of SCREEN_TEXTURE sample)
+//   0 = also skip vertex wobble + hit ripple (animation jitter only,
+//       no per-vertex computation in vertex())
+// The branch checks are uniform-driven so the GPU shader compiler can
+// dead-code-eliminate the unused paths per material instance.
+uniform int quality_level : hint_range(0, 2) = 2;
+
 // === Subsurface inner glow (Epic 05 task 11) ===
 // Drives Godot's SSS_STRENGTH and SSS_TRANSMITTANCE_COLOR so the body
 // glows softly from inside as if there's an internal light source. The
@@ -83,6 +95,11 @@ uniform float hit_ripple_amplitude : hint_range(0.0, 0.30) = 0.10;
 uniform float hit_ripple_width_m : hint_range(0.05, 1.0) = 0.25;
 
 void vertex() {
+	// Quality 0 = skip per-vertex computation entirely
+	if (quality_level <= 0) {
+		return;
+	}
+
 	// Vertex wobble — displaces each vertex along its normal by a sin
 	// wave driven by world position + TIME. Each vertex gets a different
 	// phase based on its world position so the wobble looks like a
@@ -121,8 +138,14 @@ void fragment() {
 	vec3 view_normal = (VIEW_MATRIX * vec4(NORMAL, 0.0)).xyz;
 	vec2 refract_uv = SCREEN_UV + view_normal.xy * refraction_strength;
 
-	// Sample the background through the gel
-	vec3 refracted = textureLod(screen_texture, refract_uv, 0.0).rgb;
+	// Quality 1+ samples SCREEN_TEXTURE for refraction; quality 0 uses
+	// solid tint (mobile fallback — no expensive screen texture sample)
+	vec3 refracted;
+	if (quality_level >= 1) {
+		refracted = textureLod(screen_texture, refract_uv, 0.0).rgb;
+	} else {
+		refracted = tint_color.rgb * 0.6;  // dark fallback color
+	}
 
 	// Tint the refracted background by the gel's variant color
 	vec3 tinted = mix(refracted, refracted * tint_color.rgb, tint_strength);
