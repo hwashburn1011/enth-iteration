@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "epic": "08",
+  "description": "Per-enemy bestiary text: encounter notes (Epic 08 task 41) + lore flavor text (Epic 08 task 42). Loaded by the Bestiary UI screen at runtime.",
+
+  "crash_daemon": {
+    "display_name": "Crash Daemon",
+    "tagline": "Charges first, dies second.",
+    "encounter_notes": "Watch for the 0.3-second coil — that's your dodge window. Side-step the dash, then strike during the 1.0-second skid recovery. Packs of 3 will coordinate angles, so keep moving and never let two of them flank you simultaneously. The hardest skill check on the basic Daemon is reading the coil tell at low light.",
+    "lore_flavor": "First reported in iteration 14 when the Globbler's runtime caught a stack overflow during a deep loop traversal. The compiler tried to recover, instead it spawned the first Daemon. They have engines now. They run on whatever heat the dungeon gives them.",
+    "designer_brief_one_liner": "Pressure / charger — forces the player to back-pedal then re-engage."
+  },
+
+  "null_pointer": {
+    "display_name": "Null Pointer",
+    "tagline": "It is and isn't.",
+    "encounter_notes": "Don't try to predict where it'll go — react to the cyan flash. The 0.2-second telegraph is small but always there. Once it's charging, hit it with anything ranged: the charge breaks on damage. If you can close to within 3 meters of it, the concentration breaks too. Most lethal in groups of 1, surprisingly — solo Pointers can stack damage uninterrupted.",
+    "lore_flavor": "It exists in the spaces between memory addresses. The cyan glow is what's left of a pointer that doesn't point to anything anymore. It's been searching for a long time.",
+    "designer_brief_one_liner": "Spike / teleport sniper — punishes camping a single sight line."
+  },
+
+  "stack_overflow": {
+    "display_name": "Stack Overflow",
+    "tagline": "Tower. Tower. Tower.",
+    "encounter_notes": "You can't kill it fast — it has 3x the HP of a normal enemy. Read the top cube color to predict the attack: red AOE blast (run perpendicular), cyan slow column (side-step), yellow 5-shot fan (close to melee then circle around). The Stack itself is rooted to its base, which means you can melee it freely once you're past the projectile zone. The trick is committing to the close range.",
+    "lore_flavor": "Some procedures called themselves so many times they became architecture. The cubes are old function frames, stacked because the runtime could never unwind. You are looking at a billion paused conversations.",
+    "designer_brief_one_liner": "Area denial column — fixed danger the player must work around."
+  },
+
+  "race_condition": {
+    "display_name": "Race Condition",
+    "tagline": "There are always more.",
+    "encounter_notes": "Burst-damage them BEFORE they hit 50% HP — the split-prevention window is everything. If a Race Condition splits, you now have two of it, and the children can split again at their 25% mark. A starting pair of two becomes 8 if you let them all reach the threshold. Never use damage-over-time effects on these — you'll trigger the splits instead of preventing them. High burst, high finish.",
+    "lore_flavor": "When two parts of the program disagreed about which one of them was running, this is what reality compromised on. They are everyone who tried to vote and lost.",
+    "designer_brief_one_liner": "Multiplier — punishes slow damage."
+  },
+
+  "deadlock": {
+    "display_name": "Deadlock",
+    "tagline": "You are not allowed to leave.",
+    "encounter_notes": "Once a chain locks, run PERPENDICULAR to the chain direction for 1.5 seconds — the chain breaks and you have a brief safe window. Or close to within 2 meters and melee the Deadlock itself; that also breaks the chain. The dangerous scenario is multiple Deadlocks in the same room: their chains can lock you from different angles simultaneously, making escape impossible. Take them out one at a time from cover.",
+    "lore_flavor": "Two threads each waited for the other to finish. The waiting became the program. Now it casts its waiting onto everyone who passes through.",
+    "designer_brief_one_liner": "Turret / chain anchor — restricts the player's movement options."
+  },
+
+  "buffer_overflow": {
+    "display_name": "Buffer Overflow",
+    "tagline": "It's getting bigger.",
+    "encounter_notes": "Kill it from beyond 6 meters. Or sprint past it before it primes. The size IS the warning — there is no other telegraph. The blast does 60 damage in a 5-meter circle, with linear falloff. You can survive the edge of the blast at full HP but you cannot survive a center hit. NEVER let it reach you at full inflation.",
+    "lore_flavor": "It overflowed once. It got bigger. It overflowed again. It got bigger. By the time you see one, it has been doing this for years. The pop is going to happen no matter what; the only choice is whether you are inside the radius.",
+    "designer_brief_one_liner": "Suicide bomb — ranged kill mandatory or commitment to flee."
+  },
+
+  "phantom_cache": {
+    "display_name": "Phantom Cache",
+    "tagline": "Catch me first.",
+    "encounter_notes": "If you see one, you have 8 seconds. After that the bonus loot is gone. The Phantom flees at 90% of your speed, so you CAN catch it but only by committing — every second you spend on other enemies is a second the Phantom uses to escape. Best strategy: spot it, sprint immediately, kill in one burst. Worst case: it escapes off-screen and despawns with the loot.",
+    "lore_flavor": "The cache layer of the simulation occasionally generates loot that was never going to be claimed by anyone. The cache decided to hold onto its unclaimed gifts. It runs because it remembers what happened to the last one that didn't.",
+    "designer_brief_one_liner": "Loot puzzle — reward for committed pursuit."
+  },
+
+  "iteration_echo": {
+    "display_name": "Iteration Echo",
+    "tagline": "You first.",
+    "encounter_notes": "It has YOUR loadout. Whatever ability you brought, the Echo has it at 60% damage. It dodges in your direction 0.2 seconds after you do, so you can outplay it by faking a dodge then committing a different way. HP is 75% of yours, so it dies if you stay disciplined. The hardest mirror match is the one where you realize your build is bad for fighting itself.",
+    "lore_flavor": "It is what's left of every previous iteration of you that died in this dungeon. The Globbler has been here many times, by many names. The Echo is the average of all of them.",
+    "designer_brief_one_liner": "Mirror match — the player has to play against their own build."
+  }
+}

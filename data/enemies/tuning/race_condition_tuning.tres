@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://race_condition_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"race_condition"
+display_name = "Race Condition"
+base_hp_per_tier = PackedFloat32Array(50, 75, 110, 155, 215)
+base_damage_per_tier = PackedFloat32Array(10, 15, 21, 28, 38)
+move_speed_m_s = 6.5
+aggro_range_m = 16.0
+leash_range_m = 28.0
+rare_drop_chance = 0.05
+unique_drop_id = &"split_shard"
+xp_value_per_tier = PackedInt32Array(8, 14, 22, 32, 45)
+group_composition_presets = [{"enemy_id": &"race_condition", "count": 2, "weight": 1.0}, {"enemy_id": &"phantom_cache", "count": 1, "weight": 0.2}]
+min_floor_tier = 0
+max_floor_tier = -1

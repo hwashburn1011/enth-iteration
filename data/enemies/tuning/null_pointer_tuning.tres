@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://null_pointer_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"null_pointer"
+display_name = "Null Pointer"
+base_hp_per_tier = PackedFloat32Array(40, 60, 85, 120, 165)
+base_damage_per_tier = PackedFloat32Array(20, 30, 42, 58, 80)
+move_speed_m_s = 0.0
+aggro_range_m = 18.0
+leash_range_m = 32.0
+rare_drop_chance = 0.06
+unique_drop_id = &"void_fragment"
+xp_value_per_tier = PackedInt32Array(15, 27, 42, 62, 88)
+group_composition_presets = [{"enemy_id": &"null_pointer", "count": 1, "weight": 1.0}, {"enemy_id": &"deadlock", "count": 1, "weight": 0.5}]
+min_floor_tier = 1
+max_floor_tier = -1
