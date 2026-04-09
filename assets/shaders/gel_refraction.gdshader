@@ -49,6 +49,15 @@ uniform float metallic : hint_range(0.0, 1.0) = 0.05;
 uniform float roughness : hint_range(0.0, 1.0) = 0.10;
 uniform float specular : hint_range(0.0, 1.0) = 0.55;
 
+// === Subsurface inner glow (Epic 05 task 11) ===
+// Drives Godot's SSS_STRENGTH and SSS_TRANSMITTANCE_COLOR so the body
+// glows softly from inside as if there's an internal light source. The
+// glow color is independent of the surface tint so the leak's interior
+// can read as a different hue (default warmer green) than the outer skin.
+uniform float sss_strength : hint_range(0.0, 1.0) = 0.45;
+uniform vec3 sss_color : source_color = vec3(0.40, 1.0, 0.55);
+uniform float sss_brightness : hint_range(0.0, 4.0) = 1.4;
+
 void fragment() {
 	// Compute view-space refraction offset from the surface normal.
 	// Surfaces facing the camera get small offsets; angled surfaces get
@@ -88,4 +97,11 @@ void fragment() {
 	// Faint emission tied to the rim so the leak gently glows at its
 	// silhouette regardless of scene lighting
 	EMISSION = rim_color * fres * 0.25;
+
+	// Subsurface scatter — the body glows from inside as if there's an
+	// internal light source. SSS_STRENGTH drives Godot's built-in
+	// subsurface scatter pass; SSS_TRANSMITTANCE_COLOR tints the
+	// scattered light passing through thin areas of the body.
+	SSS_STRENGTH = sss_strength;
+	SSS_TRANSMITTANCE_COLOR = vec4(sss_color * sss_brightness, 1.0);
 }
