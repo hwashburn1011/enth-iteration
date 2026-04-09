@@ -302,7 +302,7 @@ Loop through epics 1 → 50 in order. For each epic:
 27. [x] Add splat particles on hit (HitSplatEmitter component — one-shot directional GPUParticles3D burst on damage_taken, sprays away from camera with arc gravity, configurable count/speed/lifetime/size)
 28. [x] Add absorb-light shader (absorb_light.gdshader using blend_mul + Fresnel falloff + AbsorbLightField component for sphere placement, slow pulse, fade-out on death)
 29. [x] Implement leak-trail system (LeakTrail component drops SlowZone Area3D footprints as parent moves, max_active_slicks cap, larger final slick on death — pairs with LeakPuddle for hazard climax)
-30. Add reflective surface shader
+30. [x] Add reflective surface shader (gel_refraction.gdshader — SCREEN_TEXTURE refraction + Fresnel rim reflection + scrolling internal data overlay + tinted alpha rim cleanup)
 31. Validate readability vs other enemies
 32. Build LOD chain
 33. Tune shader cost on mobile-spec hardware
