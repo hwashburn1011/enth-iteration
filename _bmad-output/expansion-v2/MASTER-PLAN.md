@@ -368,7 +368,7 @@ Loop through epics 1 → 50 in order. For each epic:
 38. Validate readability and silhouette
 39. Polish material hierarchy
 40. Tune emissive levels under 5 lighting setups
-41. Add scanning eye-laser idle behavior
+41. [x] Add scanning eye-laser idle behavior (RogueProcessEyeScanner component — 2 thin cylinder beam meshes anchored to sensor.PR/PL bones, figure-8 Lissajous sweep pattern via TIME-driven sin curves with 2:1 frequency ratio, raycast clipping so beams visibly stop at walls instead of clipping through, per-sensor phase offset so the two beams cross paths, set_active() toggle for combat state)
 42. Add interrogation pose for story moments
 43. Add "captured" defeated variant for cutscene use
 44. [x] Build hover IK so the unit stays above terrain (HoverTerrainSolver component — single downward raycast each _physics_process, exponential damping smoothing toward ground+target_altitude_m, sin-wave bob layered on top, snap_to_terrain() for spawn/teleport, parent CollisionObject3D excluded from raycast)
