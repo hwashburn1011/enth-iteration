@@ -1103,7 +1103,7 @@ Loop through epics 1 → 50 in order. For each epic:
 3. [x] Add water shore foam
 4. Add water reflection capture
 5. [x] Add water flow direction map
-6. Add water caustics decal
+6. [x] Add water caustics decal
 7. [x] Build glitch displacement shader
 8. [x] Add glitch chromatic aberration
 9. [x] Add glitch color shift bands
@@ -1117,36 +1117,36 @@ Loop through epics 1 → 50 in order. For each epic:
 17. [x] Build energy shield bubble variant
 18. [x] Build portal swirl shader
 19. [x] Build laser beam shader
-20. Build chain lightning shader
-21. Build fire particle shader
+20. [x] Build chain lightning shader
+21. [x] Build fire particle shader
 22. [x] Build ice freeze shader
 23. [x] Build poison overlay shader
 24. [x] Build burn overlay shader
 25. [x] Build wet overlay shader
-26. Build snow accumulation shader
-27. Build rain wetness shader
+26. [x] Build snow accumulation shader
+27. [x] Build rain wetness shader
 28. [x] Build vertex wind shader for vegetation
 29. [x] Build vertex wobble shader for slimes
-30. Build cloth simulation shader for capes
-31. Build hair card shader
-32. Build subsurface skin shader
-33. Build emissive pulse shader
+30. [x] Build cloth simulation shader for capes
+31. [x] Build hair card shader
+32. [x] Build subsurface skin shader
+33. [x] Build emissive pulse shader
 34. [x] Build screen-space damage vignette shader
-35. Build heat distortion shader
-36. Build refraction shader for glass
-37. Build cell-shading toon ramp option
-38. Build outline post-process shader
+35. [x] Build heat distortion shader
+36. [x] Build refraction shader for glass
+37. [x] Build cell-shading toon ramp option
+38. [x] Build outline post-process shader
 39. [x] Build rim-light material shader
-40. Build dust particle shader
-41. Build smoke particle shader
-42. Build energy aura shader
-43. Build mind-control swirl shader
-44. Build slow-mo time distortion shader
-45. Build crit hit chromatic flash shader
-46. Build damage number outline shader
-47. Document every shader in shader bible
+40. [x] Build dust particle shader
+41. [x] Build smoke particle shader
+42. [x] Build energy aura shader
+43. [x] Build mind-control swirl shader
+44. [x] Build slow-mo time distortion shader
+45. [x] Build crit hit chromatic flash shader
+46. [x] Build damage number outline shader
+47. [x] Document every shader in shader bible
 48. Validate all shaders work on midspec hardware
-49. Build shader hot-reload tool for iteration
+49. [x] Build shader hot-reload tool for iteration
 50. Commit `epic-20: shader library complete`
 
 ---
