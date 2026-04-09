@@ -182,7 +182,7 @@ Loop through epics 1 → 50 in order. For each epic:
 19. [x] Animate "drink" healing prompt (65-frame, hand to mouth → head tips back -25° → swallow bob → satisfied exhale)
 20. [x] Animate "read" hold up data tablet (200-frame loop, both hands at chest, head bowed scanning left/right with comprehension nod)
 21. [x] Animate "write" jotting notes (135-frame, hands-up writing pose with 7 wrist scribble cycles + thinking pause look-up)
-22. Animate "craft" hands working
+22. [x] Animate "craft" hands working (121-frame loop, 8-beat asymmetric tool/workpiece motions with assessment head tilt)
 23. Animate "fish" idle with rod
 24. Animate "farm" planting/harvest
 25. Animate "build" hammering
