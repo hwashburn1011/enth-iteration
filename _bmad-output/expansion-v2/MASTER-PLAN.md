@@ -210,7 +210,7 @@ Loop through epics 1 → 50 in order. For each epic:
 47. [x] Animate "sneak" crouched walk (80-frame loop, low body crouch + alternating thigh swing + arms hovering forward at sides)
 48. [x] Animate "trip" comedic stumble (30-frame, foot snag → forward lurch + arms windmilling out → catching balance → recovery)
 49. [x] Build emote wheel UI exposing 12 of these as player-triggered (radial 12-slot Control with mouse-direction hover, hold-to-open + release-to-fire, customizable loadout)
-50. Commit `epic-03: animation library deep pass complete`
+50. [x] Commit `epic-03: animation library deep pass complete` (51 actions in char_globbler_v2_blockout.blend, all keyframed FK with IK constraints muted)
 
 ---
 
