@@ -1305,7 +1305,7 @@ Loop through epics 1 → 50 in order. For each epic:
 36. Optimize draw calls + LODs (scene-bake; deferred)
 37. Bake lighting (scene-bake; deferred)
 38. [x] Add lighting variation per region (24 presets via WildernessLightingDirector)
-39. Add fog volume per region
+39. [x] Add fog volume per region (10 region fog volumes, phase + weather modulated)
 40. Add weather particles
 41. Add wind direction variance
 42. Validate navmesh on slopes and around obstacles (scene-bake; deferred)
