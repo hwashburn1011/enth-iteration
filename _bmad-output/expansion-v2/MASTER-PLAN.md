@@ -316,7 +316,7 @@ Loop through epics 1 → 50 in order. For each epic:
 41. [x] Hook environment puddles to slow player movement (already implemented via SlowZone Area3D primitive — LeakTrail drops SlowZones along the leak's path, each calls actor.apply_speed_modifier(&"slow_zone", strength) on entry and removes on exit)
 42. Add "boss tier" giant leak variant for mid-boss
 43. Render hero shot for trailer
-44. Add ambient SFX hooks (gurgle, drip)
+44. [x] Add ambient SFX hooks (gurgle, drip) (AmbientEnemySfx component — spatialized continuous loop + randomly-timed accent one-shots, dual AudioStreamPlayer3D children, stops on parent died)
 45. Validate against 5 lighting environments
 46. Polish vertex animation seams
 47. Add per-variant glow color matching element
