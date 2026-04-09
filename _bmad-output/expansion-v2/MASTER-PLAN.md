@@ -1284,7 +1284,7 @@ Loop through epics 1 → 50 in order. For each epic:
 15. [x] Build wilderness ambient SFX (6 region beds, slot-aware crossfade mixer)
 16. [x] Build wilderness ambient music (4-layer stack: base+region+combat+weather)
 17. [x] Add weather variation (6 wilderness region profiles + region debounce)
-18. Add day/night cycle
+18. [x] Add day/night cycle (24 wilderness lighting presets, 6 regions × 4 phases)
 19. Build hidden grove side area
 20. Build hidden lake side area
 21. Build hidden cave side area
