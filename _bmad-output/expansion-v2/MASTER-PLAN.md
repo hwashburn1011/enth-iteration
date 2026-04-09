@@ -299,7 +299,7 @@ Loop through epics 1 → 50 in order. For each epic:
 24. Validate vertex jelly shader at all sizes
 25. [x] Add ground puddle decal that grows over time (LeakPuddle component — Decal grows when stationary, shrinks when moving, persists as damaging hazard on death with auto-reparent to world scene)
 26. [x] Add bubbling foam particles (BubblingFoamEmitter component — GPUParticles3D with sphere volume emission, scale curve + alpha gradient for grow-rise-pop life cycle, burst() API for "boiling intensifies" beats)
-27. Add splat particles on hit
+27. [x] Add splat particles on hit (HitSplatEmitter component — one-shot directional GPUParticles3D burst on damage_taken, sprays away from camera with arc gravity, configurable count/speed/lifetime/size)
 28. Add absorb-light shader (darkens nearby area)
 29. Implement leak-trail system (leaves slick on ground that slows player)
 30. Add reflective surface shader
