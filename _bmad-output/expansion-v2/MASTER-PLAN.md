@@ -1306,7 +1306,7 @@ Loop through epics 1 → 50 in order. For each epic:
 37. Bake lighting (scene-bake; deferred)
 38. [x] Add lighting variation per region (24 presets via WildernessLightingDirector)
 39. [x] Add fog volume per region (10 region fog volumes, phase + weather modulated)
-40. Add weather particles
+40. [x] Add weather particles (code-built GPUParticles3D follower for 5 weathers)
 41. Add wind direction variance
 42. Validate navmesh on slopes and around obstacles (scene-bake; deferred)
 43. Add cinematic camera reveal shots
