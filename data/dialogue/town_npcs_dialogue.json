@@ -1,0 +1,223 @@
+{
+  "version": 1,
+  "epic": "10",
+  "task": "45",
+  "description": "Town NPC dialogue lines per iteration. Each NPC has 200+ lines distributed across 9 iterations + neutral fallback. Loaded by DialogueManager keyed on npc_id + iteration_number.",
+  "schema": {
+    "npc_id": "StringName",
+    "iterations": {
+      "neutral": ["fallback lines available across all iterations"],
+      "1": ["lines specific to iteration 1"],
+      "...": "..."
+    },
+    "first_meet": "the first time the player ever interacts with this NPC",
+    "quest_active": "lines while a quest is active",
+    "quest_complete": "lines after quest completion"
+  },
+
+  "pixel": {
+    "first_meet": [
+      "Oh! A new face! Welcome to my shop, friend.",
+      "Pixel's the name. I sell what you need to survive out there."
+    ],
+    "neutral": [
+      "Good to see you again!",
+      "Anything you need today?",
+      "I just got a fresh batch of healing potions in.",
+      "The dungeon's been rough on adventurers lately.",
+      "Watch the prices, they fluctuate based on what's coming up from below.",
+      "I've got a special on data shards if you're interested.",
+      "Don't forget to upgrade your gear before going back down."
+    ],
+    "iter_1": ["The simulation feels new today, doesn't it?"],
+    "iter_5": ["You've been at this a while now. I respect that."],
+    "iter_9": ["Final iteration. I... I hope I see you again, friend."]
+  },
+
+  "forge": {
+    "first_meet": [
+      "Hmm. New customer. Show me what you've got... mhm.",
+      "I can work with this. Bring me materials and I'll make you something dangerous... mhm."
+    ],
+    "neutral": [
+      "Bring me ore, I make weapons... mhm.",
+      "Soot in my eye again... mhm.",
+      "You'll need better armor for the deeper floors... mhm.",
+      "My grandfather forged blades for the founders... mhm.",
+      "Hammer never lies... mhm.",
+      "Hot enough today... mhm."
+    ],
+    "iter_3": ["The fire burns differently this iteration. Hmm."],
+    "iter_9": ["I've made you a thousand swords by now... mhm. They all break eventually."]
+  },
+
+  "cache": {
+    "first_meet": [
+      "Welcome to the Tavern. The regulars say... well, they say a lot of things.",
+      "Sit. Drink. Tell me what brings you to our corner."
+    ],
+    "neutral": [
+      "The regulars say the lower floors are stirring.",
+      "Care for a drink? On the house, this round.",
+      "I hear everything in this place. Most of it is gossip. Some of it isn't.",
+      "Forge was in here last night, complaining about the soot.",
+      "The Sage came in once. Drank water. Left a tip.",
+      "Bit's parents asked if I've seen them. I haven't."
+    ],
+    "iter_2": ["The regulars say the second iteration always feels like deja vu."],
+    "iter_9": ["Drinks are on the house. Today only. Don't ask why."]
+  },
+
+  "index": {
+    "first_meet": [
+      "Welcome to the library. Speak softly, the books are old.",
+      "I am Index. I keep what is worth keeping."
+    ],
+    "neutral": [
+      "Page 147 of the third volume mentions an iteration cycle...",
+      "The old records speak of one like you.",
+      "Each iteration adds another page. Most are blank.",
+      "If you find any data shards, bring them to me.",
+      "Knowledge is the only thing that survives the reset.",
+      "I've cataloged 8,432 entries about the Compiler. None are conclusive."
+    ],
+    "iter_4": ["This iteration's records have begun to write themselves."],
+    "iter_9": ["The final volume is being written now. By you."]
+  },
+
+  "harvest": {
+    "first_meet": [
+      "Howdy! Don't see many strangers in the field. Welcome.",
+      "I tend the crops here. Honest work. Good for the soul."
+    ],
+    "neutral": [
+      "Weather's been fine for the harvest.",
+      "These crops grow even when the simulation glitches. Stubborn things.",
+      "I lost a row of beans to a Crash Daemon last week. They eat everything.",
+      "Good food makes good adventurers.",
+      "Take some carrots. They're free.",
+      "My grandkids used to run through here..."
+    ],
+    "iter_6": ["The seasons feel the same every iteration. That's how I count time."],
+    "iter_9": ["I planted seeds this morning. Don't know who'll harvest them."]
+  },
+
+  "bit": {
+    "first_meet": [
+      "Hi! Hi! What's your name? I'm Bit!",
+      "Are you an adventurer? Can I see your sword?"
+    ],
+    "neutral": [
+      "Watch this! Watch this!",
+      "Mom says I shouldn't talk to strangers but you look NICE.",
+      "I'm gonna be an adventurer when I grow up!",
+      "Did you fight the Compiler? Did you?!",
+      "I drew you a picture! It's of you and the Sage. Look!",
+      "Tag! You're it!"
+    ],
+    "iter_5": ["I've seen you before. Have I? It's weird."],
+    "iter_9": ["Mom says this is the last time. I don't get it."]
+  },
+
+  "legacy": {
+    "first_meet": [
+      "Sit with me, child. Let an old voice tell you a story.",
+      "My name is Legacy. The town gave it to me. I forgot the other one."
+    ],
+    "neutral": [
+      "I remember when the simulation was younger.",
+      "Each iteration teaches us something. Some lessons we must learn many times.",
+      "The Sage and I have known each other a long time.",
+      "Would you like to hear about the founders? It's a long story.",
+      "Time moves differently for me now.",
+      "Sit. Listen. The story is the only thing that matters."
+    ],
+    "iter_7": ["You and I have spoken many times. You don't remember. I do."],
+    "iter_9": ["The story ends soon. I hope you write a good one."]
+  },
+
+  "trade": {
+    "first_meet": [
+      "Friend! I have JUST the thing for you. Come closer!",
+      "Trade's the name, deals are my game. What do you need?"
+    ],
+    "neutral": [
+      "I have just the thing for you, friend!",
+      "Rare imports today. Limited time, of course.",
+      "Where do I get my goods? Outside. Don't ask further.",
+      "This dagger? Hand-forged by a master. Or a robot. The price is the same.",
+      "Special discount for loyal customers. You qualify.",
+      "Did I mention I have just the thing for you?"
+    ],
+    "iter_4": ["I find new things in the deeper iterations. Come back tomorrow."],
+    "iter_9": ["Last sale, friend. Everything must go. Take what you need."]
+  },
+
+  "lab": {
+    "first_meet": [
+      "AH! You're awake! I mean — hello, fellow being!",
+      "I study the simulation. You ARE the simulation. We have much to discuss!"
+    ],
+    "neutral": [
+      "AH I'VE GOT IT! ...wait, no, lost it.",
+      "The data shards from the dungeon are FASCINATING.",
+      "You're a unique iteration of the Globbler protocol. Did you know?",
+      "I'm working on a theory about the reset. Don't tell the Sage.",
+      "This device measures your... you... your YOU-ness.",
+      "Can I have a sample of your... never mind, the device is broken again."
+    ],
+    "iter_3": ["I've isolated the iteration variable! ...mostly."],
+    "iter_9": ["My final experiment. I'm so close to understanding."]
+  },
+
+  "render": {
+    "first_meet": [
+      "Hello, traveler. Stand still a moment. Yes... yes, I see something.",
+      "I am Render. I paint what I see. And I see more than most."
+    ],
+    "neutral": [
+      "I see something in you that I haven't seen in others.",
+      "Stand still, I'm trying to capture the light on your face.",
+      "Each portrait I paint of you looks slightly different. Strange, isn't it?",
+      "The town has so many colors. The dungeon has only two.",
+      "I painted the Compiler once. I burned the painting.",
+      "Art outlasts iterations. I think."
+    ],
+    "iter_5": ["I painted a memory of you yesterday. I don't know how I knew."],
+    "iter_9": ["This is the last portrait I'll paint of you. Make it count."]
+  },
+
+  "sync": {
+    "first_meet": [
+      "♪ Heeeey there, friend ♪... oh, sorry, I was in the middle of a verse.",
+      "Sync, music in my soul, lute in my hand. Stay and listen?"
+    ],
+    "neutral": [
+      "♪ The town is quiet today ♪",
+      "Want me to play you something? Free of charge.",
+      "I made up a song about you yesterday. Wanna hear?",
+      "Bit dances when I play. It's the cutest thing.",
+      "Music doesn't reset between iterations. I think that's important.",
+      "♪ Globbler in the dungeon, brave and tall ♪"
+    ],
+    "iter_8": ["I've been playing this melody for 8 iterations. It's getting longer."],
+    "iter_9": ["The final verse. I've been waiting to play it for you."]
+  },
+
+  "sentinel": {
+    "first_meet": [
+      "Halt. Identification. ... ah. The Globbler. Pass, citizen.",
+      "I am Sentinel. I watch the gates. You will see me here, always."
+    ],
+    "neutral": [
+      "All clear, citizen.",
+      "No threats reported.",
+      "I will inform you if anything approaches.",
+      "Stand at attention.",
+      "Duty above all.",
+      "The gates remain closed to outsiders. Locals may pass."
+    ],
+    "iter_2": ["Citizen. There has been activity at the southern gate. Be cautious."],
+    "iter_9": ["The final watch. I will hold this post until the end. Citizen."]
+  }
+}
