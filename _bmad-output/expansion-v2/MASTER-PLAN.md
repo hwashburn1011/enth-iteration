@@ -2261,15 +2261,15 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 41 — Pet System
 
-1. Design pet bible: 8 pet types, hatching, growth
-2. Design pet 1: Data Sprite (caster pet)
-3. Design pet 2: Patch Dog (loyal melee)
-4. Design pet 3: Bit Cat (stealthy)
-5. Design pet 4: Bug Buddy (corrupted)
-6. Design pet 5: Memory Owl (intelligent)
-7. Design pet 6: Cache Mouse (gathering)
-8. Design pet 7: Echo Bird (flying)
-9. Design pet 8: Crystal Fox (rare)
+1. [x] Design pet bible: 8 pet types, hatching, growth
+2. [x] Design pet 1: Data Sprite (caster pet)
+3. [x] Design pet 2: Patch Dog (loyal melee)
+4. [x] Design pet 3: Bit Cat (stealthy)
+5. [x] Design pet 4: Bug Buddy (corrupted)
+6. [x] Design pet 5: Memory Owl (intelligent)
+7. [x] Design pet 6: Cache Mouse (gathering)
+8. [x] Design pet 7: Echo Bird (flying)
+9. [x] Design pet 8: Crystal Fox (rare)
 10. Sculpt + texture + rig pet 1
 11. Sculpt + texture + rig pet 2
 12. Sculpt + texture + rig pet 3
@@ -2284,32 +2284,32 @@ Loop through epics 1 → 50 in order. For each epic:
 21. Animate pet sleep (each)
 22. Animate pet pet interaction (each)
 23. Animate pet death (each)
-24. Build pet AI follow
-25. Build pet interaction
-26. Build pet feeding system
-27. Build pet happiness state
-28. Build pet egg hatching
-29. Add pet inventory category
-30. Add pet selection UI
-31. Add pet renaming
-32. Add pet bonding system
-33. Build pet hutch in town
-34. Add pet petting interaction with affection bonus
-35. Add pet treat system
-36. Add pet evolution variants
-37. Add pet collection achievement
-38. Add pet showcase area
-39. Hook pet to combat (passive abilities)
-40. Add pet-specific quests
-41. Add pet rare drops
-42. Add pet stat bonuses to player
+24. [x] Build pet AI follow
+25. [x] Build pet interaction
+26. [x] Build pet feeding system
+27. [x] Build pet happiness state
+28. [x] Build pet egg hatching
+29. [x] Add pet inventory category
+30. [x] Add pet selection UI
+31. [x] Add pet renaming
+32. [x] Add pet bonding system
+33. [x] Build pet hutch in town
+34. [x] Add pet petting interaction with affection bonus
+35. [x] Add pet treat system
+36. [x] Add pet evolution variants
+37. [x] Add pet collection achievement
+38. [x] Add pet showcase area
+39. [x] Hook pet to combat (passive abilities)
+40. [x] Add pet-specific quests
+41. [x] Add pet rare drops
+42. [x] Add pet stat bonuses to player
 43. Build pet info card UI
-44. Add pet lore
+44. [x] Add pet lore
 45. Render hero shots
-46. Validate save/load
+46. [x] Validate save/load
 47. Add ambient SFX per pet
-48. Document pet bible
-49. Test full pet collection loop
+48. [x] Document pet bible
+49. [x] Test full pet collection loop
 50. Commit `epic-41: pet system complete`
 
 ---
