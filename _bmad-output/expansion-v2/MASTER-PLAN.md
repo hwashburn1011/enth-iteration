@@ -1994,48 +1994,48 @@ Loop through epics 1 → 50 in order. For each epic:
 6. [x] Build move control
 7. [x] Add building budget/limit per zone
 8. [x] Add buildable zones (player-owned plots)
-9. Build plot purchase NPC
-10. Render decoration icons (50)
-11. Build small decor props ×15
-12. Build medium decor props ×15
-13. Build large decor props ×10
-14. Build interactive decor props ×10
-15. Add decor variation colors
+9. [x] Build plot purchase NPC
+10. [x] Render decoration icons (50)
+11. [x] Build small decor props ×15
+12. [x] Build medium decor props ×15
+13. [x] Build large decor props ×10
+14. [x] Build interactive decor props ×10
+15. [x] Add decor variation colors
 16. [x] Build placement preview ghost
 17. [x] Add valid/invalid placement feedback
 18. [x] Build undo system
 19. [x] Add decor save state
 20. [x] Add decor inventory
-21. Add decor shop NPC
+21. [x] Add decor shop NPC
 22. [x] Build decor crafting (use crafting system)
 23. [x] Add decor unlocks via story
-24. Add seasonal decor sets
+24. [x] Add seasonal decor sets
 25. [x] Build "house" upgrade system for player home
-26. Build interior decoration mode
-27. Build floor/wall painting customization
+26. [x] Build interior decoration mode
+27. [x] Build floor/wall painting customization
 28. [x] Add furniture set collections
 29. [x] Add visitor reactions to decor
 30. [x] Add NPC affinity bonus from decor
 31. [x] Build photo mode for showing off
 32. [x] Add screenshot save
-33. Add lighting placement props
-34. Add ambient effect props (smoke, fire, water)
-35. Hook props to physics (lightweight)
-36. Add validation: don't block paths
-37. Add navmesh rebuild after placement
-38. Build community share placeholder
+33. [x] Add lighting placement props
+34. [x] Add ambient effect props (smoke, fire, water)
+35. [x] Hook props to physics (lightweight)
+36. [x] Add validation: don't block paths
+37. [x] Add navmesh rebuild after placement
+38. [x] Build community share placeholder
 39. [x] Add building achievement triggers
-40. Add decor showcase NPC
-41. Build decor showcase area in town
-42. Render hero shot of decorated home
-43. Add controller support
-44. Validate UX with 100+ placed items
-45. Performance test
+40. [x] Add decor showcase NPC
+41. [x] Build decor showcase area in town
+42. [x] Render hero shot of decorated home
+43. [x] Add controller support
+44. [x] Validate UX with 100+ placed items
+45. [x] Performance test
 46. [x] Document town building bible
-47. Add tutorial flow
+47. [x] Add tutorial flow
 48. [x] Test save/load with decorations
 49. [x] Add per-iteration decoration evolution
-50. Commit `epic-36: town building & decoration complete`
+50. [x] Commit `epic-36: town building & decoration complete`
 
 ---
 
@@ -2852,7 +2852,7 @@ Mark each epic when complete:
 - [x] Epic 33 — Module Library Expansion
 - [x] Epic 34 — Crafting System
 - [x] Epic 35 — Farming & Gathering Systems
-- [ ] Epic 36 — Town Building & Decoration
+- [x] Epic 36 — Town Building & Decoration
 - [ ] Epic 37 — NPC Affinity & Relationships
 - [ ] Epic 38 — Quest System v2
 - [ ] Epic 39 — Faction System
