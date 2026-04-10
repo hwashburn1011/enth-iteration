@@ -239,6 +239,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-08 — Forge + Anvil Hero (carved fire pit + bellows + extruded horn + pritchel + dual PBR bake)
 - [x] Epic V3-R3-09 — Hero Tree (gnarled trunk + 5 extruded branches + bark PBR bake + 6 SSS canopy clusters)
 - [x] Epic V3-R3-10 — Hero Rock Formation (3-peak proximity displacement + carved cracks + granite/lichen PBR bake)
+- [x] Epic V3-R3-11 — Corrupted Data Monolith (carved circuit traces + display ports + broken corner + brass/cyan-glow PBR bake + 4 floating fragments)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
