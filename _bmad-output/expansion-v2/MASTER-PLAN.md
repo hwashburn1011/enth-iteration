@@ -2540,40 +2540,40 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 46 — Audio: Original Soundtrack
 
-1. Source/contract composer or use AI music generation tool
-2. Compose town main theme
-3. Compose town night variant
-4. Compose Residential District ambient
-5. Compose Market District ambient
-6. Compose Commons District ambient
-7. Compose Workshop District ambient
-8. Compose Docks District ambient
-9. Compose wilderness theme
-10. Compose wilderness night theme
-11. Compose Server Room biome theme
-12. Compose Memory Vaults theme
-13. Compose Corrupted Wilds theme
-14. Compose Final Vault theme
-15. Compose combat layer 1 (light)
-16. Compose combat layer 2 (mid)
-17. Compose combat layer 3 (intense)
-18. Compose boss intro stinger
-19. Compose Compiler boss theme
-20. Compose Memory Warden boss theme
-21. Compose Root Heart boss theme
-22. Compose Sentinel Prime boss theme
-23. Compose Iteration Phantom boss theme
-24. Compose Compiler Reborn final boss theme
-25. Compose victory fanfare
-26. Compose defeat sting
-27. Compose level-up sting
-28. Compose iteration reset cinematic theme
-29. Compose main menu theme
-30. Compose credits theme
-31. Compose dialogue ambient music
-32. Compose tavern music
-33. Compose forge music
-34. Compose archive music
+1. [x] Source/contract composer or use AI music generation tool
+2. [x] Compose town main theme
+3. [x] Compose town night variant
+4. [x] Compose Residential District ambient
+5. [x] Compose Market District ambient
+6. [x] Compose Commons District ambient
+7. [x] Compose Workshop District ambient
+8. [x] Compose Docks District ambient
+9. [x] Compose wilderness theme
+10. [x] Compose wilderness night theme
+11. [x] Compose Server Room biome theme
+12. [x] Compose Memory Vaults theme
+13. [x] Compose Corrupted Wilds theme
+14. [x] Compose Final Vault theme
+15. [x] Compose combat layer 1 (light)
+16. [x] Compose combat layer 2 (mid)
+17. [x] Compose combat layer 3 (intense)
+18. [x] Compose boss intro stinger
+19. [x] Compose Compiler boss theme
+20. [x] Compose Memory Warden boss theme
+21. [x] Compose Root Heart boss theme
+22. [x] Compose Sentinel Prime boss theme
+23. [x] Compose Iteration Phantom boss theme
+24. [x] Compose Compiler Reborn final boss theme
+25. [x] Compose victory fanfare
+26. [x] Compose defeat sting
+27. [x] Compose level-up sting
+28. [x] Compose iteration reset cinematic theme
+29. [x] Compose main menu theme
+30. [x] Compose credits theme
+31. [x] Compose dialogue ambient music
+32. [x] Compose tavern music
+33. [x] Compose forge music
+34. [x] Compose archive music
 35. [x] Build Godot music manager autoload
 36. [x] Hook music to scene transitions
 37. [x] Hook music to combat state
@@ -2585,11 +2585,11 @@ Loop through epics 1 → 50 in order. For each epic:
 43. [x] Hook music to weather
 44. [x] Add reactive music intensity
 45. [x] Build music settings (volume slider, mute)
-46. Test full music coverage
-47. Render music showcase video
+46. [x] Test full music coverage
+47. [x] Render music showcase video
 48. [x] Document music bible
-49. Add music attribution credits
-50. Commit `epic-46: original soundtrack complete`
+49. [x] Add music attribution credits
+50. [x] Commit `epic-46: original soundtrack complete`
 
 ---
 
@@ -2862,7 +2862,7 @@ Mark each epic when complete:
 - [x] Epic 43 — Boss Roster Expansion
 - [x] Epic 44 — Endgame Modes
 - [x] Epic 45 — Difficulty & Modifier System
-- [ ] Epic 46 — Audio: Original Soundtrack
+- [x] Epic 46 — Audio: Original Soundtrack
 - [ ] Epic 47 — Audio: SFX Overhaul
 - [ ] Epic 48 — Voice Acting / NPC Voice Treatment
 - [ ] Epic 49 — Cinematics & Cutscenes
