@@ -352,6 +352,46 @@ func _build_town_decorations() -> void:
 				win_light.omni_range = 5.0
 				win_light.omni_attenuation = 2.0
 				r3_building.add_child(win_light)
+				# R5 round-43 fix: the R3 sculpted building GLBs ship without
+				# any collision shape. The original Building1-4 CSG placeholders
+				# WERE the collision providers but they're set visible=false
+				# in Town.tscn (with use_collision implicitly false because the
+				# CSG isn't rendered). Net result: player walks straight through
+				# every building. Caught by the round-43 wall collision survey.
+				# Add a procedural StaticBody3D + BoxShape3D matching the
+				# building's largest mesh AABB.
+				var biggest_size: float = 0.0
+				var biggest_aabb: AABB
+				var bs: Array = [r3_building]
+				while not bs.is_empty():
+					var bn: Node = bs.pop_back()
+					if bn is MeshInstance3D and (bn as MeshInstance3D).mesh:
+						var ab: AABB = (bn as MeshInstance3D).mesh.get_aabb()
+						var sv: float = ab.size.x * ab.size.y * ab.size.z
+						if sv > biggest_size:
+							biggest_size = sv
+							biggest_aabb = ab
+					for bc in bn.get_children():
+						bs.append(bc)
+				if biggest_size > 0.0:
+					var building_scale: Vector3 = (r3_building as Node3D).scale
+					var body: StaticBody3D = StaticBody3D.new()
+					var shape: CollisionShape3D = CollisionShape3D.new()
+					var box: BoxShape3D = BoxShape3D.new()
+					box.size = Vector3(
+						biggest_aabb.size.x * building_scale.x,
+						biggest_aabb.size.y * building_scale.y,
+						biggest_aabb.size.z * building_scale.z
+					)
+					shape.shape = box
+					var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5
+					shape.position = Vector3(
+						center.x * building_scale.x,
+						center.y * building_scale.y,
+						center.z * building_scale.z
+					)
+					body.add_child(shape)
+					r3_building.add_child(body)
 				# Material override on every mesh under the R3 building
 				var bm: StandardMaterial3D = StandardMaterial3D.new()
 				bm.albedo_color = building_mats[i - 1] * 0.4
