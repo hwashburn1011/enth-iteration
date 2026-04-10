@@ -1492,7 +1492,7 @@ Loop through epics 1 → 50 in order. For each epic:
 3. [x] Build cloudy preset
 4. [x] Build rain preset with particle system
 5. [x] Build rain shader (wet ground)
-6. Build rain ripple decals
+6. [x] Build rain ripple decals
 7. [x] Build storm preset (rain + wind + lightning)
 8. [x] Build lightning flash post-process
 9. [x] Build fog preset with dense volumetric
@@ -1514,13 +1514,13 @@ Loop through epics 1 → 50 in order. For each epic:
 25. [x] Add weather-locked content
 26. [x] Add reactive NPC dialogue about weather
 27. [x] Add NPC indoor refuge during storms
-28. Build umbrella prop / accessory
-29. Build cloak weather wear visual
+28. [x] Build umbrella prop / accessory
+29. [x] Build cloak weather wear visual
 30. [x] Hook player wet/dry shader
 31. [x] Add puddles forming during rain
 32. [x] Add fog draw distance reduction
 33. [x] Build sun shafts during clear weather
-34. Build rainbow after rain rare event
+34. [x] Build rainbow after rain rare event
 35. [x] Add weather particle perf budget
 36. [x] Build low-spec fallback weather
 37. [x] Validate weather under day and night
@@ -1528,15 +1528,15 @@ Loop through epics 1 → 50 in order. For each epic:
 39. [x] Hook fishing bonus during certain weather
 40. [x] Add weather radar UI for predictions
 41. [x] Validate weather doesn't break combat readability
-42. Render weather showcase shots
+42. [x] Render weather showcase shots
 43. [x] Add reactive enemy behaviors per weather
 44. [x] Hook weather to save state
-45. Add cinematic storm rolling in
+45. [x] Add cinematic storm rolling in
 46. [x] Validate transitions are smooth
 47. [x] Add ambient lightning for storms
 48. [x] Document weather bible
 49. [x] Performance test all weather types
-50. Commit `epic-27: weather system complete`
+50. [x] Commit `epic-27: weather system complete`
 
 ---
 
@@ -2843,7 +2843,7 @@ Mark each epic when complete:
 - [x] Epic 24 — Multiple Dungeon Entrances
 - [x] Epic 25 — Town Hub Expansion: Underground & Vertical
 - [x] Epic 26 — Day/Night Cycle System
-- [ ] Epic 27 — Weather System
+- [x] Epic 27 — Weather System
 - [ ] Epic 28 — World Map & Fast Travel
 - [ ] Epic 29 — Procedural Dungeon Generation v2
 - [ ] Epic 30 — Massive Dungeon Floors
