@@ -203,7 +203,7 @@ the original spec called for that Round 1 skipped:
 - [x] Epic V3-R2-02 — AI Sage Refinement
 - [x] Epic V3-R2-03 — Class Variants Refinement
 - [x] Epic V3-R2-04 — Companion Refinement
-- [ ] Epic V3-R2-05 — Pet Refinement
+- [x] Epic V3-R2-05 — Pet Refinement
 - [ ] Epic V3-R2-06 — Town Building Kit Refinement
 - [ ] Epic V3-R2-07 — Town District Refinement
 - [ ] Epic V3-R2-08 — Sub-Area Refinement
