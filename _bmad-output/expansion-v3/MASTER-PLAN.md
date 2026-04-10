@@ -218,6 +218,18 @@ the original spec called for that Round 1 skipped:
 - [x] Epic V3-R2-17 — Floor Detailing Refinement
 - [x] Epic V3-R2-18 — Base Enemy Refinement
 - [ ] Epic V3-R2-19 — New Enemy Refinement
+
+## ROUND 3 — Sculpt + Retopo + Bake + Rig + Animate
+
+Round 3 is the critical-feedback fix. Each epic is ONE hero asset done
+end-to-end: bmesh sculpt the high-poly base from a single mesh (NOT
+parented primitives), inset eye sockets and mouth as real geometry,
+multires sculpt details, decimate to retopo low-poly, bake normal map
+high→low, UV unwrap and bake the procedural shader to a 1024² PNG image
+texture, add an armature with bones, parent w/ automatic weights, key
+an idle animation loop, render hero shot + animation.
+
+- [x] Epic V3-R3-01 — Globbler Hero (sculpt + retopo + bake + rig + idle)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
