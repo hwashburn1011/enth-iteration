@@ -365,8 +365,8 @@ func _build_town_decorations() -> void:
 	# Benches near the well
 	_add_prop(geom, "res://assets/models/props/bench.glb", Vector3(-2.5, 0, 1), Vector3(1.5, 1.5, 1.5))
 	_add_prop(geom, "res://assets/models/props/bench.glb", Vector3(2.5, 0, -1.5), Vector3(1.5, 1.5, 1.5))
-	# Decorative bridge on the north path
-	_add_prop(geom, "res://assets/models/props/wooden_bridge.glb", Vector3(0, 0.01, -6), Vector3(2.5, 2.0, 2.5))
+	# R5-04: Decorative R5 sculpted bridge on the north path
+	_add_prop(geom, "res://assets/models/props/wooden_bridge_r5.glb", Vector3(0, 0.01, -6), Vector3(1.6, 1.6, 1.6))
 	_add_prop(geom, "res://assets/models/props/stone_well.glb", Vector3(0, 0, 0), Vector3(1.3, 1.3, 1.3))
 
 	# R4-07: R3 hero forge + anvil near Building1 (the smithy)
