@@ -248,6 +248,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-17 — Hero Dungeon Door (sculpted door + 16 extruded iron studs + 4 carved panels + keyhole + frame + 2-bone hinge rig + swing anim + iron/wood Pointiness PBR bake)
 - [x] Epic V3-R3-18 — Hero Loot Chest (sculpted body+lid 2-mesh w/ carved plank seams + extruded iron bands + lock plate + keyhole + curved cylinder lid + 2-bone hinge rig + 60-frame open anim + dual PBR bake)
 - [x] Epic V3-R3-19 — RogueProcess sculpted enemy (4th & final main enemy) — hooded humanoid w/ extruded cowl + carved deep eye sockets + triple-extruded dagger arms + flared cloak + 9-bone rig + stalking idle anim + dark cloth/iron Pointiness PBR bake; wired into RogueProcess.tscn (BoxMesh placeholder gone)
+- [x] Epic V3-R3-20 — Hero Iron Lantern (carved 4 glass panel recesses + 8 deep vent cutouts + extruded top dome + chain link + bevel + cube_project UV + multires + Pointiness flame emission + iron PBR bake + inner emission flame icosphere + point light)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
