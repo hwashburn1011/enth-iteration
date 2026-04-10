@@ -563,11 +563,15 @@ func _add_roof(building: CSGBox3D) -> void:
 
 
 func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height: float) -> void:
-	# Try to use Blender-made model, fall back to CSG
-	var tree_scene: PackedScene = load("res://assets/models/props/tree_01.glb") as PackedScene
+	## R4-03: load the R3 sculpted hero tree GLB (gnarled cylinder trunk
+	## w/ Z-twist + 5 extruded branches + 6 jittered SSS leaf canopies)
+	## instead of the v2 tree_01.glb placeholder.
+	var tree_scene: PackedScene = load("res://assets/models/props/hero_tree_r3.glb") as PackedScene
 	if tree_scene:
 		var tree: Node3D = tree_scene.instantiate() as Node3D
-		var scale_factor: float = canopy_radius / 1.3  # Base model has radius 1.3
+		# Hero tree base radius is ~0.45m at root flare; scale to match
+		# the requested canopy_radius (caller assumed v2 base radius 1.3).
+		var scale_factor: float = canopy_radius / 1.3
 		tree.scale = Vector3(scale_factor, scale_factor, scale_factor)
 		parent.add_child(tree)
 		tree.global_position = pos
