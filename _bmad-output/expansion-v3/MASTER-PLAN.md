@@ -232,6 +232,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-01 — Globbler Hero (sculpt + retopo + bake + rig + idle)
 - [x] Epic V3-R3-02 — AI Sage Hero (sculpt + robe + hood + beard + cast-spell anim)
 - [x] Epic V3-R3-03 — Compiler Boss (sculpt + spikes + normal-map bake high→low)
+- [x] Epic V3-R3-04 — Glitchbug (insect sculpt + mandibles/antennae + chitin shader + twitch anim)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
