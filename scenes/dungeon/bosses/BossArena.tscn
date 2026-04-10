@@ -1,14 +1,25 @@
-[gd_scene load_steps=5 format=3 uid="uid://bossarena001"]
+[gd_scene load_steps=8 format=3 uid="uid://bossarena001"]
 
 [ext_resource type="Script" path="res://scenes/dungeon/bosses/boss_arena.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/systems/enemy_spawner.gd" id="2_spawner"]
 [ext_resource type="PackedScene" path="res://assets/models/environment/boss_pillar_r3.glb" id="3_pillar_r3"]
+[ext_resource type="Texture2D" uid="uid://nk3pkjkhljd4" path="res://assets/textures/polyhaven/cobblestone_floor_04_diff_1k.png" id="4_floor_diff"]
+[ext_resource type="Texture2D" uid="uid://d005n6f5gn0jd" path="res://assets/textures/polyhaven/cobblestone_floor_04_nor_gl_1k.png" id="5_floor_nor"]
+[ext_resource type="Texture2D" uid="uid://c0bxqwgcn6h6g" path="res://assets/textures/polyhaven/cobblestone_floor_04_rough_1k.png" id="6_floor_rough"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
 size = Vector2(30, 30)
 
 [sub_resource type="StandardMaterial3D" id="Material_floor"]
-albedo_color = Color(0.25, 0.2, 0.3, 1)
+albedo_color = Color(1, 1, 1, 1)
+albedo_texture = ExtResource("4_floor_diff")
+normal_enabled = true
+normal_scale = 1.5
+normal_texture = ExtResource("5_floor_nor")
+roughness_texture = ExtResource("6_floor_rough")
+roughness_texture_channel = 0
+uv1_scale = Vector3(8, 8, 1)
+texture_filter = 4
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_exit"]
 size = Vector3(3.0, 4.0, 1.0)
