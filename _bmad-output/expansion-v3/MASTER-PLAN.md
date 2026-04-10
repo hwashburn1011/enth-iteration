@@ -292,6 +292,7 @@ Round 4 picks up where Round 3 left off — Round 3 built sculpted hero assets a
 - [x] Epic V3-R4-26 — R3 walls in TutorialMovement + TutorialLoot (TutorialMovement 14x14: 8 walls — 2 per side at ±3.5. TutorialLoot 10x10: 4 walls — 1 per side centered. Tutorial sweep started; TutorialDash + TutorialCombat + TutorialPrompt queued for R4-27/28/29.)
 - [x] Epic V3-R4-27 — R3 walls in TutorialDash (6x20m narrow corridor. 1 wall each at the 6m north + south end caps + 3 each on the long 20m east + west walls at z=-7,-1,5. East/west rotated 90° around Y. The dash tutorial now has the same brick + rune-glow architecture as CombatCorridorAmbush.)
 - [x] Epic V3-R4-28 — R3 walls in TutorialCombat + TutorialPrompt (both 12x12m, 8 walls each, 2 per side at ±3. Closes the tutorial sweep — all 5 tutorial scenes now use sculpted R3 brick walls with glowing runes: TutorialMovement (8), TutorialDash (8), TutorialCombat (8), TutorialLoot (4), TutorialPrompt (8) = 36 R3 wall instances across the entire tutorial floor.)
+- [x] Epic V3-R4-29 — R3 town hero building wired into Building2/3/4 slots (added 3 more town_hero_building_r3.glb instances to Town.tscn replacing Building2/3/4 CSGBox3D placeholders. Each rotated differently for variety: Building2 90° Y, Building3 180° Y, Building4 -90° Y. All 4 town building slots (1-4) now spawn the R3 sculpted hero building w/ carved windows + door + extruded gable + Z-zoned PBR.)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
