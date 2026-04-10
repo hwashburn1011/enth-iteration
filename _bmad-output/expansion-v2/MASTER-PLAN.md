@@ -1652,56 +1652,56 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 30 — Massive Dungeon Floors (10x Current Size)
 
-1. Design floor 1 layout (hand-crafted hub-and-spoke)
-2. Design floor 2 layout (hand-crafted multi-level)
-3. Design floor 3 layout (hand-crafted maze)
-4. Design floor 4 layout (hand-crafted boss approach)
-5. Design floor 5 layout (hand-crafted boss arena)
-6. Block out floor 1 in editor at scale
-7. Block out floor 2
-8. Block out floor 3
-9. Block out floor 4
-10. Block out floor 5
-11. Detail floor 1 with biome props
-12. Detail floor 2 with biome props
-13. Detail floor 3 with biome props
-14. Detail floor 4 with biome props
-15. Detail floor 5 with biome props
-16. Add encounter spawners floor 1
-17. Add encounter spawners floor 2
-18. Add encounter spawners floor 3
-19. Add encounter spawners floor 4
-20. Add boss encounter floor 5
-21. Add loot rooms (3 per floor)
-22. Add secret rooms (2 per floor)
-23. Add story rooms (1 per floor)
-24. Add elite encounters (2 per floor)
-25. Add environmental hazards (5 per floor)
-26. Add destructibles
-27. Add lore objects
-28. Add interactive props
-29. Bake lighting per floor
-30. Bake navmesh per floor
-31. Validate every room has navmesh
-32. Validate boss arena from Epic 18 hooks here
-33. Tune floor traversal time to ~10 minutes per floor
-34. Add ambient SFX zones
-35. Add ambient music transitions
-36. Add per-room camera tweaks if needed
-37. Add per-room reflection probes
-38. Optimize draw calls
-39. Build LOD chains
-40. Polish material consistency
-41. Add cinematic camera spots
-42. Validate readability throughout
-43. Test full 5-floor run twice
-44. Render hero shots per floor
-45. Add floor name displays
-46. Add floor difficulty banners
-47. Hook floor save/load
-48. Validate elevator/portal transitions
-49. Document floor design bible
-50. Commit `epic-30: 5 massive floors complete`
+1. [x] Design floor 1 layout (hand-crafted hub-and-spoke)
+2. [x] Design floor 2 layout (hand-crafted multi-level)
+3. [x] Design floor 3 layout (hand-crafted maze)
+4. [x] Design floor 4 layout (hand-crafted boss approach)
+5. [x] Design floor 5 layout (hand-crafted boss arena)
+6. [x] Block out floor 1 in editor at scale
+7. [x] Block out floor 2
+8. [x] Block out floor 3
+9. [x] Block out floor 4
+10. [x] Block out floor 5
+11. [x] Detail floor 1 with biome props
+12. [x] Detail floor 2 with biome props
+13. [x] Detail floor 3 with biome props
+14. [x] Detail floor 4 with biome props
+15. [x] Detail floor 5 with biome props
+16. [x] Add encounter spawners floor 1
+17. [x] Add encounter spawners floor 2
+18. [x] Add encounter spawners floor 3
+19. [x] Add encounter spawners floor 4
+20. [x] Add boss encounter floor 5
+21. [x] Add loot rooms (3 per floor)
+22. [x] Add secret rooms (2 per floor)
+23. [x] Add story rooms (1 per floor)
+24. [x] Add elite encounters (2 per floor)
+25. [x] Add environmental hazards (5 per floor)
+26. [x] Add destructibles
+27. [x] Add lore objects
+28. [x] Add interactive props
+29. [x] Bake lighting per floor
+30. [x] Bake navmesh per floor
+31. [x] Validate every room has navmesh
+32. [x] Validate boss arena from Epic 18 hooks here
+33. [x] Tune floor traversal time to ~10 minutes per floor
+34. [x] Add ambient SFX zones
+35. [x] Add ambient music transitions
+36. [x] Add per-room camera tweaks if needed
+37. [x] Add per-room reflection probes
+38. [x] Optimize draw calls
+39. [x] Build LOD chains
+40. [x] Polish material consistency
+41. [x] Add cinematic camera spots
+42. [x] Validate readability throughout
+43. [x] Test full 5-floor run twice
+44. [x] Render hero shots per floor
+45. [x] Add floor name displays
+46. [x] Add floor difficulty banners
+47. [x] Hook floor save/load
+48. [x] Validate elevator/portal transitions
+49. [x] Document floor design bible
+50. [x] Commit `epic-30: 5 massive floors complete`
 
 ---
 
@@ -2846,7 +2846,7 @@ Mark each epic when complete:
 - [x] Epic 27 — Weather System
 - [x] Epic 28 — World Map & Fast Travel
 - [x] Epic 29 — Procedural Dungeon Generation v2
-- [ ] Epic 30 — Massive Dungeon Floors
+- [x] Epic 30 — Massive Dungeon Floors
 - [ ] Epic 31 — Class System
 - [ ] Epic 32 — Skill Tree
 - [ ] Epic 33 — Module Library Expansion
