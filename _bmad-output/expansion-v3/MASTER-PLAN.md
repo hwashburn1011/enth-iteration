@@ -176,7 +176,7 @@ Each epic follows this structure (adapted to the asset class):
 - [x] Epic V3-18 — Procedural Dungeon Material Variation
 - [x] Epic V3-19 — Base Enemy Texture Pass
 - [x] Epic V3-20 — New Enemy Texture Pass
-- [ ] Epic V3-21 — Original Compiler Boss Texture Pass
+- [x] Epic V3-21 — Original Compiler Boss Texture Pass
 - [ ] Epic V3-22 — New Bosses Texture Pass
 - [ ] Epic V3-23 — Crafting Stations Texture Pass
 - [ ] Epic V3-24 — Crafting Materials & Items Texture Pass
