@@ -1774,7 +1774,7 @@ Loop through epics 1 → 50 in order. For each epic:
 6. [x] Define 50 nodes for Daemon tree
 7. [x] Define 50 nodes for Kernel tree
 8. [x] Build skill tree UI with pan/zoom
-9. Render skill node icons (50 per class = 150 icons)
+9. [x] Render skill node icons (50 per class = 150 icons)
 10. [x] Hook skill point allocation
 11. [x] Add skill point earn from level-up
 12. [x] Add skill point earn from milestones
@@ -1787,35 +1787,35 @@ Loop through epics 1 → 50 in order. For each epic:
 19. [x] Build keystone "major" nodes with bigger effects
 20. [x] Add 5 keystone nodes per class
 21. [x] Implement Compiler nodes 1-25 effects in code
-22. Implement Compiler nodes 26-50 effects in code
+22. [x] Implement Compiler nodes 26-50 effects in code
 23. [x] Implement Daemon nodes 1-25 effects in code
-24. Implement Daemon nodes 26-50 effects in code
+24. [x] Implement Daemon nodes 26-50 effects in code
 25. [x] Implement Kernel nodes 1-25 effects in code
-26. Implement Kernel nodes 26-50 effects in code
+26. [x] Implement Kernel nodes 26-50 effects in code
 27. [x] Hook node effects to combat pipeline
 28. [x] Build skill tree save/load
-29. Validate node math doesn't break balance
-30. Add skill tree open/close anim
-31. Hook skill tree to character menu
-32. Add tree theme per class
-33. Add particle effects on node activation
-34. Add SFX on allocate
-35. Build skill tree tutorial
-36. Add skill tree summary view
+29. [x] Validate node math doesn't break balance
+30. [x] Add skill tree open/close anim
+31. [x] Hook skill tree to character menu
+32. [x] Add tree theme per class
+33. [x] Add particle effects on node activation
+34. [x] Add SFX on allocate
+35. [x] Build skill tree tutorial
+36. [x] Add skill tree summary view
 37. [x] Add build sharing (export/import codes)
 38. [x] Build preset builds (3 per class)
 39. [x] Add preset apply button
-40. Hook achievements to tree completion
-41. Validate UI on different screen sizes
-42. Add controller navigation
-43. Polish tree art
-44. Render hero shot of fully unlocked tree
-45. Test full builds through demo
-46. Validate respec works mid-run
+40. [x] Hook achievements to tree completion
+41. [x] Validate UI on different screen sizes
+42. [x] Add controller navigation
+43. [x] Polish tree art
+44. [x] Render hero shot of fully unlocked tree
+45. [x] Test full builds through demo
+46. [x] Validate respec works mid-run
 47. [x] Add respec cost (compute or item)
-48. Add new node tutorial popup
+48. [x] Add new node tutorial popup
 49. [x] Document skill tree bible
-50. Commit `epic-32: skill tree complete`
+50. [x] Commit `epic-32: skill tree complete`
 
 ---
 
@@ -2848,7 +2848,7 @@ Mark each epic when complete:
 - [x] Epic 29 — Procedural Dungeon Generation v2
 - [x] Epic 30 — Massive Dungeon Floors
 - [x] Epic 31 — Class System
-- [ ] Epic 32 — Skill Tree
+- [x] Epic 32 — Skill Tree
 - [ ] Epic 33 — Module Library Expansion
 - [ ] Epic 34 — Crafting System
 - [ ] Epic 35 — Farming & Gathering Systems
