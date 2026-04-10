@@ -369,6 +369,14 @@ func _build_town_decorations() -> void:
 	_add_prop(geom, "res://assets/models/props/wooden_bridge.glb", Vector3(0, 0.01, -6), Vector3(2.5, 2.0, 2.5))
 	_add_prop(geom, "res://assets/models/props/stone_well.glb", Vector3(0, 0, 0), Vector3(1.3, 1.3, 1.3))
 
+	# R4-07: R3 hero forge + anvil near Building1 (the smithy)
+	_add_prop(geom, "res://assets/models/props/forge_anvil_r3.glb", Vector3(-9, 0, -6), Vector3(1, 1, 1))
+
+	# R4-07: R3 rock formation scatter on the boundary perimeter
+	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(-18, 0, 5), Vector3(1.2, 1.2, 1.2))
+	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(18, 0, -3), Vector3(0.9, 0.9, 0.9))
+	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(-8, 0, 18), Vector3(1.1, 1.1, 1.1))
+
 
 func _add_ground_patches(parent: Node3D) -> void:
 	# Subtle dark/light grass patches for depth — much lower alpha now that
