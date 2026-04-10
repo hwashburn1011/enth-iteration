@@ -194,6 +194,48 @@ func _apply_dungeon_materials() -> void:
 	# lifecycle so clamping here is a no-op for sconces/crystals.)
 
 
+static func _add_solid_collision(prop_root: Node3D) -> void:
+	## R5 round-45: walk a prop tree, find the biggest mesh AABB, and add
+	## a procedural StaticBody3D + BoxShape3D scaled to match. Used for
+	## sculpted dungeon props (server racks, energy crystals) that ship
+	## without collision shapes — the player would otherwise walk through.
+	if prop_root == null:
+		return
+	var biggest_size: float = 0.0
+	var biggest_aabb: AABB
+	var st: Array = [prop_root]
+	while not st.is_empty():
+		var n: Node = st.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var ab: AABB = (n as MeshInstance3D).mesh.get_aabb()
+			var sv: float = ab.size.x * ab.size.y * ab.size.z
+			if sv > biggest_size:
+				biggest_size = sv
+				biggest_aabb = ab
+		for c in n.get_children():
+			st.append(c)
+	if biggest_size <= 0.0:
+		return
+	var prop_scale: Vector3 = prop_root.scale
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = Vector3(
+		biggest_aabb.size.x * prop_scale.x,
+		biggest_aabb.size.y * prop_scale.y,
+		biggest_aabb.size.z * prop_scale.z
+	)
+	shape.shape = box
+	var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5
+	shape.position = Vector3(
+		center.x * prop_scale.x,
+		center.y * prop_scale.y,
+		center.z * prop_scale.z
+	)
+	body.add_child(shape)
+	prop_root.add_child(body)
+
+
 static func _clamp_hot_emissions(root: Node) -> void:
 	## Clamp emission_energy_multiplier on any baked-GLB material that
 	## ships with absurdly high values (lantern flames at 80.0, etc).
@@ -606,6 +648,9 @@ func _add_dungeon_props() -> void:
 					rack.position = Vector3(half_x, 0, randf_range(-half_z * 0.5, half_z * 0.5))
 					rack.rotation.y = -PI / 2.0
 				_apply_prop_texture(rack, prop_mat)
+				# R5 round-45 fix: server racks are solid props but ship without
+				# collision — player walks through them. Add procedural collision.
+				_add_solid_collision(rack)
 
 	# Loot room golden ambient glow
 	if room_type == "loot":
@@ -657,6 +702,8 @@ func _add_dungeon_props() -> void:
 				randf_range(-half_z * 0.7, half_z * 0.7)
 			)
 			# Skip texture override on crystals — they're meant to glow
+			# R5 round-45: add collision so player can't walk through crystals
+			_add_solid_collision(crystal)
 
 	# Corner point lights for all rooms
 	var floor_accent: Color = GameManager.get_meta(&"floor_accent_color", Color(0.08, 0.35, 0.55)) as Color
