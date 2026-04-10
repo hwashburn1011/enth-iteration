@@ -215,7 +215,7 @@ the original spec called for that Round 1 skipped:
 - [x] Epic V3-R2-14 — Memory Vaults Refinement
 - [x] Epic V3-R2-15 — Corrupted Wilds Refinement
 - [x] Epic V3-R2-16 — Boss Sanctum Refinement
-- [ ] Epic V3-R2-17 — Floor Detailing Refinement
+- [x] Epic V3-R2-17 — Floor Detailing Refinement
 - [ ] Epic V3-R2-18 — Base Enemy Refinement
 - [ ] Epic V3-R2-19 — New Enemy Refinement
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
