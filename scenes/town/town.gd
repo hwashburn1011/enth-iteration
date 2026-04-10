@@ -384,16 +384,22 @@ func _build_town_decorations() -> void:
 	_add_prop(geom, "res://assets/models/props/bench.glb", Vector3(2.5, 0, -1.5), Vector3(1.5, 1.5, 1.5))
 	# R5-04: Decorative R5 sculpted bridge on the north path
 	_add_prop(geom, "res://assets/models/props/wooden_bridge_r5.glb", Vector3(0, 0.01, -6), Vector3(1.6, 1.6, 1.6))
-	# R5 fix: load R5 sculpted stone well (R5-05) instead of v2 placeholder
-	_add_prop(geom, "res://assets/models/props/stone_well_r5.glb", Vector3(0, 0, 0), Vector3(1.3, 1.3, 1.3))
+	# R5 round-2 fix: stone_well_r5.glb has broken geometry (AABB 0.05x0.6x0.05
+	# = a stick) and missing texture UIDs. Skip until re-bake. The town already
+	# has the bench around the well anchor point.
+	# _add_prop(geom, "res://assets/models/props/stone_well_r5.glb", ...)
 
 	# R4-07: R3 hero forge + anvil near Building1 (the smithy)
-	_add_prop(geom, "res://assets/models/props/forge_anvil_r3.glb", Vector3(-9, 0, -6), Vector3(1, 1, 1))
+	# R5 round-2 fix: forge_anvil_r3.glb is 2.8x2.5x2.4m at scale 1 — that's
+	# bigger than the player. Drop to 0.4 → ~1m tall.
+	_add_prop(geom, "res://assets/models/props/forge_anvil_r3.glb", Vector3(-9, 0, -6), Vector3(0.4, 0.4, 0.4))
 
 	# R4-07: R3 rock formation scatter on the boundary perimeter
-	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(-18, 0, 5), Vector3(1.2, 1.2, 1.2))
-	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(18, 0, -3), Vector3(0.9, 0.9, 0.9))
-	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(-8, 0, 18), Vector3(1.1, 1.1, 1.1))
+	# R5 round-2 fix: rock_formation_r3 base AABB is 3.7x2.5x3.4m. Drop to
+	# 0.5–0.7 to read as foreground rocks not city-block boulders.
+	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(-18, 0, 5), Vector3(0.65, 0.65, 0.65))
+	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(18, 0, -3), Vector3(0.5, 0.5, 0.5))
+	_add_prop(geom, "res://assets/models/props/rock_formation_r3.glb", Vector3(-8, 0, 18), Vector3(0.6, 0.6, 0.6))
 
 
 func _add_ground_patches(parent: Node3D) -> void:
@@ -595,9 +601,11 @@ func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height:
 	var tree_scene: PackedScene = load("res://assets/models/props/hero_tree_r3.glb") as PackedScene
 	if tree_scene:
 		var tree: Node3D = tree_scene.instantiate() as Node3D
-		# Hero tree base radius is ~0.45m at root flare; scale to match
-		# the requested canopy_radius (caller assumed v2 base radius 1.3).
-		var scale_factor: float = canopy_radius / 1.3
+		# R5 round-2 fix: hero_tree_r3 actual AABB is 2.46x6.42x2.54 — at the
+		# old scale_factor (canopy_radius / 1.3 ≈ 1.0) trees were 6.4m tall
+		# and dwarfed every building. Halve the divisor so trees come in
+		# around 3-3.5m tall (still hero-scale, fits scene better).
+		var scale_factor: float = canopy_radius / 2.6
 		tree.scale = Vector3(scale_factor, scale_factor, scale_factor)
 		parent.add_child(tree)
 		tree.global_position = pos

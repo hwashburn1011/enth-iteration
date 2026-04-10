@@ -145,6 +145,104 @@ func _build_player_extras() -> void:
 			instance.scale = Vector3(0.45, 0.45, 0.45)
 			model.add_child(instance)
 
+	# R5 round-2 fix: GlobblerR3's baked albedo is a placeholder (UV pads of
+	# solid pale blue with no character detail), so the sculpted mesh renders
+	# as a featureless white sphere on screen. Override the surface material
+	# with a glowing teal AI-orb mat and bolt on procedural eyes + visor so
+	# the player reads as a *character* instead of a blob. This is code
+	# polish on the existing sculpt — no re-bake needed.
+	if has_r3_hero:
+		var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		orb_mat.albedo_color = Color(0.18, 0.55, 0.62)
+		orb_mat.emission_enabled = true
+		orb_mat.emission = Color(0.1, 0.55, 0.55)
+		orb_mat.emission_energy_multiplier = 0.6
+		orb_mat.metallic = 0.4
+		orb_mat.metallic_specular = 0.6
+		orb_mat.roughness = 0.35
+		var meshes: Array = []
+		var stack: Array = [model]
+		while not stack.is_empty():
+			var n: Node = stack.pop_back()
+			if n is MeshInstance3D and not (n.name == "HighlightRing"):
+				meshes.append(n)
+			for c in n.get_children():
+				stack.append(c)
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = orb_mat
+		# Procedural cyan eyes — position derived from the largest mesh AABB
+		# so they land on the upper-front of the GlobblerR3 sculpt.
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.85, 1.0, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.4, 0.95, 1.0)
+		eye_mat.emission_energy_multiplier = 3.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var biggest_mesh: MeshInstance3D = null
+		var biggest_size: float = 0.0
+		var s2: Array = [model]
+		while not s2.is_empty():
+			var nn: Node = s2.pop_back()
+			if nn is MeshInstance3D and (nn as MeshInstance3D).mesh and not (nn.name == "HighlightRing"):
+				var a: AABB = (nn as MeshInstance3D).mesh.get_aabb()
+				var sv: float = a.size.x * a.size.y * a.size.z
+				if sv > biggest_size:
+					biggest_size = sv
+					biggest_mesh = nn as MeshInstance3D
+			for c in nn.get_children():
+				s2.append(c)
+		if biggest_mesh != null:
+			# Place eyes as children of the mesh node so the mesh's own
+			# transform offset (often nonzero in sculpted GLBs) is applied.
+			var ab: AABB = biggest_mesh.mesh.get_aabb()
+			var center_x: float = ab.position.x + ab.size.x * 0.5
+			var top_y: float = ab.position.y + ab.size.y * 0.72
+			var front_z: float = ab.position.z + ab.size.z * 0.05
+			var x_off: float = ab.size.x * 0.18
+			var eye_radius: float = max(ab.size.x, ab.size.y) * 0.07
+			for side: float in [-x_off, x_off]:
+				var eye: MeshInstance3D = MeshInstance3D.new()
+				var em: SphereMesh = SphereMesh.new()
+				em.radius = eye_radius
+				em.height = eye_radius * 2.0
+				em.radial_segments = 12
+				em.rings = 6
+				eye.mesh = em
+				eye.position = Vector3(center_x + side, top_y, front_z)
+				eye.material_override = eye_mat
+				biggest_mesh.add_child(eye)
+		# Antenna spike on top — also parented to the biggest mesh so the
+		# sculpt's internal offset is applied. Sized relative to mesh AABB.
+		if biggest_mesh != null:
+			var ab2: AABB = biggest_mesh.mesh.get_aabb()
+			var center_x2: float = ab2.position.x + ab2.size.x * 0.5
+			var center_z: float = ab2.position.z + ab2.size.z * 0.5
+			var mesh_top: float = ab2.position.y + ab2.size.y
+			var ant_h: float = ab2.size.y * 0.35
+			var antenna: MeshInstance3D = MeshInstance3D.new()
+			var ant_mesh: CylinderMesh = CylinderMesh.new()
+			ant_mesh.top_radius = 0.0
+			ant_mesh.bottom_radius = ab2.size.x * 0.04
+			ant_mesh.height = ant_h
+			antenna.mesh = ant_mesh
+			antenna.position = Vector3(center_x2, mesh_top + ant_h * 0.5, center_z)
+			var ant_mat: StandardMaterial3D = StandardMaterial3D.new()
+			ant_mat.albedo_color = Color(0.6, 0.95, 0.9)
+			ant_mat.emission_enabled = true
+			ant_mat.emission = Color(0.3, 0.85, 0.85)
+			ant_mat.emission_energy_multiplier = 1.4
+			antenna.material_override = ant_mat
+			biggest_mesh.add_child(antenna)
+			# Antenna tip — bright bulb
+			var bulb: MeshInstance3D = MeshInstance3D.new()
+			var bulb_mesh: SphereMesh = SphereMesh.new()
+			bulb_mesh.radius = ab2.size.x * 0.07
+			bulb_mesh.height = ab2.size.x * 0.14
+			bulb.mesh = bulb_mesh
+			bulb.position = Vector3(center_x2, mesh_top + ant_h, center_z)
+			bulb.material_override = eye_mat
+			biggest_mesh.add_child(bulb)
+
 	# Shadow disc under player
 	var shadow: MeshInstance3D = MeshInstance3D.new()
 	var shadow_mesh: PlaneMesh = PlaneMesh.new()

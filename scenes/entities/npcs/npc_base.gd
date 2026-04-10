@@ -146,10 +146,17 @@ func _build_npc_visual() -> void:
 				"ai_sage":
 					instance.scale = Vector3(0.18, 0.18, 0.18)
 				"villager_r3":
-					instance.scale = Vector3(0.30, 0.30, 0.30)
+					# R5 round-2 fix: villager mesh AABB is only 1.6x1.48x1.2,
+					# 0.30 made it 48cm — child-size. Bump to 0.6 → ~0.96m.
+					instance.scale = Vector3(0.60, 0.60, 0.60)
 				_:
 					pass
 			_model.add_child(instance)
+			# R5 round-2 fix: R3 baked albedos are placeholder UV pads (solid
+			# pale color, no character detail) so the sculpts render as
+			# featureless blobs. Override material + add procedural eyes so
+			# NPCs read as characters. Code polish on existing sculpts.
+			_polish_r3_npc(instance, npc_id)
 			# Spawn ambient particles + interact indicator (these used to be
 			# skipped because of an early return when the model loaded)
 			match npc_id:
@@ -280,6 +287,84 @@ func _create_interact_indicator() -> void:
 	_indicator_base_y = 2.95
 	_interact_indicator.visible = false
 	add_child(_interact_indicator)
+
+
+func _polish_r3_npc(instance: Node3D, id: String) -> void:
+	## Override material on the R3 sculpt's mesh + add eyes so the
+	## placeholder-textured sphere reads as a character.
+	var body_color: Color
+	var emission: Color
+	var eye_color: Color
+	match id:
+		"ai_sage":
+			body_color = Color(0.42, 0.32, 0.65)  # purple robe
+			emission = Color(0.45, 0.25, 0.7)
+			eye_color = Color(0.95, 0.85, 0.4)  # golden gaze
+		"villager_r3":
+			body_color = Color(0.55, 0.42, 0.3)  # warm brown tunic
+			emission = Color(0.3, 0.2, 0.12)
+			eye_color = Color(0.9, 0.95, 1.0)
+		_:
+			body_color = Color(0.5, 0.5, 0.55)
+			emission = Color(0.3, 0.3, 0.35)
+			eye_color = Color(0.9, 0.9, 1.0)
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = body_color
+	body_mat.emission_enabled = true
+	body_mat.emission = emission
+	body_mat.emission_energy_multiplier = 0.4
+	body_mat.roughness = 0.6
+	body_mat.metallic = 0.1
+	var stack: Array = [instance]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			(n as MeshInstance3D).material_override = body_mat
+		for c in n.get_children():
+			stack.append(c)
+	# Procedural glowing eyes — position derived from the actual mesh AABB
+	# so they land on the upper-front of whatever sculpt we're polishing.
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = eye_color
+	eye_mat.emission_enabled = true
+	eye_mat.emission = eye_color
+	eye_mat.emission_energy_multiplier = 2.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Find the largest mesh and place eyes as children OF that mesh (so the
+	# mesh's own transform offset gets applied automatically). Sculpts often
+	# have their geometry offset inside the GLB rather than centered at the
+	# instance origin (e.g. sage_hero_lp is at (3.0, 1.4, 0)).
+	var biggest_mesh: MeshInstance3D = null
+	var biggest_size: float = 0.0
+	var stack2: Array = [instance]
+	while not stack2.is_empty():
+		var n: Node = stack2.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var a: AABB = (n as MeshInstance3D).mesh.get_aabb()
+			var s: float = a.size.x * a.size.y * a.size.z
+			if s > biggest_size:
+				biggest_size = s
+				biggest_mesh = n as MeshInstance3D
+		for c in n.get_children():
+			stack2.append(c)
+	if biggest_mesh != null:
+		var ab: AABB = biggest_mesh.mesh.get_aabb()
+		var center_x: float = ab.position.x + ab.size.x * 0.5
+		var top_y: float = ab.position.y + ab.size.y * 0.78
+		var front_z: float = ab.position.z + ab.size.z * 0.05
+		var x_off: float = ab.size.x * 0.18
+		var eye_radius: float = max(ab.size.x, ab.size.y) * 0.07
+		for side: float in [-x_off, x_off]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = eye_radius
+			em.height = eye_radius * 2.0
+			em.radial_segments = 12
+			em.rings = 6
+			eye.mesh = em
+			eye.position = Vector3(center_x + side, top_y, front_z)
+			eye.material_override = eye_mat
+			biggest_mesh.add_child(eye)
 
 
 func _add_wisdom_particles() -> void:
