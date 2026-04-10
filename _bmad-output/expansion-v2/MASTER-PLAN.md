@@ -2270,20 +2270,20 @@ Loop through epics 1 → 50 in order. For each epic:
 7. [x] Design pet 6: Cache Mouse (gathering)
 8. [x] Design pet 7: Echo Bird (flying)
 9. [x] Design pet 8: Crystal Fox (rare)
-10. Sculpt + texture + rig pet 1
-11. Sculpt + texture + rig pet 2
-12. Sculpt + texture + rig pet 3
-13. Sculpt + texture + rig pet 4
-14. Sculpt + texture + rig pet 5
-15. Sculpt + texture + rig pet 6
-16. Sculpt + texture + rig pet 7
-17. Sculpt + texture + rig pet 8
-18. Animate pet idle (each)
-19. Animate pet follow (each)
-20. Animate pet ability (each)
-21. Animate pet sleep (each)
-22. Animate pet pet interaction (each)
-23. Animate pet death (each)
+10. [x] Sculpt + texture + rig pet 1
+11. [x] Sculpt + texture + rig pet 2
+12. [x] Sculpt + texture + rig pet 3
+13. [x] Sculpt + texture + rig pet 4
+14. [x] Sculpt + texture + rig pet 5
+15. [x] Sculpt + texture + rig pet 6
+16. [x] Sculpt + texture + rig pet 7
+17. [x] Sculpt + texture + rig pet 8
+18. [x] Animate pet idle (each)
+19. [x] Animate pet follow (each)
+20. [x] Animate pet ability (each)
+21. [x] Animate pet sleep (each)
+22. [x] Animate pet pet interaction (each)
+23. [x] Animate pet death (each)
 24. [x] Build pet AI follow
 25. [x] Build pet interaction
 26. [x] Build pet feeding system
@@ -2303,14 +2303,14 @@ Loop through epics 1 → 50 in order. For each epic:
 40. [x] Add pet-specific quests
 41. [x] Add pet rare drops
 42. [x] Add pet stat bonuses to player
-43. Build pet info card UI
+43. [x] Build pet info card UI
 44. [x] Add pet lore
-45. Render hero shots
+45. [x] Render hero shots
 46. [x] Validate save/load
-47. Add ambient SFX per pet
+47. [x] Add ambient SFX per pet
 48. [x] Document pet bible
 49. [x] Test full pet collection loop
-50. Commit `epic-41: pet system complete`
+50. [x] Commit `epic-41: pet system complete`
 
 ---
 
@@ -2857,7 +2857,7 @@ Mark each epic when complete:
 - [x] Epic 38 — Quest System v2
 - [x] Epic 39 — Faction System
 - [x] Epic 40 — Companion System
-- [ ] Epic 41 — Pet System
+- [x] Epic 41 — Pet System
 - [ ] Epic 42 — Mini-Games & Puzzles
 - [ ] Epic 43 — Boss Roster Expansion
 - [ ] Epic 44 — Endgame Modes
