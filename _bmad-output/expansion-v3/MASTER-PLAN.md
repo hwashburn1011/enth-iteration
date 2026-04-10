@@ -182,7 +182,7 @@ Each epic follows this structure (adapted to the asset class):
 - [x] Epic V3-24 — Crafting Materials & Items Texture Pass
 - [x] Epic V3-25 — Decoration Library Texture Pass
 - [x] Epic V3-26 — Farming & Gathering Props Texture Pass
-- [ ] Epic V3-27 — Skill Tree & Module Icon Texture Pass
+- [x] Epic V3-27 — Skill Tree & Module Icon Texture Pass
 - [ ] Epic V3-28 — VFX Material Library
 - [ ] Epic V3-29 — Lighting Bible Refinement
 - [ ] Epic V3-30 — Steam Marketing Asset Polish
