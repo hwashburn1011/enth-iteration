@@ -147,10 +147,34 @@ func _apply_dungeon_materials() -> void:
 	# Apply to Wall*, Pillar*, and any other unmaterialized CSGBox3D so the
 	# boss arena pillars and other structural elements get the texture too.
 	var wall_mat: ShaderMaterial = _make_wall_material()
+	# R5 round-8: also override the R3 sculpted wall GLB instances
+	# (WallNorthR3a/b, etc.) which are Node3D children — those bypassed the
+	# CSG-only loop and were still wearing the placeholder white R3 albedo.
+	# Plus override Platform* + Ramp* CSG so combat rooms' elevation pads
+	# get a digital tint instead of plain gray.
+	var pad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pad_mat.albedo_color = Color(0.10, 0.16, 0.22)
+	pad_mat.emission_enabled = true
+	pad_mat.emission = Color(0.15, 0.50, 0.65)
+	pad_mat.emission_energy_multiplier = 0.45
+	pad_mat.metallic = 0.55
+	pad_mat.roughness = 0.4
 	for child: Node in geom.get_children():
 		if child is CSGBox3D and (child.name.begins_with("Wall") or child.name.begins_with("Pillar")):
 			(child as CSGBox3D).material = wall_mat
 			(child as CSGBox3D).use_collision = true
+		elif child is CSGBox3D and (child.name.begins_with("Platform") or child.name.begins_with("Ramp")):
+			(child as CSGBox3D).material = pad_mat
+			(child as CSGBox3D).use_collision = true
+		elif child is Node3D and child.name.begins_with("Wall") and "R3" in child.name:
+			# R3 wall sculpt — override material on every mesh inside
+			var st: Array = [child]
+			while not st.is_empty():
+				var nn: Node = st.pop_back()
+				if nn is MeshInstance3D:
+					(nn as MeshInstance3D).material_override = wall_mat
+				for cc in nn.get_children():
+					st.append(cc)
 	# Room type accent strip on top of walls
 	_add_room_type_accent(geom)
 	# Add ceiling and pipes
