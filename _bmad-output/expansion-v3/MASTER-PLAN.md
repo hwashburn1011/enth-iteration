@@ -207,7 +207,7 @@ the original spec called for that Round 1 skipped:
 - [x] Epic V3-R2-06 — Town Building Kit Refinement
 - [x] Epic V3-R2-07 — Town District Refinement
 - [x] Epic V3-R2-08 — Sub-Area Refinement
-- [ ] Epic V3-R2-09 — Wilderness Refinement
+- [x] Epic V3-R2-09 — Wilderness Refinement
 - [ ] Epic V3-R2-10 — Dungeon Entrance Refinement
 
 ---
