@@ -1855,22 +1855,22 @@ Loop through epics 1 → 50 in order. For each epic:
 32. [x] Implement universal modules 5-8
 33. [x] Implement ultimate modules 1-4
 34. [x] Implement ultimate modules 5-8
-35. Render module icons (40)
+35. [x] Render module icons (40)
 36. [x] Add module tooltips
 37. [x] Hook module animations to Globbler rig
 38. [x] Tune module damage/cost balance
 39. [x] Add module SFX hooks
-40. Hook module pickups in dungeons
+40. [x] Hook module pickups in dungeons
 41. [x] Add module rarity tiers
 42. [x] Add modular affix system on modules
 43. [x] Hook to InventoryComponent
-44. Validate module loadout UI
+44. [x] Validate module loadout UI
 45. [x] Add module loadout presets
 46. [x] Hook hotbar to modules
-47. Test full module loadouts in combat
-48. Render showcase video
+47. [x] Test full module loadouts in combat
+48. [x] Render showcase video
 49. [x] Document module bible
-50. Commit `epic-33: 40 modules complete`
+50. [x] Commit `epic-33: 40 modules complete`
 
 ---
 
@@ -2849,7 +2849,7 @@ Mark each epic when complete:
 - [x] Epic 30 — Massive Dungeon Floors
 - [x] Epic 31 — Class System
 - [x] Epic 32 — Skill Tree
-- [ ] Epic 33 — Module Library Expansion
+- [x] Epic 33 — Module Library Expansion
 - [ ] Epic 34 — Crafting System
 - [ ] Epic 35 — Farming & Gathering Systems
 - [ ] Epic 36 — Town Building & Decoration
