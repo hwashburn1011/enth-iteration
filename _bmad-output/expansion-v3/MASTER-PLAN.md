@@ -163,7 +163,7 @@ Each epic follows this structure (adapted to the asset class):
 - [x] Epic V3-05 — Pet Sculpts Texture Pass
 - [x] Epic V3-06 — Town Building Kit Texture Pass
 - [x] Epic V3-07 — Town District Refinement
-- [ ] Epic V3-08 — Sub-Area Detailing
+- [x] Epic V3-08 — Sub-Area Detailing
 - [ ] Epic V3-09 — Wilderness Zone Texture Pass
 - [ ] Epic V3-10 — Dungeon Entrance Hero Polish
 - [ ] Epic V3-11 — Hub Expansion Interior Texturing
