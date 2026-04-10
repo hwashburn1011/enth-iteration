@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" path="res://assets/models/characters/globbler_r3.glb" id="20_globbler_r3"]
 [ext_resource type="PackedScene" path="res://assets/models/props/hero_sword_r3.glb" id="21_hero_sword_r3"]
+[ext_resource type="PackedScene" path="res://assets/models/props/hero_shield_r4.glb" id="22_hero_shield_r4"]
 [ext_resource type="Script" path="res://scenes/entities/player/player.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/state_machine.gd" id="2_sm"]
 [ext_resource type="Script" path="res://scripts/state_machines/player/player_idle_state.gd" id="3_idle"]
@@ -234,6 +235,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 
 [node name="HeroSwordR3" parent="Model" instance=ExtResource("21_hero_sword_r3")]
 transform = Transform3D(0.5, 0, 0, 0, 0.866025, 0.5, 0, -0.5, 0.866025, 0.45, 0.85, 0.15)
+
+[node name="HeroShieldR4" parent="Model" instance=ExtResource("22_hero_shield_r4")]
+transform = Transform3D(0.7, 0, 0, 0, 0.7, 0, 0, 0, 0.7, -0.45, 0.85, 0.15)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Model"]
 visible = false
