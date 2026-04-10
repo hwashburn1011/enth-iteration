@@ -236,6 +236,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-05 — Memory Leak (slime sculpt + 4 eyes + drips + SSS shader + ooze pulse anim)
 - [x] Epic V3-R3-06 — Town Hero Building (single-mesh carved windows/door/gable + Z-zoned PBR bake)
 - [x] Epic V3-R3-07 — Dungeon Wall Hero (carved brick joints + 3 glowing runes + sconce + cracked top + wet-stone PBR bake)
+- [x] Epic V3-R3-08 — Forge + Anvil Hero (carved fire pit + bellows + extruded horn + pritchel + dual PBR bake)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
