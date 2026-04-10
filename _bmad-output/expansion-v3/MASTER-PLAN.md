@@ -300,6 +300,7 @@ Round 4 picks up where Round 3 left off — Round 3 built sculpted hero assets a
 R3 = sculpted assets. R4 = integration. R5 = polish and variety. The R4 receipts pointed to bridge, banner, gem-loot, hero NPC variants, particle FX, combat animations as the gaps. R5 picks them off one at a time.
 
 - [x] Epic V3-R5-01 — Hero treasure pile sculpted (NEW R5 sculpt). Boss-arena treasure mound: icosphere base flattened on bottom, per-vertex coin-stack noise displacement, 8 coin disc bumps extruded from the surface, 3 gem inset slots carved on top. Gold Pointiness shader (coin ridges polish to brighter metallic vs darker recessed gold) + warm 4.0 emission strength. Baked albedo + normal high→low. 3 separate gem icospheres on top (red/green/blue glass shaders w/ transmission + 5.0 emission) sitting in the carved slots + a Cycles point light at center for the treasure glow. GLB w/ all 4 meshes — mound + 3 gems.)
+- [x] Epic V3-R5-02 — Treasure pile wired into BossArena.tscn (added treasure_pile_r5.glb instance at the BossArena center scaled 1.5. Sits at (0,0,0) — the BossSpawnPoint position — so when the player defeats the boss the corpse-area animation reveals the treasure pile underneath. The 4 R3 boss pillars from R3-23 frame the treasure visually.)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
