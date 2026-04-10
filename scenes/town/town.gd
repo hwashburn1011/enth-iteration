@@ -329,11 +329,14 @@ func _build_town_decorations() -> void:
 		# (same bug as the character sculpts) so the buildings render as
 		# featureless white blocks. Use distinct hues per building so the
 		# town reads as separate structures.
+		# R5 round-6: shift building hues into the digital palette so they
+		# stop reading as warm earthtone medieval houses. Same distinct
+		# silhouettes but blue / teal / violet / amber data-block flavors.
 		var building_mats: Array[Color] = [
-			Color(0.45, 0.32, 0.22),  # warm brown — smithy
-			Color(0.32, 0.42, 0.55),  # blue-grey — workshop
-			Color(0.55, 0.42, 0.30),  # tan — cottage
-			Color(0.4, 0.35, 0.5),    # purple-grey — tavern
+			Color(0.18, 0.40, 0.55),  # cyan smithy
+			Color(0.40, 0.20, 0.55),  # violet workshop
+			Color(0.55, 0.30, 0.10),  # amber cottage
+			Color(0.15, 0.55, 0.45),  # teal tavern
 		]
 		for i: int in range(1, 5):
 			var r3_building: Node = geom.get_node_or_null("Building%dR3" % i)
@@ -347,12 +350,12 @@ func _build_town_decorations() -> void:
 				r3_building.add_child(win_light)
 				# Material override on every mesh under the R3 building
 				var bm: StandardMaterial3D = StandardMaterial3D.new()
-				bm.albedo_color = building_mats[i - 1]
-				bm.roughness = 0.75
-				bm.metallic = 0.05
+				bm.albedo_color = building_mats[i - 1] * 0.4
+				bm.roughness = 0.5
+				bm.metallic = 0.4
 				bm.emission_enabled = true
-				bm.emission = building_mats[i - 1] * 0.3
-				bm.emission_energy_multiplier = 0.15
+				bm.emission = building_mats[i - 1]
+				bm.emission_energy_multiplier = 0.55
 				# Force opaque — some R3 building meshes have alpha mode set
 				bm.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 				bm.cull_mode = BaseMaterial3D.CULL_BACK
@@ -524,10 +527,14 @@ func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) 
 func _apply_prop_material_by_path(root: Node, path: String) -> void:
 	## Pick a material from the path stem and override every mesh in the
 	## prop tree, skipping meshes that have emissive (glow) materials.
+	## R5 round-6: forge/anvil/rock/well now route to digital theme materials
+	## (metallic dark base + cyan emission) so they fit the cyber world.
 	var stem: String = path.get_file().get_basename().to_lower()
 	var mat: StandardMaterial3D
-	if "well" in stem or "stone" in stem:
+	if "well" in stem or "stone" in stem or "rock" in stem:
 		mat = _make_stone_material()
+	elif "anvil" in stem or "forge" in stem:
+		mat = _make_data_metal_material()
 	elif "bridge" in stem or "barrel" in stem or "crate" in stem or "bench" in stem or "signpost" in stem:
 		mat = _make_wood_material()
 	elif "bush" in stem or "flower" in stem or "pine" in stem:
@@ -553,25 +560,30 @@ func _apply_prop_material_by_path(root: Node, path: String) -> void:
 
 
 static func _make_wood_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 weathered_planks PBR (R3-27: replaces the previous
-	## procedural Perlin grain — now uses photoscanned diffuse + normal_gl + roughness).
+	## R5 round-6: weathered planks photoscanned PBR is off-theme. Return a
+	## warm amber emissive panel — reads as a "data plank" or holographic
+	## construct rather than real wood. Used for bridges, benches, signposts.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/weathered_planks_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/weathered_planks_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/weathered_planks_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.2
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = false
-	mat.uv1_scale = Vector3(1.0, 0.5, 1.0)
+	mat.albedo_color = Color(0.22, 0.16, 0.10)
+	mat.emission_enabled = true
+	mat.emission = Color(0.65, 0.40, 0.10)
+	mat.emission_energy_multiplier = 0.45
+	mat.metallic = 0.3
+	mat.roughness = 0.55
+	return mat
+
+
+static func _make_data_metal_material() -> StandardMaterial3D:
+	## R5 round-6: digital "data metal" surface — dark metallic base with
+	## bright cyan emission edges. Used for forge/anvil props that should
+	## read as compute hardware rather than blacksmith tools.
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.08, 0.12, 0.18)
+	mat.emission_enabled = true
+	mat.emission = Color(0.15, 0.55, 0.70)
+	mat.emission_energy_multiplier = 0.55
+	mat.metallic = 0.75
+	mat.roughness = 0.35
 	return mat
 
 
@@ -924,26 +936,17 @@ static func _make_foliage_material() -> StandardMaterial3D:
 
 
 static func _make_stone_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 rough_block_wall PBR (R3-26: replaces the previous
-	## procedural cellular stone — now uses photoscanned diffuse + normal_gl
-	## + roughness from R3-21's downloaded set, reused via res:// path).
+	## R5 round-6: photoscanned rough_block_wall is off-theme. Return a
+	## dark "data crystal" material — deep blue base with violet emission
+	## that fits the simulation world. Used for stone wells, rock formations,
+	## boundary walls.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/rough_block_wall_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/rough_block_wall_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/rough_block_wall_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.4
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
+	mat.albedo_color = Color(0.10, 0.12, 0.20)
+	mat.emission_enabled = true
+	mat.emission = Color(0.30, 0.20, 0.55)
+	mat.emission_energy_multiplier = 0.4
+	mat.metallic = 0.5
+	mat.roughness = 0.45
 	return mat
 
 
