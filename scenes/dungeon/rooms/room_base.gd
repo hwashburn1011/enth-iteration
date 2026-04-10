@@ -160,65 +160,28 @@ func _apply_dungeon_materials() -> void:
 
 
 static func _make_floor_material() -> StandardMaterial3D:
-	## Build a richly-textured sci-fi floor material from procedural noise.
-	## Uses two FastNoiseLite layers (large panels + fine grain) and a
-	## normal map derived from the same noise so the surface has visible
-	## bumps and seams instead of being a flat dark plate.
+	## Real Polyhaven CC0 cobblestone_floor_04 PBR (R3-29: replaces the previous
+	## procedural cellular sci-fi floor — now uses photoscanned diffuse +
+	## normal_gl + roughness, with ambient cyan emission preserved for that
+	## "dungeon glow under your feet" mood).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.55, 0.62, 0.78)
-	# Albedo: panel-grid cellular noise — use Manhattan + return-distance for
-	# crisp panel seams, higher frequency for more cells per square meter
-	var panel_noise: FastNoiseLite = FastNoiseLite.new()
-	panel_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	panel_noise.frequency = 0.18
-	panel_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
-	panel_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	panel_noise.cellular_jitter = 0.45
-	var panel_tex: NoiseTexture2D = NoiseTexture2D.new()
-	panel_tex.noise = panel_noise
-	panel_tex.width = 1024
-	panel_tex.height = 1024
-	panel_tex.seamless = true
-	panel_tex.color_ramp = _build_floor_ramp()
-	mat.albedo_texture = panel_tex
-	# Detail noise on top — fine surface variation
-	var detail_noise: FastNoiseLite = FastNoiseLite.new()
-	detail_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	detail_noise.frequency = 0.6
-	var detail_tex: NoiseTexture2D = NoiseTexture2D.new()
-	detail_tex.noise = detail_noise
-	detail_tex.width = 256
-	detail_tex.height = 256
-	detail_tex.seamless = true
-	mat.detail_enabled = true
-	mat.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MIX
-	mat.detail_albedo = detail_tex
-	mat.detail_mask = detail_tex
-	# Normal map from the same panel noise (Godot's NoiseTexture2D supports as_normal_map)
-	var normal_noise: FastNoiseLite = FastNoiseLite.new()
-	normal_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	normal_noise.frequency = 0.18
-	normal_noise.cellular_jitter = 0.45
-	normal_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
-	normal_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var normal_tex: NoiseTexture2D = NoiseTexture2D.new()
-	normal_tex.noise = normal_noise
-	normal_tex.width = 1024
-	normal_tex.height = 1024
-	normal_tex.seamless = true
-	normal_tex.as_normal_map = true
-	normal_tex.bump_strength = 8.0
-	mat.normal_enabled = true
-	mat.normal_texture = normal_tex
-	mat.normal_scale = 1.6
-	# Triplanar so the texture wraps without UV stretching
+	var diff: Texture2D = load("res://assets/textures/polyhaven/cobblestone_floor_04_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/cobblestone_floor_04_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/cobblestone_floor_04_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.6
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.4, 0.4, 0.4)
-	# Sci-fi metallic-ish surface
-	mat.metallic = 0.55
-	mat.metallic_specular = 0.5
-	mat.roughness = 0.55
-	# Subtle ambient emission so the floor reads even in dim rooms
+	# Subtle cyan ambient emission so the floor reads even in dim rooms
 	mat.emission_enabled = true
 	mat.emission = Color(0.06, 0.10, 0.18)
 	mat.emission_energy_multiplier = 0.12
@@ -237,47 +200,25 @@ static func _build_floor_ramp() -> Gradient:
 
 
 static func _make_wall_material() -> StandardMaterial3D:
-	## Brushed-metal sci-fi wall material with procedural normal detail.
+	## Real Polyhaven CC0 castle_brick_07 PBR (R3-29: replaces the previous
+	## procedural Perlin streak + cellular bump). Subtle blue emission preserved.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.28, 0.30, 0.38)
-	# Streaky brushed-metal albedo
-	var streak_noise: FastNoiseLite = FastNoiseLite.new()
-	streak_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	streak_noise.frequency = 0.04
-	streak_noise.fractal_octaves = 4
-	var streak_tex: NoiseTexture2D = NoiseTexture2D.new()
-	streak_tex.noise = streak_noise
-	streak_tex.width = 512
-	streak_tex.height = 512
-	streak_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.13, 0.15, 0.22))
-	ramp.set_color(1, Color(0.38, 0.42, 0.52))
-	ramp.add_point(0.6, Color(0.24, 0.28, 0.38))
-	streak_tex.color_ramp = ramp
-	mat.albedo_texture = streak_tex
-	# Bumpy normal from cellular noise
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.12
-	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN_SQUARED
-	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 5.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.8
-	# Triplanar mapping so corners blend cleanly
+	var diff: Texture2D = load("res://assets/textures/polyhaven/castle_brick_07_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/castle_brick_07_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/castle_brick_07_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.4
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
-	mat.metallic = 0.7
-	mat.metallic_specular = 0.6
-	mat.roughness = 0.45
 	mat.emission_enabled = true
 	mat.emission = Color(0.04, 0.07, 0.13)
 	mat.emission_energy_multiplier = 0.08
@@ -696,84 +637,55 @@ func _apply_prop_texture(root: Node, prop_mat: StandardMaterial3D) -> void:
 
 
 static func _make_ceiling_material() -> StandardMaterial3D:
-	## Darker version of the floor panel grid for the ceiling — keeps the
-	## panels readable but doesn't compete with the floor visually.
+	## Real Polyhaven CC0 metal_plate PBR (R3-29: replaces the previous procedural
+	## cellular panel grid). Tinted darker via uv1_scale + base color so the
+	## ceiling reads as panels but doesn't compete with the floor visually.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.18, 0.20, 0.26)
-	var panel_noise: FastNoiseLite = FastNoiseLite.new()
-	panel_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	panel_noise.frequency = 0.14
-	panel_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
-	panel_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	panel_noise.cellular_jitter = 0.5
-	var panel_tex: NoiseTexture2D = NoiseTexture2D.new()
-	panel_tex.noise = panel_noise
-	panel_tex.width = 512
-	panel_tex.height = 512
-	panel_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.06, 0.08, 0.12))
-	ramp.set_color(1, Color(0.22, 0.26, 0.34))
-	ramp.add_point(0.5, Color(0.12, 0.14, 0.20))
-	panel_tex.color_ramp = ramp
-	mat.albedo_texture = panel_tex
-	# Bumpy normal
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = panel_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 6.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 1.2
+	var diff: Texture2D = load("res://assets/textures/polyhaven/metal_plate_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/metal_plate_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/metal_plate_rough_1k.png") as Texture2D
+	var metal: Texture2D = load("res://assets/textures/polyhaven/metal_plate_metal_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.2
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	if metal:
+		mat.metallic_texture = metal
+		mat.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		mat.metallic = 1.0
+	mat.albedo_color = Color(0.6, 0.65, 0.75)  # tint cooler for ceiling reads
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
-	mat.metallic = 0.5
-	mat.metallic_specular = 0.4
-	mat.roughness = 0.7
 	return mat
 
 
 static func _make_tech_prop_material() -> StandardMaterial3D:
-	## Brushed dark metal for sci-fi props (server racks, pipes, terminals).
+	## Real Polyhaven CC0 metal_plate PBR (R3-29: replaces the previous procedural
+	## brushed-metal). Used for server racks, pipes, terminals, doors.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.32, 0.36, 0.44)
-	# Albedo: Perlin streaks
-	var streak_noise: FastNoiseLite = FastNoiseLite.new()
-	streak_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	streak_noise.frequency = 0.5
-	streak_noise.fractal_octaves = 4
-	var streak_tex: NoiseTexture2D = NoiseTexture2D.new()
-	streak_tex.noise = streak_noise
-	streak_tex.width = 256
-	streak_tex.height = 512  # vertical streaks
-	streak_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.16, 0.18, 0.24))
-	ramp.set_color(1, Color(0.50, 0.56, 0.66))
-	ramp.add_point(0.5, Color(0.30, 0.34, 0.42))
-	streak_tex.color_ramp = ramp
-	mat.albedo_texture = streak_tex
-	# Bumpy normal
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.6
-	bump_noise.cellular_jitter = 0.6
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 256
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 4.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.8
+	var diff: Texture2D = load("res://assets/textures/polyhaven/metal_plate_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/metal_plate_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/metal_plate_rough_1k.png") as Texture2D
+	var metal: Texture2D = load("res://assets/textures/polyhaven/metal_plate_metal_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.0
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	if metal:
+		mat.metallic_texture = metal
+		mat.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		mat.metallic = 1.0
+	mat.albedo_color = Color(1, 1, 1)
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.8, 0.8, 0.8)
-	mat.metallic = 0.75
-	mat.metallic_specular = 0.6
-	mat.roughness = 0.42
 	return mat
