@@ -23,9 +23,15 @@ func _ready() -> void:
 
 
 func _build_chest_visual() -> void:
-	var glb: PackedScene = load("res://assets/models/props/loot_chest.glb") as PackedScene
+	## R4-01: load the R3 sculpted loot chest GLB (single-mesh body + lid w/
+	## carved plank seams + extruded iron bands + 2-bone hinge rig + open anim
+	## + dual PBR bake) instead of the v2 placeholder. Clear the BoxMesh
+	## fallback so we don't render a placeholder cube on top of the R3 model.
+	var glb: PackedScene = load("res://assets/models/props/loot_chest_r3.glb") as PackedScene
 	if glb and _mesh:
+		_mesh.mesh = null  # drop the BoxMesh placeholder
 		var instance: Node3D = glb.instantiate() as Node3D
+		instance.scale = Vector3(0.6, 0.6, 0.6)
 		_mesh.add_child(instance)
 		# Add a subtle glow light
 		var light: OmniLight3D = OmniLight3D.new()

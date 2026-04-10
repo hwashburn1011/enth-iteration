@@ -259,6 +259,12 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-28 — Polyhaven bark + foliage + dirt PBR (downloaded bark_brown_02, aerial_grass_rock, brown_mud_03 — three more 1k CC0 PBR sets. Replaced town.gd::_make_bark_material() / _make_foliage_material() / _make_dirt_path_material() — every remaining FastNoiseLite procedural in town.gd is now real photoscanned PBR. The town texture pipeline is 100% photogrammetry: ground/dirt paths/buildings/walls/boundaries/roofs/wood props/tree bark/foliage clusters.)
 - [x] Epic V3-R3-29 — Polyhaven PBR for dungeon room base (downloaded metal_plate w/ proper metallic map ~14.5 MB, copied castle_brick_07 into res://. Replaced ALL FOUR procedural functions in scenes/dungeon/rooms/room_base.gd: _make_floor_material (cobblestone), _make_wall_material (castle_brick), _make_ceiling_material (metal_plate w/ darker tint), _make_tech_prop_material (metal_plate w/ proper metallic_texture). Both the Town AND Dungeon texture pipelines are now 100% Polyhaven photogrammetry — every primary surface in every gameplay scene.)
 - [x] Epic V3-R3-30 — R3 Capstone Receipts (R3-RECEIPTS.md). Closes Round 3. Comprehensive proof package documenting all 30 epics, the critical-review checklist with every line struck through, file inventory, validation log, and the complete pipeline from Polyhaven CDN → curl → Blender Image Texture nodes → cube_project UV → bake → GLB embed → Godot --import → playable scene. **Round 3 is shipped.**
+
+## ROUND 4 — Continue In-Engine Integration & Polish
+
+Round 4 picks up where Round 3 left off — Round 3 built sculpted hero assets and wired the *gameplay-critical* ones (player, enemies, NPCs) into Godot. Round 4 wires the *prop-class* R3 sculpts (loot chest, dungeon door, hero sword, iron lantern) into their respective scene files, plus pushes deeper on visual polish (cloth sim, particle FX, hand-painted face atlases).
+
+- [x] Epic V3-R4-01 — Loot chest R3 wired into Container.tscn (replaced loot_chest.glb v2 path with loot_chest_r3.glb sculpted body+lid w/ hinge rig in container.gd::_build_chest_visual; cleared the BoxMesh placeholder via _mesh.mesh=null in code so it doesn't render on top of the R3 model. Headless --import clean.)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
