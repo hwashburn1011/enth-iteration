@@ -226,8 +226,16 @@ func _transition_to_phase(new_phase: int) -> void:
 	current_phase = new_phase
 	phase_changed.emit(new_phase)
 
-	# Stagger animation — flash all mesh children white
+	# R5 round-13 fix: snapshot the polish material per mesh BEFORE we
+	# clobber it with the white flash, so we can restore the orb-polish
+	# (deep red boss color + glowing orange eyes) instead of the previous
+	# bland red restore_mat that was destroying the round-4 polish.
 	var meshes: Array[MeshInstance3D] = _find_mesh_instances(model)
+	var pre_flash: Array[Material] = []
+	for mesh: MeshInstance3D in meshes:
+		pre_flash.append(mesh.material_override)
+
+	# Stagger animation — flash all mesh children white
 	var flash_mat: StandardMaterial3D = StandardMaterial3D.new()
 	flash_mat.albedo_color = Color.WHITE
 	flash_mat.emission_enabled = true
@@ -246,15 +254,13 @@ func _transition_to_phase(new_phase: int) -> void:
 
 	await get_tree().create_timer(1.5).timeout
 
-	# Restore default red material on every mesh
-	var restore_mat: StandardMaterial3D = StandardMaterial3D.new()
-	restore_mat.albedo_color = Color(0.5, 0.1, 0.15)
-	restore_mat.emission_enabled = true
-	restore_mat.emission = Color(0.6, 0.05, 0.2)
-	restore_mat.emission_energy_multiplier = 1.0
-	for mesh: MeshInstance3D in meshes:
+	# Restore the original polish material per mesh (snapshotted above)
+	# instead of replacing with a generic restore_mat. This preserves
+	# the round-4 orb polish + procedural eyes through every phase.
+	for i in meshes.size():
+		var mesh: MeshInstance3D = meshes[i]
 		if is_instance_valid(mesh):
-			mesh.material_override = restore_mat
+			mesh.material_override = pre_flash[i]
 
 	is_invulnerable = false
 	is_transitioning = false
