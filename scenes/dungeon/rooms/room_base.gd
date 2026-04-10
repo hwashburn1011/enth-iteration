@@ -26,6 +26,14 @@ func _ready() -> void:
 	_apply_dungeon_materials()
 	# Add tech props based on room type
 	_add_dungeon_props()
+	# R5 round-30 fix: clamp baked-GLB hot emissions AFTER props are added.
+	# The previous round-30 commit called _clamp_hot_emissions inside
+	# _apply_dungeon_materials, but at that point _add_dungeon_props hadn't
+	# run yet so the hot sconces/crystals didn't exist to clamp. Re-run the
+	# clamp at the right point in the lifecycle.
+	var _geom: Node = get_node_or_null("Geometry")
+	if _geom:
+		_clamp_hot_emissions(_geom)
 	# Add door model at exit
 	_add_exit_door()
 	# Show exit indicator if already cleared (corridors only — tutorials override is_cleared)
@@ -181,6 +189,34 @@ func _apply_dungeon_materials() -> void:
 	_add_ceiling(geom)
 	# Add glowing edge strips to room for visibility
 	_add_room_glow_strips(geom)
+	# (Hot emission clamp moved to _ready after _add_dungeon_props — see
+	# round-30 followup. Props don't exist yet at this point in the
+	# lifecycle so clamping here is a no-op for sconces/crystals.)
+
+
+static func _clamp_hot_emissions(root: Node) -> void:
+	## Clamp emission_energy_multiplier on any baked-GLB material that
+	## ships with absurdly high values (lantern flames at 80.0, etc).
+	## Duplicates the material before mutating so we don't poison the
+	## shared resource cache for other scene instances.
+	const HOT_THRESHOLD: float = 5.0
+	const CLAMPED: float = 4.0
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var mi: MeshInstance3D = n as MeshInstance3D
+			# Clamp the active material (override > surface_override > mesh surface)
+			for s in range(mi.mesh.get_surface_count()):
+				var existing := mi.get_active_material(s)
+				if existing is StandardMaterial3D:
+					var sm := existing as StandardMaterial3D
+					if sm.emission_enabled and sm.emission_energy_multiplier > HOT_THRESHOLD:
+						var dup := sm.duplicate() as StandardMaterial3D
+						dup.emission_energy_multiplier = CLAMPED
+						mi.set_surface_override_material(s, dup)
+		for c in n.get_children():
+			stack.append(c)
 
 
 static func _make_floor_material() -> ShaderMaterial:

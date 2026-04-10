@@ -66,6 +66,10 @@ func _ready() -> void:
 	_populate_npcs()
 	_update_town_state()
 	_add_ambient_particles()
+	# R5 round-30: clamp baked-GLB hot emissions (lantern flames at 80.0)
+	# down to a HDR-safe value to prevent bloom blowout. Discovered via the
+	# round-30 emission survey across all 3 main scenes.
+	_clamp_hot_emissions(get_node_or_null("Geometry"))
 	# Show "TOWN" location label briefly
 	_show_location_label("TOWN")
 
@@ -959,6 +963,33 @@ func _add_ground_collision() -> void:
 	shape.position = Vector3(0, -0.1, 0)
 	body.add_child(shape)
 	add_child(body)
+
+
+static func _clamp_hot_emissions(root: Node) -> void:
+	## R5 round-30: walk every mesh under root and clamp baked-GLB
+	## emission_energy_multiplier > 5.0 down to 4.0. Lantern flames ship
+	## from Blender at 80.0 which causes severe HDR bloom blowout.
+	## Duplicate the material before mutating to avoid poisoning the
+	## shared resource cache.
+	if root == null:
+		return
+	const HOT_THRESHOLD: float = 5.0
+	const CLAMPED: float = 4.0
+	var stack: Array = [root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var mi: MeshInstance3D = n as MeshInstance3D
+			for s in range(mi.mesh.get_surface_count()):
+				var existing := mi.get_active_material(s)
+				if existing is StandardMaterial3D:
+					var sm := existing as StandardMaterial3D
+					if sm.emission_enabled and sm.emission_energy_multiplier > HOT_THRESHOLD:
+						var dup := sm.duplicate() as StandardMaterial3D
+						dup.emission_energy_multiplier = CLAMPED
+						mi.set_surface_override_material(s, dup)
+		for c in n.get_children():
+			stack.append(c)
 
 
 func _add_fence(parent: Node3D, pos: Vector3, size: Vector3) -> void:
