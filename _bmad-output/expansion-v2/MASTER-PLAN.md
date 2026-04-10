@@ -1603,7 +1603,7 @@ Loop through epics 1 → 50 in order. For each epic:
 4. [x] Build connector library per biome
 5. [x] Build generation algorithm: pick anchors, weave connectors, validate
 6. [x] Add seed system for reproducible runs
-7. Build navmesh stitching across generated layouts
+7. [x] Build navmesh stitching across generated layouts
 8. [x] Add room rotation/mirror for variety
 9. [x] Add room density tuning per floor
 10. [x] Add encounter density tuning per floor
@@ -1616,37 +1616,37 @@ Loop through epics 1 → 50 in order. For each epic:
 17. [x] Build elite room placement (1 per floor)
 18. [x] Build loot room placement (1 per floor)
 19. [x] Build story room placement (1 per floor)
-20. Build environmental hazard placement
-21. Build prop placement variation
-22. Add ambient enemy patrol patterns
-23. Add destructible object placement
-24. Add lore object placement
-25. Build lighting placement based on room tag
-26. Add reflection probe placement
+20. [x] Build environmental hazard placement
+21. [x] Build prop placement variation
+22. [x] Add ambient enemy patrol patterns
+23. [x] Add destructible object placement
+24. [x] Add lore object placement
+25. [x] Build lighting placement based on room tag
+26. [x] Add reflection probe placement
 27. [x] Validate perf with full generation
-28. Build minimap from generated layout
-29. Hook minimap to player exploration
-30. Reveal map as player walks
-31. Add room name labels
-32. Add room transition fades
+28. [x] Build minimap from generated layout
+29. [x] Hook minimap to player exploration
+30. [x] Reveal map as player walks
+31. [x] Add room name labels
+32. [x] Add room transition fades
 33. [x] Add per-floor difficulty escalation
 34. [x] Validate all 4 biomes generate properly
 35. [x] Build "themed" generation for special story floors
-36. Add room enter/exit triggers
-37. Hook EventBus signals for room events
+36. [x] Add room enter/exit triggers
+37. [x] Hook EventBus signals for room events
 38. [x] Validate save/load mid-run
-39. Add cinematic for first time entering a new biome
-40. Add per-room ambient SFX
-41. Add per-room particle accents
-42. Polish room transitions
-43. Validate navmesh on dynamic layouts
-44. Add ambient creature spawners per biome
+39. [x] Add cinematic for first time entering a new biome
+40. [x] Add per-room ambient SFX
+41. [x] Add per-room particle accents
+42. [x] Polish room transitions
+43. [x] Validate navmesh on dynamic layouts
+44. [x] Add ambient creature spawners per biome
 45. [x] Test 50 generated runs for stability
 46. [x] Build seed-share system (share generated runs)
 47. [x] Document generation bible
-48. Render gallery of varied generated layouts
+48. [x] Render gallery of varied generated layouts
 49. [x] Optimize draw calls per generated room
-50. Commit `epic-29: dungeon generation v2 complete`
+50. [x] Commit `epic-29: dungeon generation v2 complete`
 
 ---
 
@@ -2845,7 +2845,7 @@ Mark each epic when complete:
 - [x] Epic 26 — Day/Night Cycle System
 - [x] Epic 27 — Weather System
 - [x] Epic 28 — World Map & Fast Travel
-- [ ] Epic 29 — Procedural Dungeon Generation v2
+- [x] Epic 29 — Procedural Dungeon Generation v2
 - [ ] Epic 30 — Massive Dungeon Floors
 - [ ] Epic 31 — Class System
 - [ ] Epic 32 — Skill Tree
