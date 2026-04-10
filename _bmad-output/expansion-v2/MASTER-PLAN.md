@@ -2098,13 +2098,13 @@ Loop through epics 1 → 50 in order. For each epic:
 
 1. [x] Design quest bible: types, structure, rewards
 2. [x] Build quest data structure
-3. Build quest log UI v2
-4. Build quest tracker HUD widget
+3. [x] Build quest log UI v2
+4. [x] Build quest tracker HUD widget
 5. [x] Add quest categories: main, side, daily, hidden, faction
 6. [x] Build main story quest line (40 quests across 9 iterations)
-7. Build side quest pool (60 side quests)
+7. [x] Build side quest pool (60 side quests)
 8. [x] Build daily quest generator (10 templates)
-9. Build hidden quest triggers (15 secret quests)
+9. [x] Build hidden quest triggers (15 secret quests)
 10. [x] Add faction quest line (Epic 39)
 11. [x] Implement main quest 1-5
 12. [x] Implement main quest 6-10
@@ -2114,22 +2114,22 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Implement main quest 26-30
 17. [x] Implement main quest 31-35
 18. [x] Implement main quest 36-40
-19. Implement side quests 1-10
-20. Implement side quests 11-20
-21. Implement side quests 21-30
-22. Implement side quests 31-40
-23. Implement side quests 41-50
-24. Implement side quests 51-60
+19. [x] Implement side quests 1-10
+20. [x] Implement side quests 11-20
+21. [x] Implement side quests 21-30
+22. [x] Implement side quests 31-40
+23. [x] Implement side quests 41-50
+24. [x] Implement side quests 51-60
 25. [x] Implement daily quest templates
-26. Implement hidden quest triggers
+26. [x] Implement hidden quest triggers
 27. [x] Add quest accept dialogue
 28. [x] Add quest progress tracking
 29. [x] Add quest completion dialogue
 30. [x] Add quest reward distribution
 31. [x] Add quest UI updates per state
-32. Add quest sound stings
-33. Add quest objective markers in world
-34. Hook quest to map UI
+32. [x] Add quest sound stings
+33. [x] Add quest objective markers in world
+34. [x] Hook quest to map UI
 35. [x] Add quest abandonment
 36. [x] Add quest failure conditions
 37. [x] Build quest chain dependencies
@@ -2138,14 +2138,14 @@ Loop through epics 1 → 50 in order. For each epic:
 40. [x] Hook quest to faction system
 41. [x] Build quest journal lore tab
 42. [x] Validate save/load quest state
-43. Add quest tutorial flow
-44. Add quest filtering
-45. Add quest sort options
-46. Validate UX
-47. Test full main quest playthrough
-48. Render hero shots
+43. [x] Add quest tutorial flow
+44. [x] Add quest filtering
+45. [x] Add quest sort options
+46. [x] Validate UX
+47. [x] Test full main quest playthrough
+48. [x] Render hero shots
 49. [x] Document quest bible
-50. Commit `epic-38: quest system v2 complete`
+50. [x] Commit `epic-38: quest system v2 complete`
 
 ---
 
@@ -2854,7 +2854,7 @@ Mark each epic when complete:
 - [x] Epic 35 — Farming & Gathering Systems
 - [x] Epic 36 — Town Building & Decoration
 - [x] Epic 37 — NPC Affinity & Relationships
-- [ ] Epic 38 — Quest System v2
+- [x] Epic 38 — Quest System v2
 - [ ] Epic 39 — Faction System
 - [ ] Epic 40 — Companion System
 - [ ] Epic 41 — Pet System
