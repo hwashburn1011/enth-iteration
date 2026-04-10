@@ -92,12 +92,17 @@ func _play_boss_intro() -> void:
 
 
 func _build_enemy_visual() -> void:
+	# R5 fix: skip if .tscn already has a CompilerR3 child (R3-16 wired R3 sculpt)
+	for child: Node in model.get_children():
+		if child.name.begins_with("CompilerR3"):
+			return
 	for child: Node in model.get_children():
 		child.queue_free()
-	# Try Blender model first
-	var glb: PackedScene = load("res://assets/models/enemies/enemy_corrupted_compiler_v2.glb") as PackedScene
+	# Try R3 sculpted compiler first (R3-03)
+	var glb: PackedScene = load("res://assets/models/enemies/compiler_r3.glb") as PackedScene
 	if glb:
 		var instance: Node3D = glb.instantiate() as Node3D
+		instance.scale = Vector3(0.5, 0.5, 0.5)
 		model.add_child(instance)
 		return
 	# Fallback: Large dark-red core body

@@ -17,11 +17,16 @@ func _ready() -> void:
 
 
 func _build_enemy_visual() -> void:
+	# R5 fix: skip if .tscn already has a MemoryLeakR3 child (R3-16)
+	for child: Node in model.get_children():
+		if child.name.begins_with("MemoryLeakR3"):
+			return
 	for child: Node in model.get_children():
 		child.queue_free()
-	var glb: PackedScene = load("res://assets/models/enemies/enemy_memoryleak_v2.glb") as PackedScene
+	var glb: PackedScene = load("res://assets/models/enemies/memoryleak_r3.glb") as PackedScene
 	if glb:
 		var instance: Node3D = glb.instantiate() as Node3D
+		instance.scale = Vector3(0.5, 0.5, 0.5)
 		model.add_child(instance)
 		return
 	# Fallback: Green ooze blob

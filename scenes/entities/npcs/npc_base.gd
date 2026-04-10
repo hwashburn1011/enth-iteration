@@ -128,7 +128,8 @@ func _build_npc_visual() -> void:
 	var model_path: String = ""
 	match npc_id:
 		"ai_sage":
-			model_path = "res://assets/models/characters/npc_ai_sage_v2.glb"
+			# R5 fix: swap to R3 sculpted sage (sculpted hood + beard + 10-bone rig)
+			model_path = "res://assets/models/characters/sage_r3.glb"
 		"cache_sprite":
 			model_path = "res://assets/models/characters/npc_cache_sprite_v2.glb"
 		"villager_r3":
@@ -138,6 +139,16 @@ func _build_npc_visual() -> void:
 		var glb: PackedScene = load(model_path) as PackedScene
 		if glb:
 			var instance: Node3D = glb.instantiate() as Node3D
+			# R5 fix: R3 hero meshes were built at hero render scale (sage
+			# is ~5m tall in modeling space, villager ~3m). Game NPCs need
+			# ~1.7m. Empirical per-asset scales:
+			match npc_id:
+				"ai_sage":
+					instance.scale = Vector3(0.18, 0.18, 0.18)
+				"villager_r3":
+					instance.scale = Vector3(0.30, 0.30, 0.30)
+				_:
+					pass
 			_model.add_child(instance)
 			# Spawn ambient particles + interact indicator (these used to be
 			# skipped because of an early return when the model loaded)

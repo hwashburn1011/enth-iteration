@@ -48,11 +48,12 @@ static func _buff_elite(_spawner: Node) -> void:
 			elite.health_component.max_health *= 3.0
 			elite.health_component.current_health = elite.health_component.max_health
 			elite.model.scale = Vector3(1.5, 1.5, 1.5)
-			var mat: StandardMaterial3D = StandardMaterial3D.new()
-			mat.albedo_color = Color(0.6, 0.2, 0.9)
-			mat.emission_enabled = true
-			mat.emission = Color(0.5, 0.1, 0.8)
-			mat.emission_energy_multiplier = 1.0
-			for mesh: MeshInstance3D in elite.get_mesh_instances():
+			var mesh: MeshInstance3D = elite.model.get_child(0) as MeshInstance3D
+			if mesh:
+				var mat: StandardMaterial3D = StandardMaterial3D.new()
+				mat.albedo_color = Color(0.6, 0.2, 0.9)
+				mat.emission_enabled = true
+				mat.emission = Color(0.5, 0.1, 0.8)
+				mat.emission_energy_multiplier = 1.0
 				mesh.material_override = mat
 			return  # Only buff the first one

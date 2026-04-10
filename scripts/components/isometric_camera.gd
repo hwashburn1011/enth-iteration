@@ -4,11 +4,15 @@ extends Camera3D
 
 @export var target: Node3D
 @export var follow_speed: float = 8.0
-@export var camera_size: float = 13.0
+## R5 fix: was 13.0 — character was barely visible. 8.0 puts the player at ~10% of
+## screen height instead of ~6%, while still showing enough room context for ARPG combat.
+@export var camera_size: float = 8.0
 @export var offset: Vector3 = Vector3.ZERO
 
-## Fixed camera arm offset — positions camera above and behind target at isometric angle
-var _camera_arm: Vector3 = Vector3(10, 14, 10)
+## Fixed camera arm offset — positions camera above and behind target at isometric angle.
+## R5 fix: was (10, 14, 10) — too steep, hid the character behind walls. New angle
+## is shallower (more "above and slightly forward") so wall occlusion is reduced.
+var _camera_arm: Vector3 = Vector3(7, 10, 7)
 var _shake_intensity: float = 0.0
 var _shake_decay: float = 5.0
 var _lean_offset: Vector3 = Vector3.ZERO

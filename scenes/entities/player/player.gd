@@ -122,14 +122,28 @@ func _on_health_changed_color(current: float, max_val: float) -> void:
 
 
 func _build_player_extras() -> void:
-	# Try loading Blender model for the player
-	var glb: PackedScene = load("res://assets/models/characters/char_globbler_v2.glb") as PackedScene
-	if glb:
-		# Remove existing capsule mesh from Model node
-		for child: Node in model.get_children():
-			child.queue_free()
-		var instance: Node3D = glb.instantiate() as Node3D
-		model.add_child(instance)
+	# R5 fix: don't clobber the GlobblerR3 + HeroSwordR3 + HeroShieldR4 instances
+	# that Player.tscn already added as children of Model. The old version of
+	# this function loaded char_globbler_v2.glb at runtime and wiped every
+	# Model child first — which silently deleted the R3/R4 hero assets.
+	# If the .tscn already has any GlobblerR3/HeroSwordR3/HeroShieldR4 children,
+	# trust them and skip the runtime load.
+	var has_r3_hero: bool = false
+	for child: Node in model.get_children():
+		if child.name.begins_with("GlobblerR3") or child.name.begins_with("HeroSword") or child.name.begins_with("HeroShield"):
+			has_r3_hero = true
+			break
+	if not has_r3_hero:
+		var glb: PackedScene = load("res://assets/models/characters/globbler_r3.glb") as PackedScene
+		if glb:
+			for child: Node in model.get_children():
+				if child is MeshInstance3D:
+					child.queue_free()
+			var instance: Node3D = glb.instantiate() as Node3D
+			# R5 fix: globbler_r3 was built at hero render scale (~1.7m tall).
+			# Game character is ~0.8m tall, scale 0.45 to match collision capsule.
+			instance.scale = Vector3(0.45, 0.45, 0.45)
+			model.add_child(instance)
 
 	# Shadow disc under player
 	var shadow: MeshInstance3D = MeshInstance3D.new()
@@ -182,30 +196,31 @@ func _build_player_extras() -> void:
 	light_tween.tween_property(player_light, "light_energy", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
 	light_tween.tween_property(player_light, "light_energy", 0.55, 2.0).set_ease(Tween.EASE_IN_OUT)
 
-	# Small arm stubs for silhouette
-	var arm_mat: StandardMaterial3D = StandardMaterial3D.new()
-	arm_mat.albedo_color = Color(0.22, 0.78, 0.75)
-	arm_mat.roughness = 0.7
-	for side: float in [-0.4, 0.4]:
-		var arm: MeshInstance3D = MeshInstance3D.new()
-		var arm_mesh: SphereMesh = SphereMesh.new()
-		arm_mesh.radius = 0.12
-		arm_mesh.height = 0.24
-		arm.mesh = arm_mesh
-		arm.position = Vector3(side, 0.45, 0)
-		arm.material_override = arm_mat
-		model.add_child(arm)
-
-	# Small feet stubs
-	for side: float in [-0.15, 0.15]:
-		var foot: MeshInstance3D = MeshInstance3D.new()
-		var foot_mesh: SphereMesh = SphereMesh.new()
-		foot_mesh.radius = 0.1
-		foot_mesh.height = 0.15
-		foot.mesh = foot_mesh
-		foot.position = Vector3(side, 0.08, 0)
-		foot.material_override = arm_mat
-		model.add_child(foot)
+	# R5 fix: skip the placeholder arm + foot stubs when GlobblerR3 is loaded.
+	# These were R2 capsule-style "Globbler" arms+feet — they look like big
+	# white spheres next to the actual sculpted character and obscure the silhouette.
+	if not has_r3_hero:
+		var arm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		arm_mat.albedo_color = Color(0.22, 0.78, 0.75)
+		arm_mat.roughness = 0.7
+		for side: float in [-0.4, 0.4]:
+			var arm: MeshInstance3D = MeshInstance3D.new()
+			var arm_mesh: SphereMesh = SphereMesh.new()
+			arm_mesh.radius = 0.12
+			arm_mesh.height = 0.24
+			arm.mesh = arm_mesh
+			arm.position = Vector3(side, 0.45, 0)
+			arm.material_override = arm_mat
+			model.add_child(arm)
+		for side: float in [-0.15, 0.15]:
+			var foot: MeshInstance3D = MeshInstance3D.new()
+			var foot_mesh: SphereMesh = SphereMesh.new()
+			foot_mesh.radius = 0.1
+			foot_mesh.height = 0.15
+			foot.mesh = foot_mesh
+			foot.position = Vector3(side, 0.08, 0)
+			foot.material_override = arm_mat
+			model.add_child(foot)
 
 
 func _on_hit_received(damage_info: Resource) -> void:

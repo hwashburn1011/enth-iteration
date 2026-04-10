@@ -17,13 +17,16 @@ func _ready() -> void:
 
 
 func _build_enemy_visual() -> void:
-	# Clear existing mesh
+	# R5 fix: skip if .tscn already has a GlitchbugR3 child (R3-16)
+	for child: Node in model.get_children():
+		if child.name.begins_with("GlitchbugR3"):
+			return
 	for child: Node in model.get_children():
 		child.queue_free()
-	# Try Blender model first
-	var glb: PackedScene = load("res://assets/models/enemies/enemy_glitchbug_v2.glb") as PackedScene
+	var glb: PackedScene = load("res://assets/models/enemies/glitchbug_r3.glb") as PackedScene
 	if glb:
 		var instance: Node3D = glb.instantiate() as Node3D
+		instance.scale = Vector3(0.4, 0.4, 0.4)
 		model.add_child(instance)
 		return
 	# Fallback: Red spiky body — small aggressive creature

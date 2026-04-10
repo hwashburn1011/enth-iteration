@@ -283,40 +283,57 @@ func _build_town_decorations() -> void:
 	# --- Ground variation patches ---
 	_add_ground_patches(geom)
 
-	# --- Replace CSG buildings with Blender models ---
-	var building_models: Array[String] = [
-		"res://assets/models/buildings/cottage_01.glb",
-		"res://assets/models/buildings/workshop_01.glb",
-		"res://assets/models/buildings/tavern_01.glb",
-		"res://assets/models/buildings/cottage_01.glb",
-	]
-	var building_rotations: Array[float] = [0, 0, PI, PI / 2.0]
-	var plaster_mat: StandardMaterial3D = _make_plaster_material()
-	var roof_mat: StandardMaterial3D = _make_roof_tile_material()
-	for i: int in range(1, 5):
-		var building: CSGBox3D = geom.get_node_or_null("Building%d" % i) as CSGBox3D
-		if building:
-			var pos: Vector3 = building.global_position
-			var glb: PackedScene = load(building_models[i - 1]) as PackedScene
-			if glb:
-				building.visible = false
-				var instance: Node3D = glb.instantiate() as Node3D
-				instance.rotation.y = building_rotations[i - 1]
-				geom.add_child(instance)
-				instance.global_position = Vector3(pos.x, 0, pos.z)
-				# Apply plaster + roof tile materials to the GLB mesh tree
-				_apply_building_materials(instance, plaster_mat, roof_mat)
-				# Add warm window light
+	# R5 fix: Town.tscn already instances Building1R3..Building4R3 from R4-08
+	# + R4-29. The old code below ALSO spawned cottage_01/workshop_01/tavern_01
+	# at the same positions, doubling the buildings. Skip the runtime loop if
+	# any R3 building instance is already present in geom.
+	var has_r3_buildings: bool = geom.get_node_or_null("Building1R3") != null
+	if not has_r3_buildings:
+		# Legacy v2 path — only fires if Town.tscn doesn't already have R3
+		var building_models: Array[String] = [
+			"res://assets/models/buildings/cottage_01.glb",
+			"res://assets/models/buildings/workshop_01.glb",
+			"res://assets/models/buildings/tavern_01.glb",
+			"res://assets/models/buildings/cottage_01.glb",
+		]
+		var building_rotations: Array[float] = [0, 0, PI, PI / 2.0]
+		var plaster_mat: StandardMaterial3D = _make_plaster_material()
+		var roof_mat: StandardMaterial3D = _make_roof_tile_material()
+		for i: int in range(1, 5):
+			var building: CSGBox3D = geom.get_node_or_null("Building%d" % i) as CSGBox3D
+			if building:
+				var pos: Vector3 = building.global_position
+				var glb: PackedScene = load(building_models[i - 1]) as PackedScene
+				if glb:
+					building.visible = false
+					var instance: Node3D = glb.instantiate() as Node3D
+					instance.rotation.y = building_rotations[i - 1]
+					geom.add_child(instance)
+					instance.global_position = Vector3(pos.x, 0, pos.z)
+					_apply_building_materials(instance, plaster_mat, roof_mat)
+					var win_light: OmniLight3D = OmniLight3D.new()
+					win_light.position = Vector3(0, 2.0, -2.0)
+					win_light.light_color = Color(1.0, 0.85, 0.55)
+					win_light.light_energy = 1.0
+					win_light.omni_range = 5.0
+					win_light.omni_attenuation = 2.0
+					instance.add_child(win_light)
+				else:
+					building.use_collision = true
+					_add_roof(building)
+	else:
+		# R3 path: add a warm window light to each R3 building instance for
+		# evening atmosphere (the R3 GLBs don't include lights themselves)
+		for i: int in range(1, 5):
+			var r3_building: Node = geom.get_node_or_null("Building%dR3" % i)
+			if r3_building:
 				var win_light: OmniLight3D = OmniLight3D.new()
 				win_light.position = Vector3(0, 2.0, -2.0)
 				win_light.light_color = Color(1.0, 0.85, 0.55)
 				win_light.light_energy = 1.0
 				win_light.omni_range = 5.0
 				win_light.omni_attenuation = 2.0
-				instance.add_child(win_light)
-			else:
-				building.use_collision = true
-				_add_roof(building)
+				r3_building.add_child(win_light)
 
 	# --- Trees ---
 	_add_tree(geom, Vector3(-15, 0, 3), 1.5, 2.4)
@@ -367,7 +384,8 @@ func _build_town_decorations() -> void:
 	_add_prop(geom, "res://assets/models/props/bench.glb", Vector3(2.5, 0, -1.5), Vector3(1.5, 1.5, 1.5))
 	# R5-04: Decorative R5 sculpted bridge on the north path
 	_add_prop(geom, "res://assets/models/props/wooden_bridge_r5.glb", Vector3(0, 0.01, -6), Vector3(1.6, 1.6, 1.6))
-	_add_prop(geom, "res://assets/models/props/stone_well.glb", Vector3(0, 0, 0), Vector3(1.3, 1.3, 1.3))
+	# R5 fix: load R5 sculpted stone well (R5-05) instead of v2 placeholder
+	_add_prop(geom, "res://assets/models/props/stone_well_r5.glb", Vector3(0, 0, 0), Vector3(1.3, 1.3, 1.3))
 
 	# R4-07: R3 hero forge + anvil near Building1 (the smithy)
 	_add_prop(geom, "res://assets/models/props/forge_anvil_r3.glb", Vector3(-9, 0, -6), Vector3(1, 1, 1))
