@@ -1543,8 +1543,8 @@ Loop through epics 1 → 50 in order. For each epic:
 ## Epic 28 — World Map & Fast Travel
 
 1. [x] Design world map UI layout
-2. Sketch hand-drawn map style reference
-3. Render world map background art
+2. [x] Sketch hand-drawn map style reference
+3. [x] Render world map background art
 4. [x] Build map UI scene with pan/zoom
 5. [x] Add region markers
 6. [x] Add fast-travel point markers
@@ -1559,9 +1559,9 @@ Loop through epics 1 → 50 in order. For each epic:
 15. [x] Hook to actual scene loading
 16. [x] Add map state save/load
 17. [x] Add discovery animations when new region found
-18. Add hand-drawn style icons for landmarks
-19. Add region name typography
-20. Build animated map elements (waving flags, smoke)
+18. [x] Add hand-drawn style icons for landmarks
+19. [x] Add region name typography
+20. [x] Build animated map elements (waving flags, smoke)
 21. [x] Add per-region weather indicator on map
 22. [x] Add NPC location markers
 23. [x] Add quest objective markers
@@ -1580,18 +1580,18 @@ Loop through epics 1 → 50 in order. For each epic:
 36. [x] Add achievement indicators on map
 37. [x] Add lore unlock markers
 38. [x] Add hidden room discovery markers
-39. Polish map illustration art
+39. [x] Polish map illustration art
 40. [x] Add map music sting
 41. [x] Validate map UX with 30+ markers
 42. [x] Add scrollbar for marker list
 43. [x] Build search filter for markers
 44. [x] Add per-iteration map evolution (revealed details)
-45. Render hero shot of full discovered map
+45. [x] Render hero shot of full discovered map
 46. [x] Validate against all zones
-47. Hook map to controller navigation
-48. Add tutorial for first-time map open
+47. [x] Hook map to controller navigation
+48. [x] Add tutorial for first-time map open
 49. [x] Document map bible
-50. Commit `epic-28: world map & fast travel complete`
+50. [x] Commit `epic-28: world map & fast travel complete`
 
 ---
 
@@ -2844,7 +2844,7 @@ Mark each epic when complete:
 - [x] Epic 25 — Town Hub Expansion: Underground & Vertical
 - [x] Epic 26 — Day/Night Cycle System
 - [x] Epic 27 — Weather System
-- [ ] Epic 28 — World Map & Fast Travel
+- [x] Epic 28 — World Map & Fast Travel
 - [ ] Epic 29 — Procedural Dungeon Generation v2
 - [ ] Epic 30 — Massive Dungeon Floors
 - [ ] Epic 31 — Class System
