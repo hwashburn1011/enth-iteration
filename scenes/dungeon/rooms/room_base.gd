@@ -587,6 +587,38 @@ func _add_dungeon_props() -> void:
 		light.omni_attenuation = 2.0
 		geom.add_child(light)
 
+	# R4-17: R4 wall torch sconces along the side walls (combat + loot only)
+	# The R4 GLB carries its own embedded emission flame icosphere + we add a
+	# Cycles point light at the same position for actual shadow casting.
+	if room_type in ["combat", "loot"]:
+		var sconce_scene: PackedScene = load("res://assets/models/props/wall_sconce_r4.glb") as PackedScene
+		if sconce_scene:
+			# 2 sconces on each long wall, mirroring on Z axis
+			var sconce_z_positions: Array = [-half_z * 0.55, half_z * 0.55]
+			for sz: float in sconce_z_positions:
+				# East wall (sconce faces -X, into the room)
+				var east: Node3D = sconce_scene.instantiate() as Node3D
+				geom.add_child(east)
+				east.position = Vector3(half_x - 0.05, 1.4, sz)
+				east.rotation = Vector3(0, -PI / 2, 0)
+				var east_light: OmniLight3D = OmniLight3D.new()
+				east_light.position = Vector3(0, 0, -0.4)
+				east_light.light_color = Color(1.0, 0.65, 0.25)
+				east_light.light_energy = 1.5
+				east_light.omni_range = 6.0
+				east.add_child(east_light)
+				# West wall (sconce faces +X)
+				var west: Node3D = sconce_scene.instantiate() as Node3D
+				geom.add_child(west)
+				west.position = Vector3(-half_x + 0.05, 1.4, sz)
+				west.rotation = Vector3(0, PI / 2, 0)
+				var west_light: OmniLight3D = OmniLight3D.new()
+				west_light.position = Vector3(0, 0, -0.4)
+				west_light.light_color = Color(1.0, 0.65, 0.25)
+				west_light.light_energy = 1.5
+				west_light.omni_range = 6.0
+				west.add_child(west_light)
+
 
 func _ensure_floor_collision() -> void:
 	# Check if there's already a StaticBody3D floor
