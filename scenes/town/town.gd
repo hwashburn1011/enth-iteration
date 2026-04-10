@@ -719,50 +719,30 @@ func _add_boundary_collision() -> void:
 
 
 func _apply_town_ground_texture() -> void:
-	## Replace the flat green Ground material with procedurally textured grass.
+	## Apply real Polyhaven CC0 forrest_ground_03 PBR to the Ground plane.
+	## (R3-25: replaces the previous procedural FastNoiseLite grass with
+	## real photoscanned diffuse + normal_gl + roughness textures.)
 	var ground: MeshInstance3D = get_node_or_null("Geometry/Ground") as MeshInstance3D
 	if ground == null:
 		return
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.55, 0.78, 0.42)
-	# Albedo: Perlin grass clumps with color ramp from dirt to grass
-	var clump_noise: FastNoiseLite = FastNoiseLite.new()
-	clump_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	clump_noise.frequency = 0.3
-	clump_noise.fractal_octaves = 4
-	var clump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	clump_tex.noise = clump_noise
-	clump_tex.width = 512
-	clump_tex.height = 512
-	clump_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.32, 0.42, 0.18))  # darker grass tufts
-	ramp.set_color(1, Color(0.62, 0.85, 0.45))  # bright grass highlights
-	ramp.add_point(0.5, Color(0.48, 0.68, 0.35))
-	ramp.add_point(0.85, Color(0.58, 0.78, 0.40))
-	clump_tex.color_ramp = ramp
-	mat.albedo_texture = clump_tex
-	# Normal map from cellular noise — gives the impression of grass blades
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.5
-	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
-	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 3.5
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.7
-	# Triplanar so the grass tiles seamlessly across the 40x40 ground plane
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(2.0, 2.0, 2.0)
+	var diff: Texture2D = load("res://assets/textures/polyhaven/forrest_ground_03_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/forrest_ground_03_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/forrest_ground_03_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.0
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
 	mat.metallic = 0.0
-	mat.roughness = 0.92
+	# Triplanar so the photoscanned PBR tiles seamlessly across the 40x40 ground plane
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(6.0, 6.0, 6.0)
 	ground.material_override = mat
 
 
