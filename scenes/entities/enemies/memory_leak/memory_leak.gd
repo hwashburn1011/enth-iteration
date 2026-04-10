@@ -17,9 +17,11 @@ func _ready() -> void:
 
 
 func _build_enemy_visual() -> void:
-	# R5 fix: skip if .tscn already has a MemoryLeakR3 child (R3-16)
+	# R5 fix: skip if .tscn already has a MemoryLeakR3 child (R3-16),
+	# but still apply orb-polish (green ooze + cyan eyes).
 	for child: Node in model.get_children():
 		if child.name.begins_with("MemoryLeakR3"):
+			_polish_r3_enemy(child as Node3D, Color(0.2, 0.78, 0.32), Color(0.7, 1.0, 0.85))
 			return
 	for child: Node in model.get_children():
 		child.queue_free()
@@ -28,6 +30,7 @@ func _build_enemy_visual() -> void:
 		var instance: Node3D = glb.instantiate() as Node3D
 		instance.scale = Vector3(0.5, 0.5, 0.5)
 		model.add_child(instance)
+		_polish_r3_enemy(instance, Color(0.2, 0.78, 0.32), Color(0.7, 1.0, 0.85))
 		return
 	# Fallback: Green ooze blob
 	var body: MeshInstance3D = MeshInstance3D.new()

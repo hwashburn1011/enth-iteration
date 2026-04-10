@@ -584,25 +584,19 @@ func _add_path(parent: Node3D, pos: Vector3, size: Vector3) -> void:
 
 
 static func _make_dirt_path_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 brown_mud_03 PBR (R3-28: replaces the previous
-	## procedural Perlin dirt + cellular pebbles).
+	## R5 round-4: dirt-mud photoscanned PBR is off-theme for the digital
+	## simulation world. Return a flat dark-cyan emissive panel that reads
+	## as a "data lane" rather than a path. Real shader work happens on the
+	## ground plane (see _apply_town_ground_texture); paths just need to be
+	## visually distinct from the surrounding grid without screaming "dirt".
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/brown_mud_03_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/brown_mud_03_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/brown_mud_03_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.2
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(1.5, 1.5, 1.5)
+	mat.albedo_color = Color(0.08, 0.18, 0.22)
+	mat.emission_enabled = true
+	mat.emission = Color(0.10, 0.42, 0.50)
+	mat.emission_energy_multiplier = 0.45
+	mat.metallic = 0.2
+	mat.roughness = 0.6
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
 	return mat
 
 
@@ -752,30 +746,44 @@ func _add_boundary_collision() -> void:
 
 
 func _apply_town_ground_texture() -> void:
-	## Apply real Polyhaven CC0 forrest_ground_03 PBR to the Ground plane.
-	## (R3-25: replaces the previous procedural FastNoiseLite grass with
-	## real photoscanned diffuse + normal_gl + roughness textures.)
+	## R5 round-4: replace the Polyhaven forrest_ground_03 photoscanned PBR
+	## (which is fantasy-medieval and off-theme) with a procedural digital
+	## grid shader that fits the GDD's "AI agent inside a computer simulation"
+	## theme. Cyan grid lines + dim hex glow + dark base — reads as a data
+	## field, not dirt.
 	var ground: MeshInstance3D = get_node_or_null("Geometry/Ground") as MeshInstance3D
 	if ground == null:
 		return
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/forrest_ground_03_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/forrest_ground_03_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/forrest_ground_03_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.0
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	# Triplanar so the photoscanned PBR tiles seamlessly across the 40x40 ground plane
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(6.0, 6.0, 6.0)
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, cull_back;
+uniform vec3 base_color : source_color = vec3(0.04, 0.06, 0.10);
+uniform vec3 grid_color : source_color = vec3(0.15, 0.55, 0.65);
+uniform vec3 hex_color : source_color = vec3(0.05, 0.30, 0.40);
+uniform float grid_scale = 1.0;
+uniform float grid_thickness = 0.04;
+uniform float pulse_speed = 0.6;
+void fragment() {
+	vec2 uv = UV * grid_scale;
+	vec2 g = abs(fract(uv) - 0.5);
+	float line = step(0.5 - grid_thickness, max(g.x, g.y));
+	// Bigger 5x5 super-grid lanes that glow brighter
+	vec2 g5 = abs(fract(uv * 0.2) - 0.5);
+	float lane = step(0.5 - grid_thickness * 0.6, max(g5.x, g5.y));
+	// Slow pulse so the grid feels alive
+	float pulse = 0.6 + 0.4 * sin(TIME * pulse_speed + uv.x * 0.4 + uv.y * 0.3);
+	vec3 col = base_color;
+	col = mix(col, hex_color, lane * 0.55);
+	col = mix(col, grid_color * pulse, line * 0.85);
+	ALBEDO = col;
+	EMISSION = col * 0.75;
+}
+"""
+	var mat: ShaderMaterial = ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("grid_scale", 12.0)
+	mat.set_shader_parameter("grid_thickness", 0.04)
 	ground.material_override = mat
 
 

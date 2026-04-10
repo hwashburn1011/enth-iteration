@@ -17,9 +17,12 @@ func _ready() -> void:
 
 
 func _build_enemy_visual() -> void:
-	# R5 fix: skip if .tscn already has a GlitchbugR3 child (R3-16)
+	# R5 fix: skip if .tscn already has a GlitchbugR3 child (R3-16),
+	# but still apply the orb-polish material so the placeholder white
+	# albedo gets replaced with red.
 	for child: Node in model.get_children():
 		if child.name.begins_with("GlitchbugR3"):
+			_polish_r3_enemy(child as Node3D, Color(0.85, 0.18, 0.12), Color(1.0, 0.85, 0.2))
 			return
 	for child: Node in model.get_children():
 		child.queue_free()
@@ -28,6 +31,7 @@ func _build_enemy_visual() -> void:
 		var instance: Node3D = glb.instantiate() as Node3D
 		instance.scale = Vector3(0.4, 0.4, 0.4)
 		model.add_child(instance)
+		_polish_r3_enemy(instance, Color(0.85, 0.18, 0.12), Color(1.0, 0.85, 0.2))
 		return
 	# Fallback: Red spiky body — small aggressive creature
 	var body: MeshInstance3D = MeshInstance3D.new()

@@ -24,9 +24,11 @@ func _ready() -> void:
 
 
 func _build_enemy_visual() -> void:
-	# R5 fix: skip if .tscn already has a RogueProcessR3 child (R3-19)
+	# R5 fix: skip if .tscn already has a RogueProcessR3 child (R3-19),
+	# but still apply orb-polish (cold blue + white eyes).
 	for child: Node in model.get_children():
 		if child.name.begins_with("RogueProcessR3"):
+			_polish_r3_enemy(child as Node3D, Color(0.2, 0.32, 0.85), Color(0.95, 0.95, 1.0))
 			return
 	for child: Node in model.get_children():
 		child.queue_free()
@@ -35,6 +37,7 @@ func _build_enemy_visual() -> void:
 		var instance: Node3D = glb.instantiate() as Node3D
 		instance.scale = Vector3(0.5, 0.5, 0.5)
 		model.add_child(instance)
+		_polish_r3_enemy(instance, Color(0.2, 0.32, 0.85), Color(0.95, 0.95, 1.0))
 		return
 	# Fallback: Angular blue geometric
 	var body: MeshInstance3D = MeshInstance3D.new()

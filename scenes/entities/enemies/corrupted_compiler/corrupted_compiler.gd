@@ -102,9 +102,11 @@ func _play_boss_intro() -> void:
 
 
 func _build_enemy_visual() -> void:
-	# R5 fix: skip if .tscn already has a CompilerR3 child (R3-16 wired R3 sculpt)
+	# R5 fix: skip if .tscn already has a CompilerR3 child (R3-16 wired R3 sculpt),
+	# but still apply orb-polish (deep red boss color + bright orange eyes).
 	for child: Node in model.get_children():
 		if child.name.begins_with("CompilerR3"):
+			_polish_r3_enemy(child as Node3D, Color(0.55, 0.08, 0.12), Color(1.0, 0.5, 0.05))
 			return
 	for child: Node in model.get_children():
 		child.queue_free()
@@ -114,6 +116,7 @@ func _build_enemy_visual() -> void:
 		var instance: Node3D = glb.instantiate() as Node3D
 		instance.scale = Vector3(0.5, 0.5, 0.5)
 		model.add_child(instance)
+		_polish_r3_enemy(instance, Color(0.55, 0.08, 0.12), Color(1.0, 0.5, 0.05))
 		return
 	# Fallback: Large dark-red core body
 	var core: MeshInstance3D = MeshInstance3D.new()

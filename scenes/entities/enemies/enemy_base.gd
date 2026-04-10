@@ -235,6 +235,64 @@ func _build_enemy_visual() -> void:
 	pass
 
 
+func _polish_r3_enemy(r3_root: Node3D, body_color: Color, eye_color: Color) -> void:
+	## R5 round-4: same orb-polish workaround used for the player and NPCs.
+	## R3 baked albedos are placeholder UV pads of solid pale color, so the
+	## sculpts render as featureless white spheres in-game. Override the
+	## material with a distinct hue and bolt on procedural eyes anchored to
+	## the largest mesh's AABB so the enemy reads as a *creature* not a blob.
+	if r3_root == null:
+		return
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = body_color
+	body_mat.emission_enabled = true
+	body_mat.emission = body_color * 0.7
+	body_mat.emission_energy_multiplier = 0.5
+	body_mat.metallic = 0.2
+	body_mat.roughness = 0.5
+	body_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+	var biggest_mesh: MeshInstance3D = null
+	var biggest_size: float = 0.0
+	var stack: Array = [r3_root]
+	while not stack.is_empty():
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var a: AABB = (n as MeshInstance3D).mesh.get_aabb()
+			var s: float = a.size.x * a.size.y * a.size.z
+			if s > biggest_size:
+				biggest_size = s
+				biggest_mesh = n as MeshInstance3D
+			(n as MeshInstance3D).material_override = body_mat
+		for c in n.get_children():
+			stack.append(c)
+	if biggest_mesh == null:
+		return
+	# Procedural eyes anchored to the mesh's local AABB
+	var ab: AABB = biggest_mesh.mesh.get_aabb()
+	var center_x: float = ab.position.x + ab.size.x * 0.5
+	var top_y: float = ab.position.y + ab.size.y * 0.78
+	var front_z: float = ab.position.z + ab.size.z * 0.05
+	var x_off: float = ab.size.x * 0.18
+	var eye_radius: float = max(ab.size.x, ab.size.y) * 0.07
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = eye_color
+	eye_mat.emission_enabled = true
+	eye_mat.emission = eye_color
+	eye_mat.emission_energy_multiplier = 3.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for side: float in [-x_off, x_off]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = eye_radius
+		em.height = eye_radius * 2.0
+		em.radial_segments = 12
+		em.rings = 6
+		eye.mesh = em
+		eye.position = Vector3(center_x + side, top_y, front_z)
+		eye.material_override = eye_mat
+		biggest_mesh.add_child(eye)
+
+
 func get_mesh_instances() -> Array[MeshInstance3D]:
 	## Walk the model subtree and collect every MeshInstance3D. Works for
 	## both the placeholder fallback meshes (first child is the body mesh)
