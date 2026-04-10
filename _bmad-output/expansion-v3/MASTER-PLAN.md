@@ -209,6 +209,26 @@ the original spec called for that Round 1 skipped:
 - [x] Epic V3-R2-08 — Sub-Area Refinement
 - [x] Epic V3-R2-09 — Wilderness Refinement
 - [x] Epic V3-R2-10 — Dungeon Entrance Refinement
+- [x] Epic V3-R2-11 — Hub Interior Refinement
+- [ ] Epic V3-R2-12 — Vegetation Library Refinement
+- [ ] Epic V3-R2-13 — Server Room Biome Refinement
+- [ ] Epic V3-R2-14 — Memory Vaults Refinement
+- [ ] Epic V3-R2-15 — Corrupted Wilds Refinement
+- [ ] Epic V3-R2-16 — Boss Sanctum Refinement
+- [ ] Epic V3-R2-17 — Floor Detailing Refinement
+- [ ] Epic V3-R2-18 — Base Enemy Refinement
+- [ ] Epic V3-R2-19 — New Enemy Refinement
+- [ ] Epic V3-R2-20 — Compiler Boss Refinement
+- [ ] Epic V3-R2-21 — New Bosses Refinement
+- [ ] Epic V3-R2-22 — Crafting Stations Refinement
+- [ ] Epic V3-R2-23 — Crafting Materials Refinement
+- [ ] Epic V3-R2-24 — Decoration Library Refinement
+- [ ] Epic V3-R2-25 — Farming Props Refinement
+- [ ] Epic V3-R2-26 — Skill Icon Refinement
+- [ ] Epic V3-R2-27 — VFX Library Refinement
+- [ ] Epic V3-R2-28 — Lighting Bible Refinement
+- [ ] Epic V3-R2-29 — Steam Marketing Refinement
+- [ ] Epic V3-R2-30 — Town NPC 12-Pack (NEW content)
 
 ---
 
