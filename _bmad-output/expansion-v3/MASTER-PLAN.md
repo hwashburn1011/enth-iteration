@@ -246,6 +246,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-15 — Player.tscn Globbler swap (R3 sculpted Globbler GLB replaces v2 placeholder; the "Globbler-shaped capsule with sphere arms" is GONE)
 - [x] Epic V3-R3-16 — R3 enemies wired into Godot (Compiler/Glitchbug/MemoryLeak scenes now spawn sculpted GLBs instead of BoxMesh/SphereMesh/CylinderMesh placeholders)
 - [x] Epic V3-R3-17 — Hero Dungeon Door (sculpted door + 16 extruded iron studs + 4 carved panels + keyhole + frame + 2-bone hinge rig + swing anim + iron/wood Pointiness PBR bake)
+- [x] Epic V3-R3-18 — Hero Loot Chest (sculpted body+lid 2-mesh w/ carved plank seams + extruded iron bands + lock plate + keyhole + curved cylinder lid + 2-bone hinge rig + 60-frame open anim + dual PBR bake)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
