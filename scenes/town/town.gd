@@ -598,13 +598,16 @@ func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height:
 
 
 func _add_lantern(parent: Node3D, pos: Vector3) -> void:
-	# Try Blender model first
-	var glb: PackedScene = load("res://assets/models/props/lantern_01.glb") as PackedScene
+	## R4-02: load the R3 sculpted iron lantern (carved 4 glass panels +
+	## 8 deep vent cutouts + extruded dome + chain link + Pointiness flame
+	## emission + inner emission flame icosphere) instead of the v2 placeholder.
+	var glb: PackedScene = load("res://assets/models/props/iron_lantern_r3.glb") as PackedScene
 	if glb:
 		var lantern: Node3D = glb.instantiate() as Node3D
 		parent.add_child(lantern)
 		lantern.global_position = pos
-		# Add point light (not in the model)
+		# Add point light (not in the model — the R3 GLB also embeds a flame
+		# icosphere but Godot needs an actual Light3D to cast shadows)
 		var light: OmniLight3D = OmniLight3D.new()
 		light.position = Vector3(0, 2.5, 0)
 		light.light_color = Color(1.0, 0.85, 0.5)

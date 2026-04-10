@@ -265,6 +265,7 @@ an idle animation loop, render hero shot + animation.
 Round 4 picks up where Round 3 left off — Round 3 built sculpted hero assets and wired the *gameplay-critical* ones (player, enemies, NPCs) into Godot. Round 4 wires the *prop-class* R3 sculpts (loot chest, dungeon door, hero sword, iron lantern) into their respective scene files, plus pushes deeper on visual polish (cloth sim, particle FX, hand-painted face atlases).
 
 - [x] Epic V3-R4-01 — Loot chest R3 wired into Container.tscn (replaced loot_chest.glb v2 path with loot_chest_r3.glb sculpted body+lid w/ hinge rig in container.gd::_build_chest_visual; cleared the BoxMesh placeholder via _mesh.mesh=null in code so it doesn't render on top of the R3 model. Headless --import clean.)
+- [x] Epic V3-R4-02 — Iron lantern R3 wired into 4 Town placements (replaced lantern_01.glb with iron_lantern_r3.glb in town.gd::_add_lantern. Town.tscn calls _add_lantern at 4 positions: -3,2 / 3,-4 / -6,-10 / 7,8. All four lantern slots now spawn the R3 sculpted iron lantern w/ carved cutouts + flame core, accompanied by the existing OmniLight3D for shadow casting. Headless --import clean.)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
