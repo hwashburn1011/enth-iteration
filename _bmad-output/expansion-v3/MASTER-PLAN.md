@@ -189,6 +189,29 @@ Each epic follows this structure (adapted to the asset class):
 
 ---
 
+## ROUND 2 — Refinement Pass
+
+Round 1 used procedural shaders only. Round 2 layers on the techniques
+the original spec called for that Round 1 skipped:
+  - UV unwrapping for proper texture mapping
+  - Vertex color painting for per-vertex variation
+  - Multi-resolution / higher-detail geometry
+  - Bake normal maps from high-poly to low-poly
+  - More animation poses per hero
+
+- [x] Epic V3-R2-01 — Globbler Hero (UV unwrap + vertex color + multi-res)
+- [ ] Epic V3-R2-02 — AI Sage Refinement
+- [ ] Epic V3-R2-03 — Class Variants Refinement
+- [ ] Epic V3-R2-04 — Companion Refinement
+- [ ] Epic V3-R2-05 — Pet Refinement
+- [ ] Epic V3-R2-06 — Town Building Kit Refinement
+- [ ] Epic V3-R2-07 — Town District Refinement
+- [ ] Epic V3-R2-08 — Sub-Area Refinement
+- [ ] Epic V3-R2-09 — Wilderness Refinement
+- [ ] Epic V3-R2-10 — Dungeon Entrance Refinement
+
+---
+
 ## Epic V3-01 — Globbler Hero Texture Pass
 
 The player character. Highest priority — every player will see Globbler in 90%+
