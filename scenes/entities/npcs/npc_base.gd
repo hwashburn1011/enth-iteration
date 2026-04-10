@@ -131,6 +131,9 @@ func _build_npc_visual() -> void:
 			model_path = "res://assets/models/characters/npc_ai_sage_v2.glb"
 		"cache_sprite":
 			model_path = "res://assets/models/characters/npc_cache_sprite_v2.glb"
+		"villager_r3":
+			# V3 Round 3 sculpted villager (carved face, baked PBR, rigged + idle anim)
+			model_path = "res://assets/models/characters/villager_r3.glb"
 	if not model_path.is_empty():
 		var glb: PackedScene = load(model_path) as PackedScene
 		if glb:

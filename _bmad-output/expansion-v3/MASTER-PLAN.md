@@ -242,6 +242,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-11 — Corrupted Data Monolith (carved circuit traces + display ports + broken corner + brass/cyan-glow PBR bake + 4 floating fragments)
 - [x] Epic V3-R3-12 — Hero Villager NPC (sculpted face: eyes/nose/mouth/ears + extruded arms + 9-bone rig + idle anim)
 - [x] Epic V3-R3-13 — Hero Sword (diamond-section blade + carved fuller + 4 rune insets + extruded crossguard + grip wrap + steel/brass/leather PBR bake)
+- [x] Epic V3-R3-14 — Godot integration smoke test (R3 villager wired into Town.tscn, all 11 R3 GLBs copied into res://, headless --import passes 0 errors, baked PBR auto-extracted)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement

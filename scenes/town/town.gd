@@ -4,10 +4,11 @@ extends Node3D
 const NPC_SCENES: Dictionary = {
 	"ai_sage": "res://scenes/entities/npcs/AISageTown.tscn",
 	"cache_sprite": "res://scenes/entities/npcs/CacheSprite.tscn",
+	"villager_r3": "res://scenes/entities/npcs/VillagerR3.tscn",
 }
 
 ## NPCs that are always present in town (no recruitment needed)
-const ALWAYS_PRESENT: Array[String] = ["ai_sage"]
+const ALWAYS_PRESENT: Array[String] = ["ai_sage", "villager_r3"]
 
 @onready var player_spawn_point: Marker3D = %PlayerSpawnPoint
 @onready var portal_return_point: Marker3D = %PortalReturnPoint
@@ -114,6 +115,8 @@ func _get_npc_slot(npc_id: String) -> Marker3D:
 			return npc_slots.get_node_or_null("AISageSlot") as Marker3D
 		"cache_sprite":
 			return npc_slots.get_node_or_null("CacheSpriteSlot") as Marker3D
+		"villager_r3":
+			return npc_slots.get_node_or_null("NPCSlot3") as Marker3D
 		_:
 			return npc_slots.get_node_or_null(npc_id + "_slot") as Marker3D
 
