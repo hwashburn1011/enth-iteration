@@ -200,7 +200,7 @@ the original spec called for that Round 1 skipped:
   - More animation poses per hero
 
 - [x] Epic V3-R2-01 — Globbler Hero (UV unwrap + vertex color + multi-res)
-- [ ] Epic V3-R2-02 — AI Sage Refinement
+- [x] Epic V3-R2-02 — AI Sage Refinement
 - [ ] Epic V3-R2-03 — Class Variants Refinement
 - [ ] Epic V3-R2-04 — Companion Refinement
 - [ ] Epic V3-R2-05 — Pet Refinement
