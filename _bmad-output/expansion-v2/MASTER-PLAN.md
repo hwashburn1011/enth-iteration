@@ -2327,16 +2327,16 @@ Loop through epics 1 → 50 in order. For each epic:
 9. [x] Design minigame 8: Music Sync (rhythm)
 10. [x] Build Terminal Hacking minigame
 11. [x] Build Memory Match minigame
-12. Build Code Compile minigame
-13. Build Data Sort minigame
+12. [x] Build Code Compile minigame
+13. [x] Build Data Sort minigame
 14. [x] Build Fishing minigame
-15. Build Cooking minigame
+15. [x] Build Cooking minigame
 16. [x] Build Lockpicking minigame
 17. [x] Build Music Sync minigame
 18. [x] Add minigame difficulty tiers
 19. [x] Add minigame rewards
-20. Add minigame leaderboard local
-21. Add minigame tutorials
+20. [x] Add minigame leaderboard local
+21. [x] Add minigame tutorials
 22. [x] Hook minigames to world objects
 23. [x] Place hacking terminals in dungeons
 24. [x] Place memory crystals in vaults
@@ -2346,26 +2346,26 @@ Loop through epics 1 → 50 in order. For each epic:
 28. [x] Place locked containers throughout
 29. [x] Place music station in lounge
 30. [x] Add minigame UI per game
-31. Render minigame hero icons
-32. Add minigame SFX
-33. Add minigame VFX
+31. [x] Render minigame hero icons
+32. [x] Add minigame SFX
+33. [x] Add minigame VFX
 34. [x] Add minigame failure handling
 35. [x] Add minigame retry system
 36. [x] Hook to quest system
 37. [x] Hook to crafting outputs
 38. [x] Hook to lore unlocks
 39. [x] Add achievement triggers
-40. Validate UX per minigame
-41. Add controller support
-42. Test all 8 minigames
-43. Render gameplay screenshots
+40. [x] Validate UX per minigame
+41. [x] Add controller support
+42. [x] Test all 8 minigames
+43. [x] Render gameplay screenshots
 44. [x] Add minigame practice mode
-45. Add minigame help text
-46. Polish minigame visuals
+45. [x] Add minigame help text
+46. [x] Polish minigame visuals
 47. [x] Document minigame bible
 48. [x] Add minigame statistics tracker
 49. [x] Add minigame mastery rewards
-50. Commit `epic-42: minigames complete`
+50. [x] Commit `epic-42: minigames complete`
 
 ---
 
@@ -2858,7 +2858,7 @@ Mark each epic when complete:
 - [x] Epic 39 — Faction System
 - [x] Epic 40 — Companion System
 - [x] Epic 41 — Pet System
-- [ ] Epic 42 — Mini-Games & Puzzles
+- [x] Epic 42 — Mini-Games & Puzzles
 - [ ] Epic 43 — Boss Roster Expansion
 - [ ] Epic 44 — Endgame Modes
 - [ ] Epic 45 — Difficulty & Modifier System
