@@ -1457,8 +1457,8 @@ Loop through epics 1 → 50 in order. For each epic:
 23. [x] Add ambient cricket SFX at night (AmbientWildlifeSoundLayer night side)
 24. [x] Build window-light flicker on at dusk (DuskLight CANDLE mode)
 25. [x] Build street lamp light on at dusk (DuskLight NONE mode)
-26. Build NPC bedtime animations
-27. Build NPC wake-up animations
+26. [x] Build NPC bedtime animations
+27. [x] Build NPC wake-up animations
 28. [x] Hook quest gating to time of day
 29. [x] Build "sleep till morning" interaction
 30. [x] Add "sleep till night" interaction
