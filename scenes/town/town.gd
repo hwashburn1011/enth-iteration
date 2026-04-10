@@ -765,44 +765,26 @@ func _apply_town_building_textures() -> void:
 
 
 static func _make_plaster_material() -> StandardMaterial3D:
-	## Warm cream plaster with subtle brick-like noise underlay.
+	## Real Polyhaven CC0 plaster_brick_01 PBR (R3-26: replaces the previous
+	## procedural FastNoiseLite plaster — now uses photoscanned diffuse +
+	## normal_gl + roughness instead of Perlin + cellular noise).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.92, 0.84, 0.72)
-	# Albedo: warm Perlin variation
-	var albedo_noise: FastNoiseLite = FastNoiseLite.new()
-	albedo_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	albedo_noise.frequency = 0.25
-	albedo_noise.fractal_octaves = 4
-	var albedo_tex: NoiseTexture2D = NoiseTexture2D.new()
-	albedo_tex.noise = albedo_noise
-	albedo_tex.width = 512
-	albedo_tex.height = 512
-	albedo_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.66, 0.50, 0.35))  # warm shadow tone
-	ramp.set_color(1, Color(0.96, 0.88, 0.74))  # cream highlight
-	ramp.add_point(0.45, Color(0.82, 0.68, 0.52))
-	albedo_tex.color_ramp = ramp
-	mat.albedo_texture = albedo_tex
-	# Normal: subtle plaster surface bumps
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	bump_noise.frequency = 0.6
-	bump_noise.fractal_octaves = 3
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 2.5
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.5
+	var diff: Texture2D = load("res://assets/textures/polyhaven/plaster_brick_01_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/plaster_brick_01_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/plaster_brick_01_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.2
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.6, 0.6, 0.6)
-	mat.metallic = 0.0
-	mat.roughness = 0.92
 	return mat
 
 
@@ -974,47 +956,26 @@ static func _make_foliage_material() -> StandardMaterial3D:
 
 
 static func _make_stone_material() -> StandardMaterial3D:
-	## Cool gray stone with cellular cracks and bumpy surface.
+	## Real Polyhaven CC0 rough_block_wall PBR (R3-26: replaces the previous
+	## procedural cellular stone — now uses photoscanned diffuse + normal_gl
+	## + roughness from R3-21's downloaded set, reused via res:// path).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.62, 0.62, 0.66)
-	# Albedo: cellular noise mapped through gray gradient
-	var albedo_noise: FastNoiseLite = FastNoiseLite.new()
-	albedo_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	albedo_noise.frequency = 0.15
-	albedo_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
-	albedo_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var albedo_tex: NoiseTexture2D = NoiseTexture2D.new()
-	albedo_tex.noise = albedo_noise
-	albedo_tex.width = 512
-	albedo_tex.height = 512
-	albedo_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.32, 0.32, 0.36))
-	ramp.set_color(1, Color(0.78, 0.78, 0.82))
-	ramp.add_point(0.5, Color(0.55, 0.55, 0.60))
-	albedo_tex.color_ramp = ramp
-	mat.albedo_texture = albedo_tex
-	# Normal: chunky cellular bumps for stone block feel
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.2
-	bump_noise.cellular_jitter = 0.8
-	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
-	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 6.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 1.1
+	var diff: Texture2D = load("res://assets/textures/polyhaven/rough_block_wall_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/rough_block_wall_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/rough_block_wall_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.4
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
-	mat.metallic = 0.0
-	mat.roughness = 0.95
 	return mat
 
 
