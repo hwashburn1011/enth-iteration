@@ -2224,7 +2224,7 @@ Loop through epics 1 → 50 in order. For each epic:
 16. [x] Add companion gear slots
 17. [x] Add companion XP system
 18. [x] Add companion level-up
-19. Add companion skill tree (small, 15 nodes each)
+19. [x] Add companion skill tree (small, 15 nodes each)
 20. [x] Build companion summon at dungeon entry
 21. [x] Build companion dismiss
 22. [x] Add companion dialogue during runs
@@ -2235,27 +2235,27 @@ Loop through epics 1 → 50 in order. For each epic:
 27. [x] Build companion-specific quest lines
 28. [x] Add companion gift preferences
 29. [x] Hook companion to NPC affinity system
-30. Add companion-Globbler relationship cutscenes
+30. [x] Add companion-Globbler relationship cutscenes
 31. [x] Add per-companion ultimate ability
 32. [x] Add companion VFX themes
-33. Build companion model variants
-34. Add companion gear visual swap
-35. Add companion pet support
+33. [x] Build companion model variants
+34. [x] Add companion gear visual swap
+35. [x] Add companion pet support
 36. [x] Build companion party limit (1 active, future 2-3)
 37. [x] Hook companion to save data
 38. [x] Add companion presence affecting boss fights
 39. [x] Tune companion balance
-40. Test full run with each companion
-41. Render hero shots per companion
+40. [x] Test full run with each companion
+41. [x] Render hero shots per companion
 42. [x] Add companion lore tab
 43. [x] Add companion achievements
 44. [x] Hook to faction system
-45. Validate UX
-46. Build companion tutorial
+45. [x] Validate UX
+46. [x] Build companion tutorial
 47. [x] Document companion bible
-48. Add companion respec
+48. [x] Add companion respec
 49. [x] Polish companion AI navigation
-50. Commit `epic-40: companion system complete`
+50. [x] Commit `epic-40: companion system complete`
 
 ---
 
@@ -2856,7 +2856,7 @@ Mark each epic when complete:
 - [x] Epic 37 — NPC Affinity & Relationships
 - [x] Epic 38 — Quest System v2
 - [x] Epic 39 — Faction System
-- [ ] Epic 40 — Companion System
+- [x] Epic 40 — Companion System
 - [ ] Epic 41 — Pet System
 - [ ] Epic 42 — Mini-Games & Puzzles
 - [ ] Epic 43 — Boss Roster Expansion
