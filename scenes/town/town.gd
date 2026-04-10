@@ -419,7 +419,11 @@ func _build_town_decorations() -> void:
 	_add_prop(geom, "res://assets/models/props/bench.glb", Vector3(-2.5, 0, 1), Vector3(1.5, 1.5, 1.5))
 	_add_prop(geom, "res://assets/models/props/bench.glb", Vector3(2.5, 0, -1.5), Vector3(1.5, 1.5, 1.5))
 	# R5-04: Decorative R5 sculpted bridge on the north path
-	_add_prop(geom, "res://assets/models/props/wooden_bridge_r5.glb", Vector3(0, 0.01, -6), Vector3(1.6, 1.6, 1.6))
+	# R5 round-31: drop y to -0.48 to get the bridge bottom flush with the
+	# ground. The bridge GLB origin is ~16cm above its lowest mesh vertex
+	# and at scale 1.6 the visible bottom was floating 49cm above the ground
+	# per the round-31 survey. -0.48 brings the bottom to ~0.
+	_add_prop(geom, "res://assets/models/props/wooden_bridge_r5.glb", Vector3(0, -0.48, -6), Vector3(1.6, 1.6, 1.6))
 	# R5 round-2 fix: stone_well_r5.glb has broken geometry (AABB 0.05x0.6x0.05
 	# = a stick) and missing texture UIDs. Skip until re-bake. The town already
 	# has the bench around the well anchor point.
@@ -682,11 +686,34 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 	if glb:
 		var lantern: Node3D = glb.instantiate() as Node3D
 		parent.add_child(lantern)
+		# R5 round-31 fix: the iron_lantern_r3 GLB only contains the lamp head
+		# (~0.9m tall, no post) and the lamp internally sits ~1m above the
+		# GLB origin where the post would have been. With lantern.global_y=0,
+		# the lamp head bottom hovers at ~0.75m with nothing under it. Add
+		# a procedural emissive cyan post that fills the 0–0.75m gap so the
+		# lamp visually rests on a data-conduit support column. Discovered
+		# via the round-31 floating prop survey.
 		lantern.global_position = pos
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var post_mesh: CylinderMesh = CylinderMesh.new()
+		post_mesh.top_radius = 0.05
+		post_mesh.bottom_radius = 0.08
+		post_mesh.height = 0.78
+		post.mesh = post_mesh
+		post.position = Vector3(0, 0.39, 0)
+		var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+		post_mat.albedo_color = Color(0.10, 0.18, 0.26)
+		post_mat.emission_enabled = true
+		post_mat.emission = Color(0.20, 0.55, 0.75)
+		post_mat.emission_energy_multiplier = 0.8
+		post_mat.metallic = 0.7
+		post_mat.roughness = 0.35
+		post.material_override = post_mat
+		lantern.add_child(post)
 		# Add point light (not in the model — the R3 GLB also embeds a flame
 		# icosphere but Godot needs an actual Light3D to cast shadows)
 		var light: OmniLight3D = OmniLight3D.new()
-		light.position = Vector3(0, 2.5, 0)
+		light.position = Vector3(0, 1.5, 0)
 		light.light_color = Color(1.0, 0.85, 0.5)
 		light.light_energy = 1.5
 		light.omni_range = 8.0
