@@ -1466,7 +1466,7 @@ Loop through epics 1 → 50 in order. For each epic:
 32. [x] Add time UI clock display
 33. [x] Add day counter display
 34. [x] Hook save system to persist time
-35. Build time-of-day skip cinematic
+35. [x] Build time-of-day skip cinematic
 36. [x] Validate lighting transitions are smooth
 37. [x] Validate perf with continuous time updates
 38. [x] Build time-locked content (some NPCs only visible at certain hours)
