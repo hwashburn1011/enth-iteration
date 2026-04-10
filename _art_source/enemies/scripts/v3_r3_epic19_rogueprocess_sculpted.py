@@ -1,0 +1,650 @@
+"""
+Expansion V3 — ROUND 3 — Epic R3-19 — RogueProcess Sculpted Enemy
+=================================================================
+4th main enemy in R3 quality (after Compiler, Glitchbug, Memory Leak).
+Hooded humanoid rogue. Single-mesh body+hood+arms carved from a
+stretched UV sphere. Lessons applied:
+  - UV unwrap BEFORE multires (per feedback_blender_uv_unwrap_order)
+  - No bmesh.ops.delete(VERTS); use full-mesh primitives only
+
+Pipeline:
+  1. UV sphere base → Z-zone scaling for head/torso/legs
+  2. Hood: extrude top face cluster forward + pinch (real cowl shape)
+  3. Eye sockets carved deep under the hood shadow
+  4. Mouth slit
+  5. Arms triple-extruded from shoulders w/ blade tips at the hands
+  6. Cloak: extrude back face cluster downward + flare
+  7. Bevel
+  8. UV unwrap
+  9. Multires 2 levels (after unwrap)
+ 10. Z-zoned dark cloth + iron blade procedural shader
+ 11. Bake DIFFUSE + NORMAL high→low
+ 12. 9-bone armature, idle stalking animation
+ 13. GLB export, copy to res://assets/models/enemies/
+"""
+import bpy, bmesh, math, os, random
+from mathutils import Vector
+
+random.seed(319)
+
+OUTPUT_BLEND = "C:/Users/hwash/Documents/enth-iteration/_art_source/enemies/v3_r3_rogueprocess.blend"
+RENDER_DIR   = "C:/Users/hwash/Documents/enth-iteration/_art_source/enemies/renders"
+TEX_DIR      = "C:/Users/hwash/Documents/enth-iteration/_art_source/textures/baked"
+ANIM_DIR     = "C:/Users/hwash/Documents/enth-iteration/_art_source/enemies/anims"
+EXPORT_DIR   = "C:/Users/hwash/Documents/enth-iteration/_art_source/enemies/exports"
+for d in [RENDER_DIR, TEX_DIR, ANIM_DIR, EXPORT_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+bpy.ops.wm.read_factory_settings(use_empty=True)
+scene = bpy.context.scene
+scene.render.engine = 'CYCLES'
+scene.cycles.samples = 96
+scene.cycles.use_denoising = True
+scene.cycles.device = 'CPU'
+scene.render.resolution_x = 1920
+scene.render.resolution_y = 1080
+scene.view_settings.look = 'AgX - High Contrast'
+
+scene.world = bpy.data.worlds.new("v3r3_world")
+scene.world.use_nodes = True
+bg = scene.world.node_tree.nodes["Background"]
+bg.inputs["Color"].default_value = (0.03, 0.03, 0.05, 1)
+bg.inputs["Strength"].default_value = 0.4
+
+# ============================================================
+# STAGE 1 — ROGUEPROCESS BASE MESH
+# ============================================================
+print("=== STAGE 1: RogueProcess base ===")
+
+bpy.ops.mesh.primitive_uv_sphere_add(segments=48, ring_count=32, radius=0.55, location=(0, 0, 1.0))
+hero = bpy.context.object
+hero.name = "rogueprocess_hp"
+
+bm = bmesh.new()
+bm.from_mesh(hero.data)
+
+# Z-zone scaling: head zone, neck pinch, torso, legs
+for v in bm.verts:
+    z = v.co.z
+    if z > 0.30:
+        # Head zone — keep proportional, lift up
+        v.co.z += 0.40
+    elif 0.10 < z <= 0.30:
+        # Neck pinch
+        v.co.x *= 0.50
+        v.co.y *= 0.50
+        v.co.z += 0.25
+    elif -0.20 < z <= 0.10:
+        # Torso flare
+        v.co.x *= 1.30
+        v.co.y *= 1.05
+    elif z <= -0.20:
+        # Legs taper
+        v.co.x *= 0.85
+        v.co.z *= 1.30
+
+def closest_face(bm, target):
+    best, best_d = None, 1e9
+    for f in bm.faces:
+        d = (f.calc_center_median() - target).length
+        if d < best_d:
+            best_d = d; best = f
+    return best
+
+# === Hood: extrude top-front face cluster forward over the head ===
+print("Extruding hood cowl...")
+hood_face = closest_face(bm, Vector((0, -0.25, 1.20)))
+if hood_face:
+    geom = bmesh.ops.extrude_face_region(bm, geom=[hood_face])
+    new_verts = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMVert)]
+    for v in new_verts:
+        v.co += Vector((0, -0.10, 0.05))
+    new_faces = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMFace)]
+    if new_faces:
+        # Second extrude — pinch into cowl point
+        geom2 = bmesh.ops.extrude_face_region(bm, geom=[new_faces[0]])
+        new_verts2 = [g for g in geom2['geom'] if isinstance(g, bmesh.types.BMVert)]
+        for v in new_verts2:
+            v.co += Vector((0, -0.08, 0.10))
+        avg = sum((v.co for v in new_verts2), Vector()) / len(new_verts2)
+        for v in new_verts2:
+            v.co = v.co.lerp(avg, 0.40)
+
+# === Eye sockets (carved deep under the hood — barely visible) ===
+print("Carving deep eye sockets...")
+for offset_x in [-0.18, 0.18]:
+    eye_target = Vector((offset_x, -0.50, 1.20))
+    ef = closest_face(bm, eye_target)
+    if ef:
+        res = bmesh.ops.inset_individual(bm, faces=[ef], thickness=0.06, depth=0.0)
+        new_f = res['faces'][0] if res.get('faces') else ef
+        for v in new_f.verts:
+            v.co.y += 0.08  # very deep — eyes barely visible under hood
+
+# === Mouth slit ===
+print("Cutting mouth slit...")
+for x in [-0.05, 0.05]:
+    mf = closest_face(bm, Vector((x, -0.55, 0.95)))
+    if mf:
+        res = bmesh.ops.inset_individual(bm, faces=[mf], thickness=0.04, depth=0.0)
+        new_f = res['faces'][0] if res.get('faces') else mf
+        for v in new_f.verts:
+            v.co.y += 0.03
+
+# === Arms: triple-extrude from shoulders w/ blade tips ===
+print("Extruding arms with daggers...")
+for side in [-1, 1]:
+    shoulder_face = closest_face(bm, Vector((side * 0.65, -0.10, 0.50)))
+    if shoulder_face:
+        # Upper arm
+        geom = bmesh.ops.extrude_face_region(bm, geom=[shoulder_face])
+        new_verts = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMVert)]
+        for v in new_verts:
+            v.co += Vector((side * 0.18, -0.05, -0.05))
+        new_faces = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMFace)]
+        if new_faces:
+            # Forearm — angled forward
+            geom2 = bmesh.ops.extrude_face_region(bm, geom=[new_faces[0]])
+            new_verts2 = [g for g in geom2['geom'] if isinstance(g, bmesh.types.BMVert)]
+            for v in new_verts2:
+                v.co += Vector((side * 0.10, -0.18, -0.15))
+            avg = sum((v.co for v in new_verts2), Vector()) / len(new_verts2)
+            for v in new_verts2:
+                v.co = v.co.lerp(avg, 0.20)
+            new_faces2 = [g for g in geom2['geom'] if isinstance(g, bmesh.types.BMFace)]
+            if new_faces2:
+                # Dagger blade (long, thin tip)
+                geom3 = bmesh.ops.extrude_face_region(bm, geom=[new_faces2[0]])
+                new_verts3 = [g for g in geom3['geom'] if isinstance(g, bmesh.types.BMVert)]
+                for v in new_verts3:
+                    v.co += Vector((side * 0.05, -0.30, -0.05))
+                avg3 = sum((v.co for v in new_verts3), Vector()) / len(new_verts3)
+                for v in new_verts3:
+                    v.co = v.co.lerp(avg3, 0.65)
+
+# === Cloak: extrude back face cluster downward and flare ===
+print("Extruding cloak...")
+cloak_face = closest_face(bm, Vector((0, 0.55, 0.20)))
+if cloak_face:
+    geom = bmesh.ops.extrude_face_region(bm, geom=[cloak_face])
+    new_verts = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMVert)]
+    for v in new_verts:
+        v.co += Vector((0, 0.10, -0.20))
+        v.co.x *= 1.15
+    new_faces = [g for g in geom['geom'] if isinstance(g, bmesh.types.BMFace)]
+    if new_faces:
+        geom2 = bmesh.ops.extrude_face_region(bm, geom=[new_faces[0]])
+        new_verts2 = [g for g in geom2['geom'] if isinstance(g, bmesh.types.BMVert)]
+        for v in new_verts2:
+            v.co += Vector((0, 0.05, -0.45))
+            v.co.x *= 1.30  # flare wider at the bottom
+
+bm.normal_update()
+bm.to_mesh(hero.data)
+bm.free()
+hero.data.update()
+for poly in hero.data.polygons:
+    poly.use_smooth = True
+
+# Bevel (multires AFTER UV unwrap per memory rule)
+print("Adding bevel...")
+bev = hero.modifiers.new("Bevel", 'BEVEL')
+bev.width = 0.008
+bev.segments = 2
+
+# ============================================================
+# STAGE 2 — UV UNWRAP (cube_project for headless safety)
+# ============================================================
+print("=== STAGE 2: UV unwrap ===")
+bpy.ops.object.select_all(action='DESELECT')
+hero.select_set(True)
+bpy.context.view_layer.objects.active = hero
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+try:
+    bpy.ops.uv.cube_project(cube_size=2.0)
+except Exception as e:
+    print(f"cube_project failed: {e}")
+    try:
+        bpy.ops.uv.smart_project(angle_limit=math.radians(66), island_margin=0.02)
+    except Exception as e2:
+        print(f"smart_project also failed: {e2}")
+bpy.ops.object.mode_set(mode='OBJECT')
+
+# ============================================================
+# STAGE 2.5 — Multires AFTER UV unwrap
+# ============================================================
+print("=== STAGE 2.5: Multires ===")
+hero.modifiers.new("Multires", 'MULTIRES')
+bpy.context.view_layer.objects.active = hero
+for _ in range(2):
+    bpy.ops.object.multires_subdivide(modifier="Multires", mode='CATMULL_CLARK')
+
+# ============================================================
+# STAGE 3 — DARK CLOTH SHADER (Z-zoned)
+# ============================================================
+print("=== STAGE 3: Dark cloth + iron shader ===")
+
+def make_shader():
+    m = bpy.data.materials.new("v3r3_rogueprocess_proc")
+    m.use_nodes = True
+    nt = m.node_tree
+    nodes = nt.nodes; links = nt.links
+    nodes.clear()
+    out = nodes.new("ShaderNodeOutputMaterial"); out.location = (1400, 0)
+    bsdf = nodes.new("ShaderNodeBsdfPrincipled"); bsdf.location = (1100, 0)
+    bsdf.inputs["Roughness"].default_value = 0.65
+    bsdf.inputs["Metallic"].default_value = 0.0
+    bsdf.inputs["Emission Strength"].default_value = 8.0
+    links.new(bsdf.outputs[0], out.inputs[0])
+
+    tc = nodes.new("ShaderNodeTexCoord"); tc.location = (-1400, 0)
+    mp = nodes.new("ShaderNodeMapping"); mp.location = (-1200, 0)
+    mp.inputs["Scale"].default_value = (4, 4, 4)
+    links.new(tc.outputs["Generated"], mp.inputs["Vector"])
+
+    sep = nodes.new("ShaderNodeSeparateXYZ"); sep.location = (-1200, -300)
+    links.new(tc.outputs["Object"], sep.inputs["Vector"])
+
+    # Dark cloth weave
+    cloth_n = nodes.new("ShaderNodeTexNoise"); cloth_n.location = (-900, 200)
+    cloth_n.inputs["Scale"].default_value = 14.0
+    cloth_n.inputs["Detail"].default_value = 8.0
+    links.new(mp.outputs["Vector"], cloth_n.inputs["Vector"])
+
+    cloth_ramp = nodes.new("ShaderNodeValToRGB"); cloth_ramp.location = (-650, 200)
+    cr = cloth_ramp.color_ramp
+    cr.elements[0].position = 0.30
+    cr.elements[0].color = (0.04, 0.04, 0.06, 1)   # near-black
+    cr.elements[1].position = 0.70
+    cr.elements[1].color = (0.10, 0.08, 0.14, 1)   # dark purple-grey
+    links.new(cloth_n.outputs["Fac"], cloth_ramp.inputs["Fac"])
+    links.new(cloth_ramp.outputs["Color"], bsdf.inputs["Base Color"])
+
+    # === Pointiness-driven iron blade tips (the dagger ridges) ===
+    geo = nodes.new("ShaderNodeNewGeometry"); geo.location = (-900, -200)
+    pointy_ramp = nodes.new("ShaderNodeValToRGB"); pointy_ramp.location = (-650, -200)
+    pointy_ramp.color_ramp.elements[0].position = 0.55
+    pointy_ramp.color_ramp.elements[0].color = (0, 0, 0, 1)
+    pointy_ramp.color_ramp.elements[1].position = 0.72
+    pointy_ramp.color_ramp.elements[1].color = (1, 1, 1, 1)
+    links.new(geo.outputs["Pointiness"], pointy_ramp.inputs["Fac"])
+
+    iron_color = nodes.new("ShaderNodeRGB"); iron_color.location = (-650, -350)
+    iron_color.outputs[0].default_value = (0.55, 0.58, 0.65, 1)
+
+    iron_mix = nodes.new("ShaderNodeMix"); iron_mix.data_type = 'RGBA'; iron_mix.location = (100, 0)
+    links.new(pointy_ramp.outputs["Color"], iron_mix.inputs["Factor"])
+    links.new(cloth_ramp.outputs["Color"], iron_mix.inputs[6])
+    links.new(iron_color.outputs[0], iron_mix.inputs[7])
+    links.new(iron_mix.outputs[2], bsdf.inputs["Base Color"])
+
+    # Eye glow (recess emission via Pointiness inverted — deep recesses glow)
+    invert = nodes.new("ShaderNodeInvert"); invert.location = (-450, -400)
+    links.new(pointy_ramp.outputs["Color"], invert.inputs["Color"])
+
+    eye_color = nodes.new("ShaderNodeRGB"); eye_color.location = (-450, -550)
+    eye_color.outputs[0].default_value = (1.0, 0.20, 0.10, 1)  # red eye glow
+
+    em_mix = nodes.new("ShaderNodeMix"); em_mix.data_type = 'RGBA'; em_mix.location = (100, -400)
+    em_mix.inputs["Factor"].default_value = 0.0  # we'll wire pointiness as factor
+    # Use a deeper threshold mask: only the very deepest recesses (eye sockets) glow
+    deep_ramp = nodes.new("ShaderNodeValToRGB"); deep_ramp.location = (-200, -400)
+    deep_ramp.color_ramp.elements[0].position = 0.10
+    deep_ramp.color_ramp.elements[0].color = (1, 1, 1, 1)
+    deep_ramp.color_ramp.elements[1].position = 0.30
+    deep_ramp.color_ramp.elements[1].color = (0, 0, 0, 1)
+    links.new(geo.outputs["Pointiness"], deep_ramp.inputs["Fac"])
+
+    em_mix.inputs[6].default_value = (0, 0, 0, 1)
+    links.new(deep_ramp.outputs["Color"], em_mix.inputs["Factor"])
+    links.new(eye_color.outputs[0], em_mix.inputs[7])
+    links.new(em_mix.outputs[2], bsdf.inputs["Emission Color"])
+
+    # Roughness: iron polished, cloth rough
+    rough_ramp = nodes.new("ShaderNodeValToRGB"); rough_ramp.location = (100, -600)
+    rough_ramp.color_ramp.elements[0].position = 0.0
+    rough_ramp.color_ramp.elements[0].color = (0.85, 0.85, 0.85, 1)
+    rough_ramp.color_ramp.elements[1].position = 1.0
+    rough_ramp.color_ramp.elements[1].color = (0.20, 0.20, 0.20, 1)
+    links.new(pointy_ramp.outputs["Color"], rough_ramp.inputs["Fac"])
+    links.new(rough_ramp.outputs["Color"], bsdf.inputs["Roughness"])
+
+    # Metallic on iron edges only
+    metal_ramp = nodes.new("ShaderNodeValToRGB"); metal_ramp.location = (100, -800)
+    metal_ramp.color_ramp.elements[0].position = 0.0
+    metal_ramp.color_ramp.elements[0].color = (0, 0, 0, 1)
+    metal_ramp.color_ramp.elements[1].position = 1.0
+    metal_ramp.color_ramp.elements[1].color = (0.85, 0.85, 0.85, 1)
+    links.new(pointy_ramp.outputs["Color"], metal_ramp.inputs["Fac"])
+    links.new(metal_ramp.outputs["Color"], bsdf.inputs["Metallic"])
+
+    bp = nodes.new("ShaderNodeBump"); bp.location = (-200, -900)
+    bp.inputs["Strength"].default_value = 0.30
+    links.new(cloth_n.outputs["Fac"], bp.inputs["Height"])
+    links.new(bp.outputs["Normal"], bsdf.inputs["Normal"])
+    return m
+
+mat_proc = make_shader()
+hero.data.materials.clear()
+hero.data.materials.append(mat_proc)
+
+# ============================================================
+# STAGE 4 — BAKE DIFFUSE
+# ============================================================
+print("=== STAGE 4: Bake DIFFUSE ===")
+bake_albedo = bpy.data.images.new("rogueprocess_albedo_bake", width=1024, height=1024)
+img_node_a = mat_proc.node_tree.nodes.new("ShaderNodeTexImage")
+img_node_a.location = (1100, 400)
+img_node_a.image = bake_albedo
+img_node_a.select = True
+mat_proc.node_tree.nodes.active = img_node_a
+
+scene.cycles.bake_type = 'DIFFUSE'
+scene.render.bake.use_pass_direct = False
+scene.render.bake.use_pass_indirect = False
+scene.render.bake.use_pass_color = True
+scene.cycles.samples = 32
+
+bpy.ops.object.select_all(action='DESELECT')
+hero.select_set(True)
+bpy.context.view_layer.objects.active = hero
+
+print("Baking diffuse...")
+try:
+    bpy.ops.object.bake(type='DIFFUSE')
+    bake_path = os.path.join(TEX_DIR, "rogueprocess_albedo_1024.png")
+    bake_albedo.filepath_raw = bake_path
+    bake_albedo.file_format = 'PNG'
+    bake_albedo.save()
+    print(f"Baked albedo: {bake_path}")
+except Exception as e:
+    print(f"Bake failed: {e}")
+
+# ============================================================
+# STAGE 5 — RETOPO LOW-POLY
+# ============================================================
+print("=== STAGE 5: Retopo low-poly ===")
+bpy.ops.object.select_all(action='DESELECT')
+hero.select_set(True)
+bpy.context.view_layer.objects.active = hero
+bpy.ops.object.duplicate()
+low_poly = bpy.context.object
+low_poly.name = "rogueprocess_lp"
+
+for mod in list(low_poly.modifiers):
+    low_poly.modifiers.remove(mod)
+dec = low_poly.modifiers.new("Decimate", 'DECIMATE')
+dec.ratio = 0.20
+bpy.ops.object.modifier_apply(modifier="Decimate")
+
+bpy.ops.object.mode_set(mode='EDIT')
+bpy.ops.mesh.select_all(action='SELECT')
+try:
+    bpy.ops.uv.cube_project(cube_size=2.0)
+except Exception as e:
+    print(f"cube_project failed: {e}")
+bpy.ops.object.mode_set(mode='OBJECT')
+
+print(f"Low-poly: {len(low_poly.data.polygons)} faces")
+
+# ============================================================
+# STAGE 6 — NORMAL BAKE
+# ============================================================
+print("=== STAGE 6: Normal bake high → low ===")
+bake_normal = bpy.data.images.new("rogueprocess_normal_bake", width=1024, height=1024,
+                                    alpha=False, float_buffer=False)
+bake_normal.colorspace_settings.name = 'Non-Color'
+
+mat_lp = bpy.data.materials.new("v3r3_rogueprocess_baked")
+mat_lp.use_nodes = True
+ntlp = mat_lp.node_tree
+ntlp.nodes.clear()
+out_lp = ntlp.nodes.new("ShaderNodeOutputMaterial"); out_lp.location = (1200, 0)
+bsdf_lp = ntlp.nodes.new("ShaderNodeBsdfPrincipled"); bsdf_lp.location = (900, 0)
+bsdf_lp.inputs["Roughness"].default_value = 0.55
+ntlp.links.new(bsdf_lp.outputs[0], out_lp.inputs[0])
+
+img_alb_lp = ntlp.nodes.new("ShaderNodeTexImage"); img_alb_lp.location = (200, 200)
+img_alb_lp.image = bake_albedo
+ntlp.links.new(img_alb_lp.outputs["Color"], bsdf_lp.inputs["Base Color"])
+
+img_nrm_lp = ntlp.nodes.new("ShaderNodeTexImage"); img_nrm_lp.location = (200, -200)
+img_nrm_lp.image = bake_normal
+img_nrm_lp.image.colorspace_settings.name = 'Non-Color'
+nrm_node = ntlp.nodes.new("ShaderNodeNormalMap"); nrm_node.location = (550, -200)
+ntlp.links.new(img_nrm_lp.outputs["Color"], nrm_node.inputs["Color"])
+ntlp.links.new(nrm_node.outputs["Normal"], bsdf_lp.inputs["Normal"])
+
+img_nrm_lp.select = True
+ntlp.nodes.active = img_nrm_lp
+
+low_poly.data.materials.clear()
+low_poly.data.materials.append(mat_lp)
+
+print("Performing selected-to-active NORMAL bake...")
+bpy.ops.object.select_all(action='DESELECT')
+hero.select_set(True)
+low_poly.select_set(True)
+bpy.context.view_layer.objects.active = low_poly
+
+scene.cycles.bake_type = 'NORMAL'
+scene.render.bake.use_selected_to_active = True
+scene.render.bake.cage_extrusion = 0.04
+scene.render.bake.max_ray_distance = 0.20
+scene.cycles.samples = 16
+
+try:
+    bpy.ops.object.bake(type='NORMAL')
+    nrm_path = os.path.join(TEX_DIR, "rogueprocess_normal_1024.png")
+    bake_normal.filepath_raw = nrm_path
+    bake_normal.file_format = 'PNG'
+    bake_normal.save()
+    print(f"Baked normal: {nrm_path}")
+except Exception as e:
+    print(f"Normal bake failed: {e}")
+    import traceback; traceback.print_exc()
+
+scene.render.bake.use_selected_to_active = False
+scene.cycles.samples = 96
+
+low_poly.location = (3.0, 0, 1.0)
+
+# ============================================================
+# STAGE 7 — ARMATURE: 9-bone humanoid rig
+# ============================================================
+print("=== STAGE 7: Armature ===")
+bpy.ops.object.armature_add(location=(0, 0, 0))
+arm = bpy.context.object
+arm.name = "rogueprocess_armature"
+arm.show_in_front = True
+
+bpy.ops.object.mode_set(mode='EDIT')
+ed_bones = arm.data.edit_bones
+ed_bones.remove(ed_bones["Bone"])
+
+def add_bone(name, head, tail, parent=None):
+    b = ed_bones.new(name)
+    b.head = head
+    b.tail = tail
+    if parent:
+        b.parent = parent
+        b.use_connect = False
+    return b
+
+root      = add_bone("root",     Vector((0, 0, 0.0)),  Vector((0, 0, 0.30)))
+spine     = add_bone("spine",    Vector((0, 0, 0.30)), Vector((0, 0, 0.85)), parent=root)
+chest     = add_bone("chest",    Vector((0, 0, 0.85)), Vector((0, 0, 1.10)), parent=spine)
+head_b    = add_bone("head",     Vector((0, 0, 1.10)), Vector((0, 0, 1.55)), parent=chest)
+arm_l     = add_bone("arm_l",    Vector((-0.65, -0.10, 1.05)), Vector((-0.85, -0.20, 0.85)), parent=chest)
+forearm_l = add_bone("forearm_l",Vector((-0.85, -0.20, 0.85)), Vector((-0.95, -0.55, 0.50)), parent=arm_l)
+arm_r     = add_bone("arm_r",    Vector((0.65, -0.10, 1.05)),  Vector((0.85, -0.20, 0.85)),  parent=chest)
+forearm_r = add_bone("forearm_r",Vector((0.85, -0.20, 0.85)),  Vector((0.95, -0.55, 0.50)),  parent=arm_r)
+cloak     = add_bone("cloak",    Vector((0, 0.55, 0.30)),     Vector((0, 0.65, -0.50)),     parent=spine)
+
+bpy.ops.object.mode_set(mode='OBJECT')
+
+print("Parenting w/ automatic weights...")
+bpy.ops.object.select_all(action='DESELECT')
+hero.select_set(True)
+arm.select_set(True)
+bpy.context.view_layer.objects.active = arm
+try:
+    bpy.ops.object.parent_set(type='ARMATURE_AUTO')
+    print("Auto-weights succeeded")
+except Exception as e:
+    print(f"Auto-weights failed: {e}")
+    bpy.ops.object.parent_set(type='ARMATURE')
+
+# ============================================================
+# STAGE 8 — IDLE STALKING ANIMATION
+# ============================================================
+print("=== STAGE 8: Idle stalking animation ===")
+scene.frame_start = 1
+scene.frame_end = 60
+scene.render.fps = 30
+
+bpy.ops.object.select_all(action='DESELECT')
+arm.select_set(True)
+bpy.context.view_layer.objects.active = arm
+bpy.ops.object.mode_set(mode='POSE')
+
+pb_chest = arm.pose.bones["chest"]
+pb_head  = arm.pose.bones["head"]
+pb_arm_l = arm.pose.bones["arm_l"]
+pb_arm_r = arm.pose.bones["arm_r"]
+pb_cloak = arm.pose.bones["cloak"]
+
+for pb in [pb_chest, pb_head, pb_arm_l, pb_arm_r, pb_cloak]:
+    pb.rotation_mode = 'XYZ'
+
+# Stalking: head sways side to side, arms tense, cloak sways
+KEYS = [
+    # frame, head_rz, arm_l_rx, arm_r_rx, cloak_rz, chest_sx
+    (1,  0.00,  0.00,  0.00,  0.00, 1.00),
+    (15, 0.15, -0.10, -0.10, -0.05, 1.02),
+    (30, 0.00, -0.20, -0.20,  0.00, 1.04),
+    (45,-0.15, -0.10, -0.10,  0.05, 1.02),
+    (60, 0.00,  0.00,  0.00,  0.00, 1.00),
+]
+for f, hrz, alx, arx, crz, csx in KEYS:
+    scene.frame_set(f)
+    pb_head.rotation_euler = (0, 0, hrz); pb_head.keyframe_insert(data_path="rotation_euler", frame=f)
+    pb_arm_l.rotation_euler = (alx, 0, 0); pb_arm_l.keyframe_insert(data_path="rotation_euler", frame=f)
+    pb_arm_r.rotation_euler = (arx, 0, 0); pb_arm_r.keyframe_insert(data_path="rotation_euler", frame=f)
+    pb_cloak.rotation_euler = (0, 0, crz); pb_cloak.keyframe_insert(data_path="rotation_euler", frame=f)
+    pb_chest.scale = (csx, 1.0, csx); pb_chest.keyframe_insert(data_path="scale", frame=f)
+
+bpy.ops.object.mode_set(mode='OBJECT')
+print("Stalking keyframes inserted")
+
+try:
+    action = arm.animation_data.action if arm.animation_data else None
+    if action:
+        if hasattr(action, 'layers') and len(action.layers) > 0:
+            for layer in action.layers:
+                for strip in layer.strips:
+                    for cb in strip.channelbags:
+                        for fcurve in cb.fcurves:
+                            for kp in fcurve.keyframe_points:
+                                kp.interpolation = 'BEZIER'
+        elif hasattr(action, 'fcurves'):
+            for fcurve in action.fcurves:
+                for kp in fcurve.keyframe_points:
+                    kp.interpolation = 'BEZIER'
+except Exception as e:
+    print(f"Keyframe smoothing skipped: {e}")
+
+# ============================================================
+# STAGE 9 — LIGHTING + RENDERS
+# ============================================================
+print("=== STAGE 9: Lighting + Renders ===")
+
+bpy.ops.object.light_add(type='SPOT', location=(3, -8, 5))
+key = bpy.context.object
+key.data.energy = 2200; key.data.color = (0.65, 0.75, 1.0)
+key.data.spot_size = math.radians(80)
+direction = Vector((0, 0, 1.0)) - key.location
+key.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
+
+bpy.ops.object.light_add(type='AREA', location=(-5, 4, 4))
+fill = bpy.context.object
+fill.data.energy = 400; fill.data.color = (0.45, 0.55, 0.85); fill.data.size = 5
+
+bpy.ops.object.light_add(type='AREA', location=(0, -3, 0.3))
+rim = bpy.context.object
+rim.data.energy = 300; rim.data.color = (1.0, 0.20, 0.10); rim.data.size = 3
+
+bpy.ops.mesh.primitive_plane_add(size=14, location=(0, 0, 0))
+fl = bpy.context.object; fl.name = "floor"
+mat_fl = bpy.data.materials.new("floor")
+mat_fl.use_nodes = True
+fbsdf = mat_fl.node_tree.nodes["Principled BSDF"]
+fbsdf.inputs["Base Color"].default_value = (0.04, 0.04, 0.06, 1)
+fbsdf.inputs["Roughness"].default_value = 0.65
+fl.data.materials.append(mat_fl)
+
+def add_cam(name, loc, target, lens=70, dof=4.0, fstop=4.0):
+    bpy.ops.object.camera_add(location=loc)
+    c = bpy.context.object; c.name = name
+    c.data.lens = lens
+    c.data.dof.use_dof = True
+    c.data.dof.aperture_fstop = fstop
+    c.data.dof.focus_distance = dof
+    direction = Vector(target) - c.location
+    c.rotation_euler = direction.to_track_quat('-Z', 'Y').to_euler()
+    return c
+
+cam_hp = add_cam("cam_hp", Vector((0, -3.5, 1.5)), Vector((0, 0, 1.0)), lens=70, dof=3.5)
+cam_lp = add_cam("cam_lp", Vector((3.0, -3.5, 1.5)), Vector((3.0, 0, 1.0)), lens=70, dof=3.5)
+cam_compare = add_cam("cam_compare", Vector((1.5, -5, 1.8)), Vector((1.5, 0, 1.0)), lens=50, dof=5)
+
+bpy.ops.wm.save_as_mainfile(filepath=OUTPUT_BLEND)
+
+scene.frame_set(1)
+scene.camera = cam_hp
+scene.render.filepath = os.path.join(RENDER_DIR, "v3_r3_rogueprocess_hp.png")
+bpy.ops.render.render(write_still=True)
+print(f"Rendered: {scene.render.filepath}")
+
+scene.camera = cam_lp
+scene.render.filepath = os.path.join(RENDER_DIR, "v3_r3_rogueprocess_lp_baked.png")
+bpy.ops.render.render(write_still=True)
+print(f"Rendered: {scene.render.filepath}")
+
+scene.camera = cam_compare
+scene.render.filepath = os.path.join(RENDER_DIR, "v3_r3_rogueprocess_compare.png")
+bpy.ops.render.render(write_still=True)
+print(f"Rendered: {scene.render.filepath}")
+
+scene.camera = cam_hp
+scene.render.resolution_x = 1280; scene.render.resolution_y = 720
+for f in [1, 15, 30, 45]:
+    scene.frame_set(f)
+    scene.render.filepath = os.path.join(ANIM_DIR, f"v3_r3_rogueprocess_stalk_f{f:02d}.png")
+    bpy.ops.render.render(write_still=True)
+    print(f"Rendered anim frame: {scene.render.filepath}")
+
+# ============================================================
+# STAGE 10 — GLB EXPORT
+# ============================================================
+print("=== STAGE 10: GLB export ===")
+bpy.ops.wm.save_as_mainfile(filepath=OUTPUT_BLEND)
+
+bpy.ops.object.select_all(action='DESELECT')
+low_poly.select_set(True)
+arm.select_set(True)
+bpy.context.view_layer.objects.active = arm
+
+out_path = os.path.join(EXPORT_DIR, "rogueprocess_r3_v3.glb")
+try:
+    bpy.ops.export_scene.gltf(
+        filepath=out_path, use_selection=True,
+        export_format='GLB', export_apply=False,
+        export_animations=True, export_skins=True,
+    )
+    print(f"Exported: {out_path}")
+except Exception as e:
+    print(f"GLB export failed: {e}")
+
+print("=== V3 Round 3 Epic R3-19 RogueProcess complete ===")
