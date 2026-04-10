@@ -294,6 +294,12 @@ Round 4 picks up where Round 3 left off — Round 3 built sculpted hero assets a
 - [x] Epic V3-R4-28 — R3 walls in TutorialCombat + TutorialPrompt (both 12x12m, 8 walls each, 2 per side at ±3. Closes the tutorial sweep — all 5 tutorial scenes now use sculpted R3 brick walls with glowing runes: TutorialMovement (8), TutorialDash (8), TutorialCombat (8), TutorialLoot (4), TutorialPrompt (8) = 36 R3 wall instances across the entire tutorial floor.)
 - [x] Epic V3-R4-29 — R3 town hero building wired into Building2/3/4 slots (added 3 more town_hero_building_r3.glb instances to Town.tscn replacing Building2/3/4 CSGBox3D placeholders. Each rotated differently for variety: Building2 90° Y, Building3 180° Y, Building4 -90° Y. All 4 town building slots (1-4) now spawn the R3 sculpted hero building w/ carved windows + door + extruded gable + Z-zoned PBR.)
 - [x] Epic V3-R4-30 — R4 Capstone Receipts (R4-RECEIPTS.md). Closes Round 4. Comprehensive proof package documenting all 30 R4 epics across 6 pillars: in-engine integrations of existing R3 sculpts, 4 new R4 sculpts, Polyhaven material wiring, dungeon wall sweep across 13 rooms (~96 wall instances), town building sweep, and this capstone. Lists every scene the player can load and what R3+R4 sculpts spawn in it. **Round 4 is shipped.**
+
+## ROUND 5 — Polish, Variety, and the R4 Receipts Punch List
+
+R3 = sculpted assets. R4 = integration. R5 = polish and variety. The R4 receipts pointed to bridge, banner, gem-loot, hero NPC variants, particle FX, combat animations as the gaps. R5 picks them off one at a time.
+
+- [x] Epic V3-R5-01 — Hero treasure pile sculpted (NEW R5 sculpt). Boss-arena treasure mound: icosphere base flattened on bottom, per-vertex coin-stack noise displacement, 8 coin disc bumps extruded from the surface, 3 gem inset slots carved on top. Gold Pointiness shader (coin ridges polish to brighter metallic vs darker recessed gold) + warm 4.0 emission strength. Baked albedo + normal high→low. 3 separate gem icospheres on top (red/green/blue glass shaders w/ transmission + 5.0 emission) sitting in the carved slots + a Cycles point light at center for the treasure glow. GLB w/ all 4 meshes — mound + 3 gems.)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
