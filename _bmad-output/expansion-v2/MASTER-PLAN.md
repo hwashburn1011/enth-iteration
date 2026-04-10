@@ -1474,14 +1474,14 @@ Loop through epics 1 → 50 in order. For each epic:
 40. [x] Hook daily quests
 41. [x] Build night-only enemies
 42. [x] Build night-only loot
-43. Render time-of-day comparison shots
-44. Validate against all environments
+43. [x] Render time-of-day comparison shots
+44. [x] Validate against all environments
 45. [x] Add time sync between scenes
 46. [x] Hook EventBus signals for time events
-47. Add cinematic dawn breaking sequence
-48. Add cinematic sunset sequence
+47. [x] Add cinematic dawn breaking sequence
+48. [x] Add cinematic sunset sequence
 49. [x] Document day/night bible
-50. Commit `epic-26: day/night cycle complete`
+50. [x] Commit `epic-26: day/night cycle complete`
 
 ---
 
@@ -2842,7 +2842,7 @@ Mark each epic when complete:
 - [x] Epic 23 — Open Wilderness Zone
 - [x] Epic 24 — Multiple Dungeon Entrances
 - [x] Epic 25 — Town Hub Expansion: Underground & Vertical
-- [ ] Epic 26 — Day/Night Cycle System
+- [x] Epic 26 — Day/Night Cycle System
 - [ ] Epic 27 — Weather System
 - [ ] Epic 28 — World Map & Fast Travel
 - [ ] Epic 29 — Procedural Dungeon Generation v2
