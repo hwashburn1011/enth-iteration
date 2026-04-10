@@ -794,22 +794,22 @@ func _add_lantern(parent: Node3D, pos: Vector3) -> void:
 		# lamp visually rests on a data-conduit support column. Discovered
 		# via the round-31 floating prop survey.
 		lantern.global_position = pos
-		var post: MeshInstance3D = MeshInstance3D.new()
-		var post_mesh: CylinderMesh = CylinderMesh.new()
-		post_mesh.top_radius = 0.05
-		post_mesh.bottom_radius = 0.08
-		post_mesh.height = 0.78
-		post.mesh = post_mesh
-		post.position = Vector3(0, 0.39, 0)
-		var post_mat: StandardMaterial3D = StandardMaterial3D.new()
-		post_mat.albedo_color = Color(0.10, 0.18, 0.26)
-		post_mat.emission_enabled = true
-		post_mat.emission = Color(0.20, 0.55, 0.75)
-		post_mat.emission_energy_multiplier = 0.8
-		post_mat.metallic = 0.7
-		post_mat.roughness = 0.35
-		post.material_override = post_mat
-		lantern.add_child(post)
+		var lantern_post: MeshInstance3D = MeshInstance3D.new()
+		var lantern_post_mesh: CylinderMesh = CylinderMesh.new()
+		lantern_post_mesh.top_radius = 0.05
+		lantern_post_mesh.bottom_radius = 0.08
+		lantern_post_mesh.height = 0.78
+		lantern_post.mesh = lantern_post_mesh
+		lantern_post.position = Vector3(0, 0.39, 0)
+		var lantern_post_mat: StandardMaterial3D = StandardMaterial3D.new()
+		lantern_post_mat.albedo_color = Color(0.10, 0.18, 0.26)
+		lantern_post_mat.emission_enabled = true
+		lantern_post_mat.emission = Color(0.20, 0.55, 0.75)
+		lantern_post_mat.emission_energy_multiplier = 0.8
+		lantern_post_mat.metallic = 0.7
+		lantern_post_mat.roughness = 0.35
+		lantern_post.material_override = lantern_post_mat
+		lantern.add_child(lantern_post)
 		# Add point light (not in the model — the R3 GLB also embeds a flame
 		# icosphere but Godot needs an actual Light3D to cast shadows)
 		var light: OmniLight3D = OmniLight3D.new()
