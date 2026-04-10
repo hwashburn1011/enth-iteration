@@ -560,7 +560,8 @@ func _add_dungeon_props() -> void:
 			# Skip texture override on mushrooms — they're meant to glow
 
 	# Energy crystal decorations (scattered in some rooms) — keep glow
-	var crystal_scene: PackedScene = load("res://assets/models/props/energy_crystal.glb") as PackedScene
+	# R4-11: load the R4 sculpted 5-shard cyan crystal cluster instead of v2
+	var crystal_scene: PackedScene = load("res://assets/models/props/energy_crystal_r4.glb") as PackedScene
 	if crystal_scene and room_type in ["combat", "corridor"]:
 		for _i: int in randi_range(1, 3):
 			var crystal: Node3D = crystal_scene.instantiate() as Node3D
