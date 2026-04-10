@@ -2433,7 +2433,7 @@ Loop through epics 1 → 50 in order. For each epic:
 5. [x] Design Daily Challenge mode
 6. [x] Design Hardcore Mode (permadeath)
 7. [x] Build Challenge Tower scene structure
-8. Build tower entry NPC
+8. [x] Build tower entry NPC
 9. [x] Build tower modifier system per floor
 10. [x] Build tower reward tier system
 11. [x] Build tower leaderboard local
@@ -2451,31 +2451,31 @@ Loop through epics 1 → 50 in order. For each epic:
 23. [x] Add daily leaderboard slot
 24. [x] Build Hardcore mode toggle
 25. [x] Add hardcore save handling
-26. Add hardcore death cinematic
+26. [x] Add hardcore death cinematic
 27. [x] Add hardcore unique rewards
-28. Build endgame mode select UI
-29. Render mode hero icons
-30. Add mode-specific music
-31. Add mode-specific tutorial
-32. Add mode-specific achievements
+28. [x] Build endgame mode select UI
+29. [x] Render mode hero icons
+30. [x] Add mode-specific music
+31. [x] Add mode-specific tutorial
+32. [x] Add mode-specific achievements
 33. [x] Build mode statistics
 34. [x] Hook all modes to save data
 35. [x] Add mode quick-restart
 36. [x] Add mode pause handling
 37. [x] Validate balance per mode
-38. Test full Challenge Tower run
-39. Test full Infinite Mode run
-40. Test Boss Rush
-41. Test Daily Challenge
-42. Test Hardcore Mode
-43. Polish UX
-44. Render endgame showcase video
+38. [x] Test full Challenge Tower run
+39. [x] Test full Infinite Mode run
+40. [x] Test Boss Rush
+41. [x] Test Daily Challenge
+42. [x] Test Hardcore Mode
+43. [x] Polish UX
+44. [x] Render endgame showcase video
 45. [x] Document endgame bible
 46. [x] Add mode unlock conditions
 47. [x] Validate save isolation per mode
 48. [x] Add per-mode high-score display
 49. [x] Add per-mode trophies
-50. Commit `epic-44: endgame modes complete`
+50. [x] Commit `epic-44: endgame modes complete`
 
 ---
 
@@ -2860,7 +2860,7 @@ Mark each epic when complete:
 - [x] Epic 41 — Pet System
 - [x] Epic 42 — Mini-Games & Puzzles
 - [x] Epic 43 — Boss Roster Expansion
-- [ ] Epic 44 — Endgame Modes
+- [x] Epic 44 — Endgame Modes
 - [ ] Epic 45 — Difficulty & Modifier System
 - [ ] Epic 46 — Audio: Original Soundtrack
 - [ ] Epic 47 — Audio: SFX Overhaul
