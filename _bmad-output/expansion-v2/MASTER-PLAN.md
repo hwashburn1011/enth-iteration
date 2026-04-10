@@ -2501,7 +2501,7 @@ Loop through epics 1 → 50 in order. For each epic:
 18. [x] Hook modifiers to dungeon runs
 19. [x] Add modifier reward bonuses
 20. [x] Add modifier risk indicators
-21. Render modifier icons
+21. [x] Render modifier icons
 22. [x] Add modifier tooltips
 23. [x] Add modifier stacking rules
 24. [x] Validate balance per combination
@@ -2511,26 +2511,26 @@ Loop through epics 1 → 50 in order. For each epic:
 28. [x] Hook to save data
 29. [x] Test full difficulty matrix
 30. [x] Test modifier combinations
-31. Polish UI
-32. Add controller support
+31. [x] Polish UI
+32. [x] Add controller support
 33. [x] Add accessibility settings (auto-aim, slow time)
 34. [x] Add colorblind modes
 35. [x] Add screen-shake toggle
 36. [x] Add hit-stop intensity slider
 37. [x] Add UI scale option
 38. [x] Add subtitle option
-39. Add language placeholder system
-40. Add input rebinding
+39. [x] Add language placeholder system
+40. [x] Add input rebinding
 41. [x] Add aim assist toggle
 42. [x] Add damage number toggle
 43. [x] Add HUD opacity slider
-44. Validate accessibility against demo
-45. Add tutorial for difficulty
+44. [x] Validate accessibility against demo
+45. [x] Add tutorial for difficulty
 46. [x] Document difficulty bible
-47. Render difficulty showcase
-48. Test perf at all settings
+47. [x] Render difficulty showcase
+48. [x] Test perf at all settings
 49. [x] Add settings save/load
-50. Commit `epic-45: difficulty & accessibility complete`
+50. [x] Commit `epic-45: difficulty & accessibility complete`
 
 ---
 
@@ -2861,7 +2861,7 @@ Mark each epic when complete:
 - [x] Epic 42 — Mini-Games & Puzzles
 - [x] Epic 43 — Boss Roster Expansion
 - [x] Epic 44 — Endgame Modes
-- [ ] Epic 45 — Difficulty & Modifier System
+- [x] Epic 45 — Difficulty & Modifier System
 - [ ] Epic 46 — Audio: Original Soundtrack
 - [ ] Epic 47 — Audio: SFX Overhaul
 - [ ] Epic 48 — Voice Acting / NPC Voice Treatment
