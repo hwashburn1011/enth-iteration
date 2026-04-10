@@ -58,12 +58,21 @@ var _prompt_cooldown: float = 0.0
 
 
 func _build_entrance_visual() -> void:
+	# R5 round-27 fix: hide the placeholder Archway MeshInstance3D from the
+	# .tscn — there's also a portal_archway GLB loaded below, and the two
+	# stack visually. The placeholder ships with no material (engine default
+	# gray) which the round-27 health survey caught.
+	var legacy_archway: MeshInstance3D = get_node_or_null("Archway") as MeshInstance3D
+	if legacy_archway:
+		legacy_archway.visible = false
 	# Load portal archway model
 	var archway_scene: PackedScene = load("res://assets/models/props/portal_archway.glb") as PackedScene
 	if archway_scene:
 		var archway: Node3D = archway_scene.instantiate() as Node3D
 		add_child(archway)
 		archway.position = Vector3.ZERO
+		# Apply digital theme material to the GLB structural meshes
+		_apply_archway_textures(archway)
 	# Add portal particles (use position since global_position may not be set yet in _ready)
 	VFXFactory.spawn_portal_particles(Vector3(0, 1.5, 0), self)
 	# Glow light
