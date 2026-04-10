@@ -896,48 +896,30 @@ func _apply_tree_textures(root: Node) -> void:
 
 
 static func _make_bark_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 bark_brown_02 PBR (R3-28: replaces the previous
-	## stretched Perlin grain + cellular bump).
+	## R5 round-5: organic bark is off-theme. Re-style trees as "data spires" —
+	## dark metal-like trunk with vertical cyan circuit traces. Solid color
+	## with subtle emission so it reads as a structural data conduit.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/bark_brown_02_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/bark_brown_02_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/bark_brown_02_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.4
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = false  # bark wraps along the trunk axis naturally
-	mat.uv1_scale = Vector3(1.5, 0.7, 1.5)
+	mat.albedo_color = Color(0.10, 0.18, 0.24)
+	mat.emission_enabled = true
+	mat.emission = Color(0.10, 0.45, 0.55)
+	mat.emission_energy_multiplier = 0.4
+	mat.metallic = 0.6
+	mat.roughness = 0.4
 	return mat
 
 
 static func _make_foliage_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 aerial_grass_rock PBR (R3-28: replaces the previous
-	## Perlin leaf noise + cellular bump). Used for bushes/foliage clusters.
+	## R5 round-5: organic foliage is off-theme. Re-style canopies as
+	## "data crowns" — softly emissive teal cloud spheres that read as
+	## clouds of code/particles around the data spire trunks.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/aerial_grass_rock_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/aerial_grass_rock_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/aerial_grass_rock_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.2
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(1.2, 1.2, 1.2)
+	mat.albedo_color = Color(0.15, 0.55, 0.62)
+	mat.emission_enabled = true
+	mat.emission = Color(0.18, 0.70, 0.80)
+	mat.emission_energy_multiplier = 0.7
+	mat.metallic = 0.1
+	mat.roughness = 0.5
 	return mat
 
 

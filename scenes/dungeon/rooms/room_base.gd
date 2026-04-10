@@ -146,7 +146,7 @@ func _apply_dungeon_materials() -> void:
 	# Procedurally textured walls with brushed-metal noise + normal map.
 	# Apply to Wall*, Pillar*, and any other unmaterialized CSGBox3D so the
 	# boss arena pillars and other structural elements get the texture too.
-	var wall_mat: StandardMaterial3D = _make_wall_material()
+	var wall_mat: ShaderMaterial = _make_wall_material()
 	for child: Node in geom.get_children():
 		if child is CSGBox3D and (child.name.begins_with("Wall") or child.name.begins_with("Pillar")):
 			(child as CSGBox3D).material = wall_mat
@@ -159,32 +159,40 @@ func _apply_dungeon_materials() -> void:
 	_add_room_glow_strips(geom)
 
 
-static func _make_floor_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 cobblestone_floor_04 PBR (R3-29: replaces the previous
-	## procedural cellular sci-fi floor — now uses photoscanned diffuse +
-	## normal_gl + roughness, with ambient cyan emission preserved for that
-	## "dungeon glow under your feet" mood).
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/cobblestone_floor_04_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/cobblestone_floor_04_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/cobblestone_floor_04_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.6
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(0.4, 0.4, 0.4)
-	# Subtle cyan ambient emission so the floor reads even in dim rooms
-	mat.emission_enabled = true
-	mat.emission = Color(0.06, 0.10, 0.18)
-	mat.emission_energy_multiplier = 0.12
+static func _make_floor_material() -> ShaderMaterial:
+	## R5 round-5: digital grid shader replacing photoscanned cobblestone.
+	## Same pattern as the town ground but with denser grid + warmer scan
+	## pulse to read as "dungeon data substrate". Returns a ShaderMaterial,
+	## not StandardMaterial3D — but still binds via material/material_override
+	## like a normal material everywhere it's assigned.
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, cull_back;
+uniform vec3 base_color : source_color = vec3(0.05, 0.07, 0.13);
+uniform vec3 grid_color : source_color = vec3(0.12, 0.50, 0.65);
+uniform vec3 lane_color : source_color = vec3(0.25, 0.75, 0.85);
+uniform float grid_scale = 18.0;
+uniform float grid_thickness = 0.05;
+uniform float scan_speed = 0.35;
+void fragment() {
+	vec2 uv = UV * grid_scale;
+	vec2 g = abs(fract(uv) - 0.5);
+	float line = step(0.5 - grid_thickness, max(g.x, g.y));
+	vec2 g4 = abs(fract(uv * 0.25) - 0.5);
+	float lane = step(0.5 - grid_thickness * 0.7, max(g4.x, g4.y));
+	// Diagonal scan-line that sweeps across the floor
+	float scan = smoothstep(0.0, 0.05, sin((uv.x + uv.y) * 0.4 + TIME * scan_speed));
+	vec3 col = base_color;
+	col += lane_color * lane * 0.35;
+	col += grid_color * line * 0.7;
+	col += vec3(0.0, 0.15, 0.20) * scan * 0.25;
+	ALBEDO = col;
+	EMISSION = col * 0.85;
+}
+"""
+	var mat: ShaderMaterial = ShaderMaterial.new()
+	mat.shader = shader
 	return mat
 
 
@@ -199,29 +207,44 @@ static func _build_floor_ramp() -> Gradient:
 	return g
 
 
-static func _make_wall_material() -> StandardMaterial3D:
-	## Real Polyhaven CC0 castle_brick_07 PBR (R3-29: replaces the previous
-	## procedural Perlin streak + cellular bump). Subtle blue emission preserved.
-	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	var diff: Texture2D = load("res://assets/textures/polyhaven/castle_brick_07_diff_1k.png") as Texture2D
-	var nor: Texture2D = load("res://assets/textures/polyhaven/castle_brick_07_nor_gl_1k.png") as Texture2D
-	var rough: Texture2D = load("res://assets/textures/polyhaven/castle_brick_07_rough_1k.png") as Texture2D
-	if diff:
-		mat.albedo_texture = diff
-	if nor:
-		mat.normal_enabled = true
-		mat.normal_texture = nor
-		mat.normal_scale = 1.4
-	if rough:
-		mat.roughness_texture = rough
-		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
-	mat.albedo_color = Color(1, 1, 1)
-	mat.metallic = 0.0
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(0.5, 0.5, 0.5)
-	mat.emission_enabled = true
-	mat.emission = Color(0.04, 0.07, 0.13)
-	mat.emission_energy_multiplier = 0.08
+static func _make_wall_material() -> ShaderMaterial:
+	## R5 round-5: digital wall shader replacing photoscanned castle brick.
+	## Vertical "data column" stripes + scattered glow nodes — feels like
+	## a server rack from the side. Returns ShaderMaterial.
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, cull_back;
+uniform vec3 base_color : source_color = vec3(0.06, 0.08, 0.14);
+uniform vec3 stripe_color : source_color = vec3(0.10, 0.40, 0.55);
+uniform vec3 node_color : source_color = vec3(0.30, 0.85, 0.95);
+uniform float stripe_density = 14.0;
+uniform float blink_speed = 1.5;
+float hash21(vec2 p) {
+	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+void fragment() {
+	vec2 uv = UV;
+	// Vertical stripes
+	float s = abs(fract(uv.x * stripe_density) - 0.5);
+	float stripe = smoothstep(0.45, 0.50, s);
+	// Scattered blinking nodes on a coarse grid
+	vec2 cell = floor(uv * vec2(stripe_density, 8.0));
+	vec2 cell_uv = fract(uv * vec2(stripe_density, 8.0));
+	float r = hash21(cell);
+	float node = step(0.85, r);
+	float blink = 0.5 + 0.5 * sin(TIME * blink_speed + r * 6.28);
+	vec2 cd = cell_uv - 0.5;
+	float node_pixel = node * smoothstep(0.18, 0.0, length(cd)) * blink;
+	vec3 col = base_color;
+	col += stripe_color * stripe * 0.6;
+	col += node_color * node_pixel * 1.4;
+	ALBEDO = col;
+	EMISSION = col * 0.9;
+}
+"""
+	var mat: ShaderMaterial = ShaderMaterial.new()
+	mat.shader = shader
 	return mat
 
 
