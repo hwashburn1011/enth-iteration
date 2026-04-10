@@ -323,7 +323,18 @@ func _build_town_decorations() -> void:
 					_add_roof(building)
 	else:
 		# R3 path: add a warm window light to each R3 building instance for
-		# evening atmosphere (the R3 GLBs don't include lights themselves)
+		# evening atmosphere (the R3 GLBs don't include lights themselves).
+		# R5 round-3 fix: also override the building mesh material because
+		# the R3 baked albedos are placeholder UV pads of solid pale color
+		# (same bug as the character sculpts) so the buildings render as
+		# featureless white blocks. Use distinct hues per building so the
+		# town reads as separate structures.
+		var building_mats: Array[Color] = [
+			Color(0.45, 0.32, 0.22),  # warm brown — smithy
+			Color(0.32, 0.42, 0.55),  # blue-grey — workshop
+			Color(0.55, 0.42, 0.30),  # tan — cottage
+			Color(0.4, 0.35, 0.5),    # purple-grey — tavern
+		]
 		for i: int in range(1, 5):
 			var r3_building: Node = geom.get_node_or_null("Building%dR3" % i)
 			if r3_building:
@@ -334,6 +345,24 @@ func _build_town_decorations() -> void:
 				win_light.omni_range = 5.0
 				win_light.omni_attenuation = 2.0
 				r3_building.add_child(win_light)
+				# Material override on every mesh under the R3 building
+				var bm: StandardMaterial3D = StandardMaterial3D.new()
+				bm.albedo_color = building_mats[i - 1]
+				bm.roughness = 0.75
+				bm.metallic = 0.05
+				bm.emission_enabled = true
+				bm.emission = building_mats[i - 1] * 0.3
+				bm.emission_energy_multiplier = 0.15
+				# Force opaque — some R3 building meshes have alpha mode set
+				bm.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+				bm.cull_mode = BaseMaterial3D.CULL_BACK
+				var st: Array = [r3_building]
+				while not st.is_empty():
+					var n: Node = st.pop_back()
+					if n is MeshInstance3D:
+						(n as MeshInstance3D).material_override = bm
+					for c in n.get_children():
+						st.append(c)
 
 	# --- Trees ---
 	_add_tree(geom, Vector3(-15, 0, 3), 1.5, 2.4)

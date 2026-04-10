@@ -28,6 +28,16 @@ func _ready() -> void:
 func _register_with_hud() -> void:
 	if not is_inside_tree():
 		return
+	# R5 round-3 fix: EnemyPool pre-instances every enemy at startup, including
+	# this boss. Without this guard the boss bar shows "CORRUPTED COMPILER" in
+	# tutorial rooms because the pool-side instance fires _ready() and registers
+	# with the HUD even though it's never actually deployed to the scene.
+	# Only register when actually parented into the live scene tree.
+	var p: Node = get_parent()
+	while p != null:
+		if p.name == "EnemyPool":
+			return
+		p = p.get_parent()
 	var hud_nodes: Array[Node] = get_tree().get_nodes_in_group(&"hud")
 	if hud_nodes.is_empty():
 		# Try finding by type
