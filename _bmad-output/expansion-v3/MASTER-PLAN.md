@@ -290,6 +290,7 @@ Round 4 picks up where Round 3 left off — Round 3 built sculpted hero assets a
 - [x] Epic V3-R4-24 — R3 walls in CorridorWide (16x12m wide passage. Added 8 dungeon_wall_r3 instances around the perimeter — 2 per side. Now all 3 corridor variants (CorridorStraight from R4-05, CorridorTurn from R4-18, CorridorWide from R4-24) use sculpted R3 walls. The AlcoveWall CSGBox3D inside the room is left as CSG since it's a half-wall protrusion.)
 - [x] Epic V3-R4-25 — R3 walls in StoryRoom (10x10m. Added 4 dungeon_wall_r3 instances — 1 per side, perfect dimensional fit (room 10m, wall 6m wide centered on each face). North + east unrotated, south flipped 180° on Y, west rotated -90° around Y. Combined w/ R4-06 data monolith centerpiece, StoryRoom is now fully sculpted: 4 carved brick walls + cyan-glow data monolith + Polyhaven R3-29 floor.)
 - [x] Epic V3-R4-26 — R3 walls in TutorialMovement + TutorialLoot (TutorialMovement 14x14: 8 walls — 2 per side at ±3.5. TutorialLoot 10x10: 4 walls — 1 per side centered. Tutorial sweep started; TutorialDash + TutorialCombat + TutorialPrompt queued for R4-27/28/29.)
+- [x] Epic V3-R4-27 — R3 walls in TutorialDash (6x20m narrow corridor. 1 wall each at the 6m north + south end caps + 3 each on the long 20m east + west walls at z=-7,-1,5. East/west rotated 90° around Y. The dash tutorial now has the same brick + rune-glow architecture as CombatCorridorAmbush.)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
