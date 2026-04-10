@@ -1933,7 +1933,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 1. [x] Design farming bible: crops, growth, harvest
 2. [x] Design 20 crop types
-3. Render crop sprites at growth stages (4 stages each = 80)
+3. [x] Render crop sprites at growth stages (4 stages each = 80)
 4. [x] Build farm plot prop
 5. [x] Add till plot interaction
 6. [x] Add plant seed interaction
@@ -1945,42 +1945,42 @@ Loop through epics 1 → 50 in order. For each epic:
 12. [x] Add seed shop NPC
 13. [x] Add per-crop stat bonus when consumed
 14. [x] Add per-crop ingredient role in recipes
-15. Build farming UI overlay
+15. [x] Build farming UI overlay
 16. [x] Add farming tools (hoe, watering can, scythe)
 17. [x] Add tool durability
 18. [x] Add tool upgrade tiers
-19. Build greenhouse interior (Harvest's Greenhouse from Epic 11)
+19. [x] Build greenhouse interior (Harvest's Greenhouse from Epic 11)
 20. [x] Add greenhouse crops (rare seeds)
 21. [x] Add fertilizer system
 22. [x] Add crop quality tiers
-23. Build orchard with fruit trees
-24. Add fruit tree growth stages
-25. Add wild forage spawn locations in wilderness
-26. Add forage collection
+23. [x] Build orchard with fruit trees
+24. [x] Add fruit tree growth stages
+25. [x] Add wild forage spawn locations in wilderness
+26. [x] Add forage collection
 27. [x] Add fishing system (basic)
 28. [x] Add 15 fish types
 29. [x] Add fishing rod tiers
 30. [x] Add fishing minigame
-31. Build fish tank display in town
+31. [x] Build fish tank display in town
 32. [x] Add hunting prey (passive wildlife)
 33. [x] Add hunting reward materials
 34. [x] Hook all gathering to material library (Epic 34)
 35. [x] Add seasonal crop variants
 36. [x] Add weather-affected gathering
 37. [x] Add gathering achievements
-38. Add gathering UI tracker
-39. Add gathering NPC quests
+38. [x] Add gathering UI tracker
+39. [x] Add gathering NPC quests
 40. [x] Hook to save data
-41. Validate balance
-42. Add ambient SFX for gathering
-43. Add particle effects for harvest
+41. [x] Validate balance
+42. [x] Add ambient SFX for gathering
+43. [x] Add particle effects for harvest
 44. [x] Add level/skill progression for gathering
 45. [x] Add gathering skill perks
-46. Render hero shot of farm
+46. [x] Render hero shot of farm
 47. [x] Document farming bible
-48. Test full farming loop
-49. Add farm decoration items
-50. Commit `epic-35: farming & gathering complete`
+48. [x] Test full farming loop
+49. [x] Add farm decoration items
+50. [x] Commit `epic-35: farming & gathering complete`
 
 ---
 
@@ -2851,7 +2851,7 @@ Mark each epic when complete:
 - [x] Epic 32 — Skill Tree
 - [x] Epic 33 — Module Library Expansion
 - [x] Epic 34 — Crafting System
-- [ ] Epic 35 — Farming & Gathering Systems
+- [x] Epic 35 — Farming & Gathering Systems
 - [ ] Epic 36 — Town Building & Decoration
 - [ ] Epic 37 — NPC Affinity & Relationships
 - [ ] Epic 38 — Quest System v2
