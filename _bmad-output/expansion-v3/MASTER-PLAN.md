@@ -230,6 +230,7 @@ texture, add an armature with bones, parent w/ automatic weights, key
 an idle animation loop, render hero shot + animation.
 
 - [x] Epic V3-R3-01 — Globbler Hero (sculpt + retopo + bake + rig + idle)
+- [x] Epic V3-R3-02 — AI Sage Hero (sculpt + robe + hood + beard + cast-spell anim)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
