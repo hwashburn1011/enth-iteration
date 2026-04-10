@@ -2719,7 +2719,7 @@ Loop through epics 1 → 50 in order. For each epic:
 12. [x] Build cinematic camera system
 13. [x] Build cinematic dolly tracks
 14. [x] Build cinematic camera shake
-15. Build cinematic depth of field
+15. [x] Build cinematic depth of field
 16. [x] Build cinematic letterbox bars
 17. [x] Build cinematic timeline tool
 18. [x] Implement opening cinematic in-engine
@@ -2731,7 +2731,7 @@ Loop through epics 1 → 50 in order. For each epic:
 24. [x] Implement iteration 6 → 7
 25. [x] Implement iteration 7 → 8
 26. [x] Implement iteration 8 → 9
-27. Implement final ending
+27. [x] Implement final ending
 28. [x] Add cinematic skip option
 29. [x] Hook cinematics to story flags
 30. [x] Add cinematic save/restore
@@ -2739,7 +2739,7 @@ Loop through epics 1 → 50 in order. For each epic:
 32. [x] Add cinematic music sync
 33. [x] Add cinematic SFX hooks
 34. [x] Polish opening cinematic
-35. Polish closing cinematic
+35. [x] Polish closing cinematic
 36. [x] Build "first compaction" cinematic
 37. [x] Build "first boss kill" cinematic
 38. [x] Build "town arrival" cinematic
@@ -2748,13 +2748,13 @@ Loop through epics 1 → 50 in order. For each epic:
 41. [x] Build death cinematic dramatization
 42. [x] Build secret discovery cinematics
 43. [x] Validate cinematics on multiple aspect ratios
-44. Render cinematic showcase reel
+44. [x] Render cinematic showcase reel
 45. [x] Add post-credits scene
 46. [x] Hook to achievement system
-47. Test full cinematic playback
+47. [x] Test full cinematic playback
 48. [x] Optimize cinematic playback perf
 49. [x] Document cinematic bible
-50. Commit `epic-49: cinematics complete`
+50. [x] Commit `epic-49: cinematics complete`
 
 ---
 
@@ -2865,7 +2865,7 @@ Mark each epic when complete:
 - [x] Epic 46 — Audio: Original Soundtrack
 - [x] Epic 47 — Audio: SFX Overhaul
 - [x] Epic 48 — Voice Acting / NPC Voice Treatment
-- [ ] Epic 49 — Cinematics & Cutscenes
+- [x] Epic 49 — Cinematics & Cutscenes
 - [ ] Epic 50 — Steam Launch Prep
 
 **Total work items:** 2,500
