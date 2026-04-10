@@ -213,7 +213,7 @@ the original spec called for that Round 1 skipped:
 - [x] Epic V3-R2-12 — Vegetation Library Refinement
 - [x] Epic V3-R2-13 — Server Room Biome Refinement
 - [x] Epic V3-R2-14 — Memory Vaults Refinement
-- [ ] Epic V3-R2-15 — Corrupted Wilds Refinement
+- [x] Epic V3-R2-15 — Corrupted Wilds Refinement
 - [ ] Epic V3-R2-16 — Boss Sanctum Refinement
 - [ ] Epic V3-R2-17 — Floor Detailing Refinement
 - [ ] Epic V3-R2-18 — Base Enemy Refinement
