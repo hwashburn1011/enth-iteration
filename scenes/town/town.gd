@@ -492,43 +492,25 @@ func _apply_prop_material_by_path(root: Node, path: String) -> void:
 
 
 static func _make_wood_material() -> StandardMaterial3D:
-	## Warm aged wood with vertical grain.
+	## Real Polyhaven CC0 weathered_planks PBR (R3-27: replaces the previous
+	## procedural Perlin grain — now uses photoscanned diffuse + normal_gl + roughness).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.55, 0.36, 0.20)
-	var grain_noise: FastNoiseLite = FastNoiseLite.new()
-	grain_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	grain_noise.frequency = 0.6
-	grain_noise.fractal_octaves = 4
-	var grain_tex: NoiseTexture2D = NoiseTexture2D.new()
-	grain_tex.noise = grain_noise
-	grain_tex.width = 256
-	grain_tex.height = 512
-	grain_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.32, 0.18, 0.08))
-	ramp.set_color(1, Color(0.72, 0.50, 0.28))
-	ramp.add_point(0.5, Color(0.50, 0.32, 0.18))
-	grain_tex.color_ramp = ramp
-	mat.albedo_texture = grain_tex
-	# Subtle bump
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	bump_noise.frequency = 0.9
-	bump_noise.fractal_octaves = 3
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 256
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 3.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.7
+	var diff: Texture2D = load("res://assets/textures/polyhaven/weathered_planks_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/weathered_planks_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/weathered_planks_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.2
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = false
 	mat.uv1_scale = Vector3(1.0, 0.5, 1.0)
-	mat.metallic = 0.0
-	mat.roughness = 0.9
 	return mat
 
 
@@ -789,41 +771,25 @@ static func _make_plaster_material() -> StandardMaterial3D:
 
 
 static func _make_roof_tile_material() -> StandardMaterial3D:
-	## Terracotta tile material with rhythmic cellular pattern.
+	## Real Polyhaven CC0 roof_09 PBR (R3-27: replaces the previous procedural
+	## cellular terracotta — now uses photoscanned diffuse + normal_gl + roughness).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.78, 0.36, 0.22)
-	var tile_noise: FastNoiseLite = FastNoiseLite.new()
-	tile_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	tile_noise.frequency = 0.35
-	tile_noise.cellular_distance_function = FastNoiseLite.DISTANCE_MANHATTAN
-	tile_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	tile_noise.cellular_jitter = 0.4
-	var tile_tex: NoiseTexture2D = NoiseTexture2D.new()
-	tile_tex.noise = tile_noise
-	tile_tex.width = 512
-	tile_tex.height = 512
-	tile_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.55, 0.22, 0.12))
-	ramp.set_color(1, Color(0.92, 0.50, 0.30))
-	ramp.add_point(0.5, Color(0.78, 0.36, 0.20))
-	tile_tex.color_ramp = ramp
-	mat.albedo_texture = tile_tex
-	# Bump from same cellular noise
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = tile_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 4.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.9
+	var diff: Texture2D = load("res://assets/textures/polyhaven/roof_09_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/roof_09_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/roof_09_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.4
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.05
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(0.7, 0.7, 0.7)
-	mat.metallic = 0.05
-	mat.roughness = 0.85
 	return mat
 
 
