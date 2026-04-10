@@ -1878,11 +1878,11 @@ Loop through epics 1 → 50 in order. For each epic:
 
 1. [x] Design crafting bible: recipes, materials, stations
 2. [x] Design 20 crafting materials
-3. Render material icons
+3. [x] Render material icons
 4. [x] Build material drop system from enemies
 5. [x] Build material gather system from environment
-6. Build crafting station prop variants
-7. Place crafting stations in town districts
+6. [x] Build crafting station prop variants
+7. [x] Place crafting stations in town districts
 8. [x] Build crafting UI
 9. [x] Hook recipe list
 10. [x] Define 30 module recipes
@@ -1892,8 +1892,8 @@ Loop through epics 1 → 50 in order. For each epic:
 14. [x] Define 10 cosmetic recipes
 15. [x] Implement recipe ingredient checking
 16. [x] Implement craft button + animation
-17. Add craft success VFX
-18. Add craft failure VFX
+17. [x] Add craft success VFX
+18. [x] Add craft failure VFX
 19. [x] Hook to inventory output
 20. [x] Add recipe unlock system
 21. [x] Add recipe discovery from drops
@@ -1902,30 +1902,30 @@ Loop through epics 1 → 50 in order. For each epic:
 24. [x] Build recipe book UI
 25. [x] Add favorite recipes
 26. [x] Add recipe filtering
-27. Add craft queue
-28. Add bulk craft option
+27. [x] Add craft queue
+28. [x] Add bulk craft option
 29. [x] Add material preview
 30. [x] Hook to save data
 31. [x] Add station upgrades
-32. Add station appearance per upgrade
-33. Add resource node respawning
-34. Add gathering tool requirements
-35. Build ore deposit prop
-36. Build wood gather prop
-37. Build herb gather prop
-38. Build fish catch system
-39. Build cooking system
-40. Build smelting system
-41. Build alchemy system
+32. [x] Add station appearance per upgrade
+33. [x] Add resource node respawning
+34. [x] Add gathering tool requirements
+35. [x] Build ore deposit prop
+36. [x] Build wood gather prop
+37. [x] Build herb gather prop
+38. [x] Build fish catch system
+39. [x] Build cooking system
+40. [x] Build smelting system
+41. [x] Build alchemy system
 42. [x] Add station ambient SFX
 43. [x] Add station ambient particles
-44. Hook stations to NPC interactions (NPC crafts FOR you)
+44. [x] Hook stations to NPC interactions (NPC crafts FOR you)
 45. [x] Add achievement triggers for crafting milestones
-46. Validate crafting balance vs loot drops
-47. Test full recipe pipeline
-48. Render hero shot of crafting station
+46. [x] Validate crafting balance vs loot drops
+47. [x] Test full recipe pipeline
+48. [x] Render hero shot of crafting station
 49. [x] Document crafting bible
-50. Commit `epic-34: crafting system complete`
+50. [x] Commit `epic-34: crafting system complete`
 
 ---
 
@@ -2850,7 +2850,7 @@ Mark each epic when complete:
 - [x] Epic 31 — Class System
 - [x] Epic 32 — Skill Tree
 - [x] Epic 33 — Module Library Expansion
-- [ ] Epic 34 — Crafting System
+- [x] Epic 34 — Crafting System
 - [ ] Epic 35 — Farming & Gathering Systems
 - [ ] Epic 36 — Town Building & Decoration
 - [ ] Epic 37 — NPC Affinity & Relationships
