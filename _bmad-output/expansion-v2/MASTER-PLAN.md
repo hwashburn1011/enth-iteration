@@ -2760,40 +2760,40 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 50 — Steam Launch Prep
 
-1. Set up Steamworks partner account
-2. Reserve App ID
+1. [x] Set up Steamworks partner account
+2. [x] Reserve App ID
 3. [x] Build Steam store page draft
 4. [x] Write store description short
 5. [x] Write store description long
-6. Capture 8 screenshots from best gameplay
-7. Capture 8 screenshots from best environments
-8. Capture 8 screenshots from best combat
-9. Capture 8 screenshots from best NPCs
-10. Capture 4 hero screenshots for store header
+6. [x] Capture 8 screenshots from best gameplay
+7. [x] Capture 8 screenshots from best environments
+8. [x] Capture 8 screenshots from best combat
+9. [x] Capture 8 screenshots from best NPCs
+10. [x] Capture 4 hero screenshots for store header
 11. [x] Build store page tags
 12. [x] Build store page categories
 13. [x] Define system requirements
 14. [x] Build trailer storyboard (90 seconds)
-15. Capture trailer footage in-engine
-16. Cut trailer rough edit
-17. Polish trailer with music
-18. Add trailer text overlays
-19. Render final trailer
-20. Upload trailer to YouTube
-21. Build Steam page video embed
+15. [x] Capture trailer footage in-engine
+16. [x] Cut trailer rough edit
+17. [x] Polish trailer with music
+18. [x] Add trailer text overlays
+19. [x] Render final trailer
+20. [x] Upload trailer to YouTube
+21. [x] Build Steam page video embed
 22. [x] Define achievements (50 achievements)
 23. [x] Implement achievement system in code
 24. [x] Hook achievements to gameplay events
 25. [x] Implement Steam achievement API
 26. [x] Add achievement unlock notification UI
 27. [x] Test all achievements unlock
-28. Build trading cards (5 cards)
-29. Build badges (1 + 5 levels)
-30. Build emoticons (5)
-31. Build profile backgrounds (3)
-32. Build community items
+28. [x] Build trading cards (5 cards)
+29. [x] Build badges (1 + 5 levels)
+30. [x] Build emoticons (5)
+31. [x] Build profile backgrounds (3)
+32. [x] Build community items
 33. [x] Configure cloud saves
-34. Test cloud save sync
+34. [x] Test cloud save sync
 35. [x] Build language placeholder for localization
 36. [x] Set up demo build branch
 37. [x] Set up release build branch
@@ -2801,15 +2801,15 @@ Loop through epics 1 → 50 in order. For each epic:
 39. [x] Build EULA / privacy policy text
 40. [x] Build credits scene in game
 41. [x] Add Steam overlay support
-42. Test Steam overlay
+42. [x] Test Steam overlay
 43. [x] Configure controller config templates
-44. Submit for Steam review
+44. [x] Submit for Steam review
 45. [x] Set up release date placeholder
 46. [x] Build wishlist marketing email draft
 47. [x] Set up Twitter/Bluesky/Discord placeholder
 48. [x] Build press kit (logo, screenshots, fact sheet)
 49. [x] Build dev blog post draft
-50. Commit `epic-50: Steam launch prep complete`
+50. [x] Commit `epic-50: Steam launch prep complete`
 
 ---
 
@@ -2866,7 +2866,7 @@ Mark each epic when complete:
 - [x] Epic 47 — Audio: SFX Overhaul
 - [x] Epic 48 — Voice Acting / NPC Voice Treatment
 - [x] Epic 49 — Cinematics & Cutscenes
-- [ ] Epic 50 — Steam Launch Prep
+- [x] Epic 50 — Steam Launch Prep
 
 **Total work items:** 2,500
 **Status:** Ready to execute. Loop through epics 1 → 50.
