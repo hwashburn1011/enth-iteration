@@ -575,6 +575,58 @@ func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) 
 		instance.global_position = pos
 		# Route texture by GLB filename
 		_apply_prop_material_by_path(instance, path)
+		# R5 round-44 fix: every prop loaded via _add_prop has been shipping
+		# with NO collision shape — the player walks through trees, rocks,
+		# anvils, barrels, crates, the bridge, and benches. Caught by the
+		# round-44 town prop collision survey (28 solid props missing
+		# collision). Add a procedural BoxShape3D matching the largest
+		# mesh AABB, except for decorative props (flower beds, bushes,
+		# small leaves, signposts) where collision would feel obstructive.
+		var stem: String = path.get_file().get_basename().to_lower()
+		var skip_collision: bool = (
+			"flower" in stem or "bush" in stem or "pine" in stem
+			or "bridge" in stem or "signpost" in stem or "lantern" in stem
+		)
+		if not skip_collision:
+			_add_prop_collision(instance)
+
+
+static func _add_prop_collision(prop_root: Node3D) -> void:
+	## Walk the prop tree, find the biggest mesh AABB, and add a
+	## procedural StaticBody3D + BoxShape3D under the prop root.
+	var biggest_size: float = 0.0
+	var biggest_aabb: AABB
+	var st: Array = [prop_root]
+	while not st.is_empty():
+		var n: Node = st.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh:
+			var ab: AABB = (n as MeshInstance3D).mesh.get_aabb()
+			var sv: float = ab.size.x * ab.size.y * ab.size.z
+			if sv > biggest_size:
+				biggest_size = sv
+				biggest_aabb = ab
+		for c in n.get_children():
+			st.append(c)
+	if biggest_size <= 0.0:
+		return
+	var prop_scale: Vector3 = prop_root.scale
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = Vector3(
+		biggest_aabb.size.x * prop_scale.x,
+		biggest_aabb.size.y * prop_scale.y,
+		biggest_aabb.size.z * prop_scale.z
+	)
+	shape.shape = box
+	var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5
+	shape.position = Vector3(
+		center.x * prop_scale.x,
+		center.y * prop_scale.y,
+		center.z * prop_scale.z
+	)
+	body.add_child(shape)
+	prop_root.add_child(body)
 
 
 func _apply_prop_material_by_path(root: Node, path: String) -> void:
@@ -698,6 +750,9 @@ func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height:
 		parent.add_child(tree)
 		tree.global_position = pos
 		_apply_tree_textures(tree)
+		# R5 round-44: trees are solid props but ship without collision —
+		# add a procedural BoxShape3D so the player can't walk through trunks
+		_add_prop_collision(tree)
 	else:
 		# Fallback to CSG
 		var tree: Node3D = Node3D.new()
