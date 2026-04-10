@@ -185,7 +185,7 @@ Each epic follows this structure (adapted to the asset class):
 - [x] Epic V3-27 — Skill Tree & Module Icon Texture Pass
 - [x] Epic V3-28 — VFX Material Library
 - [x] Epic V3-29 — Lighting Bible Refinement
-- [ ] Epic V3-30 — Steam Marketing Asset Polish
+- [x] Epic V3-30 — Steam Marketing Asset Polish
 
 ---
 
