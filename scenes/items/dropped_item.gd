@@ -51,21 +51,38 @@ func _ready() -> void:
 		_tooltip.fixed_size = true
 		_tooltip.pixel_size = 0.0035
 		_tooltip.position.y = 1.45
-		# Try loading Blender crystal model
-		var crystal: PackedScene = load("res://assets/models/props/item_pickup.glb") as PackedScene
+		# R4-15: branch on item type to load the right R4 sculpted asset
+		# Health prompts → potion bottle (R4-14)
+		# Compute prompts → energy crystal (R4-10)
+		# Everything else → existing item_pickup crystal
+		var asset_path: String = "res://assets/models/props/item_pickup.glb"
+		var override_material: bool = true
+		var prompt_type: String = ""
+		if item.has_method("get_prompt_type"):
+			prompt_type = item.get_prompt_type()
+		elif item.get(&"prompt_type") != null:
+			prompt_type = str(item.get(&"prompt_type"))
+		if prompt_type == "health":
+			asset_path = "res://assets/models/props/potion_bottle_r4.glb"
+			override_material = false  # potion has its own glass+liquid shader
+		elif prompt_type == "compute":
+			asset_path = "res://assets/models/props/energy_crystal_r4.glb"
+			override_material = false  # crystal has its own emission shader
+		var crystal: PackedScene = load(asset_path) as PackedScene
 		if crystal:
 			var instance: Node3D = crystal.instantiate() as Node3D
 			_mesh.add_child(instance)
-			# Color the crystal based on rarity (re-use rarity_col from above)
-			for child: Node in instance.get_children():
-				if child is MeshInstance3D:
-					var mat: StandardMaterial3D = StandardMaterial3D.new()
-					mat.albedo_color = rarity_col
-					mat.emission_enabled = true
-					mat.emission = rarity_col * 0.7
-					mat.emission_energy_multiplier = 2.0
-					mat.roughness = 0.2
-					(child as MeshInstance3D).material_override = mat
+			if override_material:
+				# Color the placeholder crystal based on rarity
+				for child: Node in instance.get_children():
+					if child is MeshInstance3D:
+						var mat: StandardMaterial3D = StandardMaterial3D.new()
+						mat.albedo_color = rarity_col
+						mat.emission_enabled = true
+						mat.emission = rarity_col * 0.7
+						mat.emission_energy_multiplier = 2.0
+						mat.roughness = 0.2
+						(child as MeshInstance3D).material_override = mat
 		else:
 			var mat: StandardMaterial3D = StandardMaterial3D.new()
 			mat.albedo_color = _rarity_color(item.rarity)
