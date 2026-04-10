@@ -2159,10 +2159,10 @@ Loop through epics 1 → 50 in order. For each epic:
 6. [x] Build faction reputation tracker
 7. [x] Define faction reputation gains
 8. [x] Define faction reputation losses
-9. Build faction UI screen
-10. Render faction emblems
+9. [x] Build faction UI screen
+10. [x] Render faction emblems
 11. [x] Build faction NPC representatives in town
-12. Build faction headquarters scenes
+12. [x] Build faction headquarters scenes
 13. [x] Add faction quest lines (10 per faction)
 14. [x] Implement Optimizer quest line
 15. [x] Implement Glitcher quest line
@@ -2171,16 +2171,16 @@ Loop through epics 1 → 50 in order. For each epic:
 18. [x] Add faction-specific rewards (gear, modules)
 19. [x] Add faction-specific cosmetics
 20. [x] Add faction reputation rank system
-21. Add faction rank-up cinematic
+21. [x] Add faction rank-up cinematic
 22. [x] Build faction merchant
 23. [x] Add faction shop inventory
 24. [x] Add faction-locked content
 25. [x] Add reputation conflict mechanic (rising in one lowers others)
 26. [x] Add neutral faction option
-27. Build faction war event
-28. Add faction-aligned NPCs in dungeons
-29. Add faction-aligned enemies
-30. Add faction prayer/buff system
+27. [x] Build faction war event
+28. [x] Add faction-aligned NPCs in dungeons
+29. [x] Add faction-aligned enemies
+30. [x] Add faction prayer/buff system
 31. [x] Hook faction to story branches
 32. [x] Add achievement triggers
 33. [x] Add faction lore tab
@@ -2188,19 +2188,19 @@ Loop through epics 1 → 50 in order. For each epic:
 35. [x] Add faction-specific dialogue greetings
 36. [x] Add faction reaction to player choices
 37. [x] Hook to save data
-38. Validate balance across factions
-39. Test playthrough rising in each faction
-40. Render hero shot per faction HQ
+38. [x] Validate balance across factions
+39. [x] Test playthrough rising in each faction
+40. [x] Render hero shot per faction HQ
 41. [x] Document faction bible
-42. Add faction tutorial
-43. Add faction selection UI at intro
-44. Add faction-tagged loot drops
-45. Validate faction conflict UX
-46. Add faction map overlay
-47. Add faction event calendar
-48. Add UI hints for current standing
-49. Validate against quest system
-50. Commit `epic-39: faction system complete`
+42. [x] Add faction tutorial
+43. [x] Add faction selection UI at intro
+44. [x] Add faction-tagged loot drops
+45. [x] Validate faction conflict UX
+46. [x] Add faction map overlay
+47. [x] Add faction event calendar
+48. [x] Add UI hints for current standing
+49. [x] Validate against quest system
+50. [x] Commit `epic-39: faction system complete`
 
 ---
 
@@ -2855,7 +2855,7 @@ Mark each epic when complete:
 - [x] Epic 36 — Town Building & Decoration
 - [x] Epic 37 — NPC Affinity & Relationships
 - [x] Epic 38 — Quest System v2
-- [ ] Epic 39 — Faction System
+- [x] Epic 39 — Faction System
 - [ ] Epic 40 — Companion System
 - [ ] Epic 41 — Pet System
 - [ ] Epic 42 — Mini-Games & Puzzles
