@@ -523,44 +523,25 @@ func _add_path(parent: Node3D, pos: Vector3, size: Vector3) -> void:
 
 
 static func _make_dirt_path_material() -> StandardMaterial3D:
-	## Compacted dirt path with subtle pebble noise.
+	## Real Polyhaven CC0 brown_mud_03 PBR (R3-28: replaces the previous
+	## procedural Perlin dirt + cellular pebbles).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.62, 0.52, 0.38)
-	# Albedo: warm dirt with pebble specks
-	var dirt_noise: FastNoiseLite = FastNoiseLite.new()
-	dirt_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	dirt_noise.frequency = 0.4
-	dirt_noise.fractal_octaves = 4
-	var dirt_tex: NoiseTexture2D = NoiseTexture2D.new()
-	dirt_tex.noise = dirt_noise
-	dirt_tex.width = 512
-	dirt_tex.height = 512
-	dirt_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.42, 0.32, 0.20))
-	ramp.set_color(1, Color(0.78, 0.66, 0.48))
-	ramp.add_point(0.5, Color(0.60, 0.50, 0.34))
-	dirt_tex.color_ramp = ramp
-	mat.albedo_texture = dirt_tex
-	# Pebble bump
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.7
-	bump_noise.cellular_jitter = 0.85
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 4.5
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.85
+	var diff: Texture2D = load("res://assets/textures/polyhaven/brown_mud_03_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/brown_mud_03_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/brown_mud_03_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.2
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(1.5, 1.5, 1.5)
-	mat.metallic = 0.0
-	mat.roughness = 0.95
 	return mat
 
 
@@ -837,87 +818,48 @@ func _apply_tree_textures(root: Node) -> void:
 
 
 static func _make_bark_material() -> StandardMaterial3D:
-	## Vertical bark grain via stretched Perlin noise + bumpy normal.
+	## Real Polyhaven CC0 bark_brown_02 PBR (R3-28: replaces the previous
+	## stretched Perlin grain + cellular bump).
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.42, 0.28, 0.18)
-	var grain_noise: FastNoiseLite = FastNoiseLite.new()
-	grain_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	grain_noise.frequency = 0.7
-	grain_noise.fractal_octaves = 4
-	var grain_tex: NoiseTexture2D = NoiseTexture2D.new()
-	grain_tex.noise = grain_noise
-	grain_tex.width = 256
-	grain_tex.height = 512  # tall = stretched grain
-	grain_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.22, 0.14, 0.08))
-	ramp.set_color(1, Color(0.55, 0.38, 0.24))
-	ramp.add_point(0.5, Color(0.38, 0.25, 0.15))
-	grain_tex.color_ramp = ramp
-	mat.albedo_texture = grain_tex
-	# Bumpy normal from cellular noise
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.4
-	bump_noise.cellular_jitter = 0.7
-	bump_noise.cellular_distance_function = FastNoiseLite.DISTANCE_EUCLIDEAN
-	bump_noise.cellular_return_type = FastNoiseLite.RETURN_DISTANCE
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 256
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 5.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 1.0
+	var diff: Texture2D = load("res://assets/textures/polyhaven/bark_brown_02_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/bark_brown_02_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/bark_brown_02_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.4
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = false  # bark wraps along the trunk axis naturally
 	mat.uv1_scale = Vector3(1.5, 0.7, 1.5)
-	mat.metallic = 0.0
-	mat.roughness = 0.95
 	return mat
 
 
 static func _make_foliage_material() -> StandardMaterial3D:
-	## Layered green foliage with leafy noise variation.
+	## Real Polyhaven CC0 aerial_grass_rock PBR (R3-28: replaces the previous
+	## Perlin leaf noise + cellular bump). Used for bushes/foliage clusters.
 	var mat: StandardMaterial3D = StandardMaterial3D.new()
-	mat.albedo_color = Color(0.35, 0.58, 0.30)
-	var leaf_noise: FastNoiseLite = FastNoiseLite.new()
-	leaf_noise.noise_type = FastNoiseLite.TYPE_PERLIN
-	leaf_noise.frequency = 0.6
-	leaf_noise.fractal_octaves = 3
-	var leaf_tex: NoiseTexture2D = NoiseTexture2D.new()
-	leaf_tex.noise = leaf_noise
-	leaf_tex.width = 512
-	leaf_tex.height = 512
-	leaf_tex.seamless = true
-	var ramp: Gradient = Gradient.new()
-	ramp.set_color(0, Color(0.18, 0.32, 0.14))
-	ramp.set_color(1, Color(0.58, 0.78, 0.42))
-	ramp.add_point(0.4, Color(0.30, 0.50, 0.22))
-	ramp.add_point(0.75, Color(0.45, 0.68, 0.32))
-	leaf_tex.color_ramp = ramp
-	mat.albedo_texture = leaf_tex
-	# Bumpy normal for leaf clusters
-	var bump_noise: FastNoiseLite = FastNoiseLite.new()
-	bump_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
-	bump_noise.frequency = 0.8
-	bump_noise.cellular_jitter = 0.9
-	var bump_tex: NoiseTexture2D = NoiseTexture2D.new()
-	bump_tex.noise = bump_noise
-	bump_tex.width = 512
-	bump_tex.height = 512
-	bump_tex.seamless = true
-	bump_tex.as_normal_map = true
-	bump_tex.bump_strength = 4.0
-	mat.normal_enabled = true
-	mat.normal_texture = bump_tex
-	mat.normal_scale = 0.9
+	var diff: Texture2D = load("res://assets/textures/polyhaven/aerial_grass_rock_diff_1k.png") as Texture2D
+	var nor: Texture2D = load("res://assets/textures/polyhaven/aerial_grass_rock_nor_gl_1k.png") as Texture2D
+	var rough: Texture2D = load("res://assets/textures/polyhaven/aerial_grass_rock_rough_1k.png") as Texture2D
+	if diff:
+		mat.albedo_texture = diff
+	if nor:
+		mat.normal_enabled = true
+		mat.normal_texture = nor
+		mat.normal_scale = 1.2
+	if rough:
+		mat.roughness_texture = rough
+		mat.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	mat.albedo_color = Color(1, 1, 1)
+	mat.metallic = 0.0
 	mat.uv1_triplanar = true
 	mat.uv1_scale = Vector3(1.2, 1.2, 1.2)
-	mat.metallic = 0.0
-	mat.roughness = 0.85
 	return mat
 
 
