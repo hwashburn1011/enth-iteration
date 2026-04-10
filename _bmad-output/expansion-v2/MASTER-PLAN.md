@@ -2595,7 +2595,7 @@ Loop through epics 1 → 50 in order. For each epic:
 
 ## Epic 47 — Audio: SFX Overhaul (300+ Sounds)
 
-1. Source/record full SFX library (royalty-free or original)
+1. [x] Source/record full SFX library (royalty-free or original)
 2. [x] Player footsteps grass ×4
 3. [x] Player footsteps stone ×4
 4. [x] Player footsteps metal ×4
@@ -2644,7 +2644,7 @@ Loop through epics 1 → 50 in order. For each epic:
 47. [x] UI item drop on ground
 48. [x] UI gold pickup
 49. [x] UI XP pickup
-50. Commit `epic-47: SFX overhaul complete`
+50. [x] Commit `epic-47: SFX overhaul complete`
 
 ---
 
@@ -2863,7 +2863,7 @@ Mark each epic when complete:
 - [x] Epic 44 — Endgame Modes
 - [x] Epic 45 — Difficulty & Modifier System
 - [x] Epic 46 — Audio: Original Soundtrack
-- [ ] Epic 47 — Audio: SFX Overhaul
+- [x] Epic 47 — Audio: SFX Overhaul
 - [ ] Epic 48 — Voice Acting / NPC Voice Treatment
 - [ ] Epic 49 — Cinematics & Cutscenes
 - [ ] Epic 50 — Steam Launch Prep
