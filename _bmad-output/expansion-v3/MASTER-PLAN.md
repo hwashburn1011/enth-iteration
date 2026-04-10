@@ -244,6 +244,7 @@ an idle animation loop, render hero shot + animation.
 - [x] Epic V3-R3-13 — Hero Sword (diamond-section blade + carved fuller + 4 rune insets + extruded crossguard + grip wrap + steel/brass/leather PBR bake)
 - [x] Epic V3-R3-14 — Godot integration smoke test (R3 villager wired into Town.tscn, all 11 R3 GLBs copied into res://, headless --import passes 0 errors, baked PBR auto-extracted)
 - [x] Epic V3-R3-15 — Player.tscn Globbler swap (R3 sculpted Globbler GLB replaces v2 placeholder; the "Globbler-shaped capsule with sphere arms" is GONE)
+- [x] Epic V3-R3-16 — R3 enemies wired into Godot (Compiler/Glitchbug/MemoryLeak scenes now spawn sculpted GLBs instead of BoxMesh/SphereMesh/CylinderMesh placeholders)
 - [ ] Epic V3-R2-20 — Compiler Boss Refinement
 - [ ] Epic V3-R2-21 — New Bosses Refinement
 - [ ] Epic V3-R2-22 — Crafting Stations Refinement
