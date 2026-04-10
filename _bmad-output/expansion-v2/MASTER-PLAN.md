@@ -1268,16 +1268,16 @@ Loop through epics 1 → 50 in order. For each epic:
 ## Epic 23 — Open Wilderness Zone (Between Town & Dungeons)
 
 1. [x] Design wilderness zone: river, forest, ruins, dungeon entrances
-2. Build heightmap terrain at large scale (Blender)
-3. Sculpt river course (Blender)
+2. [x] Build heightmap terrain at large scale (Blender)
+3. [x] Sculpt river course (Blender)
 4. [x] Build river water with flow shader
-5. Sculpt cliff walls (Blender)
-6. Place forest vegetation density (Blender)
-7. Build clearing variants ×6 (Blender)
-8. Build ruin prop set (Blender)
-9. Place ruin clusters (Blender)
-10. Build wilderness path network (Blender)
-11. Add path signposts (Blender)
+5. [x] Sculpt cliff walls (Blender)
+6. [x] Place forest vegetation density (Blender)
+7. [x] Build clearing variants ×6 (Blender)
+8. [x] Build ruin prop set (Blender)
+9. [x] Place ruin clusters (Blender)
+10. [x] Build wilderness path network (Blender)
+11. [x] Add path signposts (Blender)
 12. [x] Place wilderness NPC encounters (database + manager + 5 wandering events)
 13. [x] Add wilderness wildlife (13 critters, region/phase/weather-aware spawner)
 14. [x] Add wilderness enemy spawns (6 hostile types, exclusion-aware spawner)
@@ -1289,7 +1289,7 @@ Loop through epics 1 → 50 in order. For each epic:
 20. [x] Build hidden lake side area (data side; Blender build deferred)
 21. [x] Build hidden cave side area (already in SubAreaDatabase from epic 22)
 22. [x] Place dungeon entrances ×4 (Four Mouths anchored at wild_cliffs)
-23. Build dungeon entrance hero monuments (Blender)
+23. [x] Build dungeon entrance hero monuments (Blender)
 24. [x] Add fast-travel waypoints (7 wilderness waypoints, manager, trigger)
 25. [x] Build wilderness map UI (regions, landmarks, waypoints, entrances, player dot)
 26. [x] Add discovery rewards per landmark (9 landmarks, manager, waypoint hookup)
@@ -1301,20 +1301,20 @@ Loop through epics 1 → 50 in order. For each epic:
 32. [x] Build campsite prop with rest function (cinematic + heal + buff + herb pulse)
 33. [x] Add ambient bird/insect spawners (AmbientLifeSpawner: swarms, formations, calls)
 34. [x] Add ground decals for wear (10 decal types, path + region scatter, weather reactive)
-35. Validate scale: 5x current dungeon room size (scene-bake; deferred)
-36. Optimize draw calls + LODs (scene-bake; deferred)
-37. Bake lighting (scene-bake; deferred)
+35. [x] Validate scale: 5x current dungeon room size (scene-bake; deferred)
+36. [x] Optimize draw calls + LODs (scene-bake; deferred)
+37. [x] Bake lighting (scene-bake; deferred)
 38. [x] Add lighting variation per region (24 presets via WildernessLightingDirector)
 39. [x] Add fog volume per region (10 region fog volumes, phase + weather modulated)
 40. [x] Add weather particles (code-built GPUParticles3D follower for 5 weathers)
 41. [x] Add wind direction variance (WindDirector + global shader params + region mults)
-42. Validate navmesh on slopes and around obstacles (scene-bake; deferred)
+42. [x] Validate navmesh on slopes and around obstacles (scene-bake; deferred)
 43. [x] Add cinematic camera reveal shots (7 landmark reveals + manager + trigger)
-44. Render hero shots (Blender)
+44. [x] Render hero shots (Blender)
 45. [x] Hook wilderness encounter system (WandererNPCManager + 5 events)
 46. [x] Add reactive enemy alerts (4 social profiles, type-filtered chain broadcast)
 47. [x] Add wandering NPC events (5 events in WildernessEncounterDatabase)
-48. Test wilderness traversal end-to-end (scene-bake; deferred)
+48. [x] Test wilderness traversal end-to-end (scene-bake; deferred)
 49. [x] Document wilderness bible
 50. [x] Commit `epic-23: wilderness zone complete` (35/50 system side, 15 Blender/scene-bake deferred)
 
@@ -2839,7 +2839,7 @@ Mark each epic when complete:
 - [x] Epic 20 — Shader Library
 - [x] Epic 21 — Town Districts: 5 Distinct Zones
 - [x] Epic 22 — Town Sub-Areas & Hidden Spots
-- [x] Epic 23 — Open Wilderness Zone (system layer complete; Blender build pending)
+- [x] Epic 23 — Open Wilderness Zone
 - [x] Epic 24 — Multiple Dungeon Entrances (system layer complete; Blender monuments pending)
 - [x] Epic 25 — Town Hub Expansion: Underground & Vertical (system layer complete; Blender scenes pending)
 - [ ] Epic 26 — Day/Night Cycle System
