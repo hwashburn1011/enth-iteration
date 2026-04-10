@@ -397,7 +397,12 @@ func _build_town_decorations() -> void:
 	_add_prop(geom, "res://assets/models/props/flower_bed.glb", Vector3(12, 0, 2), Vector3(0.6, 0.6, 0.6))
 
 	# --- Portal archway at dungeon entrance ---
-	_add_prop(geom, "res://assets/models/props/portal_archway.glb", Vector3(0, 0, -15), Vector3(1, 1, 1))
+	# R5 round-41 fix: REMOVED — DungeonEntrance.tscn already instances its
+	# own portal_archway via _build_entrance_visual at the same (0, 0, -15)
+	# position. Spawning a second copy here caused both archways to z-fight
+	# at every shared mesh (PortalGlow, TopRune_*, etc). Caught by the
+	# round-41 z-fighting survey (18 conflicting mesh pairs at identical XYZ).
+	# _add_prop(geom, "res://assets/models/props/portal_archway.glb", Vector3(0, 0, -15), Vector3(1, 1, 1))
 
 	# --- Bushes and pine trees for variety ---
 	_add_prop(geom, "res://assets/models/props/bush.glb", Vector3(-13, 0, 0), Vector3(1, 1, 1))
