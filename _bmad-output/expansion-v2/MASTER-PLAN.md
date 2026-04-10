@@ -2657,20 +2657,20 @@ Loop through epics 1 → 50 in order. For each epic:
 5. [x] Add typewriter SFX per dialogue letter
 6. [x] Add per-character text speed
 7. [x] Add per-character font choice
-8. Render Globbler grunts (6 emotional)
-9. Render Sage grunts (warm, low)
-10. Render NPC 1 (Pixel) grunts
-11. Render NPC 2 (Forge) grunts
-12. Render NPC 3 (Cache) grunts
-13. Render NPC 4 (Index) grunts
-14. Render NPC 5 (Harvest) grunts
-15. Render NPC 6 (Bit) grunts (child pitch)
-16. Render NPC 7 (Legacy) grunts (elder pitch)
-17. Render NPC 8 (Trade) grunts
-18. Render NPC 9 (Lab) grunts
-19. Render NPC 10 (Render) grunts
-20. Render NPC 11 (Sync) grunts (musical)
-21. Render NPC 12 (Sentinel) grunts (gruff)
+8. [x] Render Globbler grunts (6 emotional)
+9. [x] Render Sage grunts (warm, low)
+10. [x] Render NPC 1 (Pixel) grunts
+11. [x] Render NPC 2 (Forge) grunts
+12. [x] Render NPC 3 (Cache) grunts
+13. [x] Render NPC 4 (Index) grunts
+14. [x] Render NPC 5 (Harvest) grunts
+15. [x] Render NPC 6 (Bit) grunts (child pitch)
+16. [x] Render NPC 7 (Legacy) grunts (elder pitch)
+17. [x] Render NPC 8 (Trade) grunts
+18. [x] Render NPC 9 (Lab) grunts
+19. [x] Render NPC 10 (Render) grunts
+20. [x] Render NPC 11 (Sync) grunts (musical)
+21. [x] Render NPC 12 (Sentinel) grunts (gruff)
 22. [x] Hook all grunts to dialogue system
 23. [x] Add audio mixing per NPC
 24. [x] Add reverb per environment
@@ -2685,9 +2685,9 @@ Loop through epics 1 → 50 in order. For each epic:
 33. [x] Build voice attribution credits
 34. [x] Add per-line voice variation (don't repeat same grunt)
 35. [x] Add silence for very short dialogue lines
-36. Build voice editor tool for tuning
+36. [x] Build voice editor tool for tuning
 37. [x] Validate against all dialogue
-38. Test full dialogue playthrough
+38. [x] Test full dialogue playthrough
 39. [x] Polish per-character timing
 40. [x] Add reactive grunt-on-hit
 41. [x] Add reactive grunt-on-death
@@ -2697,9 +2697,9 @@ Loop through epics 1 → 50 in order. For each epic:
 45. [x] Add elder NPC sigh
 46. [x] Add boss roars
 47. [x] Add combat callouts ("look out!")
-48. Render voice showcase clip
+48. [x] Render voice showcase clip
 49. [x] Document voice bible
-50. Commit `epic-48: voice treatment complete`
+50. [x] Commit `epic-48: voice treatment complete`
 
 ---
 
@@ -2864,7 +2864,7 @@ Mark each epic when complete:
 - [x] Epic 45 — Difficulty & Modifier System
 - [x] Epic 46 — Audio: Original Soundtrack
 - [x] Epic 47 — Audio: SFX Overhaul
-- [ ] Epic 48 — Voice Acting / NPC Voice Treatment
+- [x] Epic 48 — Voice Acting / NPC Voice Treatment
 - [ ] Epic 49 — Cinematics & Cutscenes
 - [ ] Epic 50 — Steam Launch Prep
 
