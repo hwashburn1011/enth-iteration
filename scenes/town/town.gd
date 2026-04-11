@@ -8815,6 +8815,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_ice_cave_entrance(geom)
 	# Epic-5 T25: frozen heart artifact
 	_build_d5_frozen_heart(geom)
+	# Epic-5 T26: data crystal mining rig
+	_build_d5_mining_rig(geom)
+	# Epic-5 T27: penguin colony creatures
+	_build_d5_penguin_colony(geom)
+	# Epic-5 T28: weather station tower
+	_build_d5_weather_tower(geom)
+	# Epic-5 T29: meteorologist NPC
+	_build_d5_meteorologist_npc()
+	# Epic-5 T30: ice fog particles
+	_build_d5_ice_fog(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -10560,6 +10570,428 @@ func _build_d5_frozen_heart(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	heart.add_child(sb)
+
+
+func _build_d5_mining_rig(geom: Node) -> void:
+	## Epic-5 T26: data crystal mining rig — tall industrial frame with a
+	## drill core descending into the ice and a conveyor belt of crystal
+	## chunks running into a collection bin.
+	var rig: Node3D = Node3D.new()
+	rig.name = "MiningRig"
+	rig.position = Vector3(D5_CENTER.x - 20.0, 0.0, -8.0)
+	geom.add_child(rig)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var dark_metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_metal_mat.albedo_color = Color(0.20, 0.25, 0.30)
+	dark_metal_mat.metallic = 0.85
+	dark_metal_mat.roughness = 0.40
+	# 4 corner support beams
+	for sx in [-1.30, 1.30]:
+		for sz in [-1.30, 1.30]:
+			var beam: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.20, 4.20, 0.20)
+			beam.mesh = bm
+			beam.material_override = metal_mat
+			beam.position = Vector3(sx, 2.10, sz)
+			rig.add_child(beam)
+	# Top platform
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(2.85, 0.20, 2.85)
+	top.mesh = tm
+	top.material_override = dark_metal_mat
+	top.position = Vector3(0, 4.30, 0)
+	rig.add_child(top)
+	# Drill core (long vertical cylinder going down)
+	var drill: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 0.30
+	dm.bottom_radius = 0.45
+	dm.height = 5.40
+	drill.mesh = dm
+	drill.material_override = dark_metal_mat
+	drill.position = Vector3(0, 1.85, 0)
+	rig.add_child(drill)
+	# Drill spin tween
+	var ts: Tween = drill.create_tween().set_loops()
+	ts.tween_property(drill, "rotation_degrees:y", 360.0, 1.5)
+	ts.tween_property(drill, "rotation_degrees:y", 0.0, 0.0)
+	# Crystal core glow inside the drill
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cmm: SphereMesh = SphereMesh.new()
+	cmm.radius = 0.30
+	cmm.height = 0.55
+	core.mesh = cmm
+	var core_mat: StandardMaterial3D = StandardMaterial3D.new()
+	core_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	core_mat.emission_enabled = true
+	core_mat.emission = Color(0.30, 1.0, 1.0)
+	core_mat.emission_energy_multiplier = 3.5
+	core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = core_mat
+	core.position = Vector3(0, 4.55, 0)
+	rig.add_child(core)
+	# Conveyor belt (slanted long box leading from drill to a bin)
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var blm: BoxMesh = BoxMesh.new()
+	blm.size = Vector3(3.20, 0.10, 0.65)
+	belt.mesh = blm
+	belt.material_override = dark_metal_mat
+	belt.position = Vector3(2.40, 1.20, 0)
+	belt.rotation_degrees = Vector3(0, 0, -10)
+	rig.add_child(belt)
+	# 5 small data crystal chunks on the belt
+	var chunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chunk_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	chunk_mat.emission_enabled = true
+	chunk_mat.emission = Color(0.30, 0.95, 1.0)
+	chunk_mat.emission_energy_multiplier = 1.4
+	chunk_mat.metallic = 0.40
+	chunk_mat.roughness = 0.20
+	for i in 5:
+		var chunk: MeshInstance3D = MeshInstance3D.new()
+		var cmm2: PrismMesh = PrismMesh.new()
+		cmm2.size = Vector3(0.20, 0.16, 0.20)
+		chunk.mesh = cmm2
+		chunk.material_override = chunk_mat
+		chunk.position = Vector3(1.20 + i * 0.55, 1.32 - i * 0.08, 0)
+		rig.add_child(chunk)
+	# Collection bin (open box at end of belt)
+	var bin: MeshInstance3D = MeshInstance3D.new()
+	var bnm: BoxMesh = BoxMesh.new()
+	bnm.size = Vector3(0.95, 0.85, 0.95)
+	bin.mesh = bnm
+	bin.material_override = metal_mat
+	bin.position = Vector3(4.20, 0.55, 0)
+	rig.add_child(bin)
+	# Bin contents (stacked crystals)
+	for i in 4:
+		var c: MeshInstance3D = MeshInstance3D.new()
+		var cm: PrismMesh = PrismMesh.new()
+		cm.size = Vector3(0.22, 0.18, 0.22)
+		c.mesh = cm
+		c.material_override = chunk_mat
+		c.position = Vector3(4.20 + randf_range(-0.20, 0.20), 0.95 + randf_range(0, 0.10), randf_range(-0.20, 0.20))
+		c.rotation_degrees = Vector3(randf_range(-30, 30), randf_range(0, 360), randf_range(-30, 30))
+		rig.add_child(c)
+	# Frame collision (wide box covering the rig)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.00, 4.20, 3.00)
+	cs.shape = cb
+	sb.add_child(cs)
+	rig.add_child(sb)
+
+
+func _build_d5_penguin_colony(geom: Node) -> void:
+	## Epic-5 T27: 6 small penguin creatures waddling on the ice with
+	## bobbing tweens. Black body, white belly, orange beak.
+	var colony: Node3D = Node3D.new()
+	colony.name = "PenguinColony"
+	colony.position = Vector3(D5_CENTER.x + 12.0, 0.0, 14.0)
+	geom.add_child(colony)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.12, 0.16)
+	black_mat.roughness = 0.85
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	white_mat.roughness = 0.85
+	var beak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beak_mat.albedo_color = Color(0.95, 0.55, 0.10)
+	beak_mat.roughness = 0.55
+	var positions: Array = [
+		Vector3(0, 0, 0), Vector3(1.4, 0, 0.8), Vector3(-1.2, 0, 1.0),
+		Vector3(2.5, 0, -0.6), Vector3(-2.0, 0, -1.4), Vector3(0.8, 0, -2.0),
+	]
+	for p in positions:
+		var penguin: Node3D = Node3D.new()
+		penguin.position = p
+		colony.add_child(penguin)
+		# Body (tall sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.32
+		bm.height = 0.85
+		body.mesh = bm
+		body.material_override = black_mat
+		body.position = Vector3(0, 0.45, 0)
+		body.scale = Vector3(0.85, 1.10, 0.85)
+		penguin.add_child(body)
+		# White belly
+		var belly: MeshInstance3D = MeshInstance3D.new()
+		var bym: SphereMesh = SphereMesh.new()
+		bym.radius = 0.24
+		bym.height = 0.65
+		belly.mesh = bym
+		belly.material_override = white_mat
+		belly.position = Vector3(0, 0.42, 0.10)
+		belly.scale = Vector3(0.85, 1.10, 0.45)
+		penguin.add_child(belly)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		head.material_override = black_mat
+		head.position = Vector3(0, 0.95, 0)
+		penguin.add_child(head)
+		# Beak
+		var beak: MeshInstance3D = MeshInstance3D.new()
+		var bkm: PrismMesh = PrismMesh.new()
+		bkm.size = Vector3(0.06, 0.06, 0.18)
+		beak.mesh = bkm
+		beak.material_override = beak_mat
+		beak.position = Vector3(0, 0.92, 0.20)
+		beak.rotation_degrees = Vector3(90, 0, 0)
+		penguin.add_child(beak)
+		# 2 wings
+		for sx in [-0.30, 0.30]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.10, 0.40, 0.20)
+			wing.mesh = wm
+			wing.material_override = black_mat
+			wing.position = Vector3(sx, 0.45, 0)
+			penguin.add_child(wing)
+		# 2 orange feet
+		for sx in [-0.10, 0.10]:
+			var foot: MeshInstance3D = MeshInstance3D.new()
+			var fm: BoxMesh = BoxMesh.new()
+			fm.size = Vector3(0.10, 0.04, 0.18)
+			foot.mesh = fm
+			foot.material_override = beak_mat
+			foot.position = Vector3(sx, 0.04, 0.10)
+			penguin.add_child(foot)
+		# Waddle: side-to-side rocking + tiny hop
+		var tw: Tween = penguin.create_tween().set_loops()
+		tw.tween_property(penguin, "rotation_degrees:z", 8.0, 0.45)
+		tw.tween_property(penguin, "rotation_degrees:z", -8.0, 0.45)
+		var th: Tween = penguin.create_tween().set_loops()
+		th.tween_property(penguin, "position:y", 0.10, 0.85)
+		th.tween_property(penguin, "position:y", 0.0, 0.85)
+
+
+func _build_d5_weather_tower(geom: Node) -> void:
+	## Epic-5 T28: weather station tower — slim metal lattice with anemometer
+	## (rotating wind cups), satellite dish, and a temperature display board.
+	var tower: Node3D = Node3D.new()
+	tower.name = "WeatherTower"
+	tower.position = Vector3(D5_CENTER.x + 18.0, 0.0, 14.0)
+	geom.add_child(tower)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.50, 0.55, 0.60)
+	metal_mat.metallic = 0.75
+	metal_mat.roughness = 0.40
+	# 4 lattice corner posts
+	for sx in [-0.40, 0.40]:
+		for sz in [-0.40, 0.40]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.10, 5.50, 0.10)
+			post.mesh = pm
+			post.material_override = metal_mat
+			post.position = Vector3(sx, 2.75, sz)
+			tower.add_child(post)
+	# 4 horizontal lattice braces
+	for h in 4:
+		for axis in 2:
+			var brace: MeshInstance3D = MeshInstance3D.new()
+			var brm: BoxMesh = BoxMesh.new()
+			brm.size = Vector3(0.85, 0.06, 0.06) if axis == 0 else Vector3(0.06, 0.06, 0.85)
+			brace.mesh = brm
+			brace.material_override = metal_mat
+			brace.position = Vector3(0, 0.85 + h * 1.30, 0.40 if axis == 0 else 0.0)
+			tower.add_child(brace)
+	# Anemometer pivot at top (4 cup arms)
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 5.85, 0)
+	tower.add_child(pivot)
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.04
+		am.bottom_radius = 0.04
+		am.height = 0.55
+		arm.mesh = am
+		arm.material_override = metal_mat
+		arm.position = Vector3(cos(ang) * 0.30, 0, sin(ang) * 0.30)
+		arm.rotation_degrees = Vector3(0, 0, 90)
+		arm.rotation = Vector3(0, ang + PI * 0.5, PI * 0.5)
+		pivot.add_child(arm)
+		var cup: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.10
+		cm.height = 0.20
+		cup.mesh = cm
+		cup.material_override = metal_mat
+		cup.position = Vector3(cos(ang) * 0.55, 0, sin(ang) * 0.55)
+		cup.scale = Vector3(0.85, 0.85, 0.55)
+		pivot.add_child(cup)
+	var twa: Tween = pivot.create_tween().set_loops()
+	twa.tween_property(pivot, "rotation_degrees:y", 360.0, 2.0)
+	twa.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Satellite dish (tilted half-sphere on the side)
+	var dish: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 0.55
+	dmm.height = 0.55
+	dish.mesh = dmm
+	dish.material_override = metal_mat
+	dish.position = Vector3(0.85, 4.50, 0)
+	dish.scale = Vector3(1.0, 0.30, 1.0)
+	dish.rotation_degrees = Vector3(0, 0, -45)
+	tower.add_child(dish)
+	# Temperature display board
+	var display: MeshInstance3D = MeshInstance3D.new()
+	var disp_m: BoxMesh = BoxMesh.new()
+	disp_m.size = Vector3(0.85, 0.55, 0.06)
+	display.mesh = disp_m
+	var disp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	disp_mat.albedo_color = Color(0.10, 0.12, 0.16)
+	disp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	display.material_override = disp_mat
+	display.position = Vector3(0, 1.65, 0.45)
+	tower.add_child(display)
+	var label: Label3D = Label3D.new()
+	label.text = "-273.15°C"
+	label.modulate = Color(0.30, 1.0, 1.0)
+	label.outline_modulate = Color(0.05, 0.10, 0.20)
+	label.outline_size = 4
+	label.font_size = 64
+	label.pixel_size = 0.005
+	label.position = Vector3(0, 1.65, 0.50)
+	tower.add_child(label)
+	# Tower collision (capsule)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.55
+	cap.height = 5.50
+	cs.shape = cap
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d5_meteorologist_npc() -> void:
+	## Epic-5 T29: meteorologist NPC — heavy parka, tablet in hand showing
+	## weather data, knit beanie cap.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MeteorologistSlot"
+	slot.position = Vector3(D5_CENTER.x + 16.0, 0.0, 13.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Meteorologist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Cumulis")
+	if "npc_id" in npc:
+		npc.set("npc_id", "weather_d5")
+	slot.add_child(npc)
+	# Heavy red parka
+	var parka: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.75, 1.05, 0.50)
+	parka.mesh = pmm
+	var parka_mat: StandardMaterial3D = StandardMaterial3D.new()
+	parka_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	parka_mat.roughness = 0.85
+	parka.material_override = parka_mat
+	parka.position = Vector3(0, 0.55, 0)
+	npc.add_child(parka)
+	# Knit beanie (small sphere on top of head)
+	var beanie: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.20
+	bm.height = 0.32
+	beanie.mesh = bm
+	var beanie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beanie_mat.albedo_color = Color(0.30, 0.45, 0.65)
+	beanie_mat.roughness = 0.95
+	beanie.material_override = beanie_mat
+	beanie.position = Vector3(0, 1.50, 0)
+	beanie.scale = Vector3(1.0, 0.65, 1.0)
+	npc.add_child(beanie)
+	# Tablet (flat box with glowing screen)
+	var tablet: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.30, 0.40, 0.04)
+	tablet.mesh = tm
+	var tablet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tablet_mat.albedo_color = Color(0.20, 0.25, 0.30)
+	tablet_mat.metallic = 0.55
+	tablet_mat.roughness = 0.30
+	tablet.material_override = tablet_mat
+	tablet.position = Vector3(0.40, 0.85, 0.20)
+	tablet.rotation_degrees = Vector3(-25, 0, 0)
+	npc.add_child(tablet)
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var scm: BoxMesh = BoxMesh.new()
+	scm.size = Vector3(0.26, 0.36, 0.02)
+	screen.mesh = scm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 1.0, 1.0)
+	screen_mat.emission_energy_multiplier = 2.5
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0.40, 0.85, 0.25)
+	screen.rotation_degrees = Vector3(-25, 0, 0)
+	npc.add_child(screen)
+
+
+func _build_d5_ice_fog(geom: Node) -> void:
+	## Epic-5 T30: ground-level ice fog — slow-drifting GPU particles
+	## providing atmospheric depth without using volumetric fog.
+	var fog: GPUParticles3D = GPUParticles3D.new()
+	fog.name = "IceFog"
+	fog.position = Vector3(D5_CENTER.x, 0.5, 0.0)
+	fog.amount = 80
+	fog.lifetime = 14.0
+	fog.preprocess = 7.0
+	fog.explosiveness = 0.0
+	fog.randomness = 0.85
+	fog.visibility_aabb = AABB(Vector3(-40, -2, -25), Vector3(80, 8, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(32, 0.5, 20)
+	pm.direction = Vector3(0.30, 0.10, 0.10)
+	pm.spread = 65.0
+	pm.gravity = Vector3(0.05, 0.06, 0.04)
+	pm.initial_velocity_min = 0.10
+	pm.initial_velocity_max = 0.35
+	pm.scale_min = 0.45
+	pm.scale_max = 1.10
+	pm.color = Color(0.85, 0.92, 0.98, 0.35)
+	fog.process_material = pm
+	# Fog mesh — soft sphere
+	var fog_mesh: SphereMesh = SphereMesh.new()
+	fog_mesh.radius = 0.55
+	fog_mesh.height = 1.10
+	fog.draw_pass_1 = fog_mesh
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.85, 0.92, 0.98, 0.25)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.65, 0.85, 0.95)
+	fmat.emission_energy_multiplier = 0.40
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fog_mesh.material = fmat
+	geom.add_child(fog)
 
 
 
