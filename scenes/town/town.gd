@@ -25597,6 +25597,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_water_mill(geom)
 	# Epic-7 T90: cloud mist particles
 	_build_d7_cloud_mist(geom)
+	# Epic-7 T91: small stone golem creature
+	_build_d7_stone_golem(geom)
+	# Epic-7 T92: rising sky lanterns
+	_build_d7_sky_lanterns(geom)
+	# Epic-7 T93: lantern releaser NPC
+	_build_d7_lantern_releaser_npc()
+	# Epic-7 T94: ancient pine tree
+	_build_d7_ancient_pine(geom)
+	# Epic-7 T95: scholar NPC
+	_build_d7_d7_scholar_npc()
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -31850,6 +31860,304 @@ func _build_d7_cloud_mist(geom: Node) -> void:
 	cloud_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	cloud_mesh.material = cloud_mat
 	geom.add_child(mist)
+
+
+func _build_d7_stone_golem(geom: Node) -> void:
+	## Epic-7 T91: small stone golem — chunky humanoid built from stone
+	## blocks with glowing amber rune eyes + slow patrol.
+	var golem: Node3D = Node3D.new()
+	golem.name = "D7StoneGolem"
+	golem.position = Vector3(D7_CENTER.x + 16.0, 0.0, -8.0)
+	geom.add_child(golem)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Body block
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.10, 1.40, 0.85)
+	body.mesh = bm
+	body.material_override = stone_mat
+	body.position = Vector3(0, 0.85, 0)
+	golem.add_child(body)
+	# Head block
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.65, 0.55, 0.55)
+	head.mesh = hm
+	head.material_override = stone_mat
+	head.position = Vector3(0, 1.85, 0)
+	golem.add_child(head)
+	# 2 amber eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.65, 0.20)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.15, 0.15]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.10, 0.06, 0.04)
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 1.92, 0.30)
+		golem.add_child(eye)
+	# 2 chunky arms
+	for sx in [-0.85, 0.85]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.40, 1.10, 0.40)
+		arm.mesh = am
+		arm.material_override = stone_mat
+		arm.position = Vector3(sx, 0.85, 0)
+		golem.add_child(arm)
+	# 2 legs
+	for sx in [-0.30, 0.30]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.40, 0.30, 0.40)
+		leg.mesh = lm
+		leg.material_override = stone_mat
+		leg.position = Vector3(sx, 0.15, 0)
+		golem.add_child(leg)
+	# Slow patrol
+	var tw: Tween = golem.create_tween().set_loops()
+	tw.tween_property(golem, "position", Vector3(D7_CENTER.x + 18.0, 0.0, -8.0), 4.0)
+	tw.tween_property(golem, "rotation_degrees:y", 180.0, 0.5)
+	tw.tween_property(golem, "position", Vector3(D7_CENTER.x + 14.0, 0.0, -8.0), 4.0)
+	tw.tween_property(golem, "rotation_degrees:y", 0.0, 0.5)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 1.85, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	golem.add_child(sb)
+
+
+func _build_d7_sky_lanterns(geom: Node) -> void:
+	## Epic-7 T92: 6 paper sky lanterns rising slowly into the air —
+	## warm orange spheres with hover/rise tweens.
+	var lanterns: Node3D = Node3D.new()
+	lanterns.name = "SkyLanterns"
+	lanterns.position = Vector3(D7_CENTER.x + 8.0, 0.0, -16.0)
+	geom.add_child(lanterns)
+	var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lantern_mat.albedo_color = Color(0.95, 0.65, 0.30, 0.85)
+	lantern_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lantern_mat.emission_enabled = true
+	lantern_mat.emission = Color(1.0, 0.55, 0.10)
+	lantern_mat.emission_energy_multiplier = 3.0
+	lantern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var lantern: Node3D = Node3D.new()
+		lantern.position = Vector3(
+			randf_range(-3.5, 3.5),
+			randf_range(0.85, 4.0),
+			randf_range(-2.5, 2.5)
+		)
+		lanterns.add_child(lantern)
+		# Lantern body (sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.30
+		bm.height = 0.55
+		body.mesh = bm
+		body.material_override = lantern_mat
+		body.scale = Vector3(1.0, 1.20, 1.0)
+		lantern.add_child(body)
+		# Tiny light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.55, 0.20)
+		light.light_energy = 1.4
+		light.omni_range = 3.0
+		light.position = Vector3.ZERO
+		lantern.add_child(light)
+		# Slow rise + reset tween
+		var tw: Tween = lantern.create_tween().set_loops()
+		var start_y: float = lantern.position.y
+		tw.tween_interval(i * 0.85)
+		tw.tween_property(lantern, "position:y", start_y + 4.85, 6.0 + i * 0.4)
+		tw.tween_property(lantern, "position:y", start_y, 0.0)
+
+
+func _build_d7_lantern_releaser_npc() -> void:
+	## Epic-7 T93: lantern releaser NPC — cream robe + held lit lantern
+	## raised upward.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "LanternReleaserSlot"
+	slot.position = Vector3(D7_CENTER.x + 6.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "LanternReleaser"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Skylight")
+	if "npc_id" in npc:
+		npc.set("npc_id", "lantern_releaser_d7")
+	slot.add_child(npc)
+	# Cream robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.92, 0.75)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.85, 0.55)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Lifted lantern overhead (orange sphere)
+	var lantern: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.18
+	lm.height = 0.30
+	lantern.mesh = lm
+	var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lantern_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	lantern_mat.emission_enabled = true
+	lantern_mat.emission = Color(1.0, 0.55, 0.10)
+	lantern_mat.emission_energy_multiplier = 3.0
+	lantern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lantern.material_override = lantern_mat
+	lantern.position = Vector3(0.40, 1.85, 0.20)
+	npc.add_child(lantern)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.55, 0.20)
+	light.light_energy = 1.6
+	light.omni_range = 3.5
+	light.position = Vector3(0.40, 1.85, 0.20)
+	npc.add_child(light)
+
+
+func _build_d7_ancient_pine(geom: Node) -> void:
+	## Epic-7 T94: gnarled ancient pine tree — twisted trunk + 4 angled
+	## branches + dark green canopy clusters.
+	var tree: Node3D = Node3D.new()
+	tree.name = "AncientPine"
+	tree.position = Vector3(D7_CENTER.x - 16.0, 0.0, -8.0)
+	geom.add_child(tree)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	trunk_mat.roughness = 0.95
+	var pine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pine_mat.albedo_color = Color(0.20, 0.45, 0.20)
+	pine_mat.emission_enabled = true
+	pine_mat.emission = Color(0.15, 0.40, 0.15)
+	pine_mat.emission_energy_multiplier = 0.18
+	pine_mat.roughness = 0.85
+	# Twisted trunk (3 angled segments)
+	for i in 3:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.30 - i * 0.05
+		sm.bottom_radius = 0.45 - i * 0.05
+		sm.height = 1.40
+		seg.mesh = sm
+		seg.material_override = trunk_mat
+		seg.position = Vector3(sin(i * 1.5) * 0.20, 0.70 + i * 1.40, cos(i * 1.5) * 0.20)
+		seg.rotation_degrees = Vector3(8.0 * sin(i * 1.5), 0, 8.0 * cos(i * 1.5))
+		tree.add_child(seg)
+	# 4 angled branches
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i
+		var branch: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.06
+		bm.bottom_radius = 0.10
+		bm.height = 1.40
+		branch.mesh = bm
+		branch.material_override = trunk_mat
+		branch.position = Vector3(cos(ang) * 0.55, 4.20, sin(ang) * 0.55)
+		branch.rotation = Vector3(deg_to_rad(45) * sin(ang), ang, deg_to_rad(45) * cos(ang))
+		tree.add_child(branch)
+		# Dark canopy cluster at branch tip
+		var cluster: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.65
+		cm.height = 0.95
+		cluster.mesh = cm
+		cluster.material_override = pine_mat
+		cluster.position = Vector3(cos(ang) * 1.40, 4.85, sin(ang) * 1.40)
+		cluster.scale = Vector3(1.0, 0.65, 1.0)
+		tree.add_child(cluster)
+	# Top crown cluster
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crm: SphereMesh = SphereMesh.new()
+	crm.radius = 0.85
+	crm.height = 1.10
+	crown.mesh = crm
+	crown.material_override = pine_mat
+	crown.position = Vector3(0, 5.55, 0)
+	tree.add_child(crown)
+	# Trunk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.45
+	cap.height = 4.20
+	cs.shape = cap
+	sb.add_child(cs)
+	tree.add_child(sb)
+
+
+func _build_d7_d7_scholar_npc() -> void:
+	## Epic-7 T95: D7 scholar NPC — long scholarly robe + held open
+	## scroll/book.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7ScholarSlot"
+	slot.position = Vector3(D7_CENTER.x - 22.0, 0.0, -2.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Scholar"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Quill")
+	if "npc_id" in npc:
+		npc.set("npc_id", "scholar_d7")
+	slot.add_child(npc)
+	# Long scholarly grey robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.40, 0.42, 0.45)
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Open book held in hands (small flat box)
+	var book: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.40, 0.04, 0.30)
+	book.mesh = bm
+	var book_mat: StandardMaterial3D = StandardMaterial3D.new()
+	book_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	book_mat.emission_enabled = true
+	book_mat.emission = Color(0.95, 0.85, 0.55)
+	book_mat.emission_energy_multiplier = 0.45
+	book.material_override = book_mat
+	book.position = Vector3(0.40, 0.85, 0.20)
+	book.rotation_degrees = Vector3(-25, 0, 0)
+	npc.add_child(book)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
