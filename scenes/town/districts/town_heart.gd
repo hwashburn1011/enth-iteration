@@ -29,6 +29,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_vendor_kiosk(geom)
 	_build_th_data_fountain(geom)
 	_build_th_practice_dummy(geom)
+	_build_th_district_map_kiosk(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -2210,3 +2211,183 @@ func _build_th_practice_dummy(geom: Node) -> void:
 	var wpulse: Tween = pivot.create_tween().set_loops()
 	wpulse.tween_property(weapon_mat, "emission_energy_multiplier", 7.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	wpulse.tween_property(weapon_mat, "emission_energy_multiplier", 4.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_district_map_kiosk(geom: Node) -> void:
+	## Epic-10 T13: holographic district map kiosk on the NE radial path.
+	## Brass kiosk pedestal with a wide angled screen, central floating
+	## hologram of all 9 district markers (small unshaded spheres in
+	## district accent colors arranged in a 3x3 grid), brass legend bar
+	## along the bottom, and 2 small lantern brackets.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_DistrictMapKiosk"
+	# NE radial path (angle = pi/4 from +X), at radius 6.5
+	var ang: float = PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 6.5, 0, sin(ang) * 6.5)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.45, 0.85, 1.0)
+	screen_mat.emission_energy_multiplier = 6.0
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 7.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# District accent colors for the 9 map markers (D1..D9)
+	var district_colors: Array = [
+		Color(0.40, 0.85, 1.0),    # D1 data cyan
+		Color(0.55, 1.0, 0.40),    # D2 toxic green
+		Color(0.75, 0.45, 1.0),    # D3 violet
+		Color(0.40, 0.95, 0.55),   # D4 bloom green
+		Color(0.65, 0.85, 1.0),    # D5 ice blue
+		Color(1.0, 0.40, 0.85),    # D6 neon magenta
+		Color(1.0, 0.75, 0.40),    # D7 sandstone amber
+		Color(0.30, 0.55, 1.0),    # D8 ocean blue
+		Color(1.0, 0.45, 0.10),    # D9 forge amber
+	]
+	# ---- Stepped basalt pedestal ----
+	var pedestal: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(2.20, 0.95, 1.20)
+	pedestal.mesh = pmm
+	pedestal.material_override = stone_mat
+	pedestal.position = Vector3(0, 0.48, 0)
+	pivot.add_child(pedestal)
+	# Pedestal collision
+	var ped_sb: StaticBody3D = StaticBody3D.new()
+	ped_sb.position = Vector3(0, 0.48, 0)
+	var ped_cs: CollisionShape3D = CollisionShape3D.new()
+	var ped_bsh: BoxShape3D = BoxShape3D.new()
+	ped_bsh.size = Vector3(2.20, 0.95, 1.20)
+	ped_cs.shape = ped_bsh
+	ped_sb.add_child(ped_cs)
+	pivot.add_child(ped_sb)
+	# Brass top trim
+	var top_trim: MeshInstance3D = MeshInstance3D.new()
+	var ttm: BoxMesh = BoxMesh.new()
+	ttm.size = Vector3(2.30, 0.10, 1.30)
+	top_trim.mesh = ttm
+	top_trim.material_override = brass_mat
+	top_trim.position = Vector3(0, 1.00, 0)
+	pivot.add_child(top_trim)
+	# ---- Wide angled screen mounted on the pedestal ----
+	# Brass frame
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fmm: BoxMesh = BoxMesh.new()
+	fmm.size = Vector3(2.20, 1.50, 0.10)
+	frame.mesh = fmm
+	frame.material_override = brass_mat
+	frame.position = Vector3(0, 1.85, -0.20)
+	frame.rotation.x = -PI / 6.0
+	pivot.add_child(frame)
+	# Screen face
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(2.00, 1.30, 0.05)
+	screen.mesh = smesh
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 1.85, -0.27)
+	screen.rotation.x = -PI / 6.0
+	pivot.add_child(screen)
+	# ---- 9 district marker spheres in a 3x3 grid on the screen ----
+	for row in 3:
+		for col in 3:
+			var idx: int = row * 3 + col
+			# Per-marker accent material
+			var accent_mat: StandardMaterial3D = StandardMaterial3D.new()
+			accent_mat.albedo_color = district_colors[idx]
+			accent_mat.emission_enabled = true
+			accent_mat.emission = district_colors[idx]
+			accent_mat.emission_energy_multiplier = 7.0
+			accent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			var marker: MeshInstance3D = MeshInstance3D.new()
+			var mmm: SphereMesh = SphereMesh.new()
+			mmm.radius = 0.13
+			mmm.height = 0.26
+			marker.mesh = mmm
+			marker.material_override = accent_mat
+			# Position relative to the screen center, accounting for tilt
+			var lx: float = -0.65 + float(col) * 0.65
+			var ly: float = 0.40 - float(row) * 0.40
+			# Rotate the local offset around X by the screen's tilt to land on the surface
+			var offset_local: Vector3 = Vector3(lx, ly, -0.04)
+			var tilt: float = -PI / 6.0
+			var ty: float = offset_local.y * cos(tilt) - offset_local.z * sin(tilt)
+			var tz: float = offset_local.y * sin(tilt) + offset_local.z * cos(tilt)
+			marker.position = Vector3(offset_local.x, 1.85 + ty, -0.27 + tz)
+			pivot.add_child(marker)
+			# Per-marker pulse so each district light breathes independently
+			var mpulse: Tween = pivot.create_tween().set_loops()
+			var period: float = 1.4 + float(idx) * 0.12
+			mpulse.tween_property(accent_mat, "emission_energy_multiplier", 9.0, period).set_ease(Tween.EASE_IN_OUT)
+			mpulse.tween_property(accent_mat, "emission_energy_multiplier", 5.0, period).set_ease(Tween.EASE_IN_OUT)
+	# ---- Brass legend bar along the bottom of the screen ----
+	var legend: MeshInstance3D = MeshInstance3D.new()
+	var lgm: BoxMesh = BoxMesh.new()
+	lgm.size = Vector3(2.10, 0.18, 0.08)
+	legend.mesh = lgm
+	legend.material_override = brass_mat
+	legend.position = Vector3(0, 1.20, -0.10)
+	legend.rotation.x = -PI / 6.0
+	pivot.add_child(legend)
+	# ---- 2 small lantern brackets on the corners of the pedestal top ----
+	for lx in [-0.95, 0.95]:
+		# Bracket
+		var bracket: MeshInstance3D = MeshInstance3D.new()
+		var bktm: BoxMesh = BoxMesh.new()
+		bktm.size = Vector3(0.12, 0.40, 0.12)
+		bracket.mesh = bktm
+		bracket.material_override = brass_mat
+		bracket.position = Vector3(lx, 1.25, 0.55)
+		pivot.add_child(bracket)
+		# Lantern flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.10
+		flm.height = 0.20
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(lx, 1.50, 0.55)
+		pivot.add_child(flame)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(lx, 1.50, 0.55)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.6
+		lt.omni_range = 4.5
+		pivot.add_child(lt)
+	# ---- Strong cyan screen OmniLight ----
+	var screen_lt: OmniLight3D = OmniLight3D.new()
+	screen_lt.position = Vector3(0, 2.10, -0.40)
+	screen_lt.light_color = Color(0.45, 0.85, 1.0)
+	screen_lt.light_energy = 2.4
+	screen_lt.omni_range = 7.0
+	pivot.add_child(screen_lt)
+	# Screen base pulse
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(screen_mat, "emission_energy_multiplier", 7.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(screen_mat, "emission_energy_multiplier", 4.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Lantern flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.45).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.45).set_ease(Tween.EASE_IN_OUT)
