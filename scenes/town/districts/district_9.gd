@@ -99,6 +99,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_memorial_keeper_ash_npc(town)
 	_build_d9_collapsed_skyforge_ruin(geom)
 	_build_d9_salvager_rax_npc(town)
+	_build_d9_lava_brook(geom)
 	print("[D9Builder] done")
 
 
@@ -8771,4 +8772,111 @@ func _build_d9_salvager_rax_npc(town: Node) -> void:
 	var lflick: Tween = npc.create_tween().set_loops()
 	lflick.tween_property(lamp_mat, "emission_energy_multiplier", 11.0, 0.45).set_ease(Tween.EASE_IN_OUT)
 	lflick.tween_property(lamp_mat, "emission_energy_multiplier", 8.0, 0.45).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_lava_brook(geom: Node) -> void:
+	## Epic-9 T79: winding lava brook connecting the molten geyser (NE)
+	## to the cascade pool (SE) area. 8 chained lava segments laid along
+	## a curve, basalt rim borders on each side of every segment, 4
+	## ember mote emitters, 4 OmniLights along the channel, and a slow
+	## emission pulse to make the lava feel like it's flowing.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_LavaBrook"
+	# Anchor at midpoint between geyser (60,-10) and cascade ferry (50,5)
+	pivot.position = D9_CENTER + Vector3(55, 0.05, -2)
+	geom.add_child(pivot)
+	# Materials
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.45, 0.05)
+	lava_mat.emission_energy_multiplier = 6.0
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.90
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.30
+	# 8 segments laid along a curving path from NE → SE
+	# Each segment defined by relative offset from pivot (running -X, +Z)
+	var seg_offsets: Array = [
+		Vector3(5.5, 0, -7.0),
+		Vector3(4.0, 0, -5.0),
+		Vector3(2.5, 0, -3.0),
+		Vector3(1.0, 0, -1.0),
+		Vector3(-0.5, 0, 1.0),
+		Vector3(-2.0, 0, 3.0),
+		Vector3(-3.5, 0, 5.0),
+		Vector3(-5.0, 0, 7.0),
+	]
+	# Each segment is a flat box rotated to face the next segment
+	for i in seg_offsets.size():
+		var p: Vector3 = seg_offsets[i]
+		# Determine angle by looking ahead to the next segment
+		var next_p: Vector3
+		if i < seg_offsets.size() - 1:
+			next_p = seg_offsets[i + 1]
+		else:
+			next_p = p + (p - seg_offsets[i - 1])
+		var dir: Vector3 = next_p - p
+		var ang: float = atan2(dir.x, dir.z)
+		# Lava channel slab
+		var seg_len: float = dir.length() + 0.20
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.85, 0.10, seg_len)
+		slab.mesh = sm
+		slab.material_override = lava_mat
+		slab.position = p + Vector3(0, 0.05, 0)
+		slab.rotation.y = ang
+		pivot.add_child(slab)
+		# Basalt rim borders — left and right of the slab
+		for sx in [-0.55, 0.55]:
+			var rim: MeshInstance3D = MeshInstance3D.new()
+			var rim_m: BoxMesh = BoxMesh.new()
+			rim_m.size = Vector3(0.25, 0.20, seg_len)
+			rim.mesh = rim_m
+			rim.material_override = basalt_mat
+			# Compute the rim offset perpendicular to the segment direction
+			var perp: Vector3 = Vector3(-sin(ang), 0, cos(ang)).cross(Vector3(0, 1, 0)).normalized()
+			rim.position = p + Vector3(0, 0.10, 0) + perp * sx
+			rim.rotation.y = ang
+			pivot.add_child(rim)
+	# 4 ember mote emitters along the channel (every other segment)
+	for i in [0, 2, 4, 6]:
+		var p: Vector3 = seg_offsets[i]
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = p + Vector3(0, 0.20, 0)
+		motes.amount = 14
+		motes.lifetime = 1.8
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 18.0
+		pmat.initial_velocity_min = 0.4
+		pmat.initial_velocity_max = 0.9
+		pmat.gravity = Vector3(0, 0.3, 0)
+		pmat.scale_min = 0.04
+		pmat.scale_max = 0.08
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.03
+		psmesh.height = 0.06
+		motes.draw_pass_1 = psmesh
+		pivot.add_child(motes)
+	# 4 OmniLights along the channel for ground glow
+	for i in [1, 3, 5, 7]:
+		var p: Vector3 = seg_offsets[i]
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = p + Vector3(0, 0.30, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.6
+		lt.omni_range = 4.5
+		pivot.add_child(lt)
+	# Lava emission pulse — slow breathe like flowing molten
+	var pulse: Tween = pivot.create_tween().set_loops()
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 
