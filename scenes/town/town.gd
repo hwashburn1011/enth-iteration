@@ -32644,6 +32644,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_great_lighthouse(geom)
 	# Epic-8 T4: harbor master NPC
 	_build_d8_harbor_master_npc()
+	# Epic-8 T6: fishing boat
+	_build_d8_fishing_boat(geom)
+	# Epic-8 T7: fisherman NPC
+	_build_d8_d8_fisherman_npc()
+	# Epic-8 T8: dock crates of fish
+	_build_d8_fish_crates(geom)
+	# Epic-8 T9: flying seagulls
+	_build_d8_seagulls(geom)
+	# Epic-8 T10: sea spray particles
+	_build_d8_sea_spray(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -32983,6 +32993,342 @@ func _build_d8_harbor_master_npc() -> void:
 	spy.position = Vector3(0.40, 0.85, 0.20)
 	spy.rotation_degrees = Vector3(0, 0, 90)
 	npc.add_child(spy)
+
+
+func _build_d8_fishing_boat(geom: Node) -> void:
+	## Epic-8 T6: small wooden fishing boat — curved hull + cabin + mast +
+	## furled sail with gentle bobbing tween.
+	var boat: Node3D = Node3D.new()
+	boat.name = "FishingBoat"
+	boat.position = Vector3(D8_CENTER.x - 14.0, 0.30, 8.0)
+	geom.add_child(boat)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.30, 0.18, 0.08)
+	dark_wood.roughness = 0.85
+	# Hull (large curved bottom box)
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(4.20, 0.85, 1.85)
+	hull.mesh = hm
+	hull.material_override = wood_mat
+	hull.position = Vector3(0, 0.42, 0)
+	boat.add_child(hull)
+	# Pointed bow (front prism)
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bwm: PrismMesh = PrismMesh.new()
+	bwm.size = Vector3(1.85, 0.85, 0.85)
+	bow.mesh = bwm
+	bow.material_override = wood_mat
+	bow.position = Vector3(2.85, 0.42, 0)
+	bow.rotation_degrees = Vector3(0, 0, -90)
+	boat.add_child(bow)
+	# Small cabin
+	var cabin: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(1.40, 1.10, 1.40)
+	cabin.mesh = cm
+	cabin.material_override = wood_mat
+	cabin.position = Vector3(-0.85, 1.30, 0)
+	boat.add_child(cabin)
+	# Cabin window
+	var window: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(0.55, 0.40, 0.04)
+	window.mesh = wm
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.95, 0.85, 0.30)
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(1.0, 0.85, 0.30)
+	window_mat.emission_energy_multiplier = 2.0
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	window.material_override = window_mat
+	window.position = Vector3(-0.85, 1.55, 0.72)
+	boat.add_child(window)
+	# Tall mast
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var mm: CylinderMesh = CylinderMesh.new()
+	mm.top_radius = 0.06
+	mm.bottom_radius = 0.10
+	mm.height = 4.20
+	mast.mesh = mm
+	mast.material_override = dark_wood
+	mast.position = Vector3(0.55, 2.95, 0)
+	boat.add_child(mast)
+	# Furled sail (small wrapped white box)
+	var sail: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.18, 1.85, 0.18)
+	sail.mesh = sm
+	var sail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sail_mat.albedo_color = Color(0.92, 0.92, 0.85)
+	sail_mat.roughness = 0.85
+	sail.material_override = sail_mat
+	sail.position = Vector3(0.55, 3.40, 0)
+	boat.add_child(sail)
+	# Bobbing tween
+	var tw: Tween = boat.create_tween().set_loops()
+	tw.tween_property(boat, "position:y", 0.45, 1.4)
+	tw.tween_property(boat, "position:y", 0.30, 1.4)
+	# Hull collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 1.40, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	boat.add_child(sb)
+
+
+func _build_d8_d8_fisherman_npc() -> void:
+	## Epic-8 T7: fisherman NPC — yellow rain coat + hat + held fishing
+	## rod with line.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D8FishermanSlot"
+	slot.position = Vector3(D8_CENTER.x - 12.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D8Fisherman"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Brine")
+	if "npc_id" in npc:
+		npc.set("npc_id", "fisherman_d8")
+	slot.add_child(npc)
+	# Yellow rain coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.95, 0.85, 0.20)
+	coat_mat.emission_energy_multiplier = 0.45
+	coat_mat.roughness = 0.65
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Yellow rain hat (wide brim disc + dome)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.30
+	brm.bottom_radius = 0.30
+	brm.height = 0.04
+	brim.mesh = brm
+	brim.material_override = coat_mat
+	brim.position = Vector3(0, 1.45, 0)
+	npc.add_child(brim)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 0.20
+	dmm.height = 0.30
+	dome.mesh = dmm
+	dome.material_override = coat_mat
+	dome.position = Vector3(0, 1.55, 0)
+	dome.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(dome)
+	# Fishing rod (long thin cylinder)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var rod: MeshInstance3D = MeshInstance3D.new()
+	var rmm: CylinderMesh = CylinderMesh.new()
+	rmm.top_radius = 0.025
+	rmm.bottom_radius = 0.04
+	rmm.height = 1.85
+	rod.mesh = rmm
+	rod.material_override = wood_mat
+	rod.position = Vector3(0.65, 0.85, 0.30)
+	rod.rotation_degrees = Vector3(0, 0, 65)
+	npc.add_child(rod)
+	# Fishing line (thin white cylinder dangling)
+	var line: MeshInstance3D = MeshInstance3D.new()
+	var lmm: CylinderMesh = CylinderMesh.new()
+	lmm.top_radius = 0.005
+	lmm.bottom_radius = 0.005
+	lmm.height = 1.20
+	line.mesh = lmm
+	var line_mat: StandardMaterial3D = StandardMaterial3D.new()
+	line_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	line.material_override = line_mat
+	line.position = Vector3(1.65, 0.65, 0.30)
+	npc.add_child(line)
+
+
+func _build_d8_fish_crates(geom: Node) -> void:
+	## Epic-8 T8: 3 dock crates filled with silver fish + ice.
+	var crates: Node3D = Node3D.new()
+	crates.name = "FishCrates"
+	crates.position = Vector3(D8_CENTER.x - 8.0, 0.0, 8.0)
+	geom.add_child(crates)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	wood_mat.roughness = 0.92
+	var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fish_mat.albedo_color = Color(0.65, 0.75, 0.85)
+	fish_mat.metallic = 0.55
+	fish_mat.roughness = 0.30
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.65)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.85, 0.95, 1.0)
+	ice_mat.emission_energy_multiplier = 0.85
+	for i in 3:
+		var crate: Node3D = Node3D.new()
+		crate.position = Vector3(i * 1.20, 0, 0)
+		crates.add_child(crate)
+		# Wooden crate box
+		var box: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.95, 0.55, 0.85)
+		box.mesh = bm
+		box.material_override = wood_mat
+		box.position = Vector3(0, 0.27, 0)
+		crate.add_child(box)
+		# 6 silver fish prisms inside
+		for j in 6:
+			var fish: MeshInstance3D = MeshInstance3D.new()
+			var fm: PrismMesh = PrismMesh.new()
+			fm.size = Vector3(0.22, 0.10, 0.10)
+			fish.mesh = fm
+			fish.material_override = fish_mat
+			fish.position = Vector3(
+				randf_range(-0.30, 0.30),
+				0.55,
+				randf_range(-0.25, 0.25)
+			)
+			fish.rotation_degrees = Vector3(0, randf_range(0, 360), 90)
+			crate.add_child(fish)
+		# Ice chips (3 small cubes)
+		for j in 3:
+			var ice: MeshInstance3D = MeshInstance3D.new()
+			var im: BoxMesh = BoxMesh.new()
+			im.size = Vector3(0.10, 0.06, 0.10)
+			ice.mesh = im
+			ice.material_override = ice_mat
+			ice.position = Vector3(
+				randf_range(-0.30, 0.30),
+				0.62,
+				randf_range(-0.25, 0.25)
+			)
+			crate.add_child(ice)
+		# Crate collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.27, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.95, 0.65, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		crate.add_child(sb)
+
+
+func _build_d8_seagulls(geom: Node) -> void:
+	## Epic-8 T9: 5 seagulls flying in slow circling pattern over the harbor.
+	var gulls: Node3D = Node3D.new()
+	gulls.name = "Seagulls"
+	gulls.position = Vector3(D8_CENTER.x, 5.0, 0.0)
+	geom.add_child(gulls)
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	white_mat.roughness = 0.65
+	var grey_mat: StandardMaterial3D = StandardMaterial3D.new()
+	grey_mat.albedo_color = Color(0.55, 0.55, 0.60)
+	grey_mat.roughness = 0.65
+	for i in 5:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, i * 0.55, 0)
+		pivot.rotation_degrees = Vector3(0, i * 72.0, 0)
+		gulls.add_child(pivot)
+		var gull: Node3D = Node3D.new()
+		gull.position = Vector3(8.0 + i * 0.95, 0, 0)
+		pivot.add_child(gull)
+		# White body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.16
+		bm.height = 0.28
+		body.mesh = bm
+		body.material_override = white_mat
+		body.scale = Vector3(0.85, 0.85, 1.30)
+		gull.add_child(body)
+		# Grey wings
+		for sx in [-0.40, 0.40]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.55, 0.04, 0.18)
+			wing.mesh = wm
+			wing.material_override = grey_mat
+			wing.position = Vector3(sx, 0.04, 0)
+			gull.add_child(wing)
+			# Wing flap tween
+			var twf: Tween = wing.create_tween().set_loops()
+			twf.tween_property(wing, "rotation_degrees:z", 18.0 if sx < 0 else -18.0, 0.30)
+			twf.tween_property(wing, "rotation_degrees:z", 0.0, 0.30)
+		# Yellow beak
+		var beak: MeshInstance3D = MeshInstance3D.new()
+		var bkm: PrismMesh = PrismMesh.new()
+		bkm.size = Vector3(0.04, 0.04, 0.10)
+		beak.mesh = bkm
+		var beak_mat: StandardMaterial3D = StandardMaterial3D.new()
+		beak_mat.albedo_color = Color(0.95, 0.85, 0.20)
+		beak.material_override = beak_mat
+		beak.position = Vector3(0, 0.04, 0.18)
+		beak.rotation_degrees = Vector3(90, 0, 0)
+		gull.add_child(beak)
+		# Pivot rotation tween
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 72.0 + 360.0, 12.0 + i * 0.6)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 72.0, 0.0)
+
+
+func _build_d8_sea_spray(geom: Node) -> void:
+	## Epic-8 T10: ambient sea spray particles drifting up from the water.
+	var spray: GPUParticles3D = GPUParticles3D.new()
+	spray.name = "SeaSpray"
+	spray.position = Vector3(D8_CENTER.x, 0.5, 0.0)
+	spray.amount = 80
+	spray.lifetime = 4.0
+	spray.preprocess = 2.0
+	spray.explosiveness = 0.0
+	spray.randomness = 0.7
+	spray.visibility_aabb = AABB(Vector3(-40, -2, -25), Vector3(80, 12, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(35, 0.5, 22)
+	pm.direction = Vector3(0.20, 1, 0.10)
+	pm.spread = 30.0
+	pm.gravity = Vector3(0.10, 0.45, 0.05)
+	pm.initial_velocity_min = 0.55
+	pm.initial_velocity_max = 1.20
+	pm.scale_min = 0.06
+	pm.scale_max = 0.14
+	pm.color = Color(0.85, 0.95, 1.0, 0.65)
+	spray.process_material = pm
+	# Spray mesh
+	var spray_mesh: SphereMesh = SphereMesh.new()
+	spray_mesh.radius = 0.06
+	spray_mesh.height = 0.12
+	spray.draw_pass_1 = spray_mesh
+	var spray_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spray_mat.albedo_color = Color(0.85, 0.95, 1.0)
+	spray_mat.emission_enabled = true
+	spray_mat.emission = Color(0.65, 0.85, 1.0)
+	spray_mat.emission_energy_multiplier = 1.4
+	spray_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spray_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	spray_mesh.material = spray_mat
+	geom.add_child(spray)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
