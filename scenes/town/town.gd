@@ -25427,6 +25427,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_great_spire(geom)
 	# Epic-7 T4: monk elder NPC
 	_build_d7_monk_elder_npc()
+	# Epic-7 T6: prayer flag string
+	_build_d7_prayer_flags(geom)
+	# Epic-7 T7: meditation stone cairns
+	_build_d7_stone_cairns(geom)
+	# Epic-7 T8: monk acolyte NPC
+	_build_d7_monk_acolyte_npc()
+	# Epic-7 T9: incense burner
+	_build_d7_incense_burner(geom)
+	# Epic-7 T10: brass gong
+	_build_d7_brass_gong(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -25703,6 +25713,370 @@ func _build_d7_monk_elder_npc() -> void:
 	beads.position = Vector3(0.40, 0.85, 0.20)
 	beads.rotation_degrees = Vector3(0, 0, 90)
 	npc.add_child(beads)
+
+
+func _build_d7_prayer_flags(geom: Node) -> void:
+	## Epic-7 T6: long string of colorful prayer flags strung between 2
+	## tall poles. 5 colors traditional: blue, white, red, green, yellow.
+	var flags: Node3D = Node3D.new()
+	flags.name = "PrayerFlags"
+	flags.position = Vector3(D7_CENTER.x - 14.0, 0.0, 8.0)
+	geom.add_child(flags)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# 2 tall vertical poles
+	for sx in [-3.20, 3.20]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.10
+		pm.height = 4.20
+		pole.mesh = pm
+		pole.material_override = wood_mat
+		pole.position = Vector3(sx, 2.10, 0)
+		flags.add_child(pole)
+		# Pole collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.10, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.10
+		cap.height = 4.20
+		cs.shape = cap
+		sb.add_child(cs)
+		flags.add_child(sb)
+	# Long horizontal wire connecting poles
+	var wire: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.018
+	wm.bottom_radius = 0.018
+	wm.height = 6.40
+	wire.mesh = wm
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(0.30, 0.25, 0.20)
+	wire.material_override = wire_mat
+	wire.position = Vector3(0, 4.0, 0)
+	wire.rotation_degrees = Vector3(0, 0, 90)
+	flags.add_child(wire)
+	# 12 prayer flags hanging down (cycling 5 traditional colors)
+	var flag_colors: Array = [
+		Color(0.30, 0.40, 0.95),  # blue
+		Color(0.95, 0.95, 0.92),  # white
+		Color(0.95, 0.20, 0.30),  # red
+		Color(0.30, 0.85, 0.30),  # green
+		Color(0.95, 0.85, 0.20),  # yellow
+	]
+	for i in 12:
+		var flag: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.40, 0.55, 0.04)
+		flag.mesh = fm
+		var col: Color = flag_colors[i % 5]
+		var flag_mat: StandardMaterial3D = StandardMaterial3D.new()
+		flag_mat.albedo_color = col
+		flag_mat.emission_enabled = true
+		flag_mat.emission = col
+		flag_mat.emission_energy_multiplier = 0.65
+		flag_mat.roughness = 0.85
+		flag.material_override = flag_mat
+		flag.position = Vector3(-2.85 + i * 0.55, 3.55, 0)
+		flags.add_child(flag)
+		# Sway tween (offset per flag)
+		var tw: Tween = flag.create_tween().set_loops()
+		tw.tween_interval(i * 0.08)
+		tw.tween_property(flag, "rotation_degrees:y", 8.0, 1.4)
+		tw.tween_property(flag, "rotation_degrees:y", -8.0, 1.4)
+
+
+func _build_d7_stone_cairns(geom: Node) -> void:
+	## Epic-7 T7: 4 meditation stone cairns — stacks of 5 progressively
+	## smaller flat rocks each.
+	var cairns: Node3D = Node3D.new()
+	cairns.name = "StoneCairns"
+	cairns.position = Vector3(D7_CENTER.x - 8.0, 0.0, 14.0)
+	geom.add_child(cairns)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	rock_mat.roughness = 0.92
+	for i in 4:
+		var cairn: Node3D = Node3D.new()
+		cairn.position = Vector3(i * 1.85, 0, 0)
+		cairns.add_child(cairn)
+		# 5 stacked rocks (decreasing size)
+		var sizes: Array = [0.55, 0.42, 0.30, 0.22, 0.15]
+		var ys: Array = [0.10, 0.30, 0.50, 0.65, 0.78]
+		for j in 5:
+			var rock: MeshInstance3D = MeshInstance3D.new()
+			var rm: SphereMesh = SphereMesh.new()
+			rm.radius = sizes[j]
+			rm.height = sizes[j] * 0.85
+			rock.mesh = rm
+			rock.material_override = rock_mat
+			rock.position = Vector3(0, ys[j], 0)
+			rock.scale = Vector3(1.0, 0.55, 1.0)
+			rock.rotation_degrees = Vector3(0, randf_range(0, 360), 0)
+			cairn.add_child(rock)
+		# Cairn collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.45, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.55
+		cap.height = 0.85
+		cs.shape = cap
+		sb.add_child(cs)
+		cairn.add_child(sb)
+
+
+func _build_d7_monk_acolyte_npc() -> void:
+	## Epic-7 T8: monk acolyte NPC — smaller scale + saffron robe.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MonkAcolyteSlot"
+	slot.position = Vector3(D7_CENTER.x - 4.0, 0.0, 14.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "MonkAcolyte"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Novice")
+	if "npc_id" in npc:
+		npc.set("npc_id", "acolyte_d7")
+	npc.scale = Vector3(0.85, 0.85, 0.85)
+	slot.add_child(npc)
+	# Saffron robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.10, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.65, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.55, 0.10)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Bald head
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.20
+	dm.height = 0.36
+	dome.mesh = dm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	skin_mat.roughness = 0.65
+	dome.material_override = skin_mat
+	dome.position = Vector3(0, 1.42, 0)
+	npc.add_child(dome)
+
+
+func _build_d7_incense_burner(geom: Node) -> void:
+	## Epic-7 T9: incense burner — short bronze tripod cauldron with rising
+	## smoke particles and a soft warm glow.
+	var burner: Node3D = Node3D.new()
+	burner.name = "IncenseBurner"
+	burner.position = Vector3(D7_CENTER.x + 4.0, 0.0, 14.0)
+	geom.add_child(burner)
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	bronze_mat.metallic = 0.85
+	bronze_mat.roughness = 0.30
+	# 3 tripod legs
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.06
+		lm.height = 0.85
+		leg.mesh = lm
+		leg.material_override = bronze_mat
+		leg.position = Vector3(cos(ang) * 0.30, 0.42, sin(ang) * 0.30)
+		leg.rotation = Vector3(deg_to_rad(15) * sin(ang), 0, deg_to_rad(15) * cos(ang))
+		burner.add_child(leg)
+	# Cauldron bowl (sphere)
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.40
+	bm.height = 0.55
+	bowl.mesh = bm
+	bowl.material_override = bronze_mat
+	bowl.position = Vector3(0, 1.0, 0)
+	bowl.scale = Vector3(1.0, 0.65, 1.0)
+	burner.add_child(bowl)
+	# Glowing coals inside (small bright sphere)
+	var coals: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.20
+	cm.height = 0.18
+	coals.mesh = cm
+	var coal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coal_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	coal_mat.emission_enabled = true
+	coal_mat.emission = Color(1.0, 0.45, 0.10)
+	coal_mat.emission_energy_multiplier = 3.5
+	coal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	coals.material_override = coal_mat
+	coals.position = Vector3(0, 1.10, 0)
+	burner.add_child(coals)
+	# Smoke particles
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.amount = 30
+	smoke.lifetime = 3.0
+	smoke.preprocess = 1.5
+	smoke.position = Vector3(0, 1.30, 0)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 18.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.18
+	pm.scale_max = 0.40
+	pm.color = Color(0.85, 0.75, 0.55, 0.65)
+	smoke.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.18
+	sm_mesh.height = 0.36
+	smoke.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.85, 0.75, 0.55, 0.55)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(0.85, 0.65, 0.30)
+	sm_mat.emission_energy_multiplier = 0.85
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	burner.add_child(smoke)
+	# Warm glow light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.55, 0.20)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 1.10, 0)
+	burner.add_child(light)
+	# Burner collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.40
+	cap.height = 1.40
+	cs.shape = cap
+	sb.add_child(cs)
+	burner.add_child(sb)
+
+
+func _build_d7_brass_gong(geom: Node) -> void:
+	## Epic-7 T10: brass gong on a wooden frame — large flat brass disc
+	## suspended between two pillars with a striker hammer beside it.
+	var gong: Node3D = Node3D.new()
+	gong.name = "BrassGong"
+	gong.position = Vector3(D7_CENTER.x + 12.0, 0.0, 14.0)
+	geom.add_child(gong)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.95, 0.75, 0.20)
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(0.95, 0.65, 0.10)
+	brass_mat.emission_energy_multiplier = 0.65
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.10
+	# 2 wooden pillars
+	for sx in [-1.40, 1.40]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.10
+		pm.bottom_radius = 0.14
+		pm.height = 3.20
+		pillar.mesh = pm
+		pillar.material_override = wood_mat
+		pillar.position = Vector3(sx, 1.60, 0)
+		gong.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 1.60, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.18
+		cap.height = 3.20
+		cs.shape = cap
+		sb.add_child(cs)
+		gong.add_child(sb)
+	# Top crossbar
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.08
+	cm.bottom_radius = 0.08
+	cm.height = 3.20
+	crossbar.mesh = cm
+	crossbar.material_override = wood_mat
+	crossbar.position = Vector3(0, 3.20, 0)
+	crossbar.rotation_degrees = Vector3(0, 0, 90)
+	gong.add_child(crossbar)
+	# Brass gong disc (flat cylinder)
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 1.20
+	dm.bottom_radius = 1.20
+	dm.height = 0.10
+	disc.mesh = dm
+	disc.material_override = brass_mat
+	disc.position = Vector3(0, 1.85, 0)
+	disc.rotation_degrees = Vector3(90, 0, 0)
+	gong.add_child(disc)
+	# Subtle gong sway tween (suggesting a recent strike)
+	var tw: Tween = disc.create_tween().set_loops()
+	tw.tween_property(disc, "rotation_degrees:z", 4.0, 1.6)
+	tw.tween_property(disc, "rotation_degrees:z", -4.0, 1.6)
+	# Center boss (small bronze sphere on disc)
+	var boss: MeshInstance3D = MeshInstance3D.new()
+	var bsm: SphereMesh = SphereMesh.new()
+	bsm.radius = 0.18
+	bsm.height = 0.30
+	boss.mesh = bsm
+	boss.material_override = brass_mat
+	boss.position = Vector3(0, 1.85, 0.10)
+	gong.add_child(boss)
+	# Striker hammer (wooden handle + soft head) leaning against pillar
+	var hammer_handle: MeshInstance3D = MeshInstance3D.new()
+	var hhm: CylinderMesh = CylinderMesh.new()
+	hhm.top_radius = 0.04
+	hhm.bottom_radius = 0.05
+	hhm.height = 1.20
+	hammer_handle.mesh = hhm
+	hammer_handle.material_override = wood_mat
+	hammer_handle.position = Vector3(1.85, 0.65, 0)
+	hammer_handle.rotation_degrees = Vector3(0, 0, -25)
+	gong.add_child(hammer_handle)
+	var hammer_head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.18
+	hdm.height = 0.30
+	hammer_head.mesh = hdm
+	var head_mat: StandardMaterial3D = StandardMaterial3D.new()
+	head_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	head_mat.roughness = 0.85
+	hammer_head.material_override = head_mat
+	hammer_head.position = Vector3(1.55, 1.20, 0)
+	gong.add_child(hammer_head)
+	# Warm light from the gong
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 1.85, 0.40)
+	gong.add_child(light)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
