@@ -72,6 +72,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_road_benches(geom)
 	_build_th_road_planters(geom)
 	_build_th_courier_hut(geom)
+	_build_th_bookstall(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -9713,3 +9714,243 @@ func _build_th_courier_hut(geom: Node) -> void:
 	var wpulse: Tween = pivot.create_tween().set_loops()
 	wpulse.tween_property(window_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
 	wpulse.tween_property(window_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_bookstall(geom: Node) -> void:
+	## Epic-10 T56: small open-front bookstall building on the SE outer
+	## perimeter mirroring the NW courier hut. Wooden frame with 3 walls
+	## (no front), wood plank back wall covered in 3 rows of glowing
+	## cyan book spines, slanted roof, brass counter on the open front,
+	## hanging brass lanterns, and a brass nameplate sign.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_Bookstall"
+	# SE outer perimeter at radius 12.5 between bench ring and observatory
+	var ang: float = 7.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 12.50, 0, sin(ang) * 12.50)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	wood_mat.metallic = 0.10
+	wood_mat.emission_enabled = true
+	wood_mat.emission = Color(0.65, 0.40, 0.10)
+	wood_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var book_mat: StandardMaterial3D = StandardMaterial3D.new()
+	book_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	book_mat.emission_enabled = true
+	book_mat.emission = Color(0.45, 0.85, 1.0)
+	book_mat.emission_energy_multiplier = 5.5
+	book_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+	bulb_mat.emission_enabled = true
+	bulb_mat.emission = Color(1.0, 0.65, 0.20)
+	bulb_mat.emission_energy_multiplier = 8.0
+	bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stone foundation slab ----
+	var foundation: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(3.40, 0.30, 2.85)
+	foundation.mesh = fm
+	foundation.material_override = stone_mat
+	foundation.position = Vector3(0, 0.15, 0)
+	pivot.add_child(foundation)
+	# ---- Back wall (full wooden plank slab — books mounted on this) ----
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.20, 2.50, 0.18)
+	back.mesh = bm
+	back.material_override = wood_mat
+	back.position = Vector3(0, 1.55, 1.30)
+	pivot.add_child(back)
+	# Back wall collision
+	var back_sb: StaticBody3D = StaticBody3D.new()
+	back_sb.position = Vector3(0, 1.55, 1.30)
+	var back_cs: CollisionShape3D = CollisionShape3D.new()
+	var back_bsh: BoxShape3D = BoxShape3D.new()
+	back_bsh.size = Vector3(3.20, 2.50, 0.18)
+	back_cs.shape = back_bsh
+	back_sb.add_child(back_cs)
+	pivot.add_child(back_sb)
+	# Left wall (full)
+	var left: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(0.18, 2.50, 2.85)
+	left.mesh = lm
+	left.material_override = wood_mat
+	left.position = Vector3(-1.60, 1.55, 0)
+	pivot.add_child(left)
+	# Left wall collision
+	var left_sb: StaticBody3D = StaticBody3D.new()
+	left_sb.position = Vector3(-1.60, 1.55, 0)
+	var left_cs: CollisionShape3D = CollisionShape3D.new()
+	var left_bsh: BoxShape3D = BoxShape3D.new()
+	left_bsh.size = Vector3(0.18, 2.50, 2.85)
+	left_cs.shape = left_bsh
+	left_sb.add_child(left_cs)
+	pivot.add_child(left_sb)
+	# Right wall (full)
+	var right: MeshInstance3D = MeshInstance3D.new()
+	right.mesh = lm
+	right.material_override = wood_mat
+	right.position = Vector3(1.60, 1.55, 0)
+	pivot.add_child(right)
+	# Right wall collision
+	var right_sb: StaticBody3D = StaticBody3D.new()
+	right_sb.position = Vector3(1.60, 1.55, 0)
+	var right_cs: CollisionShape3D = CollisionShape3D.new()
+	right_cs.shape = left_bsh
+	right_sb.add_child(right_cs)
+	pivot.add_child(right_sb)
+	# ---- 3 rows of glowing cyan book spines on the back wall ----
+	# 8 books per row, evenly spaced
+	for row in 3:
+		var ry: float = 0.85 + float(row) * 0.65
+		for col in 8:
+			var bx: float = -1.40 + float(col) * 0.40
+			# Slight per-book height variation for organic shelf look
+			var bh: float = 0.45 + (sin(float(row * 8 + col) * 1.7) * 0.05)
+			var book: MeshInstance3D = MeshInstance3D.new()
+			var bkm: BoxMesh = BoxMesh.new()
+			bkm.size = Vector3(0.30, bh, 0.06)
+			book.mesh = bkm
+			book.material_override = book_mat
+			book.position = Vector3(bx, ry, 1.18)
+			pivot.add_child(book)
+	# 3 brass shelf bars (one under each book row)
+	for row in 3:
+		var ry: float = 0.55 + float(row) * 0.65
+		var shelf: MeshInstance3D = MeshInstance3D.new()
+		var shm: BoxMesh = BoxMesh.new()
+		shm.size = Vector3(3.10, 0.06, 0.20)
+		shelf.mesh = shm
+		shelf.material_override = brass_mat
+		shelf.position = Vector3(0, ry, 1.10)
+		pivot.add_child(shelf)
+	# ---- Brass counter on the open front ----
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(3.20, 0.85, 0.55)
+	counter.mesh = cm
+	counter.material_override = brass_mat
+	counter.position = Vector3(0, 0.73, -1.05)
+	pivot.add_child(counter)
+	# Counter collision
+	var counter_sb: StaticBody3D = StaticBody3D.new()
+	counter_sb.position = Vector3(0, 0.73, -1.05)
+	var counter_cs: CollisionShape3D = CollisionShape3D.new()
+	var counter_bsh: BoxShape3D = BoxShape3D.new()
+	counter_bsh.size = Vector3(3.20, 0.85, 0.55)
+	counter_cs.shape = counter_bsh
+	counter_sb.add_child(counter_cs)
+	pivot.add_child(counter_sb)
+	# Counter top trim
+	var counter_top: MeshInstance3D = MeshInstance3D.new()
+	var ctm: BoxMesh = BoxMesh.new()
+	ctm.size = Vector3(3.30, 0.10, 0.65)
+	counter_top.mesh = ctm
+	counter_top.material_override = brass_mat
+	counter_top.position = Vector3(0, 1.18, -1.05)
+	pivot.add_child(counter_top)
+	# ---- Slanted wooden roof (single panel sloping forward) ----
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(3.60, 0.18, 3.20)
+	roof.mesh = rm
+	roof.material_override = wood_mat
+	roof.position = Vector3(0, 3.30, 0)
+	roof.rotation.x = -0.30
+	pivot.add_child(roof)
+	# Brass roof front edge trim
+	var roof_trim: MeshInstance3D = MeshInstance3D.new()
+	var rtm: BoxMesh = BoxMesh.new()
+	rtm.size = Vector3(3.60, 0.10, 0.10)
+	roof_trim.mesh = rtm
+	roof_trim.material_override = brass_mat
+	roof_trim.position = Vector3(0, 2.85, -1.55)
+	pivot.add_child(roof_trim)
+	# ---- Brass nameplate sign hanging over the counter ----
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var sgm: BoxMesh = BoxMesh.new()
+	sgm.size = Vector3(2.40, 0.55, 0.10)
+	sign.mesh = sgm
+	sign.material_override = brass_mat
+	sign.position = Vector3(0, 2.50, -1.40)
+	pivot.add_child(sign)
+	# Sign hanging chains
+	for hcx in [-0.95, 0.95]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var chm: CylinderMesh = CylinderMesh.new()
+		chm.top_radius = 0.025
+		chm.bottom_radius = 0.025
+		chm.height = 0.45
+		chain.mesh = chm
+		chain.material_override = iron_mat
+		chain.position = Vector3(hcx, 2.95, -1.40)
+		pivot.add_child(chain)
+	# Sign letter blocks (5 glowing cyan letters)
+	for i in 5:
+		var lx: float = -0.85 + float(i) * 0.42
+		var letter: MeshInstance3D = MeshInstance3D.new()
+		var llm: BoxMesh = BoxMesh.new()
+		llm.size = Vector3(0.25, 0.35, 0.06)
+		letter.mesh = llm
+		letter.material_override = book_mat
+		letter.position = Vector3(lx, 2.50, -1.46)
+		pivot.add_child(letter)
+	# ---- 2 hanging brass lanterns from the roof front edge ----
+	for hlx in [-1.30, 1.30]:
+		# Cord
+		var cord: MeshInstance3D = MeshInstance3D.new()
+		var crm: CylinderMesh = CylinderMesh.new()
+		crm.top_radius = 0.025
+		crm.bottom_radius = 0.025
+		crm.height = 0.55
+		cord.mesh = crm
+		cord.material_override = iron_mat
+		cord.position = Vector3(hlx, 2.55, -1.55)
+		pivot.add_child(cord)
+		# Bulb
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var blm: SphereMesh = SphereMesh.new()
+		blm.radius = 0.16
+		blm.height = 0.32
+		bulb.mesh = blm
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(hlx, 2.20, -1.55)
+		pivot.add_child(bulb)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(hlx, 2.20, -1.55)
+		lt.light_color = Color(1.0, 0.65, 0.20)
+		lt.light_energy = 2.6
+		lt.omni_range = 6.5
+		pivot.add_child(lt)
+	# ---- Strong cyan book glow OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, 0.50)
+	lt.light_color = Color(0.45, 0.85, 1.0)
+	lt.light_energy = 2.4
+	lt.omni_range = 7.5
+	pivot.add_child(lt)
+	# Pulse for books
+	var bpulse2: Tween = pivot.create_tween().set_loops()
+	bpulse2.tween_property(book_mat, "emission_energy_multiplier", 7.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	bpulse2.tween_property(book_mat, "emission_energy_multiplier", 4.0, 2.0).set_ease(Tween.EASE_IN_OUT)
