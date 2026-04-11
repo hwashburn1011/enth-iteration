@@ -25517,6 +25517,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_rune_monoliths(geom)
 	# Epic-7 T50: STONE COLOSSUS mid-boss landmark
 	_build_d7_stone_colossus(geom)
+	# Epic-7 T51: hawks soaring overhead
+	_build_d7_hawks(geom)
+	# Epic-7 T52: falconer NPC
+	_build_d7_falconer_npc()
+	# Epic-7 T53: tall stone obelisk
+	_build_d7_obelisk(geom)
+	# Epic-7 T54: cave painting wall
+	_build_d7_cave_paintings(geom)
+	# Epic-7 T55: mountain shaman NPC
+	_build_d7_shaman_npc()
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -28962,6 +28972,333 @@ func _build_d7_stone_colossus(geom: Node) -> void:
 	pcs.shape = pcb
 	psb.add_child(pcs)
 	col.add_child(psb)
+
+
+func _build_d7_hawks(geom: Node) -> void:
+	## Epic-7 T51: 4 hawks soaring overhead in slow circling pattern at
+	## different altitudes.
+	var hawks: Node3D = Node3D.new()
+	hawks.name = "Hawks"
+	hawks.position = Vector3(D7_CENTER.x, 6.0, 0.0)
+	geom.add_child(hawks)
+	var brown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brown_mat.albedo_color = Color(0.45, 0.28, 0.15)
+	brown_mat.roughness = 0.85
+	for i in 4:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, i * 0.65, 0)
+		pivot.rotation_degrees = Vector3(0, i * 90.0, 0)
+		hawks.add_child(pivot)
+		var hawk: Node3D = Node3D.new()
+		hawk.position = Vector3(10.0 + i * 1.40, 0, 0)
+		pivot.add_child(hawk)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.22
+		bm.height = 0.40
+		body.mesh = bm
+		body.material_override = brown_mat
+		body.scale = Vector3(0.85, 0.65, 1.40)
+		hawk.add_child(body)
+		# Wide wings (long flat boxes)
+		for sx in [-0.55, 0.55]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.85, 0.04, 0.30)
+			wing.mesh = wm
+			wing.material_override = brown_mat
+			wing.position = Vector3(sx, 0.04, 0)
+			hawk.add_child(wing)
+			# Slow soaring rock
+			var twf: Tween = wing.create_tween().set_loops()
+			twf.tween_property(wing, "rotation_degrees:z", 8.0 if sx < 0 else -8.0, 1.0)
+			twf.tween_property(wing, "rotation_degrees:z", 0.0, 1.0)
+		# Pivot rotation tween (slow circling)
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0 + 360.0, 14.0 + i * 0.6)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
+
+
+func _build_d7_falconer_npc() -> void:
+	## Epic-7 T52: falconer NPC — leather glove with a perched falcon.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "FalconerSlot"
+	slot.position = Vector3(D7_CENTER.x - 8.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Falconer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Skywatch")
+	if "npc_id" in npc:
+		npc.set("npc_id", "falconer_d7")
+	slot.add_child(npc)
+	# Brown leather tunic
+	var tunic: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.65, 1.05, 0.40)
+	tunic.mesh = tm
+	var tunic_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tunic_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	tunic_mat.roughness = 0.65
+	tunic.material_override = tunic_mat
+	tunic.position = Vector3(0, 0.55, 0)
+	npc.add_child(tunic)
+	# Outstretched leather glove arm
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.18, 0.55, 0.18)
+	arm.mesh = am
+	arm.material_override = tunic_mat
+	arm.position = Vector3(0.40, 1.10, 0.30)
+	arm.rotation_degrees = Vector3(60, 0, 0)
+	npc.add_child(arm)
+	# Perched falcon (small bird on glove)
+	var brown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brown_mat.albedo_color = Color(0.45, 0.28, 0.15)
+	brown_mat.roughness = 0.85
+	var falcon: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.14
+	fm.height = 0.24
+	falcon.mesh = fm
+	falcon.material_override = brown_mat
+	falcon.position = Vector3(0.60, 1.40, 0.55)
+	falcon.scale = Vector3(0.85, 1.20, 0.85)
+	npc.add_child(falcon)
+
+
+func _build_d7_obelisk(geom: Node) -> void:
+	## Epic-7 T53: tall narrow stone obelisk with carved glyphs on the front.
+	var ob: Node3D = Node3D.new()
+	ob.name = "Obelisk"
+	ob.position = Vector3(D7_CENTER.x + 12.0, 0.0, 18.0)
+	geom.add_child(ob)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.55, 0.40, 0.20)
+	stone_mat.emission_energy_multiplier = 0.18
+	stone_mat.roughness = 0.92
+	# Square base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.85, 0.55, 1.85)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.27, 0)
+	ob.add_child(base)
+	# Tall narrow shaft (tapered)
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.85, 6.85, 0.85)
+	shaft.mesh = sm
+	shaft.material_override = stone_mat
+	shaft.position = Vector3(0, 3.95, 0)
+	ob.add_child(shaft)
+	# Pyramidal top (small prism)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: PrismMesh = PrismMesh.new()
+	tm.size = Vector3(0.85, 0.85, 0.85)
+	top.mesh = tm
+	top.material_override = stone_mat
+	top.position = Vector3(0, 7.85, 0)
+	ob.add_child(top)
+	# 5 glowing rune carvings down the front face
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_energy_multiplier = 2.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 5:
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmm: BoxMesh = BoxMesh.new()
+		rmm.size = Vector3(0.30, 0.30, 0.04)
+		rune.mesh = rmm
+		rune.material_override = rune_mat
+		rune.position = Vector3(0, 1.85 + i * 1.30, 0.45)
+		ob.add_child(rune)
+		# Pulse
+		var tw: Tween = rune.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(rune, "scale:y", 1.20, 0.85)
+		tw.tween_property(rune, "scale:y", 0.85, 0.85)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 2.5
+	light.omni_range = 7.0
+	light.position = Vector3(0, 5.55, 0)
+	ob.add_child(light)
+	# Obelisk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.10, 8.40, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	ob.add_child(sb)
+
+
+func _build_d7_cave_paintings(geom: Node) -> void:
+	## Epic-7 T54: cave painting wall — dark rock surface with primitive
+	## colored handprints + animal silhouettes.
+	var wall: Node3D = Node3D.new()
+	wall.name = "CavePaintings"
+	wall.position = Vector3(D7_CENTER.x + 22.0, 0.0, 12.0)
+	geom.add_child(wall)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	rock_mat.roughness = 0.92
+	# Wall slab
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(4.85, 3.40, 0.40)
+	slab.mesh = sm
+	slab.material_override = rock_mat
+	slab.position = Vector3(0, 1.70, -2.85)
+	wall.add_child(slab)
+	# Painting colors
+	var paint_colors: Array = [
+		Color(0.85, 0.20, 0.15),  # red ochre
+		Color(0.95, 0.55, 0.20),  # orange
+		Color(0.85, 0.75, 0.45),  # yellow ochre
+		Color(0.20, 0.10, 0.05),  # dark
+	]
+	# 6 handprint sphere clusters
+	for i in 6:
+		for j in 5:
+			var dot: MeshInstance3D = MeshInstance3D.new()
+			var dm: SphereMesh = SphereMesh.new()
+			dm.radius = 0.06 + randf() * 0.04
+			dm.height = 0.10
+			dot.mesh = dm
+			var dot_mat: StandardMaterial3D = StandardMaterial3D.new()
+			dot_mat.albedo_color = paint_colors[i % 4]
+			dot_mat.emission_enabled = true
+			dot_mat.emission = paint_colors[i % 4]
+			dot_mat.emission_energy_multiplier = 0.85
+			dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			dot.material_override = dot_mat
+			dot.position = Vector3(
+				-2.0 + i * 0.85 + randf_range(-0.18, 0.18),
+				0.85 + j * 0.40 + randf_range(-0.10, 0.10),
+				-2.65
+			)
+			wall.add_child(dot)
+	# 2 large animal silhouette boxes (running animal shapes)
+	for i in 2:
+		var animal: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.85, 0.55, 0.04)
+		animal.mesh = am
+		var animal_mat: StandardMaterial3D = StandardMaterial3D.new()
+		animal_mat.albedo_color = Color(0.85, 0.30, 0.15)
+		animal_mat.emission_enabled = true
+		animal_mat.emission = Color(0.85, 0.30, 0.15)
+		animal_mat.emission_energy_multiplier = 1.0
+		animal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		animal.material_override = animal_mat
+		animal.position = Vector3(-1.0 + i * 2.0, 2.40, -2.65)
+		wall.add_child(animal)
+	# Wall collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, -2.85)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.85, 3.40, 0.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	wall.add_child(sb)
+
+
+func _build_d7_shaman_npc() -> void:
+	## Epic-7 T55: mountain shaman NPC — feathered headdress + bone necklace
+	## + held drum.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ShamanSlot"
+	slot.position = Vector3(D7_CENTER.x + 22.0, 0.0, 14.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Shaman"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Spiritcaller")
+	if "npc_id" in npc:
+		npc.set("npc_id", "shaman_d7")
+	slot.add_child(npc)
+	# Brown robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Feathered headdress (4 colored feather prisms)
+	var feather_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.65, 0.95),
+		Color(0.30, 0.95, 0.55),
+	]
+	for i in 4:
+		var feather: MeshInstance3D = MeshInstance3D.new()
+		var fm: PrismMesh = PrismMesh.new()
+		fm.size = Vector3(0.10, 0.40, 0.04)
+		feather.mesh = fm
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = feather_colors[i]
+		fmat.emission_enabled = true
+		fmat.emission = feather_colors[i]
+		fmat.emission_energy_multiplier = 0.85
+		feather.material_override = fmat
+		var ang: float = (TAU / 4.0) * i
+		feather.position = Vector3(cos(ang) * 0.18, 1.85, sin(ang) * 0.18)
+		feather.rotation_degrees = Vector3(0, ang * 60.0, -25.0)
+		npc.add_child(feather)
+	# Bone necklace (small white torus)
+	var bone: MeshInstance3D = MeshInstance3D.new()
+	var btm: TorusMesh = TorusMesh.new()
+	btm.inner_radius = 0.18
+	btm.outer_radius = 0.22
+	bone.mesh = btm
+	var bone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bone_mat.albedo_color = Color(0.92, 0.92, 0.85)
+	bone_mat.roughness = 0.65
+	bone.material_override = bone_mat
+	bone.position = Vector3(0, 1.10, 0.10)
+	npc.add_child(bone)
+	# Drum (small cylinder held in hand)
+	var drum: MeshInstance3D = MeshInstance3D.new()
+	var drm: CylinderMesh = CylinderMesh.new()
+	drm.top_radius = 0.18
+	drm.bottom_radius = 0.18
+	drm.height = 0.18
+	drum.mesh = drm
+	var drum_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drum_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	drum_mat.roughness = 0.85
+	drum.material_override = drum_mat
+	drum.position = Vector3(0.40, 0.85, 0.20)
+	drum.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(drum)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
