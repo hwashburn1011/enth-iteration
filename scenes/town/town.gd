@@ -32674,6 +32674,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_rope_coils(geom)
 	# Epic-8 T20: dock lantern posts
 	_build_d8_lantern_posts(geom)
+	# Epic-8 T21: clam digger NPC
+	_build_d8_clam_digger_npc()
+	# Epic-8 T22: tide pools
+	_build_d8_tide_pools(geom)
+	# Epic-8 T23: starfish creatures
+	_build_d8_starfish(geom)
+	# Epic-8 T24: warning bell on pole
+	_build_d8_warning_bell(geom)
+	# Epic-8 T25: net mending station
+	_build_d8_net_mending(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -33999,6 +34009,319 @@ func _build_d8_lantern_posts(geom: Node) -> void:
 		cs.shape = capshape
 		sb.add_child(cs)
 		lamp.add_child(sb)
+
+
+func _build_d8_clam_digger_npc() -> void:
+	## Epic-8 T21: clam digger NPC — rolled-up trousers + held bucket and
+	## small spade.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ClamDiggerSlot"
+	slot.position = Vector3(D8_CENTER.x + 4.0, 0.0, -8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ClamDigger"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Mudfoot")
+	if "npc_id" in npc:
+		npc.set("npc_id", "clam_digger_d8")
+	slot.add_child(npc)
+	# Tan rolled-up shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 0.85, 0.40)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.85, 0.75, 0.45)
+	shirt_mat.roughness = 0.85
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.65, 0)
+	npc.add_child(shirt)
+	# Bucket
+	var bucket: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.18
+	bm.bottom_radius = 0.14
+	bm.height = 0.30
+	bucket.mesh = bm
+	var bucket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bucket_mat.albedo_color = Color(0.40, 0.30, 0.15)
+	bucket_mat.roughness = 0.85
+	bucket.material_override = bucket_mat
+	bucket.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(bucket)
+	# Small spade (handle + blade)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.025
+	hm.bottom_radius = 0.025
+	hm.height = 0.55
+	handle.mesh = hm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0.65, 0.85, 0.20)
+	npc.add_child(handle)
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blm: BoxMesh = BoxMesh.new()
+	blm.size = Vector3(0.10, 0.18, 0.04)
+	blade.mesh = blm
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	blade.material_override = blade_mat
+	blade.position = Vector3(0.65, 1.20, 0.20)
+	npc.add_child(blade)
+
+
+func _build_d8_tide_pools(geom: Node) -> void:
+	## Epic-8 T22: 4 small tide pools — round shallow pools of water
+	## with stone rims at varying positions on the dock.
+	var pools: Node3D = Node3D.new()
+	pools.name = "TidePools"
+	pools.position = Vector3(D8_CENTER.x + 14.0, 0.0, 8.0)
+	geom.add_child(pools)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.40, 0.35)
+	stone_mat.roughness = 0.92
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.30, 0.65, 0.85, 0.85)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.85, 1.0)
+	water_mat.emission_energy_multiplier = 0.85
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.05
+	for i in 4:
+		var pool: Node3D = Node3D.new()
+		pool.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0,
+			randf_range(-2.5, 2.5)
+		)
+		pools.add_child(pool)
+		# Stone rim (small torus)
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rm: TorusMesh = TorusMesh.new()
+		rm.inner_radius = 0.55
+		rm.outer_radius = 0.75
+		rim.mesh = rm
+		rim.material_override = stone_mat
+		rim.position = Vector3(0, 0.10, 0)
+		pool.add_child(rim)
+		# Shallow water disc
+		var water: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.65
+		wm.bottom_radius = 0.65
+		wm.height = 0.04
+		water.mesh = wm
+		water.material_override = water_mat
+		water.position = Vector3(0, 0.08, 0)
+		pool.add_child(water)
+		# Subtle bob
+		var tw: Tween = water.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(water, "position:y", 0.10, 1.0)
+		tw.tween_property(water, "position:y", 0.08, 1.0)
+
+
+func _build_d8_starfish(geom: Node) -> void:
+	## Epic-8 T23: 4 starfish creatures on the dock — orange/red 5-pointed
+	## stars made from a center sphere + 5 prism arms.
+	var stars: Node3D = Node3D.new()
+	stars.name = "Starfish"
+	stars.position = Vector3(D8_CENTER.x + 14.0, 0.0, 14.0)
+	geom.add_child(stars)
+	var orange_mat: StandardMaterial3D = StandardMaterial3D.new()
+	orange_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	orange_mat.emission_enabled = true
+	orange_mat.emission = Color(0.95, 0.45, 0.10)
+	orange_mat.emission_energy_multiplier = 0.65
+	orange_mat.roughness = 0.85
+	var red_mat: StandardMaterial3D = StandardMaterial3D.new()
+	red_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	red_mat.emission_enabled = true
+	red_mat.emission = Color(0.85, 0.20, 0.20)
+	red_mat.emission_energy_multiplier = 0.65
+	red_mat.roughness = 0.85
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 1.85, 0,  0.85),
+		Vector3(-1.40, 0,  1.40),
+		Vector3( 1.0, 0, -1.40),
+	]
+	for i in positions.size():
+		var star: Node3D = Node3D.new()
+		star.position = positions[i]
+		stars.add_child(star)
+		# Center disc
+		var center: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.18
+		cm.height = 0.10
+		center.mesh = cm
+		var mat: StandardMaterial3D = orange_mat if i % 2 == 0 else red_mat
+		center.material_override = mat
+		center.position = Vector3(0, 0.05, 0)
+		center.scale = Vector3(1.0, 0.45, 1.0)
+		star.add_child(center)
+		# 5 arms radiating outward (prisms)
+		for j in 5:
+			var ang: float = (TAU / 5.0) * j
+			var arm: MeshInstance3D = MeshInstance3D.new()
+			var am: PrismMesh = PrismMesh.new()
+			am.size = Vector3(0.10, 0.30, 0.06)
+			arm.mesh = am
+			arm.material_override = mat
+			arm.position = Vector3(cos(ang) * 0.20, 0.05, sin(ang) * 0.20)
+			arm.rotation = Vector3(0, -ang + PI * 0.5, PI * 0.5)
+			star.add_child(arm)
+
+
+func _build_d8_warning_bell(geom: Node) -> void:
+	## Epic-8 T24: warning bell mounted on a tall wooden pole — used to
+	## signal storms or arrivals.
+	var bell: Node3D = Node3D.new()
+	bell.name = "WarningBell"
+	bell.position = Vector3(D8_CENTER.x - 8.0, 0.0, -16.0)
+	geom.add_child(bell)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.95, 0.75, 0.20)
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(0.95, 0.65, 0.10)
+	brass_mat.emission_energy_multiplier = 0.85
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.10
+	# Tall wooden pole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.10
+	pm.bottom_radius = 0.18
+	pm.height = 4.20
+	pole.mesh = pm
+	pole.material_override = wood_mat
+	pole.position = Vector3(0, 2.10, 0)
+	bell.add_child(pole)
+	# Top bracket arm
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var am: CylinderMesh = CylinderMesh.new()
+	am.top_radius = 0.06
+	am.bottom_radius = 0.06
+	am.height = 0.55
+	arm.mesh = am
+	arm.material_override = wood_mat
+	arm.position = Vector3(0.20, 4.20, 0)
+	arm.rotation_degrees = Vector3(0, 0, 90)
+	bell.add_child(arm)
+	# Bell pivot for sway
+	var bell_pivot: Node3D = Node3D.new()
+	bell_pivot.position = Vector3(0.40, 4.0, 0)
+	bell.add_child(bell_pivot)
+	# Brass bell
+	var bell_body: MeshInstance3D = MeshInstance3D.new()
+	var bbm: SphereMesh = SphereMesh.new()
+	bbm.radius = 0.30
+	bbm.height = 0.55
+	bell_body.mesh = bbm
+	bell_body.material_override = brass_mat
+	bell_body.position = Vector3(0, -0.30, 0)
+	bell_body.scale = Vector3(1.0, 0.85, 1.0)
+	bell_pivot.add_child(bell_body)
+	# Slow sway tween
+	var tw: Tween = bell_pivot.create_tween().set_loops()
+	tw.tween_property(bell_pivot, "rotation_degrees:x", 6.0, 1.4)
+	tw.tween_property(bell_pivot, "rotation_degrees:x", -6.0, 1.4)
+	# Pole collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.18
+	cap.height = 4.20
+	cs.shape = cap
+	sb.add_child(cs)
+	bell.add_child(sb)
+
+
+func _build_d8_net_mending(geom: Node) -> void:
+	## Epic-8 T25: net mending station — wooden frame with a large draped
+	## fishing net + small wooden stool.
+	var station: Node3D = Node3D.new()
+	station.name = "NetMending"
+	station.position = Vector3(D8_CENTER.x - 14.0, 0.0, -16.0)
+	geom.add_child(station)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var net_mat: StandardMaterial3D = StandardMaterial3D.new()
+	net_mat.albedo_color = Color(0.85, 0.75, 0.45, 0.55)
+	net_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	net_mat.emission_enabled = true
+	net_mat.emission = Color(0.85, 0.65, 0.30)
+	net_mat.emission_energy_multiplier = 0.45
+	net_mat.roughness = 0.85
+	# Frame (square wooden frame)
+	for i in 4:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.06
+		pm.height = 1.85
+		post.mesh = pm
+		var ang: float = (TAU / 4.0) * i + PI / 4.0
+		post.material_override = wood_mat
+		post.position = Vector3(cos(ang) * 0.85, 0.92, sin(ang) * 0.85)
+		station.add_child(post)
+	# Top horizontal frame bars
+	for i in 2:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.04
+		bm.bottom_radius = 0.04
+		bm.height = 1.70
+		bar.mesh = bm
+		bar.material_override = wood_mat
+		bar.position = Vector3(0, 1.85, 0)
+		bar.rotation_degrees = Vector3(0, i * 90.0, 90)
+		station.add_child(bar)
+	# Net draped over (large translucent box)
+	var net: MeshInstance3D = MeshInstance3D.new()
+	var nm: BoxMesh = BoxMesh.new()
+	nm.size = Vector3(1.85, 0.85, 1.85)
+	net.mesh = nm
+	net.material_override = net_mat
+	net.position = Vector3(0, 1.40, 0)
+	station.add_child(net)
+	# Small wooden stool beside it
+	var stool: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.30
+	stm.bottom_radius = 0.30
+	stm.height = 0.55
+	stool.mesh = stm
+	stool.material_override = wood_mat
+	stool.position = Vector3(1.40, 0.27, 0)
+	station.add_child(stool)
+	# Frame collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 1.85, 2.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	station.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
