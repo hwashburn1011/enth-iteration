@@ -94,6 +94,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_sky_aurora_ribbon(geom)
 	_build_th_plaza_visitor_trio(town)
 	_build_th_inner_glyph_mosaic_tiles(geom)
+	_build_th_hover_holo_books(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -14452,3 +14453,143 @@ func _build_th_inner_glyph_mosaic_tiles(geom: Node) -> void:
 		glow.tween_interval(phase)
 		glow.tween_property(rune_mat, "emission_energy_multiplier", 7.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 		glow.tween_property(rune_mat, "emission_energy_multiplier", 3.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_hover_holo_books(geom: Node) -> void:
+	## Epic-10 T78: Hover Holo-Books — 5 floating glowing holographic books
+	## slowly orbiting above the SE bookstall, each colored differently with
+	## a periodic page-flap animation. Visual flair anchoring the bookstall.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_HoverHoloBooks"
+	# SE bookstall area is around angle ~-PI*0.30, radius ~14 (perimeter)
+	# Place orbit center slightly inside that
+	var ang_pos: float = -PI * 0.30
+	var rad_pos: float = 13.0
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 4.20, pz_p)
+	geom.add_child(pivot)
+	# Materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	# Book color palette
+	var book_palette: Array[Color] = [
+		Color(0.40, 0.85, 1.0),  # cyan
+		Color(0.95, 0.65, 0.20),  # amber
+		Color(0.65, 0.40, 0.95),  # violet
+		Color(0.45, 0.85, 0.30),  # green
+		Color(0.95, 0.30, 0.30),  # red
+	]
+	# Build 5 books orbiting around an invisible center
+	for i in range(5):
+		var ang_book: float = float(i) * (TAU / 5.0)
+		var orbit_radius: float = 1.50
+		# Each book has its own orbit slot pivot
+		var slot: Node3D = Node3D.new()
+		slot.name = "BookSlot_%d" % i
+		slot.position = Vector3(0, 0, 0)
+		slot.rotation.y = ang_book
+		pivot.add_child(slot)
+		# Book group offset along +X
+		var book_pivot: Node3D = Node3D.new()
+		book_pivot.position = Vector3(orbit_radius, 0, 0)
+		# Stagger heights
+		book_pivot.position.y = sin(float(i) * 1.4) * 0.30
+		slot.add_child(book_pivot)
+		# Book cover (slightly thicker box)
+		var cov_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cov_mat.albedo_color = book_palette[i]
+		cov_mat.metallic = 0.20
+		cov_mat.roughness = 0.55
+		cov_mat.emission_enabled = true
+		cov_mat.emission = book_palette[i]
+		cov_mat.emission_energy_multiplier = 2.2
+		var cover: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.35, 0.45, 0.10)
+		cover.mesh = cmm
+		cover.material_override = cov_mat
+		cover.position = Vector3(0, 0, 0)
+		book_pivot.add_child(cover)
+		# Brass spine
+		var spine: MeshInstance3D = MeshInstance3D.new()
+		var spm: BoxMesh = BoxMesh.new()
+		spm.size = Vector3(0.04, 0.45, 0.12)
+		spine.mesh = spm
+		spine.material_override = brass_mat
+		spine.position = Vector3(-0.18, 0, 0)
+		book_pivot.add_child(spine)
+		# 2 brass clasps
+		for s in [-1.0, 1.0]:
+			var clasp: MeshInstance3D = MeshInstance3D.new()
+			var clm: SphereMesh = SphereMesh.new()
+			clm.radius = 0.025
+			clm.height = 0.05
+			clasp.mesh = clm
+			clasp.material_override = brass_mat
+			clasp.position = Vector3(0.18, 0.16 * s, 0.06)
+			book_pivot.add_child(clasp)
+		# Pages flap (a hovering page sticking out the front)
+		var page_mat: StandardMaterial3D = StandardMaterial3D.new()
+		page_mat.albedo_color = Color(0.95, 0.95, 1.0)
+		page_mat.metallic = 0.10
+		page_mat.roughness = 0.60
+		page_mat.emission_enabled = true
+		page_mat.emission = book_palette[i] * 1.2
+		page_mat.emission_energy_multiplier = 3.0
+		page_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var page_pivot: Node3D = Node3D.new()
+		page_pivot.position = Vector3(0.05, 0, 0.06)
+		book_pivot.add_child(page_pivot)
+		var page: MeshInstance3D = MeshInstance3D.new()
+		var pgm: BoxMesh = BoxMesh.new()
+		pgm.size = Vector3(0.30, 0.40, 0.005)
+		page.mesh = pgm
+		page.material_override = page_mat
+		page.position = Vector3(0.10, 0, 0)
+		page_pivot.add_child(page)
+		# Tiny glow point above the book
+		var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+		glow_mat.albedo_color = book_palette[i]
+		glow_mat.emission_enabled = true
+		glow_mat.emission = book_palette[i]
+		glow_mat.emission_energy_multiplier = 6.0
+		glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gmm: SphereMesh = SphereMesh.new()
+		gmm.radius = 0.05
+		gmm.height = 0.10
+		glow.mesh = gmm
+		glow.material_override = glow_mat
+		glow.position = Vector3(0, 0.32, 0)
+		book_pivot.add_child(glow)
+		# Per-book light
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 0.20, 0)
+		lt.light_color = book_palette[i]
+		lt.light_energy = 0.90
+		lt.omni_range = 2.0
+		book_pivot.add_child(lt)
+		# Book bob (vertical sway)
+		var phase: float = float(i) * 0.40
+		var bob: Tween = book_pivot.create_tween().set_loops()
+		bob.tween_interval(phase)
+		bob.tween_property(book_pivot, "position:y", book_pivot.position.y + 0.18, 1.5).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(book_pivot, "position:y", book_pivot.position.y - 0.18, 1.5).set_ease(Tween.EASE_IN_OUT)
+		# Page flap (rotate page pivot around Y)
+		var flap: Tween = page_pivot.create_tween().set_loops()
+		flap.tween_interval(phase * 0.8)
+		flap.tween_property(page_pivot, "rotation:y", -1.20, 1.0).set_ease(Tween.EASE_IN_OUT)
+		flap.tween_property(page_pivot, "rotation:y", 0.0, 1.0).set_ease(Tween.EASE_IN_OUT)
+		# Glow pulse
+		var gp: Tween = book_pivot.create_tween().set_loops()
+		gp.tween_property(glow_mat, "emission_energy_multiplier", 9.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+		gp.tween_property(glow_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Slow orbit of the entire pivot (all 5 books rotate together)
+	var orbit: Tween = pivot.create_tween().set_loops()
+	orbit.tween_property(pivot, "rotation:y", TAU, 14.0).from(0.0)
