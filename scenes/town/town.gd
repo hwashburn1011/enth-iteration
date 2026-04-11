@@ -10375,7 +10375,7 @@ func _build_vending_machines(geom: Node) -> void:
 		body.mesh = bm
 		body.position = Vector3(0, 0.9, 0)
 		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
-		var hue := [Color(0.85, 0.20, 0.30), Color(0.20, 0.50, 0.85), Color(0.85, 0.65, 0.20)][i]
+		var hue: Color = [Color(0.85, 0.20, 0.30), Color(0.20, 0.50, 0.85), Color(0.85, 0.65, 0.20)][i]
 		body_mat.albedo_color = hue * 0.6
 		body_mat.emission_enabled = true
 		body_mat.emission = hue
@@ -11342,7 +11342,7 @@ func _build_crowd_seating(geom: Node) -> void:
 		orb_mesh.height = 0.44
 		spec.mesh = orb_mesh
 		spec.position = seat_pos + Vector3(0, 0.55, 0)
-		var hue := [
+		var hue: Color = [
 			Color(0.85, 0.55, 0.30),  # orange
 			Color(0.55, 0.35, 0.85),  # violet
 			Color(0.30, 0.85, 0.50),  # green
