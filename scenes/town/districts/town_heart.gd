@@ -38,6 +38,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_shrine_keeper_npc(town)
 	_build_th_quest_master_npc(town)
 	_build_th_banker_npc(town)
+	_build_th_fountain_wisher_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -3717,3 +3718,154 @@ func _build_th_banker_npc(town: Node) -> void:
 	var dpulse2: Tween = npc.create_tween().set_loops()
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_fountain_wisher_npc(town: Node) -> void:
+	## Epic-10 T22: Wishing Wanderer Solace — casual visitor NPC standing
+	## beside the data fountain on the E radial path. Plain green tunic
+	## with brass belt + small data coin held between thumb and forefinger
+	## of the right hand, raised toward the fountain in a "tossing a wish
+	## coin" pose. Slow toss tween + glowing coin pulse.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THWishingWandererSolaceSlot"
+	# Stand beside the data fountain on the E radial path
+	slot.position = TOWN_CENTER + Vector3(7.6, 0, 0)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THWishingWandererSolace"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Wishing Wanderer Solace")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_wishing_wanderer_solace")
+	# Face the fountain (-X direction)
+	npc.rotation.y = -PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var tunic_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tunic_mat.albedo_color = Color(0.18, 0.45, 0.22)
+	tunic_mat.roughness = 0.85
+	tunic_mat.metallic = 0.10
+	tunic_mat.emission_enabled = true
+	tunic_mat.emission = Color(0.30, 0.65, 0.30)
+	tunic_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	# ---- Plain green tunic ----
+	var tunic: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.00, 1.30, 0.55)
+	tunic.mesh = tmesh
+	tunic.material_override = tunic_mat
+	tunic.position = Vector3(0, 1.05, 0)
+	npc.add_child(tunic)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(1.00, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.65, 0)
+	npc.add_child(collar)
+	# ---- Leather waist belt + brass buckle ----
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var btm: BoxMesh = BoxMesh.new()
+	btm.size = Vector3(1.05, 0.16, 0.60)
+	belt.mesh = btm
+	belt.material_override = leather_mat
+	belt.position = Vector3(0, 0.55, 0)
+	npc.add_child(belt)
+	var buckle: MeshInstance3D = MeshInstance3D.new()
+	var bkm: BoxMesh = BoxMesh.new()
+	bkm.size = Vector3(0.18, 0.16, 0.06)
+	buckle.mesh = bkm
+	buckle.material_override = brass_mat
+	buckle.position = Vector3(0, 0.55, -0.32)
+	npc.add_child(buckle)
+	# ---- Small drawstring pouch on the left hip (where wish coins come from) ----
+	var pouch: MeshInstance3D = MeshInstance3D.new()
+	var poum: SphereMesh = SphereMesh.new()
+	poum.radius = 0.14
+	poum.height = 0.26
+	pouch.mesh = poum
+	pouch.material_override = leather_mat
+	pouch.position = Vector3(-0.42, 0.42, 0)
+	pouch.scale = Vector3(0.95, 1.10, 0.85)
+	npc.add_child(pouch)
+	# ---- Left arm at his side ----
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.18, 0.85, 0.18)
+	left_arm.mesh = lam
+	left_arm.material_override = tunic_mat
+	left_arm.position = Vector3(-0.55, 1.00, 0)
+	npc.add_child(left_arm)
+	# ---- Right arm + wish coin on a pivot ----
+	var toss_pivot: Node3D = Node3D.new()
+	toss_pivot.position = Vector3(0.55, 1.50, 0)
+	npc.add_child(toss_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = tunic_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	toss_pivot.add_child(right_arm)
+	# Right hand box
+	var right_hand: MeshInstance3D = MeshInstance3D.new()
+	var rhm: BoxMesh = BoxMesh.new()
+	rhm.size = Vector3(0.16, 0.16, 0.20)
+	right_hand.mesh = rhm
+	right_hand.material_override = brass_mat
+	right_hand.position = Vector3(0, -0.92, 0)
+	toss_pivot.add_child(right_hand)
+	# Glowing wish coin (small unshaded cyan disc) held between fingers
+	var coin: MeshInstance3D = MeshInstance3D.new()
+	var cmm: CylinderMesh = CylinderMesh.new()
+	cmm.top_radius = 0.07
+	cmm.bottom_radius = 0.07
+	cmm.height = 0.04
+	coin.mesh = cmm
+	coin.material_override = data_mat
+	coin.position = Vector3(0, -1.05, 0)
+	coin.rotation.x = PI / 2.0
+	toss_pivot.add_child(coin)
+	# Initial pose — arm raised forward toward the fountain
+	toss_pivot.rotation.x = -1.30
+	# ---- Subtle warm cyan OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, -0.30)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Toss-and-recover gesture tween ----
+	var toss: Tween = npc.create_tween().set_loops()
+	toss.tween_property(toss_pivot, "rotation:x", -1.80, 0.45).set_ease(Tween.EASE_OUT)
+	toss.tween_property(toss_pivot, "rotation:x", -0.90, 0.30).set_ease(Tween.EASE_IN)
+	toss.tween_property(toss_pivot, "rotation:x", -1.30, 0.50).set_ease(Tween.EASE_IN_OUT)
+	toss.tween_property(toss_pivot, "rotation:x", -1.30, 1.00)
+	# Coin pulse
+	var dpulse3: Tween = npc.create_tween().set_loops()
+	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 9.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.4).set_ease(Tween.EASE_IN_OUT)
