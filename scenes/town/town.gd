@@ -1778,6 +1778,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_grimoire_stack(geom)
 	# Epic-3 T70: Monk NPC walking circular path
 	_build_d3_monk_npc()
+	# Epic-3 T71: Conjurer NPC with familiar
+	_build_d3_conjurer_npc()
+	# Epic-3 T72: ancient map wall
+	_build_d3_map_wall(geom)
+	# Epic-3 T73: floating dust orbs ambient
+	_build_d3_dust_orbs(geom)
+	# Epic-3 T74: spirit altar circle
+	_build_d3_altar_circle(geom)
+	# Epic-3 T75: mind crystal cluster
+	_build_d3_mind_crystals(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -6743,6 +6753,323 @@ func _build_d3_monk_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	monk.add_child(label)
+
+
+func _build_d3_conjurer_npc() -> void:
+	## Epic-3 T71: Conjurer NPC with a small familiar floating beside.
+	## Wide-brimmed pointy hat, robe, and a small wisp creature orbiting.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var conj: Node3D = Node3D.new()
+	conj.name = "D3Conjurer"
+	conj.position = D3_CENTER + Vector3(-3, 0, -8)
+	slots.add_child(conj)
+	# Body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.20, 0.40)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	conj.add_child(body)
+	# Wide-brim hat — flat torus + tall prism
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brmesh: TorusMesh = TorusMesh.new()
+	brmesh.inner_radius = 0.40
+	brmesh.outer_radius = 0.65
+	brim.mesh = brmesh
+	brim.position = Vector3(0, 1.65, 0)
+	brim.material_override = bmat
+	conj.add_child(brim)
+	var hat_top: MeshInstance3D = MeshInstance3D.new()
+	var htm: PrismMesh = PrismMesh.new()
+	htm.size = Vector3(0.55, 0.85, 0.55)
+	hat_top.mesh = htm
+	hat_top.position = Vector3(0, 2.10, 0)
+	hat_top.material_override = bmat
+	conj.add_child(hat_top)
+	# 2 cyan eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.32)
+		eye.material_override = eye_mat
+		conj.add_child(eye)
+	# Familiar — small wisp creature orbiting head
+	var familiar_pivot: Node3D = Node3D.new()
+	familiar_pivot.position = Vector3(0, 1.85, 0)
+	conj.add_child(familiar_pivot)
+	var familiar: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.18
+	fm.height = 0.36
+	familiar.mesh = fm
+	familiar.position = Vector3(0.85, 0, 0)
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.55, 0.95, 1.0)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.55, 0.95, 1.0)
+	fmat.emission_energy_multiplier = 3.0
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	familiar.material_override = fmat
+	familiar_pivot.add_child(familiar)
+	# 2 small white eyes on the familiar
+	for ex: float in [-0.06, 0.06]:
+		var f_eye: MeshInstance3D = MeshInstance3D.new()
+		var fem: SphereMesh = SphereMesh.new()
+		fem.radius = 0.03
+		fem.height = 0.06
+		f_eye.mesh = fem
+		f_eye.position = Vector3(0.85 + ex, 0.04, 0.18)
+		var femat: StandardMaterial3D = StandardMaterial3D.new()
+		femat.albedo_color = Color(1, 1, 1)
+		femat.emission_enabled = true
+		femat.emission = Color(1, 1, 1)
+		femat.emission_energy_multiplier = 3.0
+		femat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		f_eye.material_override = femat
+		familiar_pivot.add_child(f_eye)
+	# Orbit familiar
+	var orbit: Tween = create_tween().set_loops()
+	orbit.tween_property(familiar_pivot, "rotation:y", TAU, 4.0)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Conjurer"
+	label.position = Vector3(0, 3.0, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	conj.add_child(label)
+
+
+func _build_d3_map_wall(geom: Node) -> void:
+	## Epic-3 T72: ancient map wall — large flat wall covered with 6
+	## colored map fragment boxes pinned in a grid pattern.
+	var wall_root: Node3D = Node3D.new()
+	wall_root.name = "D3MapWall"
+	wall_root.position = D3_CENTER + Vector3(-22, 0, -2)
+	geom.add_child(wall_root)
+	# Wall slab
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(0.30, 4.0, 5.0)
+	wall.mesh = wm
+	wall.position = Vector3(0, 2.0, 0)
+	wall.material_override = stone_mat
+	wall_root.add_child(wall)
+	# 6 map fragments in a 3x2 grid
+	var map_colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(0.45, 1.0, 0.55),
+		Color(1.0, 0.55, 0.20),
+		Color(0.85, 0.40, 1.0),
+		Color(1.0, 0.95, 0.30),
+		Color(1.0, 0.30, 0.55),
+	]
+	for r in 2:
+		for c in 3:
+			var i: int = r * 3 + c
+			var frag: MeshInstance3D = MeshInstance3D.new()
+			var fm: BoxMesh = BoxMesh.new()
+			fm.size = Vector3(0.10, 1.20, 1.20)
+			frag.mesh = fm
+			frag.position = Vector3(0.21, 1.30 + r * 1.40, -1.50 + c * 1.50)
+			var fmat: StandardMaterial3D = StandardMaterial3D.new()
+			fmat.albedo_color = map_colors[i]
+			fmat.emission_enabled = true
+			fmat.emission = map_colors[i]
+			fmat.emission_energy_multiplier = 1.0
+			fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			frag.material_override = fmat
+			wall_root.add_child(frag)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "STAR MAPS"
+	label.position = Vector3(0, 4.40, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	wall_root.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.30, 4.0, 5.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	wall_root.add_child(sb)
+
+
+func _build_d3_dust_orbs(geom: Node) -> void:
+	## Epic-3 T73: 12 small floating dust orbs scattered through the
+	## district airspace at varied heights — pulsing emissive spheres.
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 233
+	for i in 12:
+		var orb: MeshInstance3D = MeshInstance3D.new()
+		orb.name = "D3DustOrb_%d" % i
+		var om: SphereMesh = SphereMesh.new()
+		om.radius = 0.10
+		om.height = 0.20
+		orb.mesh = om
+		orb.position = D3_CENTER + Vector3(
+			rng.randf_range(-22, 22),
+			rng.randf_range(2, 10),
+			rng.randf_range(-16, 16)
+		)
+		var omat: StandardMaterial3D = StandardMaterial3D.new()
+		omat.albedo_color = Color(1.0, 0.95, 0.55)
+		omat.emission_enabled = true
+		omat.emission = Color(1.0, 0.95, 0.55)
+		omat.emission_energy_multiplier = 2.6
+		omat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		orb.material_override = omat
+		geom.add_child(orb)
+		# Pulse + drift
+		var pulse: Tween = create_tween().set_loops()
+		var ps: float = 1.0 + rng.randf() * 0.85
+		pulse.tween_property(orb, "scale", Vector3(1.40, 1.40, 1.40), ps).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(orb, "scale", Vector3(0.85, 0.85, 0.85), ps).set_ease(Tween.EASE_IN_OUT)
+		var origin: Vector3 = orb.position
+		var drift: Tween = create_tween().set_loops()
+		drift.tween_property(orb, "position", origin + Vector3(rng.randf_range(-1, 1), rng.randf_range(-0.5, 0.5), rng.randf_range(-1, 1)), 4.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(orb, "position", origin, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_altar_circle(geom: Node) -> void:
+	## Epic-3 T74: 6 small spirit altars arranged in a circle around a
+	## central glow point — like a coven gathering site.
+	var circle_root: Node3D = Node3D.new()
+	circle_root.name = "D3AltarCircle"
+	circle_root.position = D3_CENTER + Vector3(0, 0, -16)
+	geom.add_child(circle_root)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for i in 6:
+		var angle: float = (float(i) / 6.0) * TAU
+		var altar: MeshInstance3D = MeshInstance3D.new()
+		altar.name = "AltarCircle_%d" % i
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.55, 0.85, 0.55)
+		altar.mesh = am
+		altar.position = Vector3(cos(angle) * 2.40, 0.42, sin(angle) * 2.40)
+		altar.material_override = stone_mat
+		circle_root.add_child(altar)
+		# Top crystal
+		var crystal: MeshInstance3D = MeshInstance3D.new()
+		var cm: PrismMesh = PrismMesh.new()
+		cm.size = Vector3(0.20, 0.40, 0.20)
+		crystal.mesh = cm
+		crystal.position = Vector3(cos(angle) * 2.40, 1.05, sin(angle) * 2.40)
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.85, 0.40, 1.0)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 1.0)
+		cmat.emission_energy_multiplier = 2.6
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crystal.material_override = cmat
+		circle_root.add_child(crystal)
+		# Per-altar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 0.85, 0.55)
+		cs.shape = cb
+		cs.position = Vector3(cos(angle) * 2.40, 0.42, sin(angle) * 2.40)
+		sb.add_child(cs)
+		circle_root.add_child(sb)
+	# Center glow point
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 0.40
+	gm.height = 0.80
+	glow.mesh = gm
+	glow.position = Vector3(0, 0.40, 0)
+	var gmat: StandardMaterial3D = StandardMaterial3D.new()
+	gmat.albedo_color = Color(1.0, 0.55, 1.0)
+	gmat.emission_enabled = true
+	gmat.emission = Color(1.0, 0.55, 1.0)
+	gmat.emission_energy_multiplier = 3.4
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.material_override = gmat
+	circle_root.add_child(glow)
+	# Pulse the center
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(glow, "scale", Vector3(1.30, 1.30, 1.30), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(glow, "scale", Vector3(0.85, 0.85, 0.85), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Real OmniLight
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 0.85, 0)
+	light.light_color = Color(1.0, 0.55, 1.0)
+	light.light_energy = 2.4
+	light.omni_range = 6.0
+	circle_root.add_child(light)
+
+
+func _build_d3_mind_crystals(geom: Node) -> void:
+	## Epic-3 T75: a cluster of 8 floating "mind crystals" forming a
+	## thinking pattern overhead — small spinning prisms drifting in a
+	## brain-like cluster.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(8, 6.5, 4),
+		D3_CENTER + Vector3(9, 6.5, 5),
+		D3_CENTER + Vector3(10, 7.0, 4),
+		D3_CENTER + Vector3(9, 6.0, 3),
+		D3_CENTER + Vector3(11, 7.0, 5),
+		D3_CENTER + Vector3(8, 7.5, 5),
+		D3_CENTER + Vector3(10, 6.0, 3),
+		D3_CENTER + Vector3(11, 6.5, 4),
+	]
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.55, 0.95, 1.0)
+	crystal_mat.emission_energy_multiplier = 2.4
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var crystal: MeshInstance3D = MeshInstance3D.new()
+		crystal.name = "D3MindCrystal_%d" % i
+		var cm: PrismMesh = PrismMesh.new()
+		cm.size = Vector3(0.20, 0.30, 0.20)
+		crystal.mesh = cm
+		crystal.position = positions[i]
+		crystal.material_override = crystal_mat
+		geom.add_child(crystal)
+		# Spin + pulse
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(crystal, "rotation:y", TAU, 4.0 + i * 0.3)
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(crystal, "scale", Vector3(1.30, 1.30, 1.30), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(crystal, "scale", Vector3(0.85, 0.85, 0.85), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 
 
 
