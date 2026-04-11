@@ -64,6 +64,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_waystones(geom)
 	_build_th_sky_trams(geom)
 	_build_th_data_tree_grove(geom)
+	_build_th_corner_mini_fountains(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -8324,3 +8325,147 @@ func _build_th_data_tree_grove(geom: Node) -> void:
 	var lpulse: Tween = pivot.create_tween().set_loops()
 	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 8.5, 2.0).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 5.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_corner_mini_fountains(geom: Node) -> void:
+	## Epic-10 T48: 4 small auxiliary data fountains at the NE/NW/SW/SE
+	## perimeter positions slightly inside the corner monuments. Each
+	## mini-fountain: round basalt rim basin + brass top trim + glowing
+	## cyan water disc + small brass spire + upward jet stream particles.
+	## Smaller siblings of the central T11 data fountain.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_CornerMiniFountains"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 mini-fountains at the ordinal positions inside the plaza outer ring
+	# Place at radius ~10 between the inner station ring and the bench ring
+	for i in 4:
+		var ang: float = (PI / 4.0) + float(i) * (PI / 2.0)
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var fp: Vector3 = Vector3(dx * 10.0, 0, dz * 10.0)
+		var fgroup: Node3D = Node3D.new()
+		fgroup.name = "MiniFountain_" + str(i)
+		fgroup.position = fp
+		pivot.add_child(fgroup)
+		# ---- Round basalt rim basin ----
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.95
+		rmm.outer_radius = 1.20
+		rim.mesh = rmm
+		rim.material_override = stone_mat
+		rim.position = Vector3(0, 0.20, 0)
+		fgroup.add_child(rim)
+		# Rim collision (cylinder ring approximation)
+		var rim_sb: StaticBody3D = StaticBody3D.new()
+		rim_sb.position = Vector3(0, 0.20, 0)
+		var rim_cs: CollisionShape3D = CollisionShape3D.new()
+		var rim_cyl: CylinderShape3D = CylinderShape3D.new()
+		rim_cyl.top_radius = 1.20
+		rim_cyl.bottom_radius = 1.20
+		rim_cyl.height = 0.40
+		rim_cs.shape = rim_cyl
+		rim_sb.add_child(rim_cs)
+		fgroup.add_child(rim_sb)
+		# Brass rim top trim torus
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var trm: TorusMesh = TorusMesh.new()
+		trm.inner_radius = 1.05
+		trm.outer_radius = 1.20
+		trim.mesh = trm
+		trim.material_override = brass_mat
+		trim.position = Vector3(0, 0.42, 0)
+		fgroup.add_child(trim)
+		# ---- Glowing cyan basin water disc ----
+		var water: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.95
+		wm.bottom_radius = 0.95
+		wm.height = 0.08
+		water.mesh = wm
+		water.material_override = data_mat
+		water.position = Vector3(0, 0.36, 0)
+		fgroup.add_child(water)
+		# ---- Small central brass spire (single tier) ----
+		# Spire stem
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.06
+		sm.bottom_radius = 0.10
+		sm.height = 0.95
+		stem.mesh = sm
+		stem.material_override = brass_mat
+		stem.position = Vector3(0, 0.85, 0)
+		fgroup.add_child(stem)
+		# Tier dish
+		var dish: MeshInstance3D = MeshInstance3D.new()
+		var dmm: CylinderMesh = CylinderMesh.new()
+		dmm.top_radius = 0.30
+		dmm.bottom_radius = 0.30
+		dmm.height = 0.06
+		dish.mesh = dmm
+		dish.material_override = brass_mat
+		dish.position = Vector3(0, 1.32, 0)
+		fgroup.add_child(dish)
+		# Top finial sphere (cyan)
+		var finial: MeshInstance3D = MeshInstance3D.new()
+		var fmm: SphereMesh = SphereMesh.new()
+		fmm.radius = 0.12
+		fmm.height = 0.24
+		finial.mesh = fmm
+		finial.material_override = data_mat
+		finial.position = Vector3(0, 1.55, 0)
+		fgroup.add_child(finial)
+		# ---- Upward jet stream particles from the finial ----
+		var jet: GPUParticles3D = GPUParticles3D.new()
+		jet.position = Vector3(0, 1.65, 0)
+		jet.amount = 18
+		jet.lifetime = 1.5
+		var jmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		jmat.direction = Vector3(0, 1, 0)
+		jmat.spread = 14.0
+		jmat.initial_velocity_min = 1.0
+		jmat.initial_velocity_max = 1.8
+		jmat.gravity = Vector3(0, -2.0, 0)
+		jmat.scale_min = 0.05
+		jmat.scale_max = 0.10
+		jmat.color = Color(0.45, 0.85, 1.0, 1.0)
+		jet.process_material = jmat
+		var jmesh: SphereMesh = SphereMesh.new()
+		jmesh.radius = 0.05
+		jmesh.height = 0.10
+		jet.draw_pass_1 = jmesh
+		fgroup.add_child(jet)
+		# ---- Small per-fountain cyan OmniLight ----
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 1.10, 0)
+		lt.light_color = Color(0.45, 0.85, 1.0)
+		lt.light_energy = 1.8
+		lt.omni_range = 5.5
+		fgroup.add_child(lt)
+	# Shared cyan pulse for water + finial
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
