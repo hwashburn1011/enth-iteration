@@ -1303,6 +1303,16 @@ func _build_east_plaza() -> void:
 	_build_dock_ramp(geom)
 	# Epic-1 T40: plaza sub-zone number markers (floating "1/5" etc)
 	_build_zone_numbers(geom)
+	# Epic-1 T41: tournament leaderboard near the pit
+	_build_tournament_leaderboard(geom)
+	# Epic-1 T42: portcullis-style gate at the tournament pit entrance
+	_build_tournament_gate(geom)
+	# Epic-1 T43: long perimeter seating wall around plaza edges
+	_build_perimeter_seating(geom)
+	# Epic-1 T44: 2 gate guard NPCs at the west arch
+	_build_gate_guards()
+	# Epic-1 T45: ambient cipher data orbs floating through the plaza
+	_build_cipher_orbs(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -2137,6 +2147,243 @@ func _build_security_drones(geom: Node) -> void:
 		var tween: Tween = create_tween().set_loops()
 		for waypoint in path:
 			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_tournament_leaderboard(geom: Node) -> void:
+	## Epic-1 T41: tall leaderboard panel next to the tournament pit
+	var lb: Node3D = Node3D.new()
+	lb.name = "EastPlazaLeaderboard"
+	lb.position = Vector3(44, 0, 14)
+	geom.add_child(lb)
+	# Backboard
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.10, 3.0, 2.0)
+	back.mesh = bmesh
+	back.position = Vector3(0, 1.7, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.18, 0.10, 0.04)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.30, 0.10)
+	bmat.emission_energy_multiplier = 0.55
+	bmat.metallic = 0.4
+	back.material_override = bmat
+	lb.add_child(back)
+	# Header label
+	var header: Label3D = Label3D.new()
+	header.text = "TOP RUNNERS"
+	header.position = Vector3(0.07, 2.9, 0)
+	header.rotation_degrees = Vector3(0, 90, 0)
+	header.modulate = Color(1.0, 0.55, 0.20)
+	header.outline_modulate = Color(0, 0, 0, 0.95)
+	header.outline_size = 7
+	header.font_size = 22
+	header.no_depth_test = true
+	lb.add_child(header)
+	# 5 mock entries
+	var entries: Array[String] = [
+		"1. Cipher    99",
+		"2. Globbler  87",
+		"3. Forge     74",
+		"4. Pixel     61",
+		"5. Index     53",
+	]
+	for i in entries.size():
+		var line: Label3D = Label3D.new()
+		line.text = entries[i]
+		line.position = Vector3(0.07, 2.4 - i * 0.4, 0)
+		line.rotation_degrees = Vector3(0, 90, 0)
+		line.modulate = Color(1.0, 0.95, 0.85)
+		line.outline_modulate = Color(0, 0.05, 0.10, 0.95)
+		line.outline_size = 5
+		line.font_size = 18
+		line.no_depth_test = true
+		lb.add_child(line)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var col_shape: CollisionShape3D = CollisionShape3D.new()
+	var col_box: BoxShape3D = BoxShape3D.new()
+	col_box.size = Vector3(0.4, 3.0, 2.0)
+	col_shape.shape = col_box
+	col_shape.position = Vector3(0, 1.7, 0)
+	sb.add_child(col_shape)
+	lb.add_child(sb)
+
+
+func _build_tournament_gate(geom: Node) -> void:
+	## Epic-1 T42: portcullis-style gate above the tournament pit entrance
+	var gate: Node3D = Node3D.new()
+	gate.name = "EastPlazaTournamentGate"
+	gate.position = Vector3(36, 0, 14)
+	geom.add_child(gate)
+	# 2 vertical pillars
+	var pillar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pillar_mat.albedo_color = Color(0.12, 0.18, 0.26)
+	pillar_mat.emission_enabled = true
+	pillar_mat.emission = Color(1.0, 0.30, 0.20)
+	pillar_mat.emission_energy_multiplier = 0.7
+	pillar_mat.metallic = 0.7
+	for z_offset: float in [-2.5, 2.5]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.4, 3.5, 0.4)
+		pillar.mesh = pmesh
+		pillar.position = Vector3(0, 1.75, z_offset)
+		pillar.material_override = pillar_mat
+		gate.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_box: BoxShape3D = BoxShape3D.new()
+		col_box.size = Vector3(0.4, 3.5, 0.4)
+		col_shape.shape = col_box
+		col_shape.position = Vector3(0, 1.75, z_offset)
+		sb.add_child(col_shape)
+		gate.add_child(sb)
+	# Top crossbar
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.4, 0.4, 5.5)
+	top.mesh = tmesh
+	top.position = Vector3(0, 3.5, 0)
+	top.material_override = pillar_mat
+	gate.add_child(top)
+	# 5 hanging vertical bars (portcullis)
+	for i in range(0, 5):
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(0.10, 1.5, 0.10)
+		bar.mesh = bmesh
+		bar.position = Vector3(0, 2.5, -2.0 + i * 1.0)
+		bar.material_override = pillar_mat
+		gate.add_child(bar)
+
+
+func _build_perimeter_seating(geom: Node) -> void:
+	## Epic-1 T43: long perimeter seating wall — 6 long benches around the
+	## plaza edges (mostly cosmetic)
+	var bench_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bench_mat.albedo_color = Color(0.10, 0.18, 0.26)
+	bench_mat.emission_enabled = true
+	bench_mat.emission = Color(0.20, 0.55, 0.75)
+	bench_mat.emission_energy_multiplier = 0.5
+	bench_mat.metallic = 0.55
+	var bench_positions: Array[Vector3] = [
+		Vector3(34, 0, -18), Vector3(34, 0, 18),
+		Vector3(22.5, 0, -16), Vector3(22.5, 0, 16),
+		Vector3(43.5, 0, -16), Vector3(43.5, 0, 16),
+	]
+	for pos in bench_positions:
+		var bench: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(3.0, 0.4, 0.7)
+		bench.mesh = bmesh
+		bench.position = pos + Vector3(0, 0.2, 0)
+		bench.material_override = bench_mat
+		geom.add_child(bench)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_box: BoxShape3D = BoxShape3D.new()
+		col_box.size = Vector3(3.0, 0.4, 0.7)
+		col_shape.shape = col_box
+		col_shape.position = pos + Vector3(0, 0.2, 0)
+		sb.add_child(col_shape)
+		geom.add_child(sb)
+
+
+func _build_gate_guards() -> void:
+	## Epic-1 T44: 2 gate guard NPCs flanking the west arch entrance
+	for entry in [
+		[Vector3(20, 0.5, -2.5), "Gate Guard A", Color(0.30, 0.65, 0.95)],
+		[Vector3(20, 0.5, 2.5), "Gate Guard B", Color(0.30, 0.65, 0.95)],
+	]:
+		var pos: Vector3 = entry[0]
+		var name: String = entry[1]
+		var hue: Color = entry[2]
+		var guard: Node3D = Node3D.new()
+		guard.name = "EastPlazaGuard_" + name.replace(" ", "")
+		guard.position = pos
+		add_child(guard)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var sphere: SphereMesh = SphereMesh.new()
+		sphere.radius = 0.40
+		sphere.height = 0.80
+		body.mesh = sphere
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = hue
+		mat.emission_enabled = true
+		mat.emission = hue * 1.4
+		mat.emission_energy_multiplier = 0.6
+		mat.metallic = 0.5
+		body.material_override = mat
+		guard.add_child(body)
+		# Helmet
+		var helm: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: SphereMesh = SphereMesh.new()
+		hmesh.radius = 0.25
+		hmesh.height = 0.50
+		helm.mesh = hmesh
+		helm.position = Vector3(0, 0.40, 0)
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = Color(0.12, 0.20, 0.30)
+		hmat.metallic = 0.85
+		hmat.roughness = 0.3
+		helm.material_override = hmat
+		guard.add_child(helm)
+		# Visor stripe
+		var visor: MeshInstance3D = MeshInstance3D.new()
+		var vmesh: BoxMesh = BoxMesh.new()
+		vmesh.size = Vector3(0.45, 0.06, 0.04)
+		visor.mesh = vmesh
+		visor.position = Vector3(0, 0.42, -0.23)
+		var vmat: StandardMaterial3D = StandardMaterial3D.new()
+		vmat.albedo_color = Color(0.30, 0.85, 1.0)
+		vmat.emission_enabled = true
+		vmat.emission = Color(0.40, 0.95, 1.0)
+		vmat.emission_energy_multiplier = 2.5
+		vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		visor.material_override = vmat
+		guard.add_child(visor)
+		# Name label
+		var label: Label3D = Label3D.new()
+		label.text = name
+		label.position = Vector3(0, 1.4, 0)
+		label.modulate = Color(0.55, 0.85, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 5
+		label.font_size = 18
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		guard.add_child(label)
+
+
+func _build_cipher_orbs(geom: Node) -> void:
+	## Epic-1 T45: 6 floating cipher data orbs drifting through the plaza —
+	## small bright violet spheres on individual bob+drift tweens
+	for i: int in 6:
+		var orb: MeshInstance3D = MeshInstance3D.new()
+		orb.name = "EastPlazaCipherOrb_%d" % i
+		var omesh: SphereMesh = SphereMesh.new()
+		omesh.radius = 0.10
+		omesh.height = 0.20
+		orb.mesh = omesh
+		var origin := Vector3(26 + i * 2.5, 1.5 + (i % 2) * 0.8, -8 + (i % 3) * 6)
+		orb.position = origin
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.85, 0.40, 1.0)
+		mat.emission_enabled = true
+		mat.emission = Color(0.95, 0.55, 1.0)
+		mat.emission_energy_multiplier = 2.5
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		orb.material_override = mat
+		geom.add_child(orb)
+		# Drift tween — slow continuous motion
+		var tween: Tween = create_tween().set_loops()
+		var drift1 := origin + Vector3(randf_range(-3, 3), randf_range(-0.4, 0.4), randf_range(-3, 3))
+		var drift2 := origin + Vector3(randf_range(-3, 3), randf_range(-0.4, 0.4), randf_range(-3, 3))
+		tween.tween_property(orb, "position", drift1, randf_range(5, 8)).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(orb, "position", drift2, randf_range(5, 8)).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(orb, "position", origin, randf_range(5, 8)).set_ease(Tween.EASE_IN_OUT)
 
 
 func _build_quest_board(geom: Node) -> void:
