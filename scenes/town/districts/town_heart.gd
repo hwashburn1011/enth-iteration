@@ -86,6 +86,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_botanist_npc(town)
 	_build_th_constellation_map(geom)
 	_build_th_stargazer_npc(town)
+	_build_th_combat_trial_pit(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -12610,3 +12611,300 @@ func _build_th_stargazer_npc(town: Node) -> void:
 	var breath: Tween = ovl.create_tween().set_loops()
 	breath.tween_property(ovl, "scale:y", 1.012, 2.0).set_ease(Tween.EASE_IN_OUT)
 	breath.tween_property(ovl, "scale:y", 0.992, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_combat_trial_pit(geom: Node) -> void:
+	## Epic-10 T70 (70/100 milestone): Combat Trial Pit — sunken sand-floor
+	## combat practice arena at ESE mid-plaza. Brass-ringed perimeter wall,
+	## 4 corner torch posts, 2 stone training golems standing inside, low
+	## entry step at the front. Real combat-themed practice space for the
+	## player to test their attacks against stationary targets.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_CombatTrialPit"
+	# ESE position at radius 11.5, angle ~-PI*0.20 (between E and SE)
+	var ang_pos: float = -PI * 0.20
+	var rad_pos: float = 11.5
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 0, pz_p)
+	pivot.rotation.y = atan2(-px_p, -pz_p)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.46, 0.55)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var sand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sand_mat.albedo_color = Color(0.78, 0.62, 0.35)
+	sand_mat.roughness = 0.95
+	sand_mat.emission_enabled = true
+	sand_mat.emission = Color(0.85, 0.65, 0.30)
+	sand_mat.emission_energy_multiplier = 0.10
+	var golem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	golem_mat.albedo_color = Color(0.32, 0.36, 0.42)
+	golem_mat.metallic = 0.40
+	golem_mat.roughness = 0.65
+	golem_mat.emission_enabled = true
+	golem_mat.emission = Color(0.45, 0.55, 0.70)
+	golem_mat.emission_energy_multiplier = 0.25
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.55, 0.95, 1.0)
+	rune_mat.emission_energy_multiplier = 4.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.60, 0.15)
+	flame_mat.emission_energy_multiplier = 9.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Pit dimensions ----
+	var pit_w: float = 4.50
+	var pit_d: float = 0.45
+	# ---- Stone perimeter wall (4 sides) ----
+	var wall_h: float = 0.55
+	var wall_t: float = 0.30
+	var wall_positions: Array = [
+		Vector3(0, wall_h * 0.5, (pit_w * 0.5) + (wall_t * 0.5)),
+		Vector3(0, wall_h * 0.5, -(pit_w * 0.5) - (wall_t * 0.5)),
+		Vector3((pit_w * 0.5) + (wall_t * 0.5), wall_h * 0.5, 0),
+		Vector3(-(pit_w * 0.5) - (wall_t * 0.5), wall_h * 0.5, 0),
+	]
+	var sb: StaticBody3D = StaticBody3D.new()
+	pivot.add_child(sb)
+	for i in range(4):
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wmm: BoxMesh = BoxMesh.new()
+		if i < 2:
+			wmm.size = Vector3(pit_w + (wall_t * 2.0), wall_h, wall_t)
+		else:
+			wmm.size = Vector3(wall_t, wall_h, pit_w + (wall_t * 2.0))
+		wall.mesh = wmm
+		wall.material_override = stone_mat
+		wall.position = wall_positions[i]
+		pivot.add_child(wall)
+		# Brass cap on top of wall
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		if i < 2:
+			cmm.size = Vector3(pit_w + (wall_t * 2.0) + 0.05, 0.06, wall_t + 0.05)
+		else:
+			cmm.size = Vector3(wall_t + 0.05, 0.06, pit_w + (wall_t * 2.0) + 0.05)
+		cap.mesh = cmm
+		cap.material_override = brass_mat
+		cap.position = Vector3(wall_positions[i].x, wall_h + 0.03, wall_positions[i].z)
+		pivot.add_child(cap)
+		# Wall collision (skip front-facing wall to allow entry)
+		if i != 1:  # i==1 is the negative-Z (front) side relative to pivot rotation
+			var col: CollisionShape3D = CollisionShape3D.new()
+			var cs: BoxShape3D = BoxShape3D.new()
+			if i < 2:
+				cs.size = Vector3(pit_w + (wall_t * 2.0), wall_h + 0.06, wall_t)
+			else:
+				cs.size = Vector3(wall_t, wall_h + 0.06, pit_w + (wall_t * 2.0))
+			col.shape = cs
+			col.position = wall_positions[i]
+			sb.add_child(col)
+	# ---- Sand floor (slightly recessed) ----
+	var sand: MeshInstance3D = MeshInstance3D.new()
+	var sdm: BoxMesh = BoxMesh.new()
+	sdm.size = Vector3(pit_w, 0.10, pit_w)
+	sand.mesh = sdm
+	sand.material_override = sand_mat
+	sand.position = Vector3(0, 0.05, 0)
+	pivot.add_child(sand)
+	# Center cyan combat circle rune
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rtm: TorusMesh = TorusMesh.new()
+	rtm.inner_radius = 1.10
+	rtm.outer_radius = 1.25
+	ring.mesh = rtm
+	ring.material_override = rune_mat
+	ring.position = Vector3(0, 0.11, 0)
+	ring.rotation.x = PI / 2.0
+	pivot.add_child(ring)
+	# Inner cross runes (4 thin tiles forming a "+")
+	for k in range(4):
+		var ang: float = float(k) * (PI / 2.0)
+		var tile: MeshInstance3D = MeshInstance3D.new()
+		var tmm: BoxMesh = BoxMesh.new()
+		tmm.size = Vector3(0.08, 0.02, 0.45)
+		tile.mesh = tmm
+		tile.material_override = rune_mat
+		tile.position = Vector3(cos(ang) * 0.55, 0.12, sin(ang) * 0.55)
+		tile.rotation.y = ang
+		pivot.add_child(tile)
+	# ---- 2 stone training golems inside the pit ----
+	var golem_positions: Array = [
+		Vector3(-1.30, 0.10, -0.40),
+		Vector3(1.30, 0.10, 0.40),
+	]
+	var glow_orbs: Array[StandardMaterial3D] = []
+	for j in range(2):
+		var golem: Node3D = Node3D.new()
+		golem.position = golem_positions[j]
+		# Face roughly toward pit center
+		golem.rotation.y = atan2(-golem_positions[j].x, -golem_positions[j].z)
+		pivot.add_child(golem)
+		# Stone base block
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bmm: BoxMesh = BoxMesh.new()
+		bmm.size = Vector3(0.55, 0.18, 0.55)
+		base.mesh = bmm
+		base.material_override = stone_mat
+		base.position = Vector3(0, 0.09, 0)
+		golem.add_child(base)
+		# Body (chunky stone torso)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(0.85, 1.10, 0.55)
+		body.mesh = bdm
+		body.material_override = golem_mat
+		body.position = Vector3(0, 0.75, 0)
+		golem.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hdm: BoxMesh = BoxMesh.new()
+		hdm.size = Vector3(0.42, 0.42, 0.42)
+		head.mesh = hdm
+		head.material_override = golem_mat
+		head.position = Vector3(0, 1.55, 0)
+		golem.add_child(head)
+		# 2 cyan eye dots
+		for s in [-1.0, 1.0]:
+			var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+			eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+			eye_mat.emission_enabled = true
+			eye_mat.emission = Color(0.55, 0.95, 1.0)
+			eye_mat.emission_energy_multiplier = 6.0
+			eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emm: SphereMesh = SphereMesh.new()
+			emm.radius = 0.045
+			emm.height = 0.09
+			eye.mesh = emm
+			eye.material_override = eye_mat
+			eye.position = Vector3(0.10 * s, 1.58, 0.21)
+			golem.add_child(eye)
+		# Brass shoulder bands
+		for s2 in [-1.0, 1.0]:
+			var pad: MeshInstance3D = MeshInstance3D.new()
+			var pdm: BoxMesh = BoxMesh.new()
+			pdm.size = Vector3(0.20, 0.12, 0.60)
+			pad.mesh = pdm
+			pad.material_override = brass_mat
+			pad.position = Vector3(0.50 * s2, 1.20, 0)
+			golem.add_child(pad)
+		# Arms (cylinders hanging at sides)
+		for s3 in [-1.0, 1.0]:
+			var arm: MeshInstance3D = MeshInstance3D.new()
+			var amm: CylinderMesh = CylinderMesh.new()
+			amm.top_radius = 0.10
+			amm.bottom_radius = 0.12
+			amm.height = 0.95
+			arm.mesh = amm
+			arm.material_override = golem_mat
+			arm.position = Vector3(0.55 * s3, 0.85, 0)
+			golem.add_child(arm)
+		# Brass core orb on chest (this is the "weak point" target)
+		var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		orb_mat.albedo_color = Color(1.0, 0.55, 0.15)
+		orb_mat.emission_enabled = true
+		orb_mat.emission = Color(1.0, 0.60, 0.20)
+		orb_mat.emission_energy_multiplier = 6.5
+		orb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow_orbs.append(orb_mat)
+		var orb: MeshInstance3D = MeshInstance3D.new()
+		var omm: SphereMesh = SphereMesh.new()
+		omm.radius = 0.13
+		omm.height = 0.26
+		orb.mesh = omm
+		orb.material_override = orb_mat
+		orb.position = Vector3(0, 0.95, 0.32)
+		golem.add_child(orb)
+		# Golem collision (so player attacks register)
+		var gsb: StaticBody3D = StaticBody3D.new()
+		golem.add_child(gsb)
+		var gcol: CollisionShape3D = CollisionShape3D.new()
+		var gcs: BoxShape3D = BoxShape3D.new()
+		gcs.size = Vector3(0.95, 1.85, 0.65)
+		gcol.shape = gcs
+		gcol.position = Vector3(0, 0.95, 0)
+		gsb.add_child(gcol)
+		# Slight idle sway (lean side to side)
+		var phase: float = float(j) * 0.6
+		var idle: Tween = golem.create_tween().set_loops()
+		idle.tween_interval(phase)
+		idle.tween_property(golem, "rotation:z", 0.04, 1.6).set_ease(Tween.EASE_IN_OUT)
+		idle.tween_property(golem, "rotation:z", -0.04, 1.6).set_ease(Tween.EASE_IN_OUT)
+		# Eye/orb pulse
+		var op: Tween = golem.create_tween().set_loops()
+		op.tween_property(orb_mat, "emission_energy_multiplier", 9.0, 1.2).set_ease(Tween.EASE_IN_OUT)
+		op.tween_property(orb_mat, "emission_energy_multiplier", 4.5, 1.2).set_ease(Tween.EASE_IN_OUT)
+	# ---- 4 corner torch posts ----
+	var torch_offsets: Array = [
+		Vector3((pit_w * 0.5) + 0.18, 0, (pit_w * 0.5) + 0.18),
+		Vector3(-(pit_w * 0.5) - 0.18, 0, (pit_w * 0.5) + 0.18),
+		Vector3((pit_w * 0.5) + 0.18, 0, -(pit_w * 0.5) - 0.18),
+		Vector3(-(pit_w * 0.5) - 0.18, 0, -(pit_w * 0.5) - 0.18),
+	]
+	for t in range(4):
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.06
+		pmm.bottom_radius = 0.10
+		pmm.height = 1.45
+		post.mesh = pmm
+		post.material_override = brass_mat
+		post.position = torch_offsets[t] + Vector3(0, 0.72, 0)
+		pivot.add_child(post)
+		# Torch bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bwm: CylinderMesh = CylinderMesh.new()
+		bwm.top_radius = 0.18
+		bwm.bottom_radius = 0.10
+		bwm.height = 0.10
+		bowl.mesh = bwm
+		bowl.material_override = brass_mat
+		bowl.position = torch_offsets[t] + Vector3(0, 1.50, 0)
+		pivot.add_child(bowl)
+		# Flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flmm: SphereMesh = SphereMesh.new()
+		flmm.radius = 0.13
+		flmm.height = 0.26
+		flame.mesh = flmm
+		flame.material_override = flame_mat
+		flame.position = torch_offsets[t] + Vector3(0, 1.65, 0)
+		pivot.add_child(flame)
+		# Torch light
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = torch_offsets[t] + Vector3(0, 1.70, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.45
+		lt.omni_range = 4.5
+		pivot.add_child(lt)
+		# Flame flicker
+		var ff: Tween = flame.create_tween().set_loops()
+		ff.tween_interval(float(t) * 0.20)
+		ff.tween_property(flame, "scale", Vector3(1.20, 1.40, 1.20), 0.30).set_ease(Tween.EASE_IN_OUT)
+		ff.tween_property(flame, "scale", Vector3(0.90, 1.10, 0.90), 0.40).set_ease(Tween.EASE_IN_OUT)
+	# ---- Front entry step (low brass plate at the front of the pit) ----
+	var step: MeshInstance3D = MeshInstance3D.new()
+	var stmm: BoxMesh = BoxMesh.new()
+	stmm.size = Vector3(1.40, 0.08, 0.45)
+	step.mesh = stmm
+	step.material_override = brass_mat
+	step.position = Vector3(0, 0.04, -(pit_w * 0.5) - (wall_t * 0.5))
+	pivot.add_child(step)
