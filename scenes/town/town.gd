@@ -17140,6 +17140,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_arcade_kid_npc()
 	# Epic-6 T20: ground puddle decals
 	_build_d6_puddles(geom)
+	# Epic-6 T21: weapons dealer stall
+	_build_d6_weapons_stall(geom)
+	# Epic-6 T22: arms dealer NPC
+	_build_d6_arms_dealer_npc()
+	# Epic-6 T23: alley dumpster
+	_build_d6_alley_dumpster(geom)
+	# Epic-6 T24: street cat creature
+	_build_d6_street_cat(geom)
+	# Epic-6 T25: vending machine row
+	_build_d6_vending_machines(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -18706,6 +18716,442 @@ func _build_d6_puddles(geom: Node) -> void:
 		)
 		puddle.scale = Vector3(1.0, 1.0, 0.65 + randf() * 0.55)
 		puddles.add_child(puddle)
+
+
+func _build_d6_weapons_stall(geom: Node) -> void:
+	## Epic-6 T21: cyber weapons dealer stall — angled glass display case
+	## with 3 floating cyber katanas + holographic price tags.
+	var stall: Node3D = Node3D.new()
+	stall.name = "WeaponsStall"
+	stall.position = Vector3(D6_CENTER.x - 6.0, 0.0, 14.0)
+	geom.add_child(stall)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Counter base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.85, 0.85, 1.10)
+	base.mesh = bm
+	base.material_override = metal_mat
+	base.position = Vector3(0, 0.42, 0)
+	stall.add_child(base)
+	# Glass display case (translucent box on top)
+	var case_mat: StandardMaterial3D = StandardMaterial3D.new()
+	case_mat.albedo_color = Color(0.40, 0.55, 0.85, 0.25)
+	case_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	case_mat.emission_enabled = true
+	case_mat.emission = Color(0.40, 0.85, 1.0)
+	case_mat.emission_energy_multiplier = 0.55
+	case_mat.metallic = 0.55
+	case_mat.roughness = 0.05
+	var case: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.85, 0.85, 1.10)
+	case.mesh = cm
+	case.material_override = case_mat
+	case.position = Vector3(0, 1.30, 0)
+	stall.add_child(case)
+	# 3 floating cyber katanas inside
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.emission_enabled = true
+	blade_mat.emission = Color(0.85, 0.95, 1.0)
+	blade_mat.emission_energy_multiplier = 0.85
+	blade_mat.metallic = 0.85
+	blade_mat.roughness = 0.10
+	var grip_mat: StandardMaterial3D = StandardMaterial3D.new()
+	grip_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	grip_mat.roughness = 0.85
+	for i in 3:
+		var katana: Node3D = Node3D.new()
+		katana.position = Vector3(-0.85 + i * 0.85, 1.30, 0)
+		stall.add_child(katana)
+		# Blade (long thin prism)
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var blm: PrismMesh = PrismMesh.new()
+		blm.size = Vector3(0.06, 0.20, 0.95)
+		blade.mesh = blm
+		blade.material_override = blade_mat
+		blade.position = Vector3(0, 0, 0)
+		blade.rotation_degrees = Vector3(0, 0, 90)
+		katana.add_child(blade)
+		# Grip
+		var grip: MeshInstance3D = MeshInstance3D.new()
+		var gm: CylinderMesh = CylinderMesh.new()
+		gm.top_radius = 0.04
+		gm.bottom_radius = 0.04
+		gm.height = 0.30
+		grip.mesh = gm
+		grip.material_override = grip_mat
+		grip.position = Vector3(0, 0, -0.55)
+		grip.rotation_degrees = Vector3(0, 0, 90)
+		katana.add_child(grip)
+		# Hover bob
+		var tw: Tween = katana.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(katana, "position:y", 1.45, 1.4)
+		tw.tween_property(katana, "position:y", 1.30, 1.4)
+		# Slow rotation
+		var ts: Tween = katana.create_tween().set_loops()
+		ts.tween_property(katana, "rotation_degrees:y", 360.0, 6.0 + i * 0.4)
+		ts.tween_property(katana, "rotation_degrees:y", 0.0, 0.0)
+	# Sign label "WEAPONS"
+	var label: Label3D = Label3D.new()
+	label.text = "WEAPONS"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.95, 0.20, 0.30)
+	label.outline_size = 6
+	label.font_size = 56
+	label.pixel_size = 0.008
+	label.position = Vector3(0, 2.20, 0.30)
+	stall.add_child(label)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.85, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.5
+	light.position = Vector3(0, 1.30, 0.55)
+	stall.add_child(light)
+	# Stall collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 1.85, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	stall.add_child(sb)
+
+
+func _build_d6_arms_dealer_npc() -> void:
+	## Epic-6 T22: arms dealer NPC — long leather coat, mirrored shades, gold chain.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ArmsDealerSlot"
+	slot.position = Vector3(D6_CENTER.x - 6.0, 0.0, 13.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ArmsDealer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Switchblade")
+	if "npc_id" in npc:
+		npc.set("npc_id", "arms_d6")
+	slot.add_child(npc)
+	# Long leather coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.75, 1.20, 0.50)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.20, 0.10, 0.05)
+	coat_mat.metallic = 0.30
+	coat_mat.roughness = 0.45
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Mirrored shades
+	var shades: MeshInstance3D = MeshInstance3D.new()
+	var smm: BoxMesh = BoxMesh.new()
+	smm.size = Vector3(0.42, 0.08, 0.04)
+	shades.mesh = smm
+	var shades_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shades_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	shades_mat.emission_enabled = true
+	shades_mat.emission = Color(0.30, 1.0, 1.0)
+	shades_mat.emission_energy_multiplier = 1.4
+	shades_mat.metallic = 0.85
+	shades_mat.roughness = 0.05
+	shades.material_override = shades_mat
+	shades.position = Vector3(0, 1.40, 0.21)
+	npc.add_child(shades)
+	# Gold chain (small torus around neck)
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var ctm: TorusMesh = TorusMesh.new()
+	ctm.inner_radius = 0.18
+	ctm.outer_radius = 0.22
+	chain.mesh = ctm
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 0.85
+	gold_mat.metallic = 0.95
+	gold_mat.roughness = 0.10
+	chain.material_override = gold_mat
+	chain.position = Vector3(0, 1.10, 0.10)
+	npc.add_child(chain)
+
+
+func _build_d6_alley_dumpster(geom: Node) -> void:
+	## Epic-6 T23: alley dumpster — large green metal bin with a flipped
+	## lid, scattered trash, and the occasional small cyan code particle
+	## leaking out.
+	var dumpster: Node3D = Node3D.new()
+	dumpster.name = "AlleyDumpster"
+	dumpster.position = Vector3(D6_CENTER.x + 22.0, 0.0, -4.0)
+	geom.add_child(dumpster)
+	var green_mat: StandardMaterial3D = StandardMaterial3D.new()
+	green_mat.albedo_color = Color(0.20, 0.45, 0.20)
+	green_mat.metallic = 0.65
+	green_mat.roughness = 0.45
+	# Main bin (large box)
+	var bin: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.20, 1.40, 1.10)
+	bin.mesh = bm
+	bin.material_override = green_mat
+	bin.position = Vector3(0, 0.70, 0)
+	dumpster.add_child(bin)
+	# Lid (flipped open at angle behind)
+	var lid: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(2.20, 0.10, 1.10)
+	lid.mesh = lm
+	lid.material_override = green_mat
+	lid.position = Vector3(0, 1.85, -0.65)
+	lid.rotation_degrees = Vector3(-30, 0, 0)
+	dumpster.add_child(lid)
+	# Trash bags (small dark spheres on top)
+	var trash_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trash_mat.albedo_color = Color(0.12, 0.10, 0.10)
+	trash_mat.roughness = 0.85
+	for i in 4:
+		var bag: MeshInstance3D = MeshInstance3D.new()
+		var bgm: SphereMesh = SphereMesh.new()
+		bgm.radius = 0.22
+		bgm.height = 0.36
+		bag.mesh = bgm
+		bag.material_override = trash_mat
+		bag.position = Vector3(
+			randf_range(-0.85, 0.85),
+			1.55,
+			randf_range(-0.40, 0.40)
+		)
+		dumpster.add_child(bag)
+	# Cyan code leak particles
+	var leak: GPUParticles3D = GPUParticles3D.new()
+	leak.amount = 18
+	leak.lifetime = 2.5
+	leak.preprocess = 1.0
+	leak.position = Vector3(0, 1.55, 0.55)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(0.85, 0.10, 0.40)
+	pm.direction = Vector3(0, 1, 0.10)
+	pm.spread = 25.0
+	pm.gravity = Vector3(0, 0.30, 0)
+	pm.initial_velocity_min = 0.20
+	pm.initial_velocity_max = 0.55
+	pm.scale_min = 0.04
+	pm.scale_max = 0.10
+	pm.color = Color(0.30, 0.95, 0.55, 0.85)
+	leak.process_material = pm
+	var leak_mesh: BoxMesh = BoxMesh.new()
+	leak_mesh.size = Vector3(0.06, 0.06, 0.06)
+	leak.draw_pass_1 = leak_mesh
+	var leak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leak_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	leak_mat.emission_enabled = true
+	leak_mat.emission = Color(0.30, 1.0, 0.55)
+	leak_mat.emission_energy_multiplier = 2.5
+	leak_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	leak_mesh.material = leak_mat
+	dumpster.add_child(leak)
+	# Dumpster collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 1.40, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	dumpster.add_child(sb)
+
+
+func _build_d6_street_cat(geom: Node) -> void:
+	## Epic-6 T24: small dark street cat near the dumpster — black fur,
+	## glowing magenta eyes, slow patrol.
+	var cat: Node3D = Node3D.new()
+	cat.name = "StreetCat"
+	cat.position = Vector3(D6_CENTER.x + 20.0, 0.0, -4.0)
+	geom.add_child(cat)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.10, 0.08, 0.12)
+	fur_mat.roughness = 0.85
+	# Body (sphere)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.18
+	bm.height = 0.30
+	body.mesh = bm
+	body.material_override = fur_mat
+	body.position = Vector3(0, 0.22, 0)
+	body.scale = Vector3(0.85, 0.85, 1.40)
+	cat.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.14
+	hm.height = 0.24
+	head.mesh = hm
+	head.material_override = fur_mat
+	head.position = Vector3(0, 0.30, 0.20)
+	cat.add_child(head)
+	# 2 ears (small prisms)
+	for sx in [-0.07, 0.07]:
+		var ear: MeshInstance3D = MeshInstance3D.new()
+		var em: PrismMesh = PrismMesh.new()
+		em.size = Vector3(0.05, 0.10, 0.04)
+		ear.mesh = em
+		ear.material_override = fur_mat
+		ear.position = Vector3(sx, 0.42, 0.20)
+		cat.add_child(ear)
+	# 2 glowing magenta eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.95, 0.30, 0.95)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.05, 0.05]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.025
+		em.height = 0.05
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 0.32, 0.31)
+		cat.add_child(eye)
+	# Tail (curved cylinder up)
+	var tail: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.025
+	tm.bottom_radius = 0.04
+	tm.height = 0.30
+	tail.mesh = tm
+	tail.material_override = fur_mat
+	tail.position = Vector3(0, 0.32, -0.25)
+	tail.rotation_degrees = Vector3(45, 0, 0)
+	cat.add_child(tail)
+	# 4 small legs
+	for lx in [-0.08, 0.08]:
+		for lz in [-0.15, 0.15]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.025
+			lm.bottom_radius = 0.025
+			lm.height = 0.18
+			leg.mesh = lm
+			leg.material_override = fur_mat
+			leg.position = Vector3(lx, 0.09, lz)
+			cat.add_child(leg)
+	# Slow patrol back and forth
+	var tw: Tween = cat.create_tween().set_loops()
+	tw.tween_property(cat, "position:x", D6_CENTER.x + 23.0, 3.0)
+	tw.tween_property(cat, "rotation_degrees:y", 180.0, 0.4)
+	tw.tween_property(cat, "position:x", D6_CENTER.x + 18.0, 3.0)
+	tw.tween_property(cat, "rotation_degrees:y", 0.0, 0.4)
+
+
+func _build_d6_vending_machines(geom: Node) -> void:
+	## Epic-6 T25: 3 vending machines — tall lit cabinets with rows of
+	## colored drink cans visible inside.
+	var row: Node3D = Node3D.new()
+	row.name = "VendingMachines"
+	row.position = Vector3(D6_CENTER.x + 22.0, 0.0, 14.0)
+	geom.add_child(row)
+	var cab_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.65, 0.95),
+		Color(0.30, 0.95, 0.55),
+	]
+	for i in 3:
+		var machine: Node3D = Node3D.new()
+		machine.position = Vector3(i * 1.20, 0, 0)
+		row.add_child(machine)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.0, 2.20, 0.65)
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = cab_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = cab_colors[i]
+		body_mat.emission_energy_multiplier = 0.55
+		body_mat.metallic = 0.30
+		body_mat.roughness = 0.45
+		body.material_override = body_mat
+		body.position = Vector3(0, 1.10, 0)
+		machine.add_child(body)
+		# Display window (translucent slab)
+		var window: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.85, 1.40, 0.06)
+		window.mesh = wm
+		var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+		window_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.45)
+		window_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		window_mat.emission_enabled = true
+		window_mat.emission = Color(0.85, 0.95, 1.0)
+		window_mat.emission_energy_multiplier = 1.4
+		window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		window.material_override = window_mat
+		window.position = Vector3(0, 1.30, 0.34)
+		machine.add_child(window)
+		# 6 small cans inside (3 rows of 2)
+		for r in 3:
+			for c in 2:
+				var can: MeshInstance3D = MeshInstance3D.new()
+				var cm: CylinderMesh = CylinderMesh.new()
+				cm.top_radius = 0.10
+				cm.bottom_radius = 0.10
+				cm.height = 0.22
+				can.mesh = cm
+				var can_color: Color = cab_colors[(i + r + c) % 3]
+				var can_mat: StandardMaterial3D = StandardMaterial3D.new()
+				can_mat.albedo_color = can_color
+				can_mat.emission_enabled = true
+				can_mat.emission = can_color
+				can_mat.emission_energy_multiplier = 0.85
+				can_mat.metallic = 0.65
+				can_mat.roughness = 0.30
+				can.material_override = can_mat
+				can.position = Vector3(-0.22 + c * 0.44, 0.85 + r * 0.40, 0.32)
+				machine.add_child(can)
+		# Coin slot label
+		var label: Label3D = Label3D.new()
+		label.text = "$1"
+		label.modulate = Color(0.95, 0.95, 1.0)
+		label.outline_modulate = Color(0.05, 0.20, 0.40)
+		label.outline_size = 4
+		label.font_size = 32
+		label.pixel_size = 0.005
+		label.position = Vector3(0, 0.45, 0.36)
+		machine.add_child(label)
+		# Light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = cab_colors[i]
+		light.light_energy = 1.4
+		light.omni_range = 3.0
+		light.position = Vector3(0, 1.30, 0.55)
+		machine.add_child(light)
+		# Machine collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.10, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.0, 2.20, 0.65)
+		cs.shape = cb
+		sb.add_child(cs)
+		machine.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
