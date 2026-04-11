@@ -25607,6 +25607,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_ancient_pine(geom)
 	# Epic-7 T95: scholar NPC
 	_build_d7_d7_scholar_npc()
+	# Epic-7 T96: D7 welcome banner
+	_build_d7_welcome_banner(geom)
+	# Epic-7 T97: grand mountain peak landmark
+	_build_d7_grand_peak(geom)
+	# Epic-7 T98: dedication plaque
+	_build_d7_district_plaque(geom)
+	# Epic-7 T99: ambient warm light tweak
+	_build_d7_ambient_tweak(geom)
+	# Epic-7 T100: MOUNTAIN SAGE district boss
+	_build_d7_mountain_sage(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -32158,6 +32168,464 @@ func _build_d7_d7_scholar_npc() -> void:
 	book.position = Vector3(0.40, 0.85, 0.20)
 	book.rotation_degrees = Vector3(-25, 0, 0)
 	npc.add_child(book)
+
+
+func _build_d7_welcome_banner(geom: Node) -> void:
+	## Epic-7 T96: tall double-pole welcome banner — wooden poles + draped
+	## red cloth + golden trim + Label3D titles.
+	var banner: Node3D = Node3D.new()
+	banner.name = "D7WelcomeBanner"
+	banner.position = Vector3(D7_CENTER.x - 36.0, 0.0, -4.0)
+	geom.add_child(banner)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var cloth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloth_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	cloth_mat.emission_enabled = true
+	cloth_mat.emission = Color(0.85, 0.25, 0.20)
+	cloth_mat.emission_energy_multiplier = 0.45
+	cloth_mat.roughness = 0.65
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 1.4
+	gold_mat.metallic = 0.95
+	# 2 wooden poles (with capsule collisions)
+	for sx in [-2.40, 2.40]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.14
+		pm.bottom_radius = 0.20
+		pm.height = 5.85
+		pole.mesh = pm
+		pole.material_override = wood_mat
+		pole.position = Vector3(sx, 2.92, 0)
+		banner.add_child(pole)
+		# Pole collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 5.85
+		cs.shape = cap
+		sb.add_child(cs)
+		banner.add_child(sb)
+	# Top crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.10
+	bm.bottom_radius = 0.10
+	bm.height = 5.20
+	bar.mesh = bm
+	bar.material_override = wood_mat
+	bar.position = Vector3(0, 5.85, 0)
+	bar.rotation_degrees = Vector3(0, 0, 90)
+	banner.add_child(bar)
+	# Banner cloth
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cmm: BoxMesh = BoxMesh.new()
+	cmm.size = Vector3(4.85, 2.85, 0.06)
+	cloth.mesh = cmm
+	cloth.material_override = cloth_mat
+	cloth.position = Vector3(0, 4.0, 0)
+	banner.add_child(cloth)
+	# Gold trim borders (top + bottom)
+	for trim_y in [5.40, 2.55]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(4.85, 0.18, 0.06)
+		trim.mesh = tm
+		trim.material_override = gold_mat
+		trim.position = Vector3(0, trim_y, 0.04)
+		banner.add_child(trim)
+	# Title labels
+	var label: Label3D = Label3D.new()
+	label.text = "ASCENSION SPIRES"
+	label.modulate = Color(1.0, 0.85, 0.30)
+	label.outline_modulate = Color(0.20, 0.10, 0.05)
+	label.outline_size = 14
+	label.font_size = 88
+	label.pixel_size = 0.013
+	label.position = Vector3(0, 4.40, 0.08)
+	banner.add_child(label)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "where the simulation reaches the sky"
+	subtitle.modulate = Color(0.95, 0.92, 0.85)
+	subtitle.outline_modulate = Color(0.30, 0.10, 0.05)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.010
+	subtitle.position = Vector3(0, 3.30, 0.08)
+	banner.add_child(subtitle)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 3.0
+	light.omni_range = 9.0
+	light.position = Vector3(0, 4.20, 1.20)
+	banner.add_child(light)
+
+
+func _build_d7_grand_peak(geom: Node) -> void:
+	## Epic-7 T97: GRAND MOUNTAIN PEAK landmark — towering 5-tier sandstone
+	## peak crowned with a glowing amber crystal + 8 orbiting stone
+	## fragments + massive aura beam.
+	var peak: Node3D = Node3D.new()
+	peak.name = "GrandMountainPeak"
+	peak.position = Vector3(D7_CENTER.x, 0.0, -2.0)
+	geom.add_child(peak)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(0.55, 0.35, 0.15)
+	rock_mat.emission_energy_multiplier = 0.18
+	rock_mat.roughness = 0.92
+	var dark_rock: StandardMaterial3D = StandardMaterial3D.new()
+	dark_rock.albedo_color = Color(0.45, 0.30, 0.15)
+	dark_rock.roughness = 0.92
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(1.0, 0.55, 0.10)
+	crystal_mat.emission_energy_multiplier = 4.5
+	crystal_mat.metallic = 0.55
+	crystal_mat.roughness = 0.10
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(6.50, 0.55, 6.50)
+	ped.mesh = pm
+	ped.material_override = dark_rock
+	ped.position = Vector3(0, 0.27, 0)
+	peak.add_child(ped)
+	# 5 tapered tiers climbing higher than the spire
+	var tier_data: Array = [
+		{"top": 2.40, "bot": 2.85, "h": 3.40, "y": 2.20},
+		{"top": 1.85, "bot": 2.40, "h": 3.40, "y": 5.55},
+		{"top": 1.40, "bot": 1.85, "h": 3.40, "y": 8.85},
+		{"top": 0.95, "bot": 1.40, "h": 3.40, "y": 12.0},
+		{"top": 0.55, "bot": 0.95, "h": 2.85, "y": 14.85},
+	]
+	for tier in tier_data:
+		var t: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = tier["top"]
+		tm.bottom_radius = tier["bot"]
+		tm.height = tier["h"]
+		t.mesh = tm
+		t.material_override = rock_mat
+		t.position = Vector3(0, tier["y"], 0)
+		peak.add_child(t)
+	# Top giant amber crystal
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var crm: PrismMesh = PrismMesh.new()
+	crm.size = Vector3(1.40, 3.40, 1.40)
+	crystal.mesh = crm
+	crystal.material_override = crystal_mat
+	crystal.position = Vector3(0, 17.85, 0)
+	peak.add_child(crystal)
+	# Pulse + spin the crystal
+	var ts: Tween = crystal.create_tween().set_loops()
+	ts.tween_property(crystal, "rotation_degrees:y", 360.0, 12.0)
+	ts.tween_property(crystal, "rotation_degrees:y", 0.0, 0.0)
+	var tp: Tween = crystal.create_tween().set_loops()
+	tp.tween_property(crystal, "scale", Vector3.ONE * 1.20, 1.6)
+	tp.tween_property(crystal, "scale", Vector3.ONE * 0.85, 1.6)
+	# 8 orbiting stone fragments around the crystal
+	var halo_pivot: Node3D = Node3D.new()
+	halo_pivot.position = Vector3(0, 17.85, 0)
+	peak.add_child(halo_pivot)
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var frag: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.55, 0.55, 0.55)
+		frag.mesh = fm
+		frag.material_override = rock_mat
+		frag.position = Vector3(cos(ang) * 2.85, 0, sin(ang) * 2.85)
+		frag.rotation_degrees = Vector3(randf_range(-30, 30), randf_range(0, 360), randf_range(-30, 30))
+		halo_pivot.add_child(frag)
+	var trot: Tween = halo_pivot.create_tween().set_loops()
+	trot.tween_property(halo_pivot, "rotation_degrees:y", 360.0, 14.0)
+	trot.tween_property(halo_pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Vertical aura beam reaching upward
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 0.30
+	beam_m.bottom_radius = 0.95
+	beam_m.height = 18.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(1.0, 0.65, 0.30, 0.45)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(1.0, 0.55, 0.20)
+	beam_mat.emission_energy_multiplier = 1.8
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(0, 28.85, 0)
+	peak.add_child(beam)
+	# Pulse beam
+	var twb: Tween = beam.create_tween().set_loops()
+	twb.tween_property(beam, "scale:x", 1.30, 2.0)
+	twb.tween_property(beam, "scale:x", 0.85, 2.0)
+	# Massive central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.20)
+	light.light_energy = 5.5
+	light.omni_range = 26.0
+	light.position = Vector3(0, 9.0, 0)
+	peak.add_child(light)
+	# Peak collision (single capsule covering all)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 9.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.85
+	cap.height = 17.0
+	cs.shape = cap
+	sb.add_child(cs)
+	peak.add_child(sb)
+
+
+func _build_d7_district_plaque(geom: Node) -> void:
+	## Epic-7 T98: dedication plaque on a stone pedestal at the entrance.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "D7Plaque"
+	plaque.position = Vector3(D7_CENTER.x - 32.0, 0.0, 4.0)
+	geom.add_child(plaque)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.85, 1.20, 0.55)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.60, 0)
+	plaque.add_child(ped)
+	# Plaque face (brass)
+	var face: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.75, 0.50, 0.06)
+	face.mesh = fm
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	brass_mat.metallic = 0.85
+	brass_mat.roughness = 0.30
+	face.material_override = brass_mat
+	face.position = Vector3(0, 1.00, 0.30)
+	face.rotation_degrees = Vector3(-15, 0, 0)
+	plaque.add_child(face)
+	var label: Label3D = Label3D.new()
+	label.text = "ASCENSION SPIRES\nDistrict 07 — Iteration 07\nWhere code seeks the heights"
+	label.modulate = Color(0.10, 0.05, 0.05)
+	label.outline_modulate = Color(1.0, 0.85, 0.30)
+	label.outline_size = 4
+	label.font_size = 32
+	label.pixel_size = 0.0035
+	label.position = Vector3(0, 1.05, 0.36)
+	label.rotation_degrees = Vector3(-15, 0, 0)
+	plaque.add_child(label)
+	# Pedestal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.60, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.20, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_d7_ambient_tweak(geom: Node) -> void:
+	## Epic-7 T99: warm sandstone ambient — wide amber fill light + soft
+	## warm directional sun.
+	var amb: Node3D = Node3D.new()
+	amb.name = "D7Ambient"
+	amb.position = Vector3(D7_CENTER.x, 8.0, 0.0)
+	geom.add_child(amb)
+	var fill: OmniLight3D = OmniLight3D.new()
+	fill.light_color = Color(1.0, 0.85, 0.55)
+	fill.light_energy = 0.75
+	fill.omni_range = 42.0
+	amb.add_child(fill)
+	# Slow color cycle (warm to cool sunset)
+	var tw: Tween = fill.create_tween().set_loops()
+	tw.tween_property(fill, "light_color", Color(0.95, 0.65, 0.45), 8.0)
+	tw.tween_property(fill, "light_color", Color(1.0, 0.85, 0.55), 8.0)
+	var sun: DirectionalLight3D = DirectionalLight3D.new()
+	sun.light_color = Color(1.0, 0.92, 0.75)
+	sun.light_energy = 0.40
+	sun.shadow_enabled = false
+	sun.position = Vector3(0, 14.0, 0)
+	sun.rotation_degrees = Vector3(-65, 35, 0)
+	amb.add_child(sun)
+
+
+func _build_d7_mountain_sage(geom: Node) -> void:
+	## Epic-7 T100: MOUNTAIN SAGE — Epic 7 finale boss. Towering monk
+	## elder seated in lotus on a high stone pedestal, with a massive
+	## halo of orbiting glyph stones and a glowing third eye.
+	var sage: Node3D = Node3D.new()
+	sage.name = "MountainSage"
+	sage.position = Vector3(D7_CENTER.x + 28.0, 0.0, -22.0)
+	geom.add_child(sage)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(1.0, 0.55, 0.10)
+	robe_mat.emission_energy_multiplier = 0.85
+	robe_mat.roughness = 0.65
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.85, 0.20)
+	gold_mat.emission_energy_multiplier = 4.0
+	gold_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Tall stone pedestal (3-tier)
+	var ped_sizes: Array = [
+		Vector3(4.20, 0.55, 4.20),
+		Vector3(3.40, 0.55, 3.40),
+		Vector3(2.85, 0.55, 2.85),
+	]
+	for i in 3:
+		var tier: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = ped_sizes[i]
+		tier.mesh = tm
+		tier.material_override = stone_mat
+		tier.position = Vector3(0, 0.27 + i * 0.55, 0)
+		sage.add_child(tier)
+	# Crossed legs (large flat sphere)
+	var legs: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 1.85
+	lm.height = 1.30
+	legs.mesh = lm
+	legs.material_override = robe_mat
+	legs.position = Vector3(0, 2.40, 0)
+	legs.scale = Vector3(1.30, 0.55, 1.30)
+	sage.add_child(legs)
+	# Torso (rounded sphere)
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 1.40
+	tm.height = 2.40
+	torso.mesh = tm
+	torso.material_override = robe_mat
+	torso.position = Vector3(0, 4.20, 0)
+	torso.scale = Vector3(1.0, 0.85, 0.85)
+	sage.add_child(torso)
+	# Head (sphere)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.85
+	hm.height = 1.40
+	head.mesh = hm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	skin_mat.roughness = 0.65
+	head.material_override = skin_mat
+	head.position = Vector3(0, 6.20, 0)
+	sage.add_child(head)
+	# Glowing third eye gem
+	var third_eye: MeshInstance3D = MeshInstance3D.new()
+	var em: PrismMesh = PrismMesh.new()
+	em.size = Vector3(0.18, 0.30, 0.10)
+	third_eye.mesh = em
+	third_eye.material_override = gold_mat
+	third_eye.position = Vector3(0, 6.55, 0.85)
+	sage.add_child(third_eye)
+	# Eye pulse
+	var twe: Tween = third_eye.create_tween().set_loops()
+	twe.tween_property(third_eye, "scale", Vector3.ONE * 1.30, 1.4)
+	twe.tween_property(third_eye, "scale", Vector3.ONE * 0.85, 1.4)
+	# Topknot
+	var topknot: MeshInstance3D = MeshInstance3D.new()
+	var tnm: SphereMesh = SphereMesh.new()
+	tnm.radius = 0.22
+	tnm.height = 0.40
+	topknot.mesh = tnm
+	topknot.material_override = skin_mat
+	topknot.position = Vector3(0, 7.20, 0)
+	sage.add_child(topknot)
+	# 12 orbiting glyph stones around the head as a halo
+	var halo: Node3D = Node3D.new()
+	halo.position = Vector3(0, 6.20, 0)
+	sage.add_child(halo)
+	for i in 12:
+		var ang: float = (TAU / 12.0) * i
+		var glyph: MeshInstance3D = MeshInstance3D.new()
+		var gmm: BoxMesh = BoxMesh.new()
+		gmm.size = Vector3(0.30, 0.55, 0.10)
+		glyph.mesh = gmm
+		glyph.material_override = gold_mat
+		glyph.position = Vector3(cos(ang) * 2.85, 0, sin(ang) * 2.85)
+		glyph.rotation = Vector3(0, ang + PI * 0.5, 0)
+		halo.add_child(glyph)
+	# Slow halo rotation
+	var trot: Tween = halo.create_tween().set_loops()
+	trot.tween_property(halo, "rotation_degrees:y", 360.0, 16.0)
+	trot.tween_property(halo, "rotation_degrees:y", 0.0, 0.0)
+	# Massive aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 5.5
+	light.omni_range = 22.0
+	light.position = Vector3(0, 5.0, 0)
+	sage.add_child(light)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 2.4)
+	twl.tween_property(light, "light_energy", 4.5, 2.4)
+	# Title labels
+	var title: Label3D = Label3D.new()
+	title.text = "THE MOUNTAIN SAGE"
+	title.modulate = Color(1.0, 0.85, 0.30)
+	title.outline_modulate = Color(0.20, 0.10, 0.05)
+	title.outline_size = 14
+	title.font_size = 84
+	title.pixel_size = 0.014
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 9.0, 0)
+	sage.add_child(title)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Eternal in lotus, between iterations"
+	subtitle.modulate = Color(0.95, 0.92, 0.85)
+	subtitle.outline_modulate = Color(0.20, 0.10, 0.05)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.011
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 8.30, 0)
+	sage.add_child(subtitle)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 2.0
+	cap.height = 7.40
+	cs.shape = cap
+	sb.add_child(cs)
+	sage.add_child(sb)
+	# Pedestal collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	psb.position = Vector3(0, 0.85, 0)
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(4.20, 1.65, 4.20)
+	pcs.shape = pcb
+	psb.add_child(pcs)
+	sage.add_child(psb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
