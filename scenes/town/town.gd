@@ -1925,6 +1925,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_beekeeper_npc()
 	# Epic-4 T40: honey jars cluster
 	_build_d4_honey_jars(geom)
+	# Epic-4 T41: compost heap
+	_build_d4_compost_heap(geom)
+	# Epic-4 T42: Painter NPC
+	_build_d4_painter_npc()
+	# Epic-4 T43: easel with canvas
+	_build_d4_easel_canvas(geom)
+	# Epic-4 T44: birdhouse on pole
+	_build_d4_birdhouse(geom)
+	# Epic-4 T45: hanging clothesline with sheets
+	_build_d4_clothesline(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -4266,6 +4276,373 @@ func _build_d4_honey_jars(geom: Node) -> void:
 	cs.position = Vector3(0, 0.70, 0)
 	sb.add_child(cs)
 	jars.add_child(sb)
+
+
+func _build_d4_compost_heap(geom: Node) -> void:
+	## Epic-4 T41: compost heap — wooden bin frame with brown organic pile.
+	var heap: Node3D = Node3D.new()
+	heap.name = "D4Compost"
+	heap.position = D4_CENTER + Vector3(-15, 0, -3)
+	geom.add_child(heap)
+	# 4 corner posts
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	for ox: float in [-0.85, 0.85]:
+		for oz: float in [-0.85, 0.85]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.10, 1.20, 0.10)
+			post.mesh = pm
+			post.position = Vector3(ox, 0.60, oz)
+			post.material_override = wood_mat
+			heap.add_child(post)
+	# Side rails
+	for spec in [
+		[Vector3(0, 0.30, -0.85), Vector3(1.85, 0.06, 0.06)],
+		[Vector3(0, 0.30, 0.85), Vector3(1.85, 0.06, 0.06)],
+		[Vector3(-0.85, 0.30, 0), Vector3(0.06, 0.06, 1.85)],
+		[Vector3(0.85, 0.30, 0), Vector3(0.06, 0.06, 1.85)],
+		[Vector3(0, 0.85, -0.85), Vector3(1.85, 0.06, 0.06)],
+		[Vector3(0, 0.85, 0.85), Vector3(1.85, 0.06, 0.06)],
+		[Vector3(-0.85, 0.85, 0), Vector3(0.06, 0.06, 1.85)],
+		[Vector3(0.85, 0.85, 0), Vector3(0.06, 0.06, 1.85)],
+	]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = spec[1]
+		rail.mesh = rm
+		rail.position = spec[0]
+		rail.material_override = wood_mat
+		heap.add_child(rail)
+	# Brown organic pile inside
+	var pile: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(1.40, 0.85, 1.40)
+	pile.mesh = plm
+	pile.position = Vector3(0, 0.42, 0)
+	var plmat: StandardMaterial3D = StandardMaterial3D.new()
+	plmat.albedo_color = Color(0.30, 0.20, 0.10)
+	plmat.emission_enabled = true
+	plmat.emission = Color(0.40, 0.30, 0.10)
+	plmat.emission_energy_multiplier = 0.30
+	pile.material_override = plmat
+	heap.add_child(pile)
+	# 3 small green sprout box leaves on top
+	var sprout_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sprout_mat.albedo_color = Color(0.45, 1.0, 0.45)
+	sprout_mat.emission_enabled = true
+	sprout_mat.emission = Color(0.55, 1.0, 0.55)
+	sprout_mat.emission_energy_multiplier = 1.0
+	sprout_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var sprout: MeshInstance3D = MeshInstance3D.new()
+		var spm: BoxMesh = BoxMesh.new()
+		spm.size = Vector3(0.10, 0.20, 0.10)
+		sprout.mesh = spm
+		sprout.position = Vector3(-0.30 + i * 0.30, 0.95, randf_range(-0.30, 0.30))
+		sprout.material_override = sprout_mat
+		heap.add_child(sprout)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 1.20, 1.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.60, 0)
+	sb.add_child(cs)
+	heap.add_child(sb)
+
+
+func _build_d4_painter_npc() -> void:
+	## Epic-4 T42: Painter NPC at an easel with a paint palette.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var p: Node3D = Node3D.new()
+	p.name = "D4Painter"
+	p.position = D4_CENTER + Vector3(-3, 0, 8)
+	slots.add_child(p)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.55, 0.85)
+	bmat.metallic = 0.10
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.65, 0.95)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	p.add_child(body)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.65, 0.45)
+	head.material_override = hmat
+	p.add_child(head)
+	# Beret hat (flat torus + small cap)
+	var beret: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.45
+	brm.bottom_radius = 0.40
+	brm.height = 0.15
+	beret.mesh = brm
+	beret.position = Vector3(0, 1.85, 0)
+	var brmat: StandardMaterial3D = StandardMaterial3D.new()
+	brmat.albedo_color = Color(0.30, 0.10, 0.10)
+	beret.material_override = brmat
+	p.add_child(beret)
+	# Paint palette held in hand — flat oval
+	var palette: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.30
+	pm.bottom_radius = 0.30
+	pm.height = 0.04
+	palette.mesh = pm
+	palette.position = Vector3(0.55, 0.85, 0.30)
+	palette.rotation = Vector3(0, 0, deg_to_rad(-20))
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.85, 0.65, 0.30)
+	palette.material_override = pmat
+	p.add_child(palette)
+	# 5 colored paint dots on palette
+	for i in 5:
+		var angle: float = (float(i) / 5.0) * TAU
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.04
+		dm.height = 0.08
+		dot.mesh = dm
+		dot.position = Vector3(0.55 + cos(angle) * 0.18, 0.92, 0.30 + sin(angle) * 0.18)
+		var dot_mat: StandardMaterial3D = StandardMaterial3D.new()
+		var color: Color = [Color(1.0, 0.20, 0.20), Color(0.20, 0.55, 1.0), Color(1.0, 0.95, 0.30), Color(0.45, 1.0, 0.45), Color(0.85, 0.40, 1.0)][i]
+		dot_mat.albedo_color = color
+		dot_mat.emission_enabled = true
+		dot_mat.emission = color
+		dot_mat.emission_energy_multiplier = 1.4
+		dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dot.material_override = dot_mat
+		p.add_child(dot)
+	var label: Label3D = Label3D.new()
+	label.text = "Painter"
+	label.position = Vector3(0, 2.40, 0)
+	label.modulate = Color(1.0, 0.65, 0.95)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	p.add_child(label)
+
+
+func _build_d4_easel_canvas(geom: Node) -> void:
+	## Epic-4 T43: a wooden easel with a colorful painted canvas.
+	var easel: Node3D = Node3D.new()
+	easel.name = "D4Easel"
+	easel.position = D4_CENTER + Vector3(-2, 0, 9)
+	geom.add_child(easel)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	# 3-leg tripod stand
+	for i in 3:
+		var angle: float = (float(i) / 3.0) * TAU
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.06
+		lm.height = 1.85
+		leg.mesh = lm
+		leg.position = Vector3(cos(angle) * 0.30, 0.92, sin(angle) * 0.30)
+		leg.rotation = Vector3(sin(angle) * deg_to_rad(15), 0, -cos(angle) * deg_to_rad(15))
+		leg.material_override = wood_mat
+		easel.add_child(leg)
+	# Canvas — flat box
+	var canvas: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 1.20, 0.04)
+	canvas.mesh = cm
+	canvas.position = Vector3(0, 1.70, 0.10)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.95, 0.85, 0.65)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.85, 0.65)
+	cmat.emission_energy_multiplier = 0.55
+	canvas.material_override = cmat
+	easel.add_child(canvas)
+	# 4 colored paint blobs on canvas (abstract painting)
+	var blob_specs: Array = [
+		[Vector3(-0.20, 1.95, 0.13), Color(1.0, 0.55, 0.85)],
+		[Vector3(0.20, 1.85, 0.13), Color(0.45, 1.0, 0.55)],
+		[Vector3(0, 1.55, 0.13), Color(1.0, 0.95, 0.30)],
+		[Vector3(0.10, 1.30, 0.13), Color(0.55, 0.85, 1.0)],
+	]
+	for spec in blob_specs:
+		var blob: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.10
+		bm.height = 0.20
+		blob.mesh = bm
+		blob.position = spec[0]
+		blob.scale = Vector3(1.0, 1.0, 0.3)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = spec[1]
+		bmat.emission_enabled = true
+		bmat.emission = spec[1]
+		bmat.emission_energy_multiplier = 1.4
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		blob.material_override = bmat
+		easel.add_child(blob)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.40
+	cap.height = 1.85
+	cs.shape = cap
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	easel.add_child(sb)
+
+
+func _build_d4_birdhouse(geom: Node) -> void:
+	## Epic-4 T44: a small wooden birdhouse on a tall pole.
+	var house: Node3D = Node3D.new()
+	house.name = "D4Birdhouse"
+	house.position = D4_CENTER + Vector3(5, 0, 14)
+	geom.add_child(house)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	# Tall pole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.07
+	pm.bottom_radius = 0.10
+	pm.height = 2.85
+	pole.mesh = pm
+	pole.position = Vector3(0, 1.42, 0)
+	pole.material_override = wood_mat
+	house.add_child(pole)
+	# House body (small box)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.40, 0.40, 0.40)
+	body.mesh = bm
+	body.position = Vector3(0, 3.05, 0)
+	body.material_override = wood_mat
+	house.add_child(body)
+	# Pitched roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(0.50, 0.20, 0.50)
+	roof.mesh = rm
+	roof.position = Vector3(0, 3.35, 0)
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	roof.material_override = roof_mat
+	house.add_child(roof)
+	# Round entrance hole (dark sphere recess)
+	var hole: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.06
+	hm.height = 0.12
+	hole.mesh = hm
+	hole.position = Vector3(0, 3.05, 0.21)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.05, 0.05, 0.10)
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	hole.material_override = hmat
+	house.add_child(hole)
+	# Tiny perch stick
+	var perch: MeshInstance3D = MeshInstance3D.new()
+	var per: CylinderMesh = CylinderMesh.new()
+	per.top_radius = 0.02
+	per.bottom_radius = 0.02
+	per.height = 0.18
+	perch.mesh = per
+	perch.position = Vector3(0, 2.95, 0.30)
+	perch.rotation = Vector3(deg_to_rad(90), 0, 0)
+	perch.material_override = wood_mat
+	house.add_child(perch)
+	# Collision around pole
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.20
+	cap.height = 2.85
+	cs.shape = cap
+	cs.position = Vector3(0, 1.42, 0)
+	sb.add_child(cs)
+	house.add_child(sb)
+
+
+func _build_d4_clothesline(geom: Node) -> void:
+	## Epic-4 T45: hanging clothesline between 2 wooden posts with 5 sheets.
+	var line: Node3D = Node3D.new()
+	line.name = "D4Clothesline"
+	line.position = D4_CENTER + Vector3(0, 0, 14)
+	geom.add_child(line)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	# 2 vertical posts
+	for sx: float in [-2.0, 2.0]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.10
+		pm.height = 2.40
+		post.mesh = pm
+		post.position = Vector3(sx, 1.20, 0)
+		post.material_override = wood_mat
+		line.add_child(post)
+		# Collision per post
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 2.40
+		cs.shape = cap
+		cs.position = Vector3(sx, 1.20, 0)
+		sb.add_child(cs)
+		line.add_child(sb)
+	# Rope line — thin cylinder
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.02
+	rm.bottom_radius = 0.02
+	rm.height = 4.0
+	rope.mesh = rm
+	rope.position = Vector3(0, 2.20, 0)
+	rope.rotation = Vector3(0, 0, deg_to_rad(90))
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.85, 0.85, 0.85)
+	rope.material_override = rope_mat
+	line.add_child(rope)
+	# 5 sheets hanging in different colors
+	var sheet_colors: Array[Color] = [
+		Color(1.0, 0.55, 0.85),
+		Color(0.55, 0.85, 1.0),
+		Color(0.95, 0.95, 0.95),
+		Color(1.0, 0.95, 0.30),
+		Color(0.45, 1.0, 0.55),
+	]
+	for i in 5:
+		var sheet: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.65, 0.85, 0.04)
+		sheet.mesh = sm
+		sheet.position = Vector3(-1.60 + i * 0.80, 1.55, 0)
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = sheet_colors[i]
+		smat.emission_enabled = true
+		smat.emission = sheet_colors[i]
+		smat.emission_energy_multiplier = 0.55
+		sheet.material_override = smat
+		line.add_child(sheet)
 
 
 
