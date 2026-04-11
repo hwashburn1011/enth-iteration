@@ -61,6 +61,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_north_approach_road(geom)
 	_build_th_west_approach_road(geom)
 	_build_th_south_approach_road(geom)
+	_build_th_waystones(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -7901,3 +7902,160 @@ func _build_th_south_approach_road(geom: Node) -> void:
 	var bpulse2: Tween = pivot.create_tween().set_loops()
 	bpulse2.tween_property(bulb_mat, "emission_energy_multiplier", 10.5, 1.5).set_ease(Tween.EASE_IN_OUT)
 	bpulse2.tween_property(bulb_mat, "emission_energy_multiplier", 7.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_waystones(geom: Node) -> void:
+	## Epic-10 T45: 4 basalt waystone obelisks at the end of each cardinal
+	## approach road, marking the boundary of the Town Heart territory.
+	## Each waystone: stepped basalt base, tapered obelisk shaft, brass cap,
+	## glowing inscription stripe, and a small lantern bulb on top. Marks
+	## "you are leaving the Town Heart" for outbound travelers.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_Waystones"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+	bulb_mat.emission_enabled = true
+	bulb_mat.emission = Color(1.0, 0.65, 0.20)
+	bulb_mat.emission_energy_multiplier = 8.0
+	bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Place 4 waystones at the END of each approach road (~46 from town center).
+	# Roads start at 17.5 and span 28m, so end is at 17.5 + 28 = 45.5
+	var waystone_data: Array = [
+		{"pos": Vector3(46.0, 0, 0), "rot": -PI / 2.0},   # E end of east road
+		{"pos": Vector3(0, 0, -46.0), "rot": 0.0},        # N end of north road
+		{"pos": Vector3(-46.0, 0, 0), "rot": PI / 2.0},   # W end of west road
+		{"pos": Vector3(0, 0, 46.0), "rot": PI},          # S end of south road
+	]
+	for wd in waystone_data:
+		var wgroup: Node3D = Node3D.new()
+		wgroup.position = wd["pos"]
+		wgroup.rotation.y = wd["rot"]
+		pivot.add_child(wgroup)
+		# ---- Stepped basalt base (2 levels) ----
+		var base1: MeshInstance3D = MeshInstance3D.new()
+		var b1m: BoxMesh = BoxMesh.new()
+		b1m.size = Vector3(1.85, 0.45, 1.85)
+		base1.mesh = b1m
+		base1.material_override = stone_mat
+		base1.position = Vector3(0, 0.22, 0)
+		wgroup.add_child(base1)
+		var base2: MeshInstance3D = MeshInstance3D.new()
+		var b2m: BoxMesh = BoxMesh.new()
+		b2m.size = Vector3(1.55, 0.40, 1.55)
+		base2.mesh = b2m
+		base2.material_override = stone_mat
+		base2.position = Vector3(0, 0.65, 0)
+		wgroup.add_child(base2)
+		# Combined base collision
+		var base_sb: StaticBody3D = StaticBody3D.new()
+		base_sb.position = Vector3(0, 0.42, 0)
+		var base_cs: CollisionShape3D = CollisionShape3D.new()
+		var base_bsh: BoxShape3D = BoxShape3D.new()
+		base_bsh.size = Vector3(1.85, 0.85, 1.85)
+		base_cs.shape = base_bsh
+		base_sb.add_child(base_cs)
+		wgroup.add_child(base_sb)
+		# ---- Tapered obelisk shaft ----
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.95, 4.50, 0.95)
+		shaft.mesh = sm
+		shaft.material_override = stone_mat
+		shaft.position = Vector3(0, 3.10, 0)
+		wgroup.add_child(shaft)
+		# Shaft collision
+		var shaft_sb: StaticBody3D = StaticBody3D.new()
+		shaft_sb.position = Vector3(0, 3.10, 0)
+		var shaft_cs: CollisionShape3D = CollisionShape3D.new()
+		var shaft_bsh: BoxShape3D = BoxShape3D.new()
+		shaft_bsh.size = Vector3(0.95, 4.50, 0.95)
+		shaft_cs.shape = shaft_bsh
+		shaft_sb.add_child(shaft_cs)
+		wgroup.add_child(shaft_sb)
+		# ---- Brass mid band wrap ----
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(1.05, 0.18, 1.05)
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, 3.30, 0)
+		wgroup.add_child(band)
+		# ---- Brass top cap ----
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(1.20, 0.25, 1.20)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0, 5.50, 0)
+		wgroup.add_child(cap)
+		# Pyramid finial peak (PrismMesh)
+		var finial: MeshInstance3D = MeshInstance3D.new()
+		var fmm: PrismMesh = PrismMesh.new()
+		fmm.size = Vector3(0.90, 0.85, 0.90)
+		finial.mesh = fmm
+		finial.material_override = stone_mat
+		finial.position = Vector3(0, 6.05, 0)
+		wgroup.add_child(finial)
+		# ---- Glowing cyan inscription stripe down the front face ----
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(0.18, 3.20, 0.06)
+		stripe.mesh = stm
+		stripe.material_override = data_mat
+		stripe.position = Vector3(0, 3.10, -0.50)
+		wgroup.add_child(stripe)
+		# 3 horizontal rune crossbars on the stripe
+		for ry in [2.20, 3.10, 4.00]:
+			var cross: MeshInstance3D = MeshInstance3D.new()
+			var cmm: BoxMesh = BoxMesh.new()
+			cmm.size = Vector3(0.50, 0.10, 0.06)
+			cross.mesh = cmm
+			cross.material_override = data_mat
+			cross.position = Vector3(0, ry, -0.50)
+			wgroup.add_child(cross)
+		# ---- Small lantern bulb on top of the finial ----
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var blm: SphereMesh = SphereMesh.new()
+		blm.radius = 0.18
+		blm.height = 0.36
+		bulb.mesh = blm
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(0, 6.65, 0)
+		wgroup.add_child(bulb)
+		# Bulb OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 6.65, 0)
+		lt.light_color = Color(1.0, 0.65, 0.20)
+		lt.light_energy = 3.5
+		lt.omni_range = 12.0
+		wgroup.add_child(lt)
+	# Shared pulses
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	var bpulse: Tween = pivot.create_tween().set_loops()
+	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 10.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 6.5, 1.5).set_ease(Tween.EASE_IN_OUT)
