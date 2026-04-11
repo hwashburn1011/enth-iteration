@@ -40,6 +40,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_banker_npc(town)
 	_build_th_fountain_wisher_npc(town)
 	_build_th_planter_ring(geom)
+	_build_th_welcome_arch(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -4009,3 +4010,227 @@ func _build_th_planter_ring(geom: Node) -> void:
 	var lpulse: Tween = pivot.create_tween().set_loops()
 	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 7.0, 2.4).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_welcome_arch(geom: Node) -> void:
+	## Epic-10 T24: grand welcome arch over the E radial entry path (where
+	## players arrive from D1 East Plaza). 2 tall basalt pillars flanking
+	## the path at the outer edge, brass crossbar arch overhead, central
+	## hanging brass nameplate with "TOWN HEART" letters, 2 corner finial
+	## torches with flames, and 4 hanging chains with bell pendants.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_WelcomeArch"
+	# E radial path, just outside the outer plaza rim
+	pivot.position = TOWN_CENTER + Vector3(15.50, 0, 0)
+	# Rotate so the arch spans perpendicular to the radial direction
+	pivot.rotation.y = PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 9.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	# ---- 2 tall basalt pillars at +/- offset along the arch axis ----
+	for px in [-5.5, 5.5]:
+		var pgroup: Node3D = Node3D.new()
+		pgroup.name = "ArchPillar_" + str(int(px))
+		pgroup.position = Vector3(px, 0, 0)
+		pivot.add_child(pgroup)
+		# Stepped base
+		var base1: MeshInstance3D = MeshInstance3D.new()
+		var b1m: BoxMesh = BoxMesh.new()
+		b1m.size = Vector3(1.85, 0.50, 1.85)
+		base1.mesh = b1m
+		base1.material_override = stone_mat
+		base1.position = Vector3(0, 0.25, 0)
+		pgroup.add_child(base1)
+		var base2: MeshInstance3D = MeshInstance3D.new()
+		var b2m: BoxMesh = BoxMesh.new()
+		b2m.size = Vector3(1.55, 0.40, 1.55)
+		base2.mesh = b2m
+		base2.material_override = stone_mat
+		base2.position = Vector3(0, 0.70, 0)
+		pgroup.add_child(base2)
+		# Tall pillar shaft
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.20, 7.50, 1.20)
+		shaft.mesh = sm
+		shaft.material_override = stone_mat
+		shaft.position = Vector3(0, 4.65, 0)
+		pgroup.add_child(shaft)
+		# Combined collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 4.50, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(1.85, 9.00, 1.85)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pgroup.add_child(sb)
+		# Brass mid band
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(1.30, 0.20, 1.30)
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, 5.00, 0)
+		pgroup.add_child(band)
+		# Brass top cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(1.50, 0.30, 1.50)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0, 8.55, 0)
+		pgroup.add_child(cap)
+		# ---- Corner finial torch on top of each pillar ----
+		# Brazier bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bowm: SphereMesh = SphereMesh.new()
+		bowm.radius = 0.40
+		bowm.height = 0.65
+		bowl.mesh = bowm
+		bowl.material_override = brass_mat
+		bowl.position = Vector3(0, 9.05, 0)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		pgroup.add_child(bowl)
+		# Flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.32
+		flm.height = 0.65
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(0, 9.40, 0)
+		pgroup.add_child(flame)
+		# OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 9.40, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 4.5
+		lt.omni_range = 14.0
+		pgroup.add_child(lt)
+		# Ember mote shower
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = Vector3(0, 9.65, 0)
+		motes.amount = 22
+		motes.lifetime = 2.4
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 18.0
+		pmat.initial_velocity_min = 0.6
+		pmat.initial_velocity_max = 1.2
+		pmat.gravity = Vector3(0, 0.4, 0)
+		pmat.scale_min = 0.06
+		pmat.scale_max = 0.12
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.05
+		psmesh.height = 0.10
+		motes.draw_pass_1 = psmesh
+		pgroup.add_child(motes)
+	# ---- Brass crossbar arch overhead ----
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(12.50, 0.55, 1.20)
+	crossbar.mesh = cbm
+	crossbar.material_override = brass_mat
+	crossbar.position = Vector3(0, 8.85, 0)
+	pivot.add_child(crossbar)
+	# Crossbar bottom trim lip
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var trm: BoxMesh = BoxMesh.new()
+	trm.size = Vector3(12.20, 0.18, 1.30)
+	trim.mesh = trm
+	trim.material_override = brass_mat
+	trim.position = Vector3(0, 8.50, 0)
+	pivot.add_child(trim)
+	# ---- Central hanging brass nameplate ----
+	# Brass plate body
+	var plate: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(5.50, 1.40, 0.18)
+	plate.mesh = plm
+	plate.material_override = brass_mat
+	plate.position = Vector3(0, 7.00, 0)
+	pivot.add_child(plate)
+	# 10 glowing letter blocks across the plate ("TOWN HEART" pattern)
+	for i in 10:
+		var lx: float = -2.20 + float(i) * 0.49
+		var letter: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.30, 0.65, 0.06)
+		letter.mesh = lm
+		letter.material_override = data_mat
+		letter.position = Vector3(lx, 7.00, -0.13)
+		pivot.add_child(letter)
+	# 2 brass support chains from the crossbar to the plate (4 chains total: 2 per side)
+	for cx in [-2.30, 2.30]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var chmm: CylinderMesh = CylinderMesh.new()
+		chmm.top_radius = 0.05
+		chmm.bottom_radius = 0.05
+		chmm.height = 1.40
+		chain.mesh = chmm
+		chain.material_override = iron_mat
+		chain.position = Vector3(cx, 7.95, 0)
+		pivot.add_child(chain)
+	# ---- 4 hanging bell pendants from the crossbar (decorative) ----
+	for bx in [-4.50, -1.50, 1.50, 4.50]:
+		# Pendant chain
+		var pendant_chain: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.03
+		pcm.bottom_radius = 0.03
+		pcm.height = 0.65
+		pendant_chain.mesh = pcm
+		pendant_chain.material_override = iron_mat
+		pendant_chain.position = Vector3(bx, 8.20, 0)
+		pivot.add_child(pendant_chain)
+		# Brass bell
+		var bell: MeshInstance3D = MeshInstance3D.new()
+		var blm: SphereMesh = SphereMesh.new()
+		blm.radius = 0.16
+		blm.height = 0.30
+		bell.mesh = blm
+		bell.material_override = brass_mat
+		bell.position = Vector3(bx, 7.75, 0)
+		bell.scale = Vector3(0.95, 1.10, 0.95)
+		pivot.add_child(bell)
+	# ---- Pulses ----
+	# Letters cyan pulse
+	var lpulse2: Tween = pivot.create_tween().set_loops()
+	lpulse2.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	lpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Torch flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
