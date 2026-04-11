@@ -2015,6 +2015,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_traveling_merchant_npc()
 	# Epic-4 T85: firefly particles drifting upward
 	_build_d4_fireflies(geom)
+	# Epic-4 T86: pollen veil — soft golden ground mist
+	_build_d4_pollen_veil(geom)
+	# Epic-4 T87: lantern path along winding stones
+	_build_d4_lantern_path(geom)
+	# Epic-4 T88: blossom bridge — vine + petal arch
+	_build_d4_blossom_bridge(geom)
+	# Epic-4 T89: songbird flock circling
+	_build_d4_songbird_flock(geom)
+	# Epic-4 T90: blossom heart shrine
+	_build_d4_blossom_shrine(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -7451,6 +7461,392 @@ func _build_d4_fireflies(geom: Node) -> void:
 	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	firefly_mesh.material = fmat
 	geom.add_child(fireflies)
+
+
+func _build_d4_pollen_veil(geom: Node) -> void:
+	## Epic-4 T86: GPU pollen veil — slow-drifting golden specks at ankle
+	## height across the central bloom area, contributing soft "magic dust"
+	## haze without volumetrics.
+	var veil: GPUParticles3D = GPUParticles3D.new()
+	veil.name = "PollenVeil"
+	veil.position = Vector3(D4_CENTER.x, 0.4, 0.0)
+	veil.amount = 120
+	veil.lifetime = 12.0
+	veil.preprocess = 6.0
+	veil.explosiveness = 0.0
+	veil.randomness = 0.8
+	veil.visibility_aabb = AABB(Vector3(-25, -1, -25), Vector3(50, 6, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(22, 0.3, 20)
+	pm.direction = Vector3(0.2, 0.6, 0.1)
+	pm.spread = 60.0
+	pm.gravity = Vector3(0.05, 0.06, 0.02)
+	pm.initial_velocity_min = 0.05
+	pm.initial_velocity_max = 0.20
+	pm.scale_min = 0.04
+	pm.scale_max = 0.10
+	pm.color = Color(0.95, 0.85, 0.45, 0.55)
+	veil.process_material = pm
+	var pollen_mesh: SphereMesh = SphereMesh.new()
+	pollen_mesh.radius = 0.04
+	pollen_mesh.height = 0.08
+	veil.draw_pass_1 = pollen_mesh
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.95, 0.85, 0.45, 0.65)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.95, 0.80, 0.30)
+	pmat.emission_energy_multiplier = 1.4
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pollen_mesh.material = pmat
+	geom.add_child(veil)
+
+
+func _build_d4_lantern_path(geom: Node) -> void:
+	## Epic-4 T87: row of 8 wooden post lanterns along a winding path with
+	## warm orange glow lights, each pulsing gently.
+	var path: Node3D = Node3D.new()
+	path.name = "LanternPath"
+	path.position = Vector3(D4_CENTER.x - 18.0, 0.0, -3.0)
+	geom.add_child(path)
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.45, 0.30, 0.16)
+	post_mat.roughness = 0.85
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(1.0, 0.75, 0.30, 0.85)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(1.0, 0.65, 0.20)
+	glass_mat.emission_energy_multiplier = 2.0
+	glass_mat.metallic = 0.30
+	glass_mat.roughness = 0.10
+	# 8 lanterns along a sinuous path
+	for i in 8:
+		var t: float = i / 7.0
+		var lantern: Node3D = Node3D.new()
+		var lx: float = i * 2.4
+		var lz: float = sin(t * TAU) * 1.8
+		lantern.position = Vector3(lx, 0, lz)
+		path.add_child(lantern)
+		# Wooden post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.06
+		pmm.bottom_radius = 0.08
+		pmm.height = 1.85
+		post.mesh = pmm
+		post.material_override = post_mat
+		post.position = Vector3(0, 0.92, 0)
+		lantern.add_child(post)
+		# Lantern body (cube of glass)
+		var lamp: MeshInstance3D = MeshInstance3D.new()
+		var lmm: BoxMesh = BoxMesh.new()
+		lmm.size = Vector3(0.30, 0.40, 0.30)
+		lamp.mesh = lmm
+		lamp.material_override = glass_mat
+		lamp.position = Vector3(0, 2.05, 0)
+		lantern.add_child(lamp)
+		# Cap (small wooden box on top)
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.40, 0.06, 0.40)
+		cap.mesh = cmm
+		cap.material_override = post_mat
+		cap.position = Vector3(0, 2.30, 0)
+		lantern.add_child(cap)
+		# Light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.65, 0.25)
+		light.light_energy = 1.8
+		light.omni_range = 4.5
+		light.position = Vector3(0, 2.05, 0)
+		lantern.add_child(light)
+		# Pulse (offset per lantern for shimmer)
+		var tw: Tween = light.create_tween().set_loops()
+		tw.tween_interval(i * 0.18)
+		tw.tween_property(light, "light_energy", 2.4, 1.0)
+		tw.tween_property(light, "light_energy", 1.8, 1.0)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+		cap_shape.radius = 0.10
+		cap_shape.height = 1.85
+		cs.shape = cap_shape
+		sb.add_child(cs)
+		lantern.add_child(sb)
+
+
+func _build_d4_blossom_bridge(geom: Node) -> void:
+	## Epic-4 T88: small ornamental bridge of vine planks framed by 2
+	## blossom-clad vine arches.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "BlossomBridge"
+	bridge.position = Vector3(D4_CENTER.x + 2.0, 0.0, -10.0)
+	geom.add_child(bridge)
+	var plank_mat: StandardMaterial3D = StandardMaterial3D.new()
+	plank_mat.albedo_color = Color(0.35, 0.25, 0.12)
+	plank_mat.roughness = 0.85
+	# Bridge deck (5 planks)
+	for i in 5:
+		var plank: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(2.40, 0.10, 0.40)
+		plank.mesh = pmm
+		plank.material_override = plank_mat
+		plank.position = Vector3(0, 0.30, -0.80 + i * 0.40)
+		bridge.add_child(plank)
+	# Side rails (curved cylinders)
+	for sx in [-1.10, 1.10]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rmm: CylinderMesh = CylinderMesh.new()
+		rmm.top_radius = 0.05
+		rmm.bottom_radius = 0.05
+		rmm.height = 2.30
+		rail.mesh = rmm
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(0.55, 0.35, 0.15)
+		rmat.roughness = 0.85
+		rail.material_override = rmat
+		rail.position = Vector3(sx, 0.55, 0)
+		rail.rotation_degrees = Vector3(90, 0, 0)
+		bridge.add_child(rail)
+	# 2 blossom arches at the bridge ends
+	var blossom_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blossom_mat.albedo_color = Color(0.95, 0.55, 0.75)
+	blossom_mat.emission_enabled = true
+	blossom_mat.emission = Color(0.95, 0.40, 0.65)
+	blossom_mat.emission_energy_multiplier = 0.40
+	blossom_mat.roughness = 0.65
+	var vine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vine_mat.albedo_color = Color(0.30, 0.55, 0.20)
+	vine_mat.roughness = 0.85
+	for sz in [-1.10, 1.10]:
+		# Arch curve via torus
+		var arch: MeshInstance3D = MeshInstance3D.new()
+		var atm: TorusMesh = TorusMesh.new()
+		atm.inner_radius = 1.10
+		atm.outer_radius = 1.30
+		arch.mesh = atm
+		arch.material_override = vine_mat
+		arch.position = Vector3(0, 1.50, sz)
+		arch.rotation_degrees = Vector3(90, 90, 0)
+		arch.scale = Vector3(1.0, 1.0, 0.40)
+		bridge.add_child(arch)
+		# 8 blossoms scattered along the arch
+		for i in 8:
+			var ang: float = lerp(0.0, PI, float(i) / 7.0)
+			var blossom: MeshInstance3D = MeshInstance3D.new()
+			var bmm: SphereMesh = SphereMesh.new()
+			bmm.radius = 0.18
+			bmm.height = 0.32
+			blossom.mesh = bmm
+			blossom.material_override = blossom_mat
+			blossom.position = Vector3(cos(ang) * 1.20, 1.50 + sin(ang) * 1.20, sz)
+			bridge.add_child(blossom)
+	# Plank collision (horizontal slab)
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 0.20, 2.20)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.30, 0)
+	sb.add_child(cs)
+	bridge.add_child(sb)
+
+
+func _build_d4_songbird_flock(geom: Node) -> void:
+	## Epic-4 T89: 5 small songbirds flying in a slow circular pattern
+	## around the great bloom area, each at a slightly different radius
+	## and elevation, with wing-flap pulse.
+	var flock: Node3D = Node3D.new()
+	flock.name = "SongbirdFlock"
+	flock.position = Vector3(D4_CENTER.x, 4.0, 0.0)
+	geom.add_child(flock)
+	var bird_colors: Array = [
+		Color(0.95, 0.45, 0.20),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.85, 0.30),
+		Color(0.85, 0.30, 0.85),
+		Color(0.30, 0.95, 0.50),
+	]
+	for i in 5:
+		var bird_pivot: Node3D = Node3D.new()
+		bird_pivot.position = Vector3(0, i * 0.30, 0)
+		flock.add_child(bird_pivot)
+		# Bird body (small sphere) offset on the pivot
+		var bird: Node3D = Node3D.new()
+		bird.position = Vector3(6.0 + i * 0.6, 0, 0)
+		bird_pivot.add_child(bird)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.18
+		bm.height = 0.30
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = bird_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = bird_colors[i]
+		body_mat.emission_energy_multiplier = 0.30
+		body_mat.roughness = 0.65
+		body.material_override = body_mat
+		body.scale = Vector3(1.0, 0.85, 1.20)
+		bird.add_child(body)
+		# 2 wings (thin boxes)
+		var wing_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wing_mat.albedo_color = bird_colors[i].darkened(0.3)
+		wing_mat.roughness = 0.65
+		for sx in [-0.20, 0.20]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.20, 0.04, 0.30)
+			wing.mesh = wm
+			wing.material_override = wing_mat
+			wing.position = Vector3(sx, 0.05, 0)
+			bird.add_child(wing)
+			# Wing flap tween
+			var tw: Tween = wing.create_tween().set_loops()
+			tw.tween_property(wing, "rotation_degrees:z", 25.0 if sx < 0 else -25.0, 0.18)
+			tw.tween_property(wing, "rotation_degrees:z", 0.0, 0.18)
+		# Beak
+		var beak: MeshInstance3D = MeshInstance3D.new()
+		var bkm: PrismMesh = PrismMesh.new()
+		bkm.size = Vector3(0.05, 0.05, 0.10)
+		beak.mesh = bkm
+		var beak_mat: StandardMaterial3D = StandardMaterial3D.new()
+		beak_mat.albedo_color = Color(0.95, 0.65, 0.10)
+		beak.material_override = beak_mat
+		beak.position = Vector3(0, 0, 0.20)
+		beak.rotation_degrees = Vector3(90, 0, 0)
+		bird.add_child(beak)
+		# Pivot rotation tween (each bird circles the bloom)
+		var trot: Tween = bird_pivot.create_tween().set_loops()
+		trot.tween_property(bird_pivot, "rotation_degrees:y", 360.0, 8.0 + i * 0.6)
+		trot.tween_property(bird_pivot, "rotation_degrees:y", 0.0, 0.0)
+
+
+func _build_d4_blossom_shrine(geom: Node) -> void:
+	## Epic-4 T90: blossom heart shrine — small kneeling shrine with a
+	## stone bowl, glowing pink heart-shaped offering, and 4 candle posts.
+	var shrine: Node3D = Node3D.new()
+	shrine.name = "BlossomShrine"
+	shrine.position = Vector3(D4_CENTER.x - 4.0, 0.0, -4.0)
+	geom.add_child(shrine)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.65, 0.62, 0.55)
+	stone_mat.roughness = 0.95
+	# Stone base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 0.20, 1.40)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.10, 0)
+	shrine.add_child(base)
+	# Stone bowl (low cylinder)
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bowm: CylinderMesh = CylinderMesh.new()
+	bowm.top_radius = 0.55
+	bowm.bottom_radius = 0.65
+	bowm.height = 0.30
+	bowl.mesh = bowm
+	bowl.material_override = stone_mat
+	bowl.position = Vector3(0, 0.35, 0)
+	shrine.add_child(bowl)
+	# Bowl interior (darker)
+	var inner: MeshInstance3D = MeshInstance3D.new()
+	var inm: CylinderMesh = CylinderMesh.new()
+	inm.top_radius = 0.45
+	inm.bottom_radius = 0.45
+	inm.height = 0.05
+	inner.mesh = inm
+	var inner_mat: StandardMaterial3D = StandardMaterial3D.new()
+	inner_mat.albedo_color = Color(0.20, 0.15, 0.12)
+	inner_mat.roughness = 0.95
+	inner.material_override = inner_mat
+	inner.position = Vector3(0, 0.45, 0)
+	shrine.add_child(inner)
+	# Heart-shaped offering — 2 spheres + 1 prism
+	var heart_mat: StandardMaterial3D = StandardMaterial3D.new()
+	heart_mat.albedo_color = Color(0.95, 0.30, 0.55)
+	heart_mat.emission_enabled = true
+	heart_mat.emission = Color(0.95, 0.20, 0.50)
+	heart_mat.emission_energy_multiplier = 1.8
+	heart_mat.metallic = 0.30
+	heart_mat.roughness = 0.20
+	for sx in [-0.10, 0.10]:
+		var lobe: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.14
+		lm.height = 0.24
+		lobe.mesh = lm
+		lobe.material_override = heart_mat
+		lobe.position = Vector3(sx, 0.65, 0)
+		shrine.add_child(lobe)
+	var point: MeshInstance3D = MeshInstance3D.new()
+	var pmm: PrismMesh = PrismMesh.new()
+	pmm.size = Vector3(0.30, 0.20, 0.18)
+	point.mesh = pmm
+	point.material_override = heart_mat
+	point.position = Vector3(0, 0.50, 0)
+	point.rotation_degrees = Vector3(180, 0, 0)
+	shrine.add_child(point)
+	# Heart hover + pulse
+	var th: Tween = point.create_tween().set_loops()
+	th.tween_property(point, "position:y", 0.55, 1.4)
+	th.tween_property(point, "position:y", 0.50, 1.4)
+	# 4 candle posts at corners
+	for cx in [-0.55, 0.55]:
+		for cz in [-0.55, 0.55]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm2: CylinderMesh = CylinderMesh.new()
+			pm2.top_radius = 0.05
+			pm2.bottom_radius = 0.05
+			pm2.height = 0.45
+			post.mesh = pm2
+			var wax_mat: StandardMaterial3D = StandardMaterial3D.new()
+			wax_mat.albedo_color = Color(0.95, 0.92, 0.85)
+			wax_mat.roughness = 0.55
+			post.material_override = wax_mat
+			post.position = Vector3(cx, 0.42, cz)
+			shrine.add_child(post)
+			# Flame (small emissive sphere)
+			var flame: MeshInstance3D = MeshInstance3D.new()
+			var fm: SphereMesh = SphereMesh.new()
+			fm.radius = 0.05
+			fm.height = 0.10
+			flame.mesh = fm
+			var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+			flame_mat.albedo_color = Color(1.0, 0.75, 0.20)
+			flame_mat.emission_enabled = true
+			flame_mat.emission = Color(1.0, 0.65, 0.20)
+			flame_mat.emission_energy_multiplier = 2.5
+			flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			flame.material_override = flame_mat
+			flame.position = Vector3(cx, 0.70, cz)
+			shrine.add_child(flame)
+			# Flame flicker
+			var tf: Tween = flame.create_tween().set_loops()
+			tf.tween_property(flame, "scale", Vector3(1.10, 1.20, 1.10), 0.20)
+			tf.tween_property(flame, "scale", Vector3(0.90, 0.85, 0.90), 0.20)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.85)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 0.85, 0)
+	shrine.add_child(light)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 0.50, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.25, 0)
+	sb.add_child(cs)
+	shrine.add_child(sb)
 
 
 
@@ -28631,5 +29027,3 @@ func _build_d2_glitch_herald_landmark(geom: Node) -> void:
 	label.font_size = 26
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	landmark.add_child(label)
-
-
