@@ -69,6 +69,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_lava_forge_cracks(geom)
 	_build_d9_chained_anvil_totem(geom)
 	_build_d9_scorched_bone_pile(geom)
+	_build_d9_smelter_trap_pillars(geom)
 	print("[D9Builder] done")
 
 
@@ -4166,5 +4167,87 @@ func _build_d9_scorched_bone_pile(geom: Node) -> void:
 	qm.size = Vector2(0.55, 0.55)
 	smoke.draw_pass_1 = qm
 	pivot.add_child(smoke)
+
+
+func _build_d9_smelter_trap_pillars(geom: Node) -> void:
+	## Epic-9 T49: 4 tall smelter pillars at the corners of the mid-boss arena.
+	## Each pillar has a glowing molten cap, an erupting molten plume, an
+	## amber light, and a collision body. Frames the arena perimeter with
+	## environmental danger.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_SmelterTrapPillars"
+	pivot.position = D9_CENTER + Vector3(32, 0, 0)
+	geom.add_child(pivot)
+	for i in 4:
+		var ang: float = (TAU / 4.0) * float(i) + PI / 4.0
+		var col: Node3D = Node3D.new()
+		col.position = Vector3(cos(ang) * 7.5, 0, sin(ang) * 7.5)
+		pivot.add_child(col)
+		# Pillar shaft (tapered cylinder)
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.55
+		sm.bottom_radius = 0.85
+		sm.height = 4.5
+		shaft.mesh = sm
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(0.18, 0.12, 0.10)
+		smat.metallic = 0.55
+		smat.roughness = 0.55
+		shaft.material_override = smat
+		shaft.position = Vector3(0, 2.25, 0)
+		col.add_child(shaft)
+		# Glowing molten cap on top
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.50
+		cm.bottom_radius = 0.50
+		cm.height = 0.20
+		cap.mesh = cm
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(1.0, 0.55, 0.10)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 0.15)
+		cmat.emission_energy_multiplier = 4.5
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		cap.material_override = cmat
+		cap.position = Vector3(0, 4.55, 0)
+		col.add_child(cap)
+		# Molten plume particles erupting upward
+		var plume: GPUParticles3D = GPUParticles3D.new()
+		plume.amount = 40
+		plume.lifetime = 1.8
+		plume.position = Vector3(0, 4.65, 0)
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 18.0
+		pmat.initial_velocity_min = 1.20
+		pmat.initial_velocity_max = 2.40
+		pmat.gravity = Vector3(0, -1.0, 0)
+		pmat.scale_min = 0.10
+		pmat.scale_max = 0.22
+		pmat.color = Color(1.0, 0.50, 0.10, 0.95)
+		plume.process_material = pmat
+		var qm: QuadMesh = QuadMesh.new()
+		qm.size = Vector2(0.18, 0.18)
+		plume.draw_pass_1 = qm
+		col.add_child(plume)
+		# Amber light at the cap
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 4.80, 0)
+		lt.light_color = Color(1.0, 0.42, 0.10)
+		lt.light_energy = 3.4
+		lt.omni_range = 9.0
+		col.add_child(lt)
+		# Pillar collision so the player can't walk through
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(0, 2.25, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.height = 4.5
+		cyl.radius = 0.85
+		cs.shape = cyl
+		stb.add_child(cs)
+		col.add_child(stb)
 
 
