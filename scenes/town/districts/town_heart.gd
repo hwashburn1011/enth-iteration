@@ -76,6 +76,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_postman_npc(town)
 	_build_th_bookkeeper_npc(town)
 	_build_th_sweeper_bot_npc(town)
+	_build_th_bellringer_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -10478,3 +10479,171 @@ func _build_th_sweeper_bot_npc(town: Node) -> void:
 	var dpulse2: Tween = npc.create_tween().set_loops()
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_bellringer_npc(town: Node) -> void:
+	## Epic-10 T60: Bellringer Tolling — bellringer NPC standing at the
+	## base of the bell tower (T26 NE outer corner), pulling a rope that
+	## disappears up into the tower base. Brown homespun robe with rope
+	## belt, both arms grasping the rope, body sway tween synced with
+	## the bell tower's bell sway.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THBellringerSlot"
+	# Stand at the base of the bell tower (T26 NE outer corner at radius 16.5)
+	# Position slightly inside the tower toward the plaza
+	var ang: float = PI / 4.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 14.50, 0, sin(ang) * 14.50)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THBellringerTolling"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Bellringer Tolling")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_bellringer_tolling")
+	# Face the bell tower (outward toward NE corner)
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	robe_mat.roughness = 0.92
+	robe_mat.metallic = 0.05
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.65, 0.40, 0.10)
+	robe_mat.emission_energy_multiplier = 0.20
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.42, 0.32, 0.18)
+	rope_mat.roughness = 0.95
+	rope_mat.metallic = 0.05
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 5.5
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Brown homespun robe (full-body box) ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.85, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.95, 0)
+	npc.add_child(robe)
+	# Hood (rounded sphere on top)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmm: SphereMesh = SphereMesh.new()
+	hmm.radius = 0.40
+	hmm.height = 0.65
+	hood.mesh = hmm
+	hood.material_override = robe_mat
+	hood.position = Vector3(0, 1.95, 0)
+	hood.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(hood)
+	# Hood inner shadow box
+	var shadow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shadow_mat.albedo_color = Color(0.02, 0.02, 0.02)
+	shadow_mat.roughness = 1.0
+	shadow_mat.metallic = 0.0
+	var shadow: MeshInstance3D = MeshInstance3D.new()
+	var shmm: BoxMesh = BoxMesh.new()
+	shmm.size = Vector3(0.40, 0.30, 0.04)
+	shadow.mesh = shmm
+	shadow.material_override = shadow_mat
+	shadow.position = Vector3(0, 1.92, -0.34)
+	npc.add_child(shadow)
+	# 2 ember eye dots inside the hood
+	for ex in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.04
+		em.height = 0.08
+		eye.mesh = em
+		eye.material_override = ember_mat
+		eye.position = Vector3(ex, 1.95, -0.36)
+		npc.add_child(eye)
+	# ---- Rope belt at the waist ----
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var btm: TorusMesh = TorusMesh.new()
+	btm.inner_radius = 0.42
+	btm.outer_radius = 0.50
+	belt.mesh = btm
+	belt.material_override = rope_mat
+	belt.position = Vector3(0, 0.90, 0)
+	belt.rotation.x = PI / 2.0
+	npc.add_child(belt)
+	# Belt knot dangling at the front
+	var knot: MeshInstance3D = MeshInstance3D.new()
+	var knm: SphereMesh = SphereMesh.new()
+	knm.radius = 0.10
+	knm.height = 0.20
+	knot.mesh = knm
+	knot.material_override = rope_mat
+	knot.position = Vector3(0, 0.80, -0.42)
+	npc.add_child(knot)
+	# ---- Both arms grasping the rope ----
+	# Left arm at chest height
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.18, 0.85, 0.18)
+	left_arm.mesh = lam
+	left_arm.material_override = robe_mat
+	left_arm.position = Vector3(-0.40, 1.40, -0.30)
+	left_arm.rotation.x = -PI / 4.0
+	npc.add_child(left_arm)
+	# Right arm at chest height
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	right_arm.mesh = lam
+	right_arm.material_override = robe_mat
+	right_arm.position = Vector3(0.40, 1.40, -0.30)
+	right_arm.rotation.x = -PI / 4.0
+	npc.add_child(right_arm)
+	# ---- Bell rope reaching from the hands up out of sight ----
+	# The rope visually disappears upward toward the bell tower
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rpmm: CylinderMesh = CylinderMesh.new()
+	rpmm.top_radius = 0.05
+	rpmm.bottom_radius = 0.05
+	rpmm.height = 4.50
+	rope.mesh = rpmm
+	rope.material_override = rope_mat
+	rope.position = Vector3(0, 3.85, -0.55)
+	npc.add_child(rope)
+	# Rope grip handle (small brass loop where the hands hold)
+	var grip: MeshInstance3D = MeshInstance3D.new()
+	var gmm: TorusMesh = TorusMesh.new()
+	gmm.inner_radius = 0.10
+	gmm.outer_radius = 0.13
+	grip.mesh = gmm
+	grip.material_override = brass_mat
+	grip.position = Vector3(0, 1.55, -0.55)
+	grip.rotation.x = PI / 2.0
+	npc.add_child(grip)
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.65, -0.30)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 1.4
+	lt.omni_range = 4.0
+	npc.add_child(lt)
+	# ---- Body sway tween (synchronized with the bell tower's bell) ----
+	# Use the entire npc node so body + arms + rope all sway together
+	var sway: Tween = npc.create_tween().set_loops()
+	sway.tween_property(npc, "rotation:z", 0.18, 2.0).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(npc, "rotation:z", -0.18, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Eye pulse
+	var epulse: Tween = npc.create_tween().set_loops()
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
