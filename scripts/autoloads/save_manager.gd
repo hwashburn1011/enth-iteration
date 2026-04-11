@@ -63,26 +63,47 @@ func _on_combat_may_have_ended(_t: StringName, _p: Vector3, _l: Resource) -> voi
 func _create_save_indicator() -> void:
 	var canvas: CanvasLayer = CanvasLayer.new()
 	canvas.layer = 90
+	# Wrap label in a styled panel — matches HUD room-indicator chip style
+	var panel: PanelContainer = PanelContainer.new()
+	panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	panel.offset_left = -300.0  # match room indicator width
+	panel.offset_top = 56.0
+	panel.offset_right = -14.0
+	panel.offset_bottom = 88.0
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.12, 0.92)
+	style.border_color = Color(0.18, 0.55, 0.55, 0.85)
+	style.set_border_width_all(1)
+	style.border_width_left = 4
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(6)
+	panel.add_theme_stylebox_override(&"panel", style)
+
 	_save_indicator = Label.new()
-	_save_indicator.text = "Saving..."
-	_save_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_save_indicator.anchors_preset = Control.PRESET_TOP_RIGHT
-	_save_indicator.offset_left = -120.0
-	_save_indicator.offset_top = 10.0
-	_save_indicator.offset_right = -10.0
-	_save_indicator.offset_bottom = 40.0
-	_save_indicator.modulate.a = 0.0
-	canvas.add_child(_save_indicator)
+	_save_indicator.text = "● SAVED"
+	_save_indicator.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_save_indicator.add_theme_color_override(&"font_color", Color(0.3, 0.95, 0.7))
+	_save_indicator.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_save_indicator.add_theme_constant_override(&"outline_size", 2)
+	_save_indicator.add_theme_font_size_override(&"font_size", 14)
+	panel.add_child(_save_indicator)
+
+	panel.modulate.a = 0.0
+	_save_indicator.set_meta(&"panel", panel)
+	canvas.add_child(panel)
 	add_child(canvas)
 
 
 func _show_save_indicator() -> void:
 	if _save_indicator == null:
 		return
-	_save_indicator.modulate.a = 1.0
+	var panel: PanelContainer = _save_indicator.get_meta(&"panel") as PanelContainer
+	if panel == null:
+		return
+	panel.modulate.a = 1.0
 	var tween: Tween = create_tween()
 	tween.tween_interval(INDICATOR_DURATION)
-	tween.tween_property(_save_indicator, "modulate:a", 0.0, 0.3)
+	tween.tween_property(panel, "modulate:a", 0.0, 0.5)
 
 
 func new_game() -> void:
@@ -117,28 +138,33 @@ func save_game() -> bool:
 			"z": player.global_position.z,
 		}
 		current_data["player"]["stat_points"] = player.stats_component.level_points.duplicate()
+		# Save level and XP from LevelComponent
+		if player.level_component:
+			current_data["player"]["level"] = player.level_component.current_level
+			current_data["player"]["xp"] = player.level_component.current_xp
+			current_data["player"]["xp_to_next"] = player.level_component.xp_to_next_level
+			current_data["player"]["unspent_stat_points"] = player.level_component.unspent_stat_points
+	# Save current scene path
+	var scene_path: String = get_tree().current_scene.scene_file_path
+	if scene_path != "":
+		current_data["player"]["current_scene"] = scene_path
 
 	# 2. Inventory data
 	if player and player.inventory_component:
 		var grid_items: Array = []
+		var _seen_items: Array = []  # Track item instances to avoid multi-cell duplicates
 		for y: int in player.inventory_component.grid_height:
 			for x: int in player.inventory_component.grid_width:
 				var item: Resource = player.inventory_component.grid[y][x] as Resource
-				if item != null:
-					# Avoid duplicates (multi-cell items)
-					var already: bool = false
-					for entry: Dictionary in grid_items:
-						if entry.get("grid_pos", []) == [x, y]:
-							already = true
-							break
-					if not already:
-						grid_items.append({
-							"item_id": item.item_id,
-							"grid_pos": [x, y],
-							"durability": item.current_durability,
-							"rarity": item.rarity,
-							"stat_modifiers": item.stat_modifiers.duplicate(),
-						})
+				if item != null and item not in _seen_items:
+					_seen_items.append(item)
+					grid_items.append({
+						"item_id": item.item_id,
+						"grid_pos": [x, y],
+						"durability": item.current_durability,
+						"rarity": item.rarity,
+						"stat_modifiers": item.get_effective_stat_modifiers() if item.has_method(&"get_effective_stat_modifiers") else item.stat_modifiers.duplicate(),
+					})
 		current_data["inventory"]["grid_items"] = grid_items
 		var hotbar: Array = []
 		for entry: Dictionary in player.inventory_component.prompt_hotbar:
@@ -330,6 +356,13 @@ func apply_to_player(player: Node) -> void:
 	var stat_pts: Dictionary = pdata.get("stat_points", {}) as Dictionary
 	for stat_name: String in stat_pts:
 		player.stats_component.level_points[stat_name] = int(stat_pts[stat_name])
+
+	# Restore level and XP
+	if player.level_component:
+		player.level_component.current_level = int(pdata.get("level", 1))
+		player.level_component.current_xp = int(pdata.get("xp", 0))
+		player.level_component.xp_to_next_level = int(pdata.get("xp_to_next", player.level_component.xp_to_next_level))
+		player.level_component.unspent_stat_points = int(pdata.get("unspent_stat_points", 0))
 
 	# Inventory
 	var inv_data: Dictionary = get_meta(&"pending_inventory_data", {}) as Dictionary

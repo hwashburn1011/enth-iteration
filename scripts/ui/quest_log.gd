@@ -5,6 +5,7 @@ extends CanvasLayer
 var _panel: Control = null
 var _quest_list: VBoxContainer = null
 var _active_category: String = "story"
+var _tab_buttons: Dictionary = {}
 
 const CATEGORIES: Array[String] = ["story", "character", "discovery"]
 
@@ -27,55 +28,83 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _build_ui() -> void:
 	_panel = Control.new()
-	_panel.anchors_preset = Control.PRESET_FULL_RECT
+	_panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var bg: ColorRect = ColorRect.new()
-	bg.anchors_preset = Control.PRESET_FULL_RECT
-	bg.color = Color(0, 0, 0, 0.6)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.02, 0.06, 0.85)
 	_panel.add_child(bg)
 
+	# Outer frame: title + body
+	var outer: VBoxContainer = VBoxContainer.new()
+	outer.set_anchors_preset(Control.PRESET_CENTER)
+	outer.offset_left = -320.0
+	outer.offset_top = -230.0
+	outer.offset_right = 320.0
+	outer.offset_bottom = 230.0
+	outer.add_theme_constant_override(&"separation", 10)
+
+	var title: Label = Label.new()
+	title.text = "QUEST LOG"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	title.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	title.add_theme_constant_override(&"outline_size", 4)
+	title.add_theme_font_size_override(&"font_size", 28)
+	outer.add_child(title)
+
 	var hbox: HBoxContainer = HBoxContainer.new()
-	hbox.anchors_preset = Control.PRESET_CENTER
-	hbox.offset_left = -300.0
-	hbox.offset_top = -200.0
-	hbox.offset_right = 300.0
-	hbox.offset_bottom = 200.0
-	hbox.theme_override_constants_separation = 12
+	hbox.add_theme_constant_override(&"separation", 12)
+	hbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 
 	# Left: category tabs
 	var tabs: VBoxContainer = VBoxContainer.new()
-	tabs.custom_minimum_size = Vector2(120, 0)
-	tabs.theme_override_constants_separation = 8
-	var title: Label = Label.new()
-	title.text = "Quest Log"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	tabs.add_child(title)
+	tabs.custom_minimum_size = Vector2(130, 0)
+	tabs.add_theme_constant_override(&"separation", 8)
 	for cat: String in CATEGORIES:
 		var btn: Button = Button.new()
 		btn.text = cat.capitalize()
 		btn.pressed.connect(_on_category_selected.bind(cat))
+		_style_tab_button(btn)
 		tabs.add_child(btn)
+		_tab_buttons[cat] = btn
 	hbox.add_child(tabs)
 
 	# Right: quest list
 	var list_panel: PanelContainer = PanelContainer.new()
-	list_panel.custom_minimum_size = Vector2(400, 0)
+	list_panel.custom_minimum_size = Vector2(440, 360)
+	var list_style: StyleBoxFlat = StyleBoxFlat.new()
+	list_style.bg_color = Color(0.06, 0.07, 0.14, 0.95)
+	list_style.border_color = Color(0.15, 0.4, 0.5, 0.7)
+	list_style.set_border_width_all(2)
+	list_style.set_corner_radius_all(6)
+	list_style.set_content_margin_all(12)
+	list_panel.add_theme_stylebox_override(&"panel", list_style)
 	var scroll: ScrollContainer = ScrollContainer.new()
 	_quest_list = VBoxContainer.new()
-	_quest_list.theme_override_constants_separation = 8
+	_quest_list.add_theme_constant_override(&"separation", 8)
 	scroll.add_child(_quest_list)
 	list_panel.add_child(scroll)
 	hbox.add_child(list_panel)
 
-	_panel.add_child(hbox)
+	outer.add_child(hbox)
+	_panel.add_child(outer)
 	add_child(_panel)
 	_populate_quests()
+	_update_tab_states()
 
 
 func _on_category_selected(category: String) -> void:
 	_active_category = category
 	_populate_quests()
+	_update_tab_states()
+
+
+func _update_tab_states() -> void:
+	for cat: String in _tab_buttons.keys():
+		var btn: Button = _tab_buttons[cat] as Button
+		_style_tab_button(btn, cat == _active_category)
 
 
 func _populate_quests() -> void:
@@ -107,6 +136,13 @@ func _populate_quests() -> void:
 
 func _create_quest_entry(quest: QuestData, is_done: bool) -> PanelContainer:
 	var entry: PanelContainer = PanelContainer.new()
+	var entry_style: StyleBoxFlat = StyleBoxFlat.new()
+	entry_style.bg_color = Color(0.06, 0.07, 0.14, 0.8) if not is_done else Color(0.04, 0.05, 0.08, 0.6)
+	entry_style.border_color = Color(0.12, 0.3, 0.4, 0.5) if not is_done else Color(0.1, 0.15, 0.2, 0.3)
+	entry_style.set_border_width_all(1)
+	entry_style.set_corner_radius_all(4)
+	entry_style.set_content_margin_all(8)
+	entry.add_theme_stylebox_override(&"panel", entry_style)
 	var vbox: VBoxContainer = VBoxContainer.new()
 
 	var name_lbl: Label = Label.new()
@@ -139,3 +175,38 @@ func _close() -> void:
 	get_tree().paused = false
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	queue_free()
+
+
+func _style_tab_button(btn: Button, is_active: bool = false) -> void:
+	var normal: StyleBoxFlat = StyleBoxFlat.new()
+	if is_active:
+		normal.bg_color = Color(0.16, 0.32, 0.4, 0.95)
+		normal.border_color = Color(0.3, 0.85, 0.85, 1.0)
+		normal.set_border_width_all(2)
+		# Stronger left edge to indicate active selection
+		normal.border_width_left = 5
+	else:
+		normal.bg_color = Color(0.08, 0.1, 0.18, 0.9)
+		normal.border_color = Color(0.15, 0.35, 0.45, 0.5)
+		normal.set_border_width_all(1)
+	normal.set_corner_radius_all(4)
+	normal.set_content_margin_all(8)
+	var hover: StyleBoxFlat = StyleBoxFlat.new()
+	hover.bg_color = Color(0.12, 0.18, 0.3, 0.95)
+	hover.border_color = Color(0.3, 0.7, 0.8, 0.9)
+	hover.set_border_width_all(1)
+	if is_active:
+		hover.border_width_left = 5
+	hover.set_corner_radius_all(4)
+	hover.set_content_margin_all(8)
+	var focus: StyleBoxFlat = hover.duplicate() as StyleBoxFlat
+	focus.set_border_width_all(2)
+	if is_active:
+		focus.border_width_left = 5
+	btn.add_theme_stylebox_override(&"normal", normal)
+	btn.add_theme_stylebox_override(&"hover", hover)
+	btn.add_theme_stylebox_override(&"focus", focus)
+	btn.add_theme_stylebox_override(&"pressed", normal.duplicate() as StyleBoxFlat)
+	btn.add_theme_color_override(&"font_color", Color(0.95, 0.97, 1.0) if is_active else Color(0.7, 0.75, 0.8))
+	btn.add_theme_color_override(&"font_hover_color", Color(0.3, 0.85, 0.85))
+	btn.add_theme_font_size_override(&"font_size", 16)

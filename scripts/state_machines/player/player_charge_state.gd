@@ -7,6 +7,8 @@ const MOVE_SPEED_MULTIPLIER: float = 0.5
 
 var charge_time: float = 0.0
 var _original_move_speed: float = 0.0
+var _charge_particles: GPUParticles3D = null
+var _charge_ring: MeshInstance3D = null
 
 
 func enter() -> void:
@@ -15,6 +17,7 @@ func enter() -> void:
 	_original_move_speed = p.move_speed
 	p.move_speed *= MOVE_SPEED_MULTIPLIER
 	_set_emission(p, 0.0)
+	_create_charge_vfx(p)
 
 	if p.animation_player.has_animation(&"charge"):
 		p.animation_player.play(&"charge")
@@ -24,6 +27,7 @@ func exit() -> void:
 	var p = player
 	p.move_speed = _original_move_speed
 	_set_emission(p, 0.0)
+	_cleanup_charge_vfx()
 
 
 func handle_input(event: InputEvent) -> void:
@@ -35,9 +39,15 @@ func physics_update(delta: float) -> void:
 	var p = player
 	charge_time = minf(charge_time + delta, MAX_CHARGE_TIME)
 
-	# Visual charge indicator — emission intensity
+	# Visual charge indicator — emission intensity + VFX
 	var charge_pct: float = charge_time / MAX_CHARGE_TIME
 	_set_emission(p, charge_pct)
+	_update_charge_vfx(p, charge_pct)
+	# Subtle screen shake when fully charged (last 20% of charge time)
+	if charge_pct >= 0.8:
+		var camera: Camera3D = p.get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"shake"):
+			camera.shake(0.02 + (charge_pct - 0.8) * 0.1, 10.0)
 
 	# Allow reduced-speed movement while charging
 	var input_vector: Vector2 = Input.get_vector(
@@ -61,6 +71,7 @@ func _release_burst() -> void:
 
 	if not p.compute_component.spend(compute_cost):
 		# Fizzle — not enough compute
+		_spawn_fizzle_vfx(p)
 		p.move_speed = _original_move_speed
 		_set_emission(p, 0.0)
 		var input_vector: Vector2 = Input.get_vector(
@@ -82,15 +93,128 @@ func _release_burst() -> void:
 	state_machine.transition_to(attack_state)
 
 
+var _charge_material: StandardMaterial3D = null
+
 func _set_emission(p: CharacterBody3D, intensity: float) -> void:
-	var mesh: MeshInstance3D = p.model.get_child(0) as MeshInstance3D
-	if mesh == null:
-		return
+	var meshes: Array[MeshInstance3D] = p.get_mesh_instances()
 	if intensity > 0.0:
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.emission_enabled = true
-		mat.emission = Color(0.4, 0.7, 1.0)
-		mat.emission_energy_multiplier = intensity
-		mesh.material_override = mat
+		if _charge_material == null:
+			_charge_material = StandardMaterial3D.new()
+			_charge_material.emission_enabled = true
+			_charge_material.emission = Color(0.4, 0.7, 1.0)
+		_charge_material.emission_energy_multiplier = intensity * 3.0
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = _charge_material
 	else:
-		mesh.material_override = null
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = null
+		_charge_material = null
+
+
+func _create_charge_vfx(p: CharacterBody3D) -> void:
+	if not p.is_inside_tree():
+		return
+	# Orbiting charge particles
+	_charge_particles = GPUParticles3D.new()
+	_charge_particles.amount = 16
+	_charge_particles.lifetime = 0.8
+	_charge_particles.position = Vector3(0, 0.5, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 60.0
+	pmat.initial_velocity_min = 0.5
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3(0, 0.5, 0)
+	pmat.orbit_velocity_min = 1.5
+	pmat.orbit_velocity_max = 2.5
+	pmat.color = Color(0.3, 0.6, 1.0, 0.6)
+	pmat.scale_min = 0.3
+	pmat.scale_max = 0.8
+	_charge_particles.process_material = pmat
+	var mesh: BoxMesh = BoxMesh.new()
+	mesh.size = Vector3(0.03, 0.03, 0.03)
+	_charge_particles.draw_pass_1 = mesh
+	var vis: StandardMaterial3D = StandardMaterial3D.new()
+	vis.albedo_color = Color(0.4, 0.7, 1.0, 0.6)
+	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	vis.emission_enabled = true
+	vis.emission = Color(0.3, 0.6, 0.95)
+	vis.emission_energy_multiplier = 2.0
+	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_charge_particles.material_override = vis
+	p.add_child(_charge_particles)
+
+	# Ground AoE preview ring
+	_charge_ring = MeshInstance3D.new()
+	var ring_mesh: TorusMesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.8
+	ring_mesh.outer_radius = 0.9
+	ring_mesh.rings = 12
+	ring_mesh.ring_segments = 16
+	_charge_ring.mesh = ring_mesh
+	_charge_ring.position = Vector3(0, 0.03, 0)
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.3, 0.5, 1.0, 0.0)
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.25, 0.45, 0.9)
+	ring_mat.emission_energy_multiplier = 1.5
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_charge_ring.material_override = ring_mat
+	p.add_child(_charge_ring)
+
+
+func _update_charge_vfx(_p: CharacterBody3D, charge_pct: float) -> void:
+	# Scale particle speed and ring opacity with charge
+	if _charge_particles and _charge_particles.process_material is ParticleProcessMaterial:
+		var pmat: ParticleProcessMaterial = _charge_particles.process_material as ParticleProcessMaterial
+		pmat.orbit_velocity_min = 1.5 + charge_pct * 3.0
+		pmat.orbit_velocity_max = 2.5 + charge_pct * 4.0
+		# At full charge, shift toward bright white-cyan
+		if charge_pct >= 0.95:
+			pmat.color = Color(0.85, 0.95, 1.0, 0.95)
+		else:
+			pmat.color = Color(0.3 + charge_pct * 0.2, 0.6 + charge_pct * 0.2, 1.0, 0.4 + charge_pct * 0.4)
+	# Visible material on particles too (drawn pass material)
+	if _charge_particles and _charge_particles.material_override is StandardMaterial3D:
+		var vis_mat: StandardMaterial3D = _charge_particles.material_override as StandardMaterial3D
+		if charge_pct >= 0.95:
+			vis_mat.emission_energy_multiplier = 4.5
+			vis_mat.emission = Color(0.95, 0.98, 1.0)
+		else:
+			vis_mat.emission_energy_multiplier = 2.0 + charge_pct * 1.5
+			vis_mat.emission = Color(0.3, 0.6, 0.95)
+	if _charge_ring and _charge_ring.material_override is StandardMaterial3D:
+		var rmat: StandardMaterial3D = _charge_ring.material_override as StandardMaterial3D
+		rmat.albedo_color.a = charge_pct * 0.35
+		# Scale ring to show AoE size
+		var ring_scale: float = 1.0 + charge_pct * 0.8
+		_charge_ring.scale = Vector3(ring_scale, 1.0, ring_scale)
+
+
+func _spawn_fizzle_vfx(p: CharacterBody3D) -> void:
+	## Brief gray "no compute" puff when burst fizzles
+	if not p.is_inside_tree():
+		return
+	var label: Label3D = Label3D.new()
+	label.text = "NO COMPUTE"
+	label.font_size = 18
+	label.modulate = Color(0.6, 0.6, 0.6)
+	label.outline_modulate = Color(0, 0, 0, 0.6)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = p.global_position + Vector3(0, 1.6, 0)
+	p.get_tree().current_scene.add_child(label)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "position:y", label.position.y + 0.8, 0.7).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.7)
+	tween.tween_callback(label.queue_free)
+
+
+func _cleanup_charge_vfx() -> void:
+	if _charge_particles and is_instance_valid(_charge_particles):
+		_charge_particles.queue_free()
+	_charge_particles = null
+	if _charge_ring and is_instance_valid(_charge_ring):
+		_charge_ring.queue_free()
+	_charge_ring = null

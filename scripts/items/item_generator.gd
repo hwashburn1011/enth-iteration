@@ -33,8 +33,16 @@ static func generate_item(base_item: Resource, rarity_override: int = -1) -> Res
 		var affix_count: int = randi_range(affix_range.x, affix_range.y)
 		var eligible: Array = _affix_db.get_eligible_affixes(item.rarity, item.item_type)
 
+		# 5. Scale base stats by rarity multiplier BEFORE adding affixes
+		var multiplier: float = RARITY_MULTIPLIERS[item.rarity]
+		for stat_name: String in item.stat_modifiers:
+			item.stat_modifiers[stat_name] = float(item.stat_modifiers[stat_name]) * multiplier
+
 		var used_names: Array[String] = []
-		for i: int in affix_count:
+		var attempts: int = 0
+		var applied: int = 0
+		while applied < affix_count and attempts < affix_count * 3:
+			attempts += 1
 			if eligible.is_empty():
 				break
 			var affix: Resource = eligible[randi() % eligible.size()]
@@ -42,14 +50,10 @@ static func generate_item(base_item: Resource, rarity_override: int = -1) -> Res
 			if affix.affix_name in used_names:
 				continue
 			used_names.append(affix.affix_name)
+			applied += 1
 			var value: float = randf_range(affix.min_value, affix.max_value)
 			var current: float = float(item.stat_modifiers.get(affix.stat_name, 0.0))
 			item.stat_modifiers[affix.stat_name] = current + value
-
-	# 5. Scale base stats by rarity multiplier
-	var multiplier: float = RARITY_MULTIPLIERS[item.rarity]
-	for stat_name: String in item.stat_modifiers:
-		item.stat_modifiers[stat_name] = float(item.stat_modifiers[stat_name]) * multiplier
 
 	# 6. Reset durability
 	item.current_durability = item.max_durability

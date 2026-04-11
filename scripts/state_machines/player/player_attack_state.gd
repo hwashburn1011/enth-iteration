@@ -63,6 +63,8 @@ func enter() -> void:
 		p.facing_direction = attack_dir
 		var target_angle: float = atan2(attack_dir.x, attack_dir.z)
 		p.model.rotation.y = target_angle
+		# Position hitbox in the attack direction
+		p.hitbox_component.rotation.y = target_angle
 
 	_set_hitbox_active(p, false)
 
@@ -73,9 +75,26 @@ func physics_update(delta: float) -> void:
 
 	if _timer >= _active_start and _timer < _active_end:
 		if not _hitbox_enabled:
+			# Set metadata on the hitbox so HurtboxComponent can read damage values
+			if _is_energy_burst:
+				p.hitbox_component.set_meta(&"base_damage", _burst_damage)
+				p.hitbox_component.set_meta(&"damage_type", &"energy")
+			else:
+				p.hitbox_component.set_meta(&"base_damage", 5.0 + p.stats_component.get_stat("processing") * 1.5)
+				p.hitbox_component.set_meta(&"damage_type", &"data")
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
-		_check_hits(p)
+			_spawn_attack_arc(p)
+			_spawn_attack_range_indicator(p)
+			if _is_energy_burst:
+				_spawn_burst_shockwave(p)
+			else:
+				# Subtle screen shake on basic attack
+				var camera: Camera3D = p.get_viewport().get_camera_3d()
+				if camera and camera.has_method(&"shake"):
+					camera.shake(0.04, 12.0)
+		# Poll for overlaps each frame (area_entered may not fire if already overlapping)
+		_poll_hitbox_overlaps(p)
 	elif _hitbox_enabled:
 		_set_hitbox_active(p, false)
 		_hitbox_enabled = false
@@ -99,34 +118,28 @@ func exit() -> void:
 	_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
 
 
-func _check_hits(p: CharacterBody3D) -> void:
-	var hitbox: Area3D = p.hitbox_component
+func _poll_hitbox_overlaps(p: CharacterBody3D) -> void:
+	var hitbox: Node = p.hitbox_component
+	if not hitbox.is_active:
+		return
 	for area: Area3D in hitbox.get_overlapping_areas():
 		if area == p.hurtbox_component:
-			continue
-		var area_id: int = area.get_instance_id()
-		if area_id in _has_hit:
-			continue
-		_has_hit[area_id] = true
-		var info: Resource = load("res://scripts/resources/damage_info.gd").new()
-		info.source = p
-		if _is_energy_burst:
-			info.base_damage = _burst_damage
-			info.damage_type = &"energy"
-		else:
-			info.base_damage = 5.0 + p.stats_component.get_stat("processing") * 1.5
-			info.damage_type = &"data"
-		if area.has_method(&"receive_damage"):
-			area.receive_damage(info)
+			continue  # Skip self
+		if not area.has_method(&"_on_area_entered"):
+			continue  # Not a hurtbox component
+		var target_entity: Node = area.get_parent()
+		if hitbox.has_hit(target_entity):
+			continue  # Already hit this target
+		# Trigger the hurtbox's damage processing (it will register the hit)
+		area._on_area_entered(hitbox)
 
 
 func _set_hitbox_active(p: CharacterBody3D, active: bool) -> void:
-	var hitbox: Area3D = p.hitbox_component
-	hitbox.monitoring = active
-	hitbox.monitorable = active
-	for child: Node in hitbox.get_children():
-		if child is CollisionShape3D:
-			child.disabled = not active
+	var hitbox: Node = p.hitbox_component
+	if active:
+		hitbox.activate()  # Sets is_active=true, clears hit_targets, enables monitoring
+	else:
+		hitbox.deactivate()  # Sets is_active=false, disables monitoring
 
 
 func _set_hitbox_size(p: CharacterBody3D, size: Vector3) -> void:
@@ -153,3 +166,209 @@ func _get_mouse_world_direction(p: CharacterBody3D) -> Vector3:
 	if direction.length() < 0.1:
 		return p.facing_direction
 	return direction.normalized()
+
+
+func _spawn_attack_arc(p: CharacterBody3D) -> void:
+	if not p.is_inside_tree():
+		return
+	var scene_root: Node = p.get_tree().current_scene
+	var arc_pos: Vector3 = p.global_position + p.facing_direction * 0.5 + Vector3(0, 0.5, 0)
+	var arc_rot_y: float = atan2(p.facing_direction.x, p.facing_direction.z)
+
+	var inner_color: Color
+	var outer_color: Color
+	var base_scale: Vector3
+	if _is_energy_burst:
+		inner_color = Color(0.4, 0.6, 1.0, 0.8)
+		outer_color = Color(0.2, 0.4, 0.9, 0.4)
+		base_scale = Vector3(1.5, 1.5, 0.3)
+	else:
+		inner_color = Color(0.3, 0.9, 0.85, 0.7)
+		outer_color = Color(0.15, 0.6, 0.6, 0.35)
+		base_scale = Vector3(1.0, 1.0, 0.2)
+
+	# Layer 1: Bright inner arc
+	var arc_inner: MeshInstance3D = MeshInstance3D.new()
+	var torus_inner: TorusMesh = TorusMesh.new()
+	torus_inner.inner_radius = 0.5
+	torus_inner.outer_radius = 0.75
+	torus_inner.rings = 10
+	torus_inner.ring_segments = 14
+	arc_inner.mesh = torus_inner
+	arc_inner.position = arc_pos
+	arc_inner.rotation.x = PI / 2.0
+	arc_inner.rotation.y = arc_rot_y
+	arc_inner.scale = base_scale
+	var mat_inner: StandardMaterial3D = StandardMaterial3D.new()
+	mat_inner.albedo_color = inner_color
+	mat_inner.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_inner.emission_enabled = true
+	mat_inner.emission = Color(inner_color.r, inner_color.g, inner_color.b)
+	mat_inner.emission_energy_multiplier = 2.5 if _is_energy_burst else 2.0
+	mat_inner.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arc_inner.material_override = mat_inner
+	scene_root.add_child(arc_inner)
+
+	# Layer 2: Soft outer glow
+	var arc_outer: MeshInstance3D = MeshInstance3D.new()
+	var torus_outer: TorusMesh = TorusMesh.new()
+	torus_outer.inner_radius = 0.4
+	torus_outer.outer_radius = 1.0
+	torus_outer.rings = 8
+	torus_outer.ring_segments = 12
+	arc_outer.mesh = torus_outer
+	arc_outer.position = arc_pos
+	arc_outer.rotation.x = PI / 2.0
+	arc_outer.rotation.y = arc_rot_y
+	arc_outer.scale = base_scale * 1.1
+	var mat_outer: StandardMaterial3D = StandardMaterial3D.new()
+	mat_outer.albedo_color = outer_color
+	mat_outer.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat_outer.emission_enabled = true
+	mat_outer.emission = Color(outer_color.r, outer_color.g, outer_color.b)
+	mat_outer.emission_energy_multiplier = 1.0
+	mat_outer.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arc_outer.material_override = mat_outer
+	scene_root.add_child(arc_outer)
+
+	# Inner arc: expand + fade
+	var tween_in: Tween = arc_inner.create_tween()
+	tween_in.tween_property(arc_inner, "scale", base_scale * 1.6, 0.12)
+	tween_in.parallel().tween_property(mat_inner, "albedo_color:a", 0.0, 0.15)
+	tween_in.tween_callback(arc_inner.queue_free)
+
+	# Outer arc: expand slightly slower
+	var tween_out: Tween = arc_outer.create_tween()
+	tween_out.tween_property(arc_outer, "scale", base_scale * 1.8, 0.18)
+	tween_out.parallel().tween_property(mat_outer, "albedo_color:a", 0.0, 0.2)
+	tween_out.tween_callback(arc_outer.queue_free)
+
+	# Spark particles along the arc
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 8
+	sparks.lifetime = 0.25
+	sparks.one_shot = true
+	sparks.emitting = true
+	sparks.position = arc_pos
+	var spark_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spark_mat.direction = Vector3(p.facing_direction.x, 0.5, p.facing_direction.z)
+	spark_mat.spread = 60.0
+	spark_mat.initial_velocity_min = 3.0
+	spark_mat.initial_velocity_max = 5.0
+	spark_mat.gravity = Vector3(0, -4, 0)
+	spark_mat.color = inner_color
+	spark_mat.scale_min = 0.3
+	spark_mat.scale_max = 0.7
+	sparks.process_material = spark_mat
+	var spark_mesh: BoxMesh = BoxMesh.new()
+	spark_mesh.size = Vector3(0.03, 0.03, 0.03)
+	sparks.draw_pass_1 = spark_mesh
+	var spark_vis: StandardMaterial3D = StandardMaterial3D.new()
+	spark_vis.albedo_color = inner_color
+	spark_vis.emission_enabled = true
+	spark_vis.emission = Color(inner_color.r, inner_color.g, inner_color.b)
+	spark_vis.emission_energy_multiplier = 3.0
+	spark_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sparks.material_override = spark_vis
+	scene_root.add_child(sparks)
+	p.get_tree().create_timer(0.5).timeout.connect(sparks.queue_free)
+
+
+func _spawn_attack_range_indicator(p: CharacterBody3D) -> void:
+	## Brief faint cyan ring showing attack reach
+	if not p.is_inside_tree():
+		return
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	var attack_radius: float = 1.5 if not _is_energy_burst else 2.5
+	torus.inner_radius = attack_radius - 0.05
+	torus.outer_radius = attack_radius + 0.05
+	torus.rings = 16
+	torus.ring_segments = 16
+	ring.mesh = torus
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.3, 0.85, 0.85, 0.4)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.25, 0.8, 0.8)
+	mat.emission_energy_multiplier = 1.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	p.get_tree().current_scene.add_child(ring)
+	ring.global_position = p.global_position + Vector3(0, 0.05, 0)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(mat, "albedo_color:a", 0.0, 0.25)
+	tween.tween_callback(ring.queue_free)
+
+
+func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
+	## Energy Burst exclusive: expanding shockwave ring + screen shake + hitstop
+	if not p.is_inside_tree():
+		return
+	var scene_root: Node = p.get_tree().current_scene
+	var pos: Vector3 = p.global_position + Vector3(0, 0.1, 0)
+
+	# Expanding ground shockwave ring
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var ring_mesh: TorusMesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.3
+	ring_mesh.outer_radius = 0.5
+	ring_mesh.rings = 16
+	ring_mesh.ring_segments = 20
+	ring.mesh = ring_mesh
+	ring.scale = Vector3(0.5, 0.5, 0.5)
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.3, 0.55, 1.0, 0.7)
+	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.25, 0.5, 0.95)
+	ring_mat.emission_energy_multiplier = 3.0
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = ring_mat
+	scene_root.add_child(ring)
+	ring.global_position = pos
+	var ring_tween: Tween = ring.create_tween()
+	ring_tween.tween_property(ring, "scale", Vector3(4.0, 1.0, 4.0), 0.25).set_ease(Tween.EASE_OUT)
+	ring_tween.parallel().tween_property(ring_mat, "albedo_color:a", 0.0, 0.3)
+	ring_tween.tween_callback(ring.queue_free)
+
+	# Radial particle burst (energy fragments)
+	var burst: GPUParticles3D = GPUParticles3D.new()
+	burst.amount = 20
+	burst.lifetime = 0.4
+	burst.one_shot = true
+	burst.emitting = true
+	var burst_mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	burst_mat.direction = Vector3(0, 0.3, 0)
+	burst_mat.spread = 180.0
+	burst_mat.initial_velocity_min = 4.0
+	burst_mat.initial_velocity_max = 7.0
+	burst_mat.gravity = Vector3(0, -2, 0)
+	burst_mat.color = Color(0.35, 0.6, 1.0, 0.8)
+	burst_mat.scale_min = 0.3
+	burst_mat.scale_max = 1.0
+	burst.process_material = burst_mat
+	var burst_mesh: BoxMesh = BoxMesh.new()
+	burst_mesh.size = Vector3(0.04, 0.04, 0.04)
+	burst.draw_pass_1 = burst_mesh
+	var burst_vis: StandardMaterial3D = StandardMaterial3D.new()
+	burst_vis.albedo_color = Color(0.4, 0.65, 1.0, 0.8)
+	burst_vis.emission_enabled = true
+	burst_vis.emission = Color(0.3, 0.55, 0.95)
+	burst_vis.emission_energy_multiplier = 3.5
+	burst_vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	burst.material_override = burst_vis
+	scene_root.add_child(burst)
+	burst.global_position = pos + Vector3(0, 0.3, 0)
+	p.get_tree().create_timer(0.7).timeout.connect(burst.queue_free)
+
+	# Screen shake
+	var camera: Camera3D = p.get_viewport().get_camera_3d()
+	if camera and camera.has_method(&"shake"):
+		camera.shake(0.2, 6.0)
+
+	# Brief hitstop
+	Engine.time_scale = 0.15
+	p.get_tree().create_timer(0.05, true, false, true).timeout.connect(func() -> void:
+		Engine.time_scale = 1.0
+	)

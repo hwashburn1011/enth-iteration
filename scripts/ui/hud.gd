@@ -12,21 +12,206 @@ const TWEEN_DURATION: float = 0.2
 @onready var _ability_slots_container: HBoxContainer = %AbilitySlots
 @onready var _prompt_icon: ColorRect = %PromptIcon
 @onready var _prompt_quantity: Label = %PromptQuantity
-@onready var _prompt_key: Label = %PromptKey
 @onready var _xp_bar: ProgressBar = %XPBar
 @onready var _level_label: Label = %LevelLabel
 
 var _health_tween: Tween = null
 var _compute_tween: Tween = null
 var _ability_slot_uis: Array[AbilitySlotUI] = []
+var _room_label: Label = null
+var _kill_streak: int = 0
+var _kill_streak_timer: float = 0.0
+var _streak_label: Label = null
+const STREAK_TIMEOUT: float = 3.0
+var _low_health_vignette: ColorRect = null
+var _low_health_time: float = 0.0
+var _boss_panel: PanelContainer = null
+var _boss_bar: ProgressBar = null
+var _boss_name_label: Label = null
+var _boss_ref: Node = null
+var _controls_hint: PanelContainer = null
+var _prompt_indicator_root: Control = null
+var _room_panel: PanelContainer = null
 
 
 func _ready() -> void:
 	layer = 10
+	add_to_group(&"hud")
+	_apply_sci_fi_theme()
 	# Connect to player signals after a frame (player may not exist yet)
 	_connect_player.call_deferred()
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
+	EventBus.enemy_defeated.connect(_on_enemy_killed_streak)
+	_create_room_indicator()
+	_create_controls_hint()
+
+
+func _process(delta: float) -> void:
+	_process_streak(delta)
+	_process_low_health(delta)
+
+
+func show_boss_bar(boss: Node, boss_display_name: String) -> void:
+	## Called by boss enemy on spawn to create a dramatic HUD health bar
+	if _boss_panel and is_instance_valid(_boss_panel):
+		_boss_panel.queue_free()
+	_boss_ref = boss
+	_boss_panel = PanelContainer.new()
+	# Bottom-center: doesn't collide with top-left HP bars or top-center tutorial banner
+	_boss_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_boss_panel.offset_left = -300.0
+	_boss_panel.offset_top = -150.0
+	_boss_panel.offset_right = 300.0
+	_boss_panel.offset_bottom = -90.0
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.08, 0.03, 0.03, 0.92)
+	panel_style.border_color = Color(0.85, 0.18, 0.12, 0.95)
+	panel_style.set_border_width_all(2)
+	panel_style.border_width_top = 4
+	panel_style.set_corner_radius_all(5)
+	panel_style.set_content_margin_all(12)
+	_boss_panel.add_theme_stylebox_override(&"panel", panel_style)
+
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override(&"separation", 6)
+
+	_boss_name_label = Label.new()
+	_boss_name_label.text = boss_display_name
+	_boss_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_name_label.add_theme_color_override(&"font_color", Color(0.98, 0.32, 0.22))
+	_boss_name_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	_boss_name_label.add_theme_constant_override(&"outline_size", 4)
+	_boss_name_label.add_theme_font_size_override(&"font_size", 22)
+	vbox.add_child(_boss_name_label)
+
+	_boss_bar = ProgressBar.new()
+	_boss_bar.custom_minimum_size = Vector2(0, 22)
+	_boss_bar.show_percentage = false
+	var bar_bg: StyleBoxFlat = StyleBoxFlat.new()
+	bar_bg.bg_color = Color(0.15, 0.05, 0.05, 0.95)
+	bar_bg.set_border_width_all(1)
+	bar_bg.border_color = Color(0.5, 0.1, 0.05, 0.9)
+	bar_bg.set_corner_radius_all(3)
+	_boss_bar.add_theme_stylebox_override(&"background", bar_bg)
+	var bar_fill: StyleBoxFlat = StyleBoxFlat.new()
+	bar_fill.bg_color = Color(0.9, 0.18, 0.12)
+	bar_fill.set_corner_radius_all(3)
+	_boss_bar.add_theme_stylebox_override(&"fill", bar_fill)
+	vbox.add_child(_boss_bar)
+
+	_boss_panel.add_child(vbox)
+	_container.add_child(_boss_panel)
+
+	# Connect to boss health
+	var health: Node = boss.get_node_or_null("HealthComponent")
+	if health:
+		_boss_bar.max_value = health.max_health
+		_boss_bar.value = health.current_health
+		health.health_changed.connect(_on_boss_health_changed)
+		health.died.connect(_hide_boss_bar)
+
+	# Fade in animation
+	_boss_panel.modulate.a = 0.0
+	var tween: Tween = _boss_panel.create_tween()
+	tween.tween_property(_boss_panel, "modulate:a", 1.0, 0.5)
+
+
+func _on_boss_health_changed(current: float, max_val: float) -> void:
+	if _boss_bar == null or not is_instance_valid(_boss_bar):
+		return
+	_boss_bar.max_value = max_val
+	var tween: Tween = create_tween()
+	tween.tween_property(_boss_bar, "value", current, 0.3).set_ease(Tween.EASE_OUT)
+
+
+func _hide_boss_bar() -> void:
+	if _boss_panel == null or not is_instance_valid(_boss_panel):
+		return
+	var panel: PanelContainer = _boss_panel
+	_boss_panel = null
+	_boss_bar = null
+	_boss_name_label = null
+	_boss_ref = null
+	var tween: Tween = panel.create_tween()
+	tween.tween_property(panel, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(panel.queue_free)
+
+
+func _process_low_health(delta: float) -> void:
+	if _low_health_vignette == null or not is_instance_valid(_low_health_vignette):
+		return
+	_low_health_time += delta
+	# Pulse between 0.1 and 0.25 alpha at 1.5Hz
+	var pulse: float = 0.175 + sin(_low_health_time * 3.0) * 0.075
+	_low_health_vignette.color.a = pulse
+
+
+func _apply_sci_fi_theme() -> void:
+	# Style the prompt display panel — currently a bare PanelContainer in HUD.tscn
+	var prompt_display: PanelContainer = _container.get_node_or_null("PromptDisplay") as PanelContainer
+	if prompt_display:
+		var prompt_style: StyleBoxFlat = StyleBoxFlat.new()
+		prompt_style.bg_color = Color(0.06, 0.08, 0.14, 0.92)
+		prompt_style.border_color = Color(0.18, 0.45, 0.55, 0.85)
+		prompt_style.set_border_width_all(2)
+		prompt_style.border_width_left = 4
+		prompt_style.set_corner_radius_all(5)
+		prompt_style.set_content_margin_all(6)
+		prompt_display.add_theme_stylebox_override(&"panel", prompt_style)
+		_prompt_indicator_root = prompt_display
+	# Style the prompt key label
+	var prompt_key: Label = _container.get_node_or_null("PromptDisplay/HBox/VBox/PromptKey") as Label
+	if prompt_key:
+		prompt_key.add_theme_color_override(&"font_color", Color(0.65, 0.85, 0.9))
+		prompt_key.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+		prompt_key.add_theme_constant_override(&"outline_size", 2)
+		prompt_key.add_theme_font_size_override(&"font_size", 14)
+	if _prompt_quantity:
+		_prompt_quantity.add_theme_color_override(&"font_color", Color(0.95, 0.85, 0.3))
+		_prompt_quantity.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+		_prompt_quantity.add_theme_constant_override(&"outline_size", 2)
+		_prompt_quantity.add_theme_font_size_override(&"font_size", 16)
+	# Health bar — red/green sci-fi
+	var health_bg: StyleBoxFlat = StyleBoxFlat.new()
+	health_bg.bg_color = Color(0.15, 0.08, 0.08, 0.9)
+	health_bg.border_color = Color(0.5, 0.2, 0.2, 0.8)
+	health_bg.set_border_width_all(1)
+	health_bg.set_corner_radius_all(3)
+	health_bar.add_theme_stylebox_override(&"background", health_bg)
+	var health_fill: StyleBoxFlat = StyleBoxFlat.new()
+	health_fill.bg_color = Color(0.2, 0.75, 0.3)
+	health_fill.set_corner_radius_all(3)
+	health_bar.add_theme_stylebox_override(&"fill", health_fill)
+
+	# Compute bar — blue sci-fi
+	var compute_bg: StyleBoxFlat = StyleBoxFlat.new()
+	compute_bg.bg_color = Color(0.08, 0.08, 0.18, 0.9)
+	compute_bg.border_color = Color(0.2, 0.2, 0.5, 0.8)
+	compute_bg.set_border_width_all(1)
+	compute_bg.set_corner_radius_all(3)
+	compute_bar.add_theme_stylebox_override(&"background", compute_bg)
+	var compute_fill: StyleBoxFlat = StyleBoxFlat.new()
+	compute_fill.bg_color = Color(0.2, 0.4, 0.85)
+	compute_fill.set_corner_radius_all(3)
+	compute_bar.add_theme_stylebox_override(&"fill", compute_fill)
+
+	# XP bar — gold
+	var xp_bg: StyleBoxFlat = StyleBoxFlat.new()
+	xp_bg.bg_color = Color(0.12, 0.10, 0.05, 0.9)
+	xp_bg.border_color = Color(0.4, 0.35, 0.15, 0.8)
+	xp_bg.set_border_width_all(1)
+	xp_bg.set_corner_radius_all(2)
+	_xp_bar.add_theme_stylebox_override(&"background", xp_bg)
+	var xp_fill: StyleBoxFlat = StyleBoxFlat.new()
+	xp_fill.bg_color = Color(0.85, 0.7, 0.2)
+	xp_fill.set_corner_radius_all(2)
+	_xp_bar.add_theme_stylebox_override(&"fill", xp_fill)
+
+	# Labels — light color for dark backgrounds
+	health_label.add_theme_color_override(&"font_color", Color(0.9, 0.9, 0.9))
+	compute_label.add_theme_color_override(&"font_color", Color(0.9, 0.9, 0.9))
+	_level_label.add_theme_color_override(&"font_color", Color(0.9, 0.85, 0.6))
 
 
 func _connect_player() -> void:
@@ -41,7 +226,12 @@ func _connect_player() -> void:
 
 	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
 	if nodes.is_empty():
-		return
+		# Retry after a short delay — player may not be spawned yet
+		await get_tree().create_timer(0.5).timeout
+		nodes = get_tree().get_nodes_in_group(&"player")
+		if nodes.is_empty():
+			push_warning("HUD: no player found after retry")
+			return
 	var player: CharacterBody3D = nodes[0] as CharacterBody3D
 	if player == null:
 		return
@@ -64,6 +254,115 @@ func _connect_player() -> void:
 	_update_xp_display(player.level_component)
 
 
+func _create_controls_hint() -> void:
+	var hint: PanelContainer = PanelContainer.new()
+	hint.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	hint.offset_left = 16.0
+	hint.offset_top = -120.0
+	hint.offset_right = 200.0
+	hint.offset_bottom = -16.0
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.05, 0.10, 0.7)
+	style.border_color = Color(0.12, 0.3, 0.4, 0.4)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(8)
+	hint.add_theme_stylebox_override(&"panel", style)
+	var label: RichTextLabel = RichTextLabel.new()
+	label.bbcode_enabled = true
+	label.fit_content = true
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.text = "[color=#60C8C0]WASD[/color] Move  [color=#60C8C0]Space[/color] Dash\n[color=#60C8C0]LMB[/color] Attack  [color=#60C8C0]RMB[/color] Charge\n[color=#60C8C0]E[/color] Interact  [color=#60C8C0]Tab[/color] Inventory\n[color=#60C8C0]Q[/color] Prompt  [color=#60C8C0]Esc[/color] Pause"
+	label.add_theme_font_size_override(&"normal_font_size", 12)
+	hint.add_child(label)
+	_container.add_child(hint)
+	_controls_hint = hint
+	# Fade out after 20 seconds
+	var tween: Tween = hint.create_tween()
+	tween.tween_interval(20.0)
+	tween.tween_property(hint, "modulate:a", 0.0, 2.0)
+	tween.tween_callback(func() -> void:
+		if is_instance_valid(hint):
+			hint.queue_free()
+		if _controls_hint == hint:
+			_controls_hint = null
+	)
+
+
+func set_combat_visible(combat: bool) -> void:
+	## Hide combat-only HUD elements when in peaceful zones (e.g. town).
+	## Top-left status (HP/CP/XP/Level) stays visible.
+	if _ability_slots_container:
+		_ability_slots_container.visible = combat
+	if _prompt_indicator_root:
+		_prompt_indicator_root.visible = combat
+	if _room_panel:
+		_room_panel.visible = combat and not _room_label.text.is_empty() if _room_label else combat
+	if _controls_hint and is_instance_valid(_controls_hint):
+		_controls_hint.visible = combat
+	if _streak_label and is_instance_valid(_streak_label):
+		_streak_label.visible = combat
+	if _low_health_vignette and is_instance_valid(_low_health_vignette):
+		_low_health_vignette.visible = combat
+
+
+func _create_room_indicator() -> void:
+	# Styled chip panel in the top-right corner
+	_room_panel = PanelContainer.new()
+	_room_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_room_panel.offset_left = -300.0  # wider so longer floor names fit
+	_room_panel.offset_top = 14.0
+	_room_panel.offset_right = -14.0
+	_room_panel.offset_bottom = 46.0
+	var room_style: StyleBoxFlat = StyleBoxFlat.new()
+	room_style.bg_color = Color(0.05, 0.07, 0.12, 0.85)
+	room_style.border_color = Color(0.18, 0.45, 0.55, 0.7)
+	room_style.set_border_width_all(1)
+	room_style.border_width_left = 4
+	room_style.set_corner_radius_all(4)
+	room_style.set_content_margin_all(6)
+	_room_panel.add_theme_stylebox_override(&"panel", room_style)
+	_room_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_room_panel.visible = false  # hidden until set
+	_room_label = Label.new()
+	_room_label.text = ""
+	_room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_room_label.add_theme_color_override(&"font_color", Color(0.65, 0.85, 0.9))
+	_room_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_room_label.add_theme_constant_override(&"outline_size", 2)
+	_room_label.add_theme_font_size_override(&"font_size", 14)
+	_room_panel.add_child(_room_label)
+	_container.add_child(_room_panel)
+	# Connect to floor manager signals
+	EventBus.floor_completed.connect(_on_floor_completed_hud)
+	EventBus.scene_changed.connect(_on_scene_changed_hud)
+
+
+func update_room_indicator(room_index: int, total_rooms: int, floor_name: String) -> void:
+	if _room_label:
+		_room_label.text = "%s — Room %d/%d" % [floor_name, room_index + 1, total_rooms]
+	if _room_panel:
+		_room_panel.visible = true
+
+
+func _on_floor_completed_hud(_floor_num: int) -> void:
+	if _room_label:
+		_room_label.text = "Floor Complete!"
+	if _room_panel:
+		_room_panel.visible = true
+
+
+func _on_scene_changed_hud(_path: String) -> void:
+	if _room_label:
+		_room_label.text = ""
+	if _room_panel:
+		_room_panel.visible = false
+
+
+var _last_health: float = -1.0
+
+
 func _on_health_changed(current: float, max_val: float) -> void:
 	health_bar.max_value = max_val
 	if _health_tween and _health_tween.is_running():
@@ -71,6 +370,54 @@ func _on_health_changed(current: float, max_val: float) -> void:
 	_health_tween = create_tween()
 	_health_tween.tween_property(health_bar, "value", current, TWEEN_DURATION).set_ease(Tween.EASE_OUT)
 	health_label.text = "%d / %d" % [int(current), int(max_val)]
+	# Flash health bar red on damage (not on heal or initial set)
+	if _last_health > 0 and current < _last_health:
+		_flash_health_bar_damage()
+	_last_health = current
+	# Low-health vignette
+	var pct: float = current / max_val if max_val > 0 else 1.0
+	if pct < 0.25 and current > 0:
+		_ensure_low_health_vignette()
+	elif pct >= 0.35:
+		_remove_low_health_vignette()
+
+
+func _flash_health_bar_damage() -> void:
+	if health_bar == null:
+		return
+	var flash_fill: StyleBoxFlat = StyleBoxFlat.new()
+	flash_fill.bg_color = Color(1.0, 0.95, 0.9)
+	flash_fill.set_corner_radius_all(3)
+	health_bar.add_theme_stylebox_override(&"fill", flash_fill)
+	var tween: Tween = create_tween()
+	tween.tween_interval(0.1)
+	tween.tween_callback(func() -> void:
+		var normal_fill: StyleBoxFlat = StyleBoxFlat.new()
+		normal_fill.bg_color = Color(0.2, 0.75, 0.3)
+		normal_fill.set_corner_radius_all(3)
+		health_bar.add_theme_stylebox_override(&"fill", normal_fill)
+	)
+
+
+func _ensure_low_health_vignette() -> void:
+	if _low_health_vignette and is_instance_valid(_low_health_vignette):
+		return
+	_low_health_vignette = ColorRect.new()
+	_low_health_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_low_health_vignette.color = Color(0.85, 0.08, 0.05, 0.0)
+	_low_health_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_container.add_child(_low_health_vignette)
+
+
+func _remove_low_health_vignette() -> void:
+	if _low_health_vignette == null or not is_instance_valid(_low_health_vignette):
+		_low_health_vignette = null
+		return
+	var vignette: ColorRect = _low_health_vignette
+	_low_health_vignette = null
+	var tween: Tween = vignette.create_tween()
+	tween.tween_property(vignette, "color:a", 0.0, 0.3)
+	tween.tween_callback(vignette.queue_free)
 
 
 func _on_compute_changed(current: float, max_val: float) -> void:
@@ -129,6 +476,7 @@ func _update_prompt_display(player: CharacterBody3D) -> void:
 	if active.is_empty():
 		_prompt_icon.color = Color(0.3, 0.3, 0.3, 0.5)
 		_prompt_quantity.text = "x0"
+		_prompt_icon.scale = Vector2.ONE
 		return
 	var prompt: Resource = active["item"] as Resource
 	var qty: int = int(active["quantity"])
@@ -142,6 +490,11 @@ func _update_prompt_display(player: CharacterBody3D) -> void:
 		_:
 			_prompt_icon.color = Color(0.5, 0.5, 0.5)
 	_prompt_quantity.text = "x%d" % qty
+	# Brief pop animation when prompt loaded
+	_prompt_icon.scale = Vector2(0.6, 0.6)
+	var tween: Tween = create_tween()
+	tween.tween_property(_prompt_icon, "scale", Vector2(1.15, 1.15), 0.1).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_prompt_icon, "scale", Vector2(1.0, 1.0), 0.08)
 
 
 func _refresh_prompt_from_tree() -> void:
@@ -154,14 +507,141 @@ func _on_xp_changed(current_xp: int, xp_to_next: int) -> void:
 	_xp_bar.max_value = xp_to_next
 	var tween: Tween = create_tween()
 	tween.tween_property(_xp_bar, "value", float(current_xp), TWEEN_DURATION).set_ease(Tween.EASE_OUT)
+	# Brief XP bar glow on gain
+	_flash_xp_bar()
 
 
 func _on_leveled_up_hud(new_level: int) -> void:
 	_level_label.text = "Lv. %d" % new_level
 	_xp_bar.value = 0
+	# Level-up HUD notification
+	_show_level_up_banner(new_level)
+
+
+func _flash_xp_bar() -> void:
+	if _xp_bar == null:
+		return
+	var flash_fill: StyleBoxFlat = StyleBoxFlat.new()
+	flash_fill.bg_color = Color(0.9, 0.8, 0.2)
+	flash_fill.set_corner_radius_all(3)
+	_xp_bar.add_theme_stylebox_override(&"fill", flash_fill)
+	var tween: Tween = create_tween()
+	tween.tween_interval(0.15)
+	tween.tween_callback(func() -> void:
+		var normal_fill: StyleBoxFlat = StyleBoxFlat.new()
+		normal_fill.bg_color = Color(0.2, 0.6, 0.85)
+		normal_fill.set_corner_radius_all(3)
+		_xp_bar.add_theme_stylebox_override(&"fill", normal_fill)
+	)
+
+
+func _show_level_up_banner(level: int) -> void:
+	# Holder for unified fade + scale-pop
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	holder.offset_left = -260
+	holder.offset_right = 260
+	holder.offset_top = 220  # below location label and tutorial banner
+	holder.offset_bottom = 320
+	holder.pivot_offset = Vector2(260, 50)
+	holder.modulate.a = 0.0
+	holder.scale = Vector2(0.7, 0.7)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Subtitle
+	var sub: Label = Label.new()
+	sub.text = "LEVEL UP"
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	sub.offset_top = 0
+	sub.offset_bottom = 22
+	sub.add_theme_font_size_override(&"font_size", 16)
+	sub.add_theme_color_override(&"font_color", Color(0.7, 0.85, 0.95))
+	sub.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	sub.add_theme_constant_override(&"outline_size", 4)
+	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(sub)
+	# Big "Lv N" text
+	var banner: Label = Label.new()
+	banner.text = "Lv %d" % level
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	banner.offset_top = 24
+	banner.offset_bottom = 90
+	banner.add_theme_font_size_override(&"font_size", 56)
+	banner.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.2))
+	banner.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	banner.add_theme_constant_override(&"outline_size", 8)
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(banner)
+	_container.add_child(holder)
+	# Sequential cinematic tween
+	var tween: Tween = holder.create_tween()
+	tween.tween_property(holder, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(holder, "scale", Vector2(1.08, 1.08), 0.25).set_ease(Tween.EASE_OUT)
+	tween.tween_property(holder, "scale", Vector2(1.0, 1.0), 0.12)
+	tween.tween_interval(1.4)
+	tween.tween_property(holder, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+	tween.tween_callback(holder.queue_free)
 
 
 func _update_xp_display(lc: Node) -> void:
 	_level_label.text = "Lv. %d" % lc.current_level
 	_xp_bar.max_value = lc.xp_to_next_level
 	_xp_bar.value = lc.current_xp
+
+
+func _on_enemy_killed_streak(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
+	_kill_streak += 1
+	_kill_streak_timer = STREAK_TIMEOUT
+	if _kill_streak >= 2:
+		_update_streak_display()
+	# Screen shake intensity scales with streak
+	if _kill_streak >= 3:
+		var cam_nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
+		if not cam_nodes.is_empty():
+			var camera: Camera3D = cam_nodes[0].get_viewport().get_camera_3d()
+			if camera and camera.has_method(&"shake"):
+				camera.shake(0.05 + _kill_streak * 0.01, 6.0)
+
+
+func _process_streak(delta: float) -> void:
+	if _kill_streak_timer > 0.0:
+		_kill_streak_timer -= delta
+		if _kill_streak_timer <= 0.0:
+			_kill_streak = 0
+			if _streak_label and is_instance_valid(_streak_label):
+				_streak_label.queue_free()
+				_streak_label = null
+
+
+func _update_streak_display() -> void:
+	if _streak_label and is_instance_valid(_streak_label):
+		_streak_label.queue_free()
+	_streak_label = Label.new()
+	var streak_text: String = "%d KILL STREAK" % _kill_streak
+	if _kill_streak >= 5:
+		streak_text = "RAMPAGE! x%d" % _kill_streak
+	elif _kill_streak >= 3:
+		streak_text = "MULTI-KILL x%d" % _kill_streak
+	_streak_label.text = streak_text
+	_streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# Anchor on the right side, mid-screen — out of the way of top-center stack
+	_streak_label.set_anchors_preset(Control.PRESET_CENTER_RIGHT)
+	_streak_label.offset_left = -340
+	_streak_label.offset_right = -16
+	_streak_label.offset_top = -160
+	_streak_label.offset_bottom = -120
+	_streak_label.pivot_offset = Vector2(162, 20)
+	var streak_color: Color = Color(1.0, 0.55, 0.1) if _kill_streak < 5 else Color(1.0, 0.22, 0.1)
+	var font_size: int = 22 + mini(_kill_streak, 10) * 2
+	_streak_label.add_theme_font_size_override(&"font_size", font_size)
+	_streak_label.add_theme_color_override(&"font_color", streak_color)
+	_streak_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	_streak_label.add_theme_constant_override(&"outline_size", 5)
+	_streak_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_container.add_child(_streak_label)
+	# Pop animation with proper pivot — sequential tween
+	_streak_label.scale = Vector2(0.5, 0.5)
+	var tween: Tween = _streak_label.create_tween()
+	tween.tween_property(_streak_label, "scale", Vector2(1.18, 1.18), 0.09).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_streak_label, "scale", Vector2(1.0, 1.0), 0.08).set_ease(Tween.EASE_IN_OUT)

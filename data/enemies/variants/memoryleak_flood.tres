@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://memoryleak_flood"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"memoryleak_flood"
+display_name = "Flood MemoryLeak"
+base_enemy_id = &"memoryleak"
+body_scale = 2.0
+mandible_scale = 1.0
+plate_density = 1.3
+wobble_amplitude_override = 0.024
+crack_color_a = Color(0.20, 0.85, 0.45, 1.0)
+crack_color_b = Color(0.30, 0.95, 0.55, 1.0)
+pattern_overlay = &""
+aura_intensity = 0.65
+aura_radius = 2.6
+hp_mult = 4.0
+damage_mult = 2.0
+speed_mult = 0.7
+aggro_radius_mult = 1.5
+has_pack_leader_aura = false
+leaves_footstep_decal = true
+applies_status_effect = &""
+xp_value_override = 320
+sfx_idle = &"memoryleak_idle_flood"
+sfx_footstep = &"memoryleak_footstep_heavy"
+sfx_aggro = &"memoryleak_aggro_roar_flood"
+sfx_attack_windup = &"memoryleak_attack_windup_flood"
+sfx_attack_strike = &"memoryleak_whip_heavy"
+sfx_hit = &"memoryleak_hit_thick"
+sfx_death = &"memoryleak_death_flood"

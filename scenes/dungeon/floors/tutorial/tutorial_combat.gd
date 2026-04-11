@@ -23,4 +23,5 @@ func _ready() -> void:
 func _on_enemy_killed(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
 	is_cleared = true
 	room_cleared.emit()
+	_show_exit_indicator()
 	EventBus.enemy_defeated.disconnect(_on_enemy_killed)

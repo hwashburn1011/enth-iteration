@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://dialoguepanel001"]
+[gd_scene load_steps=2 format=3 uid="uid://dkon2go7p7dlw"]
 
 [ext_resource type="Script" path="res://scripts/ui/dialogue_panel.gd" id="1_script"]
 

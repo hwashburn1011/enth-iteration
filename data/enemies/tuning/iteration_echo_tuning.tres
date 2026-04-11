@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://iteration_echo_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"iteration_echo"
+display_name = "Iteration Echo"
+base_hp_per_tier = PackedFloat32Array(150, 225, 325, 450, 625)
+base_damage_per_tier = PackedFloat32Array(12, 18, 26, 36, 50)
+move_speed_m_s = 6.0
+aggro_range_m = 16.0
+leash_range_m = 30.0
+rare_drop_chance = 0.15
+unique_drop_id = &"echo_loadout_dupe"
+xp_value_per_tier = PackedInt32Array(50, 85, 130, 190, 270)
+group_composition_presets = [{"enemy_id": &"iteration_echo", "count": 1, "weight": 1.0}]
+min_floor_tier = 3
+max_floor_tier = -1

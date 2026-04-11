@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://crash_daemon_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"crash_daemon"
+display_name = "Crash Daemon"
+base_hp_per_tier = PackedFloat32Array(45, 70, 100, 140, 195)
+base_damage_per_tier = PackedFloat32Array(15, 22, 31, 42, 58)
+move_speed_m_s = 5.5
+aggro_range_m = 14.0
+leash_range_m = 26.0
+rare_drop_chance = 0.04
+unique_drop_id = &"daemon_engine_core"
+xp_value_per_tier = PackedInt32Array(12, 22, 35, 52, 75)
+group_composition_presets = [{"enemy_id": &"crash_daemon", "count": 3, "weight": 1.0}, {"enemy_id": &"buffer_overflow", "count": 1, "weight": 0.4}]
+min_floor_tier = 0
+max_floor_tier = -1

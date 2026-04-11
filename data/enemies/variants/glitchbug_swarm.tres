@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://glitchbug_swarm"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"glitchbug_swarm"
+display_name = "Swarm GlitchBug"
+base_enemy_id = &"glitchbug"
+body_scale = 0.5
+mandible_scale = 0.85
+plate_density = 0.7
+crack_color_a = Color(0.0, 0.95, 0.95, 1.0)
+crack_color_b = Color(0.95, 0.05, 0.55, 1.0)
+pattern_overlay = &""
+aura_intensity = 0.0
+aura_radius = 0.0
+hp_mult = 0.35
+damage_mult = 0.45
+speed_mult = 1.5
+aggro_radius_mult = 0.8
+has_pack_leader_aura = false
+leaves_footstep_decal = false
+applies_status_effect = &""
+xp_value_override = 12
+sfx_idle = &"glitchbug_idle_small"
+sfx_footstep = &"glitchbug_footstep_small"
+sfx_aggro = &"glitchbug_aggro_chitter"
+sfx_attack_strike = &"glitchbug_bite_small"
+sfx_hit = &"glitchbug_hit_small"
+sfx_death = &"glitchbug_death_pop"

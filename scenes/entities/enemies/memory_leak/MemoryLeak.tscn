@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://memleak001"]
+[gd_scene load_steps=7 format=3 uid="uid://memleak001"]
 
 [ext_resource type="PackedScene" path="res://scenes/entities/enemies/EnemyBase.tscn" id="1_base"]
 [ext_resource type="Script" path="res://scenes/entities/enemies/memory_leak/memory_leak.gd" id="2_script"]
 [ext_resource type="Script" path="res://scripts/state_machines/enemy/memory_leak_attack_state.gd" id="3_ml_attack"]
 [ext_resource type="Script" path="res://scripts/state_machines/enemy/memory_leak_chase_state.gd" id="4_ml_chase"]
+[ext_resource type="PackedScene" path="res://assets/models/enemies/memoryleak_r3.glb" id="5_memoryleak_r3"]
 
 [sub_resource type="CylinderMesh" id="CylinderMesh_disc"]
 top_radius = 0.8
@@ -21,8 +22,12 @@ patrol_radius = 3.0
 attack_range = 8.0
 
 [node name="MeshInstance3D" parent="Model" index="0"]
+visible = false
 mesh = SubResource("CylinderMesh_disc")
 surface_material_override/0 = SubResource("Material_green")
+
+[node name="MemoryLeakR3" parent="Model" instance=ExtResource("5_memoryleak_r3")]
+transform = Transform3D(0.5, 0, 0, 0, 0.5, 0, 0, 0, 0.5, 0, 0, 0)
 
 [node name="EnemyAttackState" parent="StateMachine" index="3"]
 script = ExtResource("3_ml_attack")

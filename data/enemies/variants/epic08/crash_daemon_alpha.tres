@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://crash_daemon_alpha"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"crash_daemon_alpha"
+display_name = "Alpha Crash Daemon"
+base_enemy_id = &"crash_daemon"
+body_scale = 1.30
+mandible_scale = 1.20
+crack_color_a = Color(1.0, 0.05, 0.0, 1.0)
+crack_color_b = Color(0.85, 0.0, 0.0, 1.0)
+pattern_overlay = &"plate_gold"
+aura_intensity = 1.5
+aura_radius = 4.0
+hp_mult = 2.5
+damage_mult = 1.8
+speed_mult = 1.1
+aggro_radius_mult = 1.5
+has_pack_leader_aura = true
+applies_status_effect = &"bleed"
+sfx_idle = &"crash_daemon_alpha_growl"
+sfx_aggro = &"crash_daemon_alpha_roar"
+sfx_attack_strike = &"crash_daemon_alpha_dash_heavy"

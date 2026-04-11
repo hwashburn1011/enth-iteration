@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://rogueprocess_standard"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"rogueprocess_standard"
+display_name = "RogueProcess"
+base_enemy_id = &"rogueprocess"
+body_scale = 1.0
+mandible_scale = 1.0
+plate_density = 1.0
+crack_color_a = Color(0.0, 0.95, 0.95, 1.0)
+crack_color_b = Color(1.0, 0.10, 0.05, 1.0)
+pattern_overlay = &""
+aura_intensity = 0.0
+aura_radius = 0.0
+hp_mult = 1.0
+damage_mult = 1.0
+speed_mult = 1.0
+aggro_radius_mult = 1.0
+has_pack_leader_aura = false
+leaves_footstep_decal = false
+applies_status_effect = &""
+sfx_idle = &"rogueprocess_idle_servo"
+sfx_aggro = &"rogueprocess_aggro_alert"
+sfx_attack_windup = &"rogueprocess_charge_hum"
+sfx_attack_strike = &"rogueprocess_fire_pulse"
+sfx_hit = &"rogueprocess_hit_hologram"
+sfx_death = &"rogueprocess_death_shutdown"

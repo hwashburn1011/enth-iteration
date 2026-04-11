@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://memoryleak_void"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"memoryleak_void"
+display_name = "Void MemoryLeak"
+base_enemy_id = &"memoryleak"
+body_scale = 1.0
+mandible_scale = 1.0
+plate_density = 1.0
+crack_color_a = Color(0.30, 0.05, 0.55, 1.0)
+crack_color_b = Color(0.85, 0.15, 0.95, 1.0)
+pattern_overlay = &""
+aura_intensity = 1.5
+aura_radius = 2.5
+hp_mult = 1.2
+damage_mult = 1.0
+speed_mult = 0.85
+aggro_radius_mult = 1.4
+has_pack_leader_aura = false
+leaves_footstep_decal = false
+applies_status_effect = &"void_pull"
+sfx_idle = &"memoryleak_idle_void"
+sfx_footstep = &"memoryleak_footstep_silent"
+sfx_aggro = &"memoryleak_aggro_void_call"
+sfx_attack_strike = &"memoryleak_void_pull"
+sfx_hit = &"memoryleak_hit_void"
+sfx_death = &"memoryleak_death_implode"

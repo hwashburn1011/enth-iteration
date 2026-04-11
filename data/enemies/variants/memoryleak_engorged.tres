@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://memoryleak_engorged"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"memoryleak_engorged"
+display_name = "Engorged MemoryLeak"
+base_enemy_id = &"memoryleak"
+body_scale = 1.35
+mandible_scale = 1.0
+plate_density = 1.5
+wobble_amplitude_override = 0.025
+crack_color_a = Color(0.50, 1.0, 0.65, 1.0)
+crack_color_b = Color(0.85, 1.0, 0.40, 1.0)
+pattern_overlay = &"vein"
+aura_intensity = 1.8
+aura_radius = 2.2
+hp_mult = 2.5
+damage_mult = 1.6
+speed_mult = 0.65
+aggro_radius_mult = 1.4
+has_pack_leader_aura = true
+leaves_footstep_decal = true
+applies_status_effect = &""
+xp_value_override = 350
+sfx_idle = &"memoryleak_idle_engorged"
+sfx_footstep = &"memoryleak_footstep_engorged"
+sfx_aggro = &"memoryleak_aggro_engorged_burble"
+sfx_attack_windup = &"memoryleak_attack_windup_engorged"
+sfx_attack_strike = &"memoryleak_whip_engorged"
+sfx_hit = &"memoryleak_hit_engorged"
+sfx_death = &"memoryleak_death_engorged_burst"
+sfx_aura_loop = &"memoryleak_aura_hum_engorged"

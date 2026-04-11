@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://tutloot001"]
+[gd_scene load_steps=5 format=3 uid="uid://tutloot001"]
 
 [ext_resource type="Script" path="res://scenes/dungeon/floors/tutorial/tutorial_loot.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/dungeon/interactables/Container.tscn" id="2_container"]
+[ext_resource type="PackedScene" path="res://assets/models/environment/dungeon_wall_r3.glb" id="3_dungeon_wall_r3"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
 size = Vector2(10, 10)
@@ -23,20 +24,36 @@ mesh = SubResource("PlaneMesh_floor")
 surface_material_override/0 = SubResource("Material_floor")
 
 [node name="WallNorth" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -5)
 size = Vector3(10, 3, 0.5)
 
 [node name="WallSouth" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 5)
 size = Vector3(10, 3, 0.5)
 
 [node name="WallEast" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 1.5, 0)
 size = Vector3(0.5, 3, 10)
 
 [node name="WallWest" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 1.5, 0)
 size = Vector3(0.5, 3, 10)
+
+[node name="WallNorthR3" parent="Geometry" instance=ExtResource("3_dungeon_wall_r3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+
+[node name="WallSouthR3" parent="Geometry" instance=ExtResource("3_dungeon_wall_r3")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 5)
+
+[node name="WallEastR3" parent="Geometry" instance=ExtResource("3_dungeon_wall_r3")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5, 0, 0)
+
+[node name="WallWestR3" parent="Geometry" instance=ExtResource("3_dungeon_wall_r3")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -5, 0, 0)
 
 [node name="EntryPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)

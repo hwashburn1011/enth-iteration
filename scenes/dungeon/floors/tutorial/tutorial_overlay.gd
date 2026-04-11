@@ -14,7 +14,7 @@ func _ready() -> void:
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_label.add_theme_font_size_override(&"font_size", 28)
-	_label.anchors_preset = Control.PRESET_CENTER_TOP
+	_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_label.offset_top = 40.0
 	_label.offset_left = -300.0
 	_label.offset_right = 300.0

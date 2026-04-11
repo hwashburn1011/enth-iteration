@@ -134,14 +134,57 @@ func set_state(new_state: GameState) -> void:
 	EventBus.game_state_changed.emit(old_state, new_state)
 
 
+var _transition_overlay: CanvasLayer = null
+
+
 func change_scene_to(path: String) -> void:
 	EventBus.scene_changing.emit()
-	ResourceLoader.load_threaded_request(path)
-	while ResourceLoader.load_threaded_get_status(path) != ResourceLoader.THREAD_LOAD_LOADED:
+
+	# Fade to black
+	await _fade_transition(true)
+
+	var err: Error = ResourceLoader.load_threaded_request(path)
+	if err != OK:
+		push_error("GameManager: failed to request scene load for '%s' (error %d)" % [path, err])
+		set_state(GameState.PLAYING)
+		await _fade_transition(false)
+		return
+	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(path)
+	while status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
 		await get_tree().process_frame
+		status = ResourceLoader.load_threaded_get_status(path)
+	if status != ResourceLoader.THREAD_LOAD_LOADED:
+		push_error("GameManager: scene load failed for '%s' (status %d)" % [path, status])
+		set_state(GameState.PLAYING)
+		await _fade_transition(false)
+		return
 	var scene: PackedScene = ResourceLoader.load_threaded_get(path)
 	get_tree().change_scene_to_packed(scene)
+	await get_tree().process_frame
 	EventBus.scene_changed.emit(path)
+
+	# Fade from black
+	await _fade_transition(false)
+
+
+func _fade_transition(to_black: bool) -> void:
+	if _transition_overlay == null:
+		_transition_overlay = CanvasLayer.new()
+		_transition_overlay.layer = 110
+		_transition_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+		var new_rect: ColorRect = ColorRect.new()
+		new_rect.name = "FadeRect"
+		new_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+		new_rect.color = Color(0.03, 0.03, 0.08, 0.0)
+		new_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_transition_overlay.add_child(new_rect)
+		add_child(_transition_overlay)
+
+	var fade_rect: ColorRect = _transition_overlay.get_node("FadeRect") as ColorRect
+	var target_alpha: float = 1.0 if to_black else 0.0
+	var tween: Tween = create_tween()
+	tween.tween_property(fade_rect, "color:a", target_alpha, 0.4).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_SINE)
+	await tween.finished
 
 
 # --- Narrative checkpoint handlers ---

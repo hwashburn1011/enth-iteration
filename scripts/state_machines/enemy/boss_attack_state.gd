@@ -54,7 +54,6 @@ func _do_compile_error(boss: CharacterBody3D) -> void:
 
 	# Apply status in later phases
 	if boss.current_phase >= 3:
-		# Fragmented on hit handled via meta
 		boss.set_meta(&"apply_fragmented", true)
 	elif boss.current_phase >= 2:
 		boss.set_meta(&"apply_corrupted", true)
@@ -65,6 +64,17 @@ func _do_compile_error(boss: CharacterBody3D) -> void:
 	# Speed modifier for phase 2+
 	var speed_mult: float = 1.2 if boss.current_phase >= 2 else 1.0
 	var telegraph: float = COMPILE_ERROR_TELEGRAPH / speed_mult
+
+	# Ground AoE telegraph indicator
+	if boss.is_inside_tree() and boss.target_player:
+		var attack_dir: Vector3 = (boss.target_player.global_position - boss.global_position).normalized()
+		attack_dir.y = 0.0
+		AttackTelegraph.show_circle(
+			boss.global_position + attack_dir * 1.5,
+			boss.attack_range * 0.8,
+			telegraph,
+			boss.get_tree().current_scene
+		)
 
 	await boss.get_tree().create_timer(telegraph).timeout
 	if not is_instance_valid(boss) or boss.is_transitioning:
@@ -97,7 +107,6 @@ func _do_memory_overflow(boss: CharacterBody3D) -> void:
 		projectile.source_node = boss
 		projectile.base_damage = 15.0
 		projectile.direction = dir
-		projectile.global_position = boss.global_position + Vector3(0, 0.5, 0)
 		# Collision shape
 		var shape: CollisionShape3D = CollisionShape3D.new()
 		var sphere: SphereShape3D = SphereShape3D.new()
@@ -105,6 +114,7 @@ func _do_memory_overflow(boss: CharacterBody3D) -> void:
 		shape.shape = sphere
 		projectile.add_child(shape)
 		boss.get_tree().current_scene.add_child(projectile)
+		projectile.global_position = boss.global_position + Vector3(0, 0.5, 0)
 
 	await boss.get_tree().create_timer(1.0).timeout
 	if is_instance_valid(boss) and not boss.is_transitioning:
@@ -129,8 +139,8 @@ func _do_stack_overflow(boss: CharacterBody3D) -> void:
 	mat.albedo_color = Color(0.2, 1.0, 0.2, 0.5)
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	safe_zone.material_override = mat
-	safe_zone.global_position = safe_corner + Vector3(0, 0.05, 0)
 	boss.get_tree().current_scene.add_child(safe_zone)
+	safe_zone.global_position = safe_corner + Vector3(0, 0.05, 0)
 
 	await boss.get_tree().create_timer(STACK_OVERFLOW_TELEGRAPH).timeout
 	if not is_instance_valid(boss):

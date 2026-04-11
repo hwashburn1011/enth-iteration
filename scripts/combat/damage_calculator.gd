@@ -11,8 +11,10 @@ static func calculate(info: Resource) -> Resource:
 	var damage: float = info.base_damage
 
 	# 1. Apply stat multiplier from source Processing
+	# Note: base_damage from attack states may already include processing scaling.
+	# Only apply the multiplier for enemies (whose base_damage is raw).
 	var source_stats: Node = _get_stats(info.source)
-	if source_stats:
+	if source_stats and not info.source.is_in_group(&"player"):
 		info.stat_multiplier = source_stats.get_stat("processing") * 0.1
 		damage *= (1.0 + info.stat_multiplier)
 
@@ -41,6 +43,23 @@ static func calculate(info: Resource) -> Resource:
 
 	# Emit event
 	EventBus.damage_dealt.emit(int(info.final_damage), info.source, info.target, info.damage_type)
+
+	# Spawn VFX
+	if info.target is Node3D:
+		var target_3d: Node3D = info.target as Node3D
+		VFXFactory.spawn_damage_number(target_3d.global_position, int(info.final_damage), info.is_critical, target_3d.get_tree().current_scene)
+		VFXFactory.spawn_hit_flash(target_3d.global_position + Vector3(0, 0.5, 0), target_3d.get_tree().current_scene)
+		# Screen shake on hit
+		var camera: Camera3D = target_3d.get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"shake"):
+			var shake_amount: float = 0.08 if not info.is_critical else 0.2
+			camera.shake(shake_amount)
+		# Brief hitstop on critical hits for impact
+		if info.is_critical:
+			Engine.time_scale = 0.2
+			target_3d.get_tree().create_timer(0.04, true, false, true).timeout.connect(func() -> void:
+				Engine.time_scale = 1.0
+			)
 
 	return info
 

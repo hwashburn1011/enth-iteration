@@ -17,6 +17,25 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 	_label.visible = false
+	_build_portal_visual()
+
+
+func _build_portal_visual() -> void:
+	# Load the portal archway model
+	var archway: PackedScene = load("res://assets/models/props/portal_archway.glb") as PackedScene
+	if archway:
+		var instance: Node3D = archway.instantiate() as Node3D
+		add_child(instance)
+		instance.position = Vector3.ZERO
+	# Add portal particle swirl
+	VFXFactory.spawn_portal_particles(global_position, self)
+	# Add a point light for the portal glow
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 1.5, 0)
+	light.light_color = Color(0.2, 0.5, 0.8)
+	light.light_energy = 2.0
+	light.omni_range = 6.0
+	add_child(light)
 
 
 func _process(delta: float) -> void:
@@ -51,54 +70,34 @@ func _activate_portal() -> void:
 	set_process_unhandled_input(false)
 	EventBus.portal_used.emit()
 
-	# White flash warp effect
+	# Signal town to position player at return point and reset stats
+	GameManager.set_meta(&"town_entry_type", "portal_return")
+
+	# White flash warp effect via a CanvasLayer on the scene root (survives scene change)
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 100
 	var overlay: ColorRect = ColorRect.new()
 	overlay.color = Color(1, 1, 1, 0)
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	overlay.anchors_preset = Control.PRESET_FULL_RECT
-	var canvas: CanvasLayer = CanvasLayer.new()
-	canvas.layer = 100
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	canvas.add_child(overlay)
-	add_child(canvas)
+	get_tree().root.add_child(canvas)
 
 	# Flash to white
-	var tween: Tween = create_tween()
+	var tween: Tween = canvas.create_tween()
 	tween.tween_property(overlay, "color:a", 1.0, FLASH_DURATION)
 	await tween.finished
 
-	# Load town
-	GameManager.change_scene_to(TOWN_SCENE_PATH)
-	await get_tree().process_frame
-	await get_tree().process_frame
-
-	# Find player and position at portal return point
-	var player: CharacterBody3D = _find_player()
-	if player:
-		var return_point: Marker3D = _find_return_point()
-		if return_point:
-			player.global_position = return_point.global_position
-		player.health_component.reset()
-		player.compute_component.reset()
-		GameManager.set_state(GameManager.GameState.PLAYING)
-
+	# Emit returned_to_town BEFORE scene change so GameManager can update state
 	EventBus.returned_to_town.emit()
 
-	# Fade white out
-	var tween2: Tween = create_tween()
-	tween2.tween_property(overlay, "color:a", 0.0, FLASH_DURATION)
-	await tween2.finished
-	canvas.queue_free()
+	# Change scene — this frees the portal. Use await so the scene fully loads.
+	await GameManager.change_scene_to(TOWN_SCENE_PATH)
 
-
-func _find_player() -> CharacterBody3D:
-	var nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
-	if nodes.size() > 0:
-		return nodes[0] as CharacterBody3D
-	return null
-
-
-func _find_return_point() -> Marker3D:
-	var markers: Array[Node] = get_tree().get_nodes_in_group(&"portal_return_point")
-	if markers.size() > 0:
-		return markers[0] as Marker3D
-	return get_tree().current_scene.find_child("PortalReturnPoint", true, false) as Marker3D
+	# Fade out the white overlay (canvas is on root, so it survived the scene change)
+	if is_instance_valid(canvas):
+		await canvas.get_tree().create_timer(0.3).timeout
+		var tween2: Tween = canvas.create_tween()
+		tween2.tween_property(overlay, "color:a", 0.0, FLASH_DURATION)
+		await tween2.finished
+		canvas.queue_free()

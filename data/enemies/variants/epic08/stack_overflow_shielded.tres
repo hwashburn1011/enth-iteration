@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://stack_overflow_shielded"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"stack_overflow_shielded"
+display_name = "Shielded Stack Overflow"
+base_enemy_id = &"stack_overflow"
+body_scale = 1.0
+crack_color_a = Color(0.3, 0.65, 1.0, 1.0)
+crack_color_b = Color(0.05, 0.3, 0.85, 1.0)
+hp_mult = 1.6
+damage_mult = 1.1
+speed_mult = 1.0
+aggro_radius_mult = 1.0
+has_pack_leader_aura = false

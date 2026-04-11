@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://buffer_overflow_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"buffer_overflow"
+display_name = "Buffer Overflow"
+base_hp_per_tier = PackedFloat32Array(35, 55, 80, 110, 150)
+base_damage_per_tier = PackedFloat32Array(60, 60, 70, 80, 95)
+move_speed_m_s = 2.5
+aggro_range_m = 18.0
+leash_range_m = 30.0
+rare_drop_chance = 0.08
+unique_drop_id = &"detonator_relic"
+xp_value_per_tier = PackedInt32Array(18, 32, 48, 70, 100)
+group_composition_presets = [{"enemy_id": &"buffer_overflow", "count": 1, "weight": 1.0}, {"enemy_id": &"crash_daemon", "count": 2, "weight": 0.6}]
+min_floor_tier = 1
+max_floor_tier = -1

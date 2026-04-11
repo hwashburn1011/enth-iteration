@@ -10,8 +10,13 @@ var _boss: CharacterBody3D = null
 func _ready() -> void:
 	layer = 15
 
+	var fullscreen: Control = Control.new()
+	fullscreen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fullscreen.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(fullscreen)
+
 	var container: PanelContainer = PanelContainer.new()
-	container.anchors_preset = Control.PRESET_CENTER_TOP
+	container.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	container.offset_left = -250.0
 	container.offset_top = 10.0
 	container.offset_right = 250.0
@@ -31,7 +36,7 @@ func _ready() -> void:
 	vbox.add_child(_bar)
 
 	container.add_child(vbox)
-	add_child(container)
+	fullscreen.add_child(container)
 
 
 func track_boss(boss: CharacterBody3D) -> void:

@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://rogueprocess_sentinel"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"rogueprocess_sentinel"
+display_name = "RogueProcess Sentinel"
+base_enemy_id = &"rogueprocess"
+body_scale = 1.25
+mandible_scale = 1.0
+plate_density = 1.4
+crack_color_a = Color(0.95, 0.95, 1.0, 1.0)
+crack_color_b = Color(0.55, 0.95, 1.0, 1.0)
+pattern_overlay = &"plate_gold"
+aura_intensity = 3.5
+aura_radius = 4.5
+hp_mult = 5.0
+damage_mult = 2.5
+speed_mult = 0.6
+aggro_radius_mult = 2.0
+has_pack_leader_aura = true
+leaves_footstep_decal = false
+applies_status_effect = &"marked"
+sfx_idle = &"rogueprocess_sentinel_omniscient_hum"
+sfx_aggro = &"rogueprocess_sentinel_intro_proclaim"
+sfx_attack_windup = &"rogueprocess_sentinel_quad_charge"
+sfx_attack_strike = &"rogueprocess_sentinel_quad_beam"
+sfx_hit = &"rogueprocess_hit_hologram_boss"
+sfx_death = &"rogueprocess_sentinel_death_cataclysm"
+sfx_aura_loop = &"rogueprocess_sentinel_aura_drone"
+sfx_summon_call = &"rogueprocess_sentinel_call_scouts"

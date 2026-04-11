@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://deadlock_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"deadlock"
+display_name = "Deadlock"
+base_hp_per_tier = PackedFloat32Array(120, 180, 260, 360, 500)
+base_damage_per_tier = PackedFloat32Array(8, 12, 17, 23, 32)
+move_speed_m_s = 0.0
+aggro_range_m = 16.0
+leash_range_m = 50.0
+rare_drop_chance = 0.07
+unique_drop_id = &"chain_link_artifact"
+xp_value_per_tier = PackedInt32Array(28, 48, 75, 110, 158)
+group_composition_presets = [{"enemy_id": &"deadlock", "count": 2, "weight": 1.0}, {"enemy_id": &"null_pointer", "count": 1, "weight": 0.5}]
+min_floor_tier = 2
+max_floor_tier = -1

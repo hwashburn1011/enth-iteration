@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://stack_overflow_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"stack_overflow"
+display_name = "Stack Overflow"
+base_hp_per_tier = PackedFloat32Array(180, 270, 390, 540, 750)
+base_damage_per_tier = PackedFloat32Array(18, 27, 38, 52, 72)
+move_speed_m_s = 0.0
+aggro_range_m = 22.0
+leash_range_m = 50.0
+rare_drop_chance = 0.10
+unique_drop_id = &"stack_trace_relic"
+xp_value_per_tier = PackedInt32Array(35, 60, 95, 140, 200)
+group_composition_presets = [{"enemy_id": &"stack_overflow", "count": 1, "weight": 1.0}, {"enemy_id": &"crash_daemon", "count": 2, "weight": 0.6}, {"enemy_id": &"deadlock", "count": 1, "weight": 0.3}]
+min_floor_tier = 1
+max_floor_tier = -1

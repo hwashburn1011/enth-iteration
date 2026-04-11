@@ -1,0 +1,31 @@
+[gd_resource type="Resource" script_class="EnemyVariant" load_steps=2 format=3 uid="uid://rogueprocess_scout"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_variant.gd" id="1_variant"]
+
+[resource]
+script = ExtResource("1_variant")
+variant_id = &"rogueprocess_scout"
+display_name = "RogueProcess Scout"
+base_enemy_id = &"rogueprocess"
+body_scale = 0.9
+mandible_scale = 1.0
+plate_density = 0.85
+crack_color_a = Color(0.0, 0.95, 0.95, 1.0)
+crack_color_b = Color(1.0, 0.85, 0.05, 1.0)
+pattern_overlay = &""
+aura_intensity = 0.0
+aura_radius = 0.0
+hp_mult = 0.7
+damage_mult = 0.5
+speed_mult = 1.4
+aggro_radius_mult = 1.5
+has_pack_leader_aura = false
+leaves_footstep_decal = false
+applies_status_effect = &""
+sfx_idle = &"rogueprocess_idle_scan_sweep"
+sfx_aggro = &"rogueprocess_scout_alert_call"
+sfx_attack_windup = &"rogueprocess_scout_ping"
+sfx_attack_strike = &"rogueprocess_scout_marker"
+sfx_hit = &"rogueprocess_hit_hologram"
+sfx_death = &"rogueprocess_scout_death_squawk"
+sfx_summon_call = &"rogueprocess_scout_reinforcement_call"

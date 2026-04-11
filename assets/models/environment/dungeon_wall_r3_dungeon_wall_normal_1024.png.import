@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://dqg5bfnwjmyo"
+path.s3tc="res://.godot/imported/dungeon_wall_r3_dungeon_wall_normal_1024.png-f979d3f62d4d962c2e719c3d2fedafbc.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "d43a194cbfbe73381533a8624f03e691"
+}
+
+[deps]
+
+source_file="res://assets/models/environment/dungeon_wall_r3_dungeon_wall_normal_1024.png"
+dest_files=["res://.godot/imported/dungeon_wall_r3_dungeon_wall_normal_1024.png-f979d3f62d4d962c2e719c3d2fedafbc.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=1
+roughness/src_normal="res://assets/models/environment/dungeon_wall_r3_dungeon_wall_normal_1024.png"
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

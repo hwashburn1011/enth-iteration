@@ -20,7 +20,7 @@ func _ready() -> void:
 	EventBus.item_collected.connect(_on_item_collected)
 
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if _tracking_movement:
 		var player: Node = _find_player()
 		if player:
@@ -57,22 +57,41 @@ func complete_tutorial(tutorial_id: String) -> void:
 
 func show_hint(text: String, auto_dismiss_time: float = 0.0) -> void:
 	_dismiss_hint()
+	var wrapper: Control = Control.new()
+	wrapper.set_anchors_preset(Control.PRESET_FULL_RECT)
+	wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	var panel: PanelContainer = PanelContainer.new()
-	panel.anchors_preset = Control.PRESET_CENTER_TOP
+	panel.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	panel.offset_left = -250.0
 	panel.offset_top = 60.0
 	panel.offset_right = 250.0
 	panel.offset_bottom = 100.0
+	# Sci-fi styled panel
+	var panel_style: StyleBoxFlat = StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.05, 0.06, 0.12, 0.85)
+	panel_style.border_color = Color(0.15, 0.4, 0.5, 0.6)
+	panel_style.set_border_width_all(1)
+	panel_style.border_width_bottom = 2
+	panel_style.set_corner_radius_all(4)
+	panel_style.set_content_margin_all(10)
+	panel.add_theme_stylebox_override(&"panel", panel_style)
 
 	var label: RichTextLabel = RichTextLabel.new()
 	label.bbcode_enabled = true
-	label.text = "[center]%s[/center]" % text
+	label.text = "[center][color=#60C8C0]%s[/color][/center]" % text
 	label.fit_content = true
 	label.custom_minimum_size = Vector2(480, 30)
 	panel.add_child(label)
+	wrapper.add_child(panel)
 
-	_canvas.add_child(panel)
-	_active_hint = panel
+	_canvas.add_child(wrapper)
+	_active_hint = wrapper
+
+	# Fade in animation
+	wrapper.modulate.a = 0.0
+	var tween: Tween = wrapper.create_tween()
+	tween.tween_property(wrapper, "modulate:a", 1.0, 0.3)
 
 	if auto_dismiss_time > 0.0:
 		await get_tree().create_timer(auto_dismiss_time).timeout
@@ -115,15 +134,25 @@ func start_prompt_hint() -> void:
 	if is_completed("prompt"):
 		return
 	show_hint("Press Q to use Health Prompt")
+	# Connect to player's prompt_used signal
+	var player: Node = _find_player()
+	if player and player.inventory_component.has_signal(&"prompt_used"):
+		if not player.inventory_component.prompt_used.is_connected(_on_prompt_used):
+			player.inventory_component.prompt_used.connect(_on_prompt_used)
+
+
+func _on_prompt_used(_type: String, _remaining: int) -> void:
+	if not is_completed("prompt"):
+		complete_tutorial("prompt")
 
 
 func _on_enemy_defeated(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
-	if not is_completed("basic_attack") and _active_hint != null:
+	if not is_completed("basic_attack"):
 		complete_tutorial("basic_attack")
 
 
 func _on_item_collected(_item: Resource) -> void:
-	if not is_completed("loot") and _active_hint != null:
+	if not is_completed("loot"):
 		complete_tutorial("loot")
 
 

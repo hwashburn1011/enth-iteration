@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://combatcorridor001"]
+[gd_scene load_steps=9 format=3 uid="uid://combatcorridor001"]
 
 [ext_resource type="Script" path="res://scenes/dungeon/rooms/combat/combat_room_base.gd" id="1_script"]
 [ext_resource type="Script" path="res://scripts/systems/enemy_spawner.gd" id="2_spawner"]
 [ext_resource type="Script" path="res://scenes/dungeon/rooms/combat/exit_barrier.gd" id="3_barrier"]
+[ext_resource type="PackedScene" path="res://assets/models/environment/dungeon_wall_r3.glb" id="4_dungeon_wall_r3"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
 size = Vector2(8, 24)
@@ -20,6 +21,9 @@ transparency = 1
 [sub_resource type="BoxShape3D" id="BoxShape3D_barrier"]
 size = Vector3(2.0, 3.0, 0.5)
 
+[sub_resource type="StandardMaterial3D" id="Material_wall"]
+albedo_color = Color(0.3, 0.3, 0.35, 1)
+
 [sub_resource type="BoxShape3D" id="BoxShape3D_exit"]
 size = Vector3(2.0, 3.0, 1.0)
 
@@ -34,20 +38,58 @@ mesh = SubResource("PlaneMesh_floor")
 surface_material_override/0 = SubResource("Material_floor")
 
 [node name="WallNorth" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -12)
 size = Vector3(8, 3, 0.5)
+material = SubResource("Material_wall")
 
 [node name="WallSouth" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 12)
 size = Vector3(8, 3, 0.5)
+material = SubResource("Material_wall")
 
 [node name="WallEast" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.5, 0)
 size = Vector3(0.5, 3, 24)
+material = SubResource("Material_wall")
 
 [node name="WallWest" type="CSGBox3D" parent="Geometry"]
+visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 1.5, 0)
 size = Vector3(0.5, 3, 24)
+material = SubResource("Material_wall")
+
+[node name="WallNorthR3" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
+
+[node name="WallSouthR3" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 12)
+
+[node name="WallEastR3a" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4, 0, -9)
+
+[node name="WallEastR3b" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4, 0, -3)
+
+[node name="WallEastR3c" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4, 0, 3)
+
+[node name="WallEastR3d" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 4, 0, 9)
+
+[node name="WallWestR3a" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 0, -9)
+
+[node name="WallWestR3b" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 0, -3)
+
+[node name="WallWestR3c" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 0, 3)
+
+[node name="WallWestR3d" parent="Geometry" instance=ExtResource("4_dungeon_wall_r3")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -4, 0, 9)
 
 [node name="EntryPoint" type="Marker3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10)

@@ -24,13 +24,106 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
 
+	# Add glowing platform disc under item
+	var platform_scene: PackedScene = load("res://assets/models/props/item_platform.glb") as PackedScene
+	if platform_scene:
+		var plat: Node3D = platform_scene.instantiate() as Node3D
+		add_child(plat)
+		plat.position = Vector3(0, 0.01, 0)
+
 	if item:
 		_label.text = item.item_name
-		var mat: StandardMaterial3D = StandardMaterial3D.new()
-		mat.albedo_color = _rarity_color(item.rarity)
-		_mesh.material_override = mat
+		# Style the world labels with outline and rarity color
+		var rarity_col: Color = _rarity_color(item.rarity)
+		_label.modulate = rarity_col
+		_label.outline_modulate = Color(0, 0, 0, 0.95)
+		_label.outline_size = 6
+		_label.font_size = 26
+		_label.no_depth_test = true
+		_label.fixed_size = true
+		_label.pixel_size = 0.0035
+		_label.position.y = 1.1
+		_tooltip.modulate = Color(0.95, 0.97, 1.0)
+		_tooltip.outline_modulate = Color(0, 0, 0, 0.95)
+		_tooltip.outline_size = 5
+		_tooltip.font_size = 20
+		_tooltip.no_depth_test = true
+		_tooltip.fixed_size = true
+		_tooltip.pixel_size = 0.0035
+		_tooltip.position.y = 1.45
+		# R4-15: branch on item type to load the right R4 sculpted asset
+		# Health prompts → potion bottle (R4-14)
+		# Compute prompts → energy crystal (R4-10)
+		# Everything else → existing item_pickup crystal
+		var asset_path: String = "res://assets/models/props/item_pickup.glb"
+		var override_material: bool = true
+		var prompt_type: String = ""
+		if item.has_method("get_prompt_type"):
+			prompt_type = item.get_prompt_type()
+		elif item.get(&"prompt_type") != null:
+			prompt_type = str(item.get(&"prompt_type"))
+		if prompt_type == "health":
+			asset_path = "res://assets/models/props/potion_bottle_r4.glb"
+			override_material = false  # potion has its own glass+liquid shader
+		elif prompt_type == "compute":
+			asset_path = "res://assets/models/props/energy_crystal_r4.glb"
+			override_material = false  # crystal has its own emission shader
+		var crystal: PackedScene = load(asset_path) as PackedScene
+		if crystal:
+			var instance: Node3D = crystal.instantiate() as Node3D
+			_mesh.add_child(instance)
+			if override_material:
+				# Color the placeholder crystal based on rarity
+				for child: Node in instance.get_children():
+					if child is MeshInstance3D:
+						var mat: StandardMaterial3D = StandardMaterial3D.new()
+						mat.albedo_color = rarity_col
+						mat.emission_enabled = true
+						mat.emission = rarity_col * 0.7
+						mat.emission_energy_multiplier = 2.0
+						mat.roughness = 0.2
+						(child as MeshInstance3D).material_override = mat
+		else:
+			var mat: StandardMaterial3D = StandardMaterial3D.new()
+			mat.albedo_color = _rarity_color(item.rarity)
+			_mesh.material_override = mat
 
 	_tooltip.visible = false
+
+	# Initial drop shimmer — bright pulse that fades
+	if item:
+		_spawn_drop_shimmer()
+
+
+func _spawn_drop_shimmer() -> void:
+	if not is_inside_tree():
+		return
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.2
+	torus.outer_radius = 0.35
+	torus.rings = 12
+	torus.ring_segments = 12
+	ring.mesh = torus
+	var rarity_col: Color = _rarity_color(item.rarity)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(rarity_col.r, rarity_col.g, rarity_col.b, 0.7)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = rarity_col
+	mat.emission_energy_multiplier = 3.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	get_tree().current_scene.add_child(ring)
+	ring.global_position = global_position + Vector3(0, 0.05, 0)
+	var tween: Tween = ring.create_tween()
+	tween.tween_property(ring, "scale", Vector3(2.5, 1.0, 2.5), 0.5).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.6)
+	tween.tween_callback(ring.queue_free)
+
+
+const MAGNET_RANGE: float = 3.0
+const MAGNET_SPEED: float = 4.0
 
 
 func _process(delta: float) -> void:
@@ -38,6 +131,18 @@ func _process(delta: float) -> void:
 
 	# Bobbing
 	_mesh.position.y = _base_y + sin(_timer * BOB_FREQUENCY * TAU) * BOB_AMPLITUDE
+
+	# Magnetism — drift toward nearby player
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if not players.is_empty():
+		var p: Node3D = players[0] as Node3D
+		var dist: float = global_position.distance_to(p.global_position)
+		if dist < MAGNET_RANGE and dist > 0.5:
+			var dir: Vector3 = (p.global_position - global_position).normalized()
+			dir.y = 0.0
+			# Strength scales inversely with distance
+			var strength: float = (1.0 - dist / MAGNET_RANGE) * MAGNET_SPEED
+			global_position += dir * strength * delta
 
 	# Despawn
 	if _timer >= DESPAWN_TIME - FADE_DURATION:
@@ -75,9 +180,33 @@ func _try_pickup() -> void:
 		return
 	if _nearby_player.inventory_component.add_item(item):
 		EventBus.item_collected.emit(item)
+		# Pickup VFX before freeing
+		_spawn_pickup_vfx()
 		queue_free()
 	else:
 		_tooltip.text = "Inventory Full"
+
+
+func _spawn_pickup_vfx() -> void:
+	var scene_root: Node = get_tree().current_scene
+	var pos: Vector3 = global_position + Vector3(0, 0.5, 0)
+	var color: Color = _rarity_color(item.rarity)
+	# Rarity sparkle burst
+	VFXFactory.spawn_item_sparkle(pos, item.rarity, scene_root)
+	# Pickup text notification
+	var label: Label3D = Label3D.new()
+	label.text = item.item_name
+	label.font_size = 20
+	label.modulate = color
+	label.outline_modulate = Color(0, 0, 0, 0.7)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = pos + Vector3(0, 0.5, 0)
+	scene_root.add_child(label)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "position:y", label.position.y + 1.2, 1.0).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 1.0).set_delay(0.4)
+	tween.tween_callback(label.queue_free)
 
 
 func _rarity_color(rarity: int) -> Color:

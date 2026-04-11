@@ -37,6 +37,17 @@ func enter() -> void:
 	# Start telegraph — red flash
 	_set_telegraph_flash(enemy, true)
 
+	# Ground telegraph: line indicator for lunge direction
+	if enemy.is_inside_tree() and _lunge_dir.length() > 0.1:
+		AttackTelegraph.show_line(
+			enemy.global_position,
+			_lunge_dir,
+			3.0,  # lunge distance
+			1.0,  # width
+			TELEGRAPH_DURATION,
+			enemy.get_tree().current_scene
+		)
+
 	if enemy.animation_player.has_animation(&"attack"):
 		enemy.animation_player.play(&"attack")
 
@@ -84,15 +95,15 @@ func exit() -> void:
 
 
 func _set_telegraph_flash(enemy: CharacterBody3D, flash: bool) -> void:
-	var mesh: MeshInstance3D = enemy.model.get_child(0) as MeshInstance3D
-	if mesh == null:
-		return
+	var meshes: Array[MeshInstance3D] = enemy.get_mesh_instances()
 	if flash:
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.albedo_color = Color(1.0, 0.2, 0.2)
 		mat.emission_enabled = true
 		mat.emission = Color(1.0, 0.0, 0.0)
 		mat.emission_energy_multiplier = 2.0
-		mesh.material_override = mat
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = mat
 	else:
-		mesh.material_override = null
+		for mesh: MeshInstance3D in meshes:
+			mesh.material_override = null

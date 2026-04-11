@@ -12,6 +12,19 @@ func _ready() -> void:
 	_intro_dialogue = load("res://data/dialogue/ai_sage_intro.tres") as Resource
 	_subsequent_dialogue = load("res://data/dialogue/ai_sage_subsequent.tres") as Resource
 	dialogue_resource = _intro_dialogue
+	# R5 round-51 fix: wire up the AI Sage portrait textures. The .tscn never
+	# set portrait_default or the portraits dict, so every Sage dialogue was
+	# rendering a placeholder T icon instead of the actual sage portrait.
+	# The portrait files have existed at res://assets/textures/portraits/
+	# the entire time — they just weren't loaded.
+	portrait_default = load("res://assets/textures/portraits/ai_sage_portrait.png") as Texture2D
+	portraits = {
+		"default": portrait_default,
+		"smile": load("res://assets/textures/portraits/ai_sage_portrait_smile.png") as Texture2D,
+		"sad": load("res://assets/textures/portraits/ai_sage_portrait_sad.png") as Texture2D,
+		"surprise": load("res://assets/textures/portraits/ai_sage_portrait_surprise.png") as Texture2D,
+		"wisdom": load("res://assets/textures/portraits/ai_sage_portrait_wisdom.png") as Texture2D,
+	}
 	super._ready()
 
 

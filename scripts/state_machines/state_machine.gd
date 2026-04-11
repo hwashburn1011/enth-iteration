@@ -20,7 +20,7 @@ func _ready() -> void:
 				initial_state = child
 				break
 	# Defer initial enter so parent's @onready vars are initialized first
-	if initial_state and get_parent().visible:
+	if initial_state:
 		current_state = initial_state
 		current_state.enter.call_deferred()
 

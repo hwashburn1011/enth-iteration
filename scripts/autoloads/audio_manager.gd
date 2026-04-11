@@ -10,10 +10,10 @@ var _current_track: String = ""
 const SFX_POOL_SIZE: int = 8
 
 const MUSIC_TRACKS: Dictionary = {
-	"town_ambient": "res://assets/audio/music/town_ambient.ogg",
-	"dungeon_ambient": "res://assets/audio/music/dungeon_ambient.ogg",
-	"combat_music": "res://assets/audio/music/combat_music.ogg",
-	"boss_music": "res://assets/audio/music/boss_music.ogg",
+	"town_ambient": "res://assets/audio/music/town_ambient.wav",
+	"dungeon_ambient": "res://assets/audio/music/dungeon_ambient.wav",
+	"combat_music": "res://assets/audio/music/combat_music.wav",
+	"boss_music": "res://assets/audio/music/boss_music.wav",
 }
 
 const SFX_CLIPS: Dictionary = {
@@ -31,15 +31,20 @@ const SFX_CLIPS: Dictionary = {
 
 
 func _ready() -> void:
-	# Music player on Music bus
+	# AudioManager must run even while game is paused (dialogue pauses tree)
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# Music player — PROCESS_MODE_ALWAYS so it plays during dialogue pause
 	_music_player = AudioStreamPlayer.new()
-	_music_player.bus = &"Music"
+	_music_player.bus = &"Master"
+	_music_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_music_player)
 
-	# SFX pool on SFX bus
+	# SFX pool
+	var sfx_bus: StringName = &"SFX" if AudioServer.get_bus_index(&"SFX") >= 0 else &"Master"
 	for i: int in SFX_POOL_SIZE:
 		var player: AudioStreamPlayer = AudioStreamPlayer.new()
-		player.bus = &"SFX"
+		player.bus = sfx_bus
 		add_child(player)
 		_sfx_pool.append(player)
 
@@ -50,6 +55,28 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.portal_used.connect(_on_portal_used)
 	EventBus.scene_changed.connect(_on_scene_changed)
+	EventBus.dialogue_ended.connect(_on_dialogue_ended_audio)
+
+
+var _pending_stream: AudioStream = null
+
+func _process(_delta: float) -> void:
+	# Keep retrying until music actually plays
+	if _pending_stream != null and not _music_player.playing:
+		if not get_tree().paused:
+			_music_player.stream = _pending_stream
+			# Ensure loop mode is set
+			if _music_player.stream is AudioStreamWAV:
+				(_music_player.stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+			_music_player.play()
+			if _music_player.playing:
+				_pending_stream = null
+	# Also check if music stopped (non-looping track ended) and restart
+	elif _music_player.stream != null and not _music_player.playing and _current_track != "":
+		if _music_player.stream is AudioStreamWAV:
+			(_music_player.stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+		if not get_tree().paused:
+			_music_player.play()
 
 
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
@@ -64,7 +91,12 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 
 	var stream: AudioStream = load(path) as AudioStream
 	if stream == null:
+		push_warning("AudioManager: '%s' is a placeholder — no audio data" % track_name)
 		return
+	# Enable looping for music
+	if stream is AudioStreamWAV:
+		(stream as AudioStreamWAV).loop_mode = AudioStreamWAV.LOOP_FORWARD
+		(stream as AudioStreamWAV).loop_end = -1
 
 	if _music_player.playing:
 		# Crossfade
@@ -80,7 +112,10 @@ func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	else:
 		_music_player.stream = stream
 		_music_player.volume_db = 0.0
-		_music_player.play()
+		# Deferred play — direct play() fails during scene transitions
+		_music_player.play.call_deferred()
+		# Also set pending flag for _process retry
+		_pending_stream = stream
 
 
 func play_sfx(sfx_name: String, _position: Vector3 = Vector3.ZERO) -> void:
@@ -132,6 +167,12 @@ func _on_player_died(_pos: Vector3) -> void:
 
 func _on_portal_used() -> void:
 	play_sfx("portal_activate")
+
+
+func _on_dialogue_ended_audio() -> void:
+	# Retry music play after dialogue ends (tree was paused, play() was ignored)
+	if _music_player.stream != null and not _music_player.playing:
+		_music_player.play()
 
 
 func _on_scene_changed(path: String) -> void:

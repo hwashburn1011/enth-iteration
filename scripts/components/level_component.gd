@@ -30,7 +30,7 @@ func add_xp(amount: int) -> void:
 	xp_changed.emit(current_xp, xp_to_next_level)
 
 
-func _on_enemy_defeated(enemy_type: StringName, _pos: Vector3, _loot: Resource) -> void:
+func _on_enemy_defeated(enemy_type: StringName, pos: Vector3, _loot: Resource) -> void:
 	# XP rewards by enemy type
 	var xp: int = 10
 	match String(enemy_type):
@@ -43,3 +43,22 @@ func _on_enemy_defeated(enemy_type: StringName, _pos: Vector3, _loot: Resource) 
 		_:
 			xp = 10
 	add_xp(xp)
+	# Spawn XP number at enemy position
+	if get_parent() and get_parent().is_inside_tree():
+		_spawn_xp_number(pos, xp)
+
+
+func _spawn_xp_number(pos: Vector3, xp: int) -> void:
+	var label: Label3D = Label3D.new()
+	label.text = "+%d XP" % xp
+	label.font_size = 18
+	label.modulate = Color(0.4, 0.85, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.7)
+	label.outline_size = 3
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = pos + Vector3(0, 1.5, 0)
+	get_parent().get_tree().current_scene.add_child(label)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "position:y", label.position.y + 1.2, 0.9).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.9).set_delay(0.4)
+	tween.tween_callback(label.queue_free)

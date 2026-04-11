@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="EnemyTuning" load_steps=2 format=3 uid="uid://phantom_cache_tuning"]
+
+[ext_resource type="Script" path="res://scripts/resources/enemy_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+enemy_id = &"phantom_cache"
+display_name = "Phantom Cache"
+base_hp_per_tier = PackedFloat32Array(80, 120, 175, 240, 330)
+base_damage_per_tier = PackedFloat32Array(0, 0, 0, 0, 0)
+move_speed_m_s = 5.5
+aggro_range_m = 12.0
+leash_range_m = 28.0
+rare_drop_chance = 1.0
+unique_drop_id = &"phantom_cache_chest"
+xp_value_per_tier = PackedInt32Array(40, 65, 95, 135, 185)
+group_composition_presets = [{"enemy_id": &"phantom_cache", "count": 1, "weight": 1.0}]
+min_floor_tier = 0
+max_floor_tier = -1

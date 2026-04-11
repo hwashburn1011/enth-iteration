@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://but80stqbn4xf"
+path.s3tc="res://.godot/imported/pillar_diorama_r3_v3_castle_brick_07_diff_1k.png-38ae8cf6c449afbb2633b74554fe08e6.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "186c1f6ab2afd669d02a6f9dfb955835"
+}
+
+[deps]
+
+source_file="res://_art_source/environments/exports/pillar_diorama_r3_v3_castle_brick_07_diff_1k.png"
+dest_files=["res://.godot/imported/pillar_diorama_r3_v3_castle_brick_07_diff_1k.png-38ae8cf6c449afbb2633b74554fe08e6.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=0
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=0
+roughness/src_normal=""
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

@@ -58,5 +58,6 @@ func _on_area_entered(area: Area3D) -> void:
 func _spawn_pool() -> void:
 	var pool: Node = load("res://scenes/entities/enemies/memory_leak/leak_pool.gd").new()
 	pool.source_node = source_node
-	pool.global_position = global_position
+	var pool_pos: Vector3 = global_position
 	get_tree().current_scene.add_child(pool)
+	pool.global_position = pool_pos
