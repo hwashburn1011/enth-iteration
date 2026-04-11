@@ -1698,6 +1698,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_oracle_npc()
 	# Epic-3 T30: ambient violet mist particles
 	_build_d3_violet_mist(geom)
+	# Epic-3 T31: 3 floating archways drifting overhead
+	_build_d3_floating_arches(geom)
+	# Epic-3 T32: broken battle scar stone fragments
+	_build_d3_battle_scars(geom)
+	# Epic-3 T33: 3 tall memory obelisks
+	_build_d3_memory_obelisks(geom)
+	# Epic-3 T34: Phantom Warrior NPC
+	_build_d3_phantom_warrior_npc()
+	# Epic-3 T35: short illusion bridge
+	_build_d3_illusion_bridge(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -3954,6 +3964,270 @@ func _build_d3_violet_mist(geom: Node) -> void:
 	puff.material = puff_mat
 	mist.draw_pass_1 = puff
 	geom.add_child(mist)
+
+
+func _build_d3_floating_arches(geom: Node) -> void:
+	## Epic-3 T31: 3 floating ancient archways drifting overhead at
+	## different altitudes — small free-floating arches like portal
+	## fragments suspended in the air.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-15, 6.0, 8),
+		D3_CENTER + Vector3(0, 8.5, -10),
+		D3_CENTER + Vector3(15, 7.0, 6),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.40
+	for i in positions.size():
+		var arch: Node3D = Node3D.new()
+		arch.name = "D3FloatingArch_%d" % i
+		arch.position = positions[i]
+		arch.rotation = Vector3(deg_to_rad(randf_range(-15, 15)), deg_to_rad(randf_range(0, 360)), deg_to_rad(randf_range(-15, 15)))
+		geom.add_child(arch)
+		# 2 side pillars
+		for sx: float in [-1.20, 1.20]:
+			var pillar: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: BoxMesh = BoxMesh.new()
+			pmesh.size = Vector3(0.40, 2.40, 0.40)
+			pillar.mesh = pmesh
+			pillar.position = Vector3(sx, 0, 0)
+			pillar.material_override = stone_mat
+			arch.add_child(pillar)
+		# Top crossbar
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(2.85, 0.40, 0.40)
+		top.mesh = tm
+		top.position = Vector3(0, 1.40, 0)
+		top.material_override = stone_mat
+		arch.add_child(top)
+		# Bob tween
+		var origin: Vector3 = positions[i]
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(arch, "position:y", origin.y + 0.55, 2.4 + i * 0.3).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(arch, "position:y", origin.y, 2.4 + i * 0.3).set_ease(Tween.EASE_IN_OUT)
+		# Slow rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(arch, "rotation:y", arch.rotation.y + TAU, 18.0)
+
+
+func _build_d3_battle_scars(geom: Node) -> void:
+	## Epic-3 T32: scattered broken stone fragments across the D3 floor —
+	## 10 small angled stone shards suggesting an ancient battle.
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 144
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.13, 0.22)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.65
+	for i in 10:
+		var fragment: MeshInstance3D = MeshInstance3D.new()
+		fragment.name = "D3BattleFragment_%d" % i
+		var fmesh: BoxMesh = BoxMesh.new()
+		fmesh.size = Vector3(rng.randf_range(0.30, 0.85), rng.randf_range(0.20, 0.55), rng.randf_range(0.30, 0.85))
+		fragment.mesh = fmesh
+		fragment.position = D3_CENTER + Vector3(
+			rng.randf_range(-22, 22),
+			0.10,
+			rng.randf_range(-16, 16)
+		)
+		fragment.rotation = Vector3(
+			deg_to_rad(rng.randf_range(-30, 30)),
+			deg_to_rad(rng.randf_range(0, 360)),
+			deg_to_rad(rng.randf_range(-30, 30))
+		)
+		fragment.material_override = stone_mat
+		geom.add_child(fragment)
+
+
+func _build_d3_memory_obelisks(geom: Node) -> void:
+	## Epic-3 T33: 3 tall memory obelisks — narrow stone prisms with
+	## glowing rune lines down each face. Sentinel-like landmarks placed
+	## at the edges of the district.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-15, 0, -16),
+		D3_CENTER + Vector3(0, 0, -18),
+		D3_CENTER + Vector3(15, 0, -16),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for i in positions.size():
+		var obelisk: Node3D = Node3D.new()
+		obelisk.name = "D3MemoryObelisk_%d" % i
+		obelisk.position = positions[i]
+		geom.add_child(obelisk)
+		# Tapered prism — taller than wide
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: PrismMesh = PrismMesh.new()
+		bmesh.size = Vector3(0.85, 5.0, 0.85)
+		body.mesh = bmesh
+		body.position = Vector3(0, 2.50, 0)
+		body.material_override = stone_mat
+		obelisk.add_child(body)
+		# Glowing rune line down the front face
+		var line: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.04, 4.0, 0.06)
+		line.mesh = lm
+		line.position = Vector3(0, 2.50, 0.40)
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = Color(0.85, 0.40, 1.0)
+		lmat.emission_enabled = true
+		lmat.emission = Color(1.0, 0.55, 1.0)
+		lmat.emission_energy_multiplier = 1.8
+		lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		line.material_override = lmat
+		obelisk.add_child(line)
+		# Top crowning gem
+		var gem: MeshInstance3D = MeshInstance3D.new()
+		var gm: SphereMesh = SphereMesh.new()
+		gm.radius = 0.22
+		gm.height = 0.44
+		gem.mesh = gm
+		gem.position = Vector3(0, 5.20, 0)
+		var gmat: StandardMaterial3D = StandardMaterial3D.new()
+		gmat.albedo_color = Color(0.85, 0.40, 1.0)
+		gmat.emission_enabled = true
+		gmat.emission = Color(1.0, 0.55, 1.0)
+		gmat.emission_energy_multiplier = 2.6
+		gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		gem.material_override = gmat
+		obelisk.add_child(gem)
+		# Pulse the gem
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(gem, "scale", Vector3(1.30, 1.30, 1.30), 1.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(gem, "scale", Vector3(0.85, 0.85, 0.85), 1.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		# Collision per obelisk
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 5.0, 0.85)
+		cs.shape = cb
+		cs.position = Vector3(0, 2.50, 0)
+		sb.add_child(cs)
+		obelisk.add_child(sb)
+
+
+func _build_d3_phantom_warrior_npc() -> void:
+	## Epic-3 T34: Phantom Warrior NPC — a translucent ghost of a fallen
+	## warrior with armor outline + a translucent sword. Stands at attention.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var phantom: Node3D = Node3D.new()
+	phantom.name = "D3PhantomWarrior"
+	phantom.position = D3_CENTER + Vector3(-8, 0, -16)
+	slots.add_child(phantom)
+	# Translucent body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.95, 1.0, 0.45)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.95, 1.0)
+	bmat.emission_energy_multiplier = 1.4
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	phantom.add_child(body)
+	# Helmet — narrow box
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.55, 0.65, 0.55)
+	helmet.mesh = hm
+	helmet.position = Vector3(0, 1.65, 0)
+	helmet.material_override = bmat
+	phantom.add_child(helmet)
+	# 2 white slit eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 3.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.10, 0.04, 0.04)
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.65, 0.30)
+		eye.material_override = eye_mat
+		phantom.add_child(eye)
+	# Translucent sword held vertically in front
+	var sword: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.10, 1.85, 0.04)
+	sword.mesh = sm
+	sword.position = Vector3(0.30, 1.0, 0.40)
+	sword.material_override = bmat
+	phantom.add_child(sword)
+	# Slow flicker visibility for ghost feel
+	var flicker: Tween = create_tween().set_loops()
+	flicker.tween_property(bmat, "emission_energy_multiplier", 2.4, 1.4).set_ease(Tween.EASE_IN_OUT)
+	flicker.tween_property(bmat, "emission_energy_multiplier", 0.85, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Phantom Warrior"
+	label.position = Vector3(0, 2.30, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	phantom.add_child(label)
+
+
+func _build_d3_illusion_bridge(geom: Node) -> void:
+	## Epic-3 T35: a short illusion bridge — 6 floating tile platforms in
+	## a row that fade in/out on independent flickers, suggesting "the
+	## bridge only appears for the worthy".
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "D3IllusionBridge"
+	bridge.position = D3_CENTER + Vector3(0, 0.55, 16)
+	geom.add_child(bridge)
+	for i in 6:
+		var tile: MeshInstance3D = MeshInstance3D.new()
+		tile.name = "D3BridgeTile_%d" % i
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(1.40, 0.10, 1.40)
+		tile.mesh = tmesh
+		tile.position = Vector3(-3.5 + i * 1.40, 0, 0)
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.85, 0.40, 1.0, 0.55)
+		tmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		tmat.emission_enabled = true
+		tmat.emission = Color(1.0, 0.55, 1.0)
+		tmat.emission_energy_multiplier = 1.6
+		tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		tile.material_override = tmat
+		bridge.add_child(tile)
+		# Fade visibility on independent timings
+		var flicker: Tween = create_tween().set_loops()
+		flicker.tween_interval(i * 0.30)
+		flicker.tween_property(tile, "visible", false, 0.0)
+		flicker.tween_interval(0.20)
+		flicker.tween_property(tile, "visible", true, 0.0)
+		flicker.tween_interval(2.0 - i * 0.20)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "ILLUSION BRIDGE"
+	label.position = Vector3(0, 1.20, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	bridge.add_child(label)
 
 
 
