@@ -1510,6 +1510,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_scrap_vendor_cart(geom)
 	# Epic-2 T40: smuggler NPC hiding behind a container
 	_build_d2_smuggler_npc()
+	# Epic-2 T41: holographic enemy wireframe billboard
+	_build_d2_holo_wireframe(geom)
+	# Epic-2 T42: 3 caged glitchbug specimens stacked
+	_build_d2_caged_bugs(geom)
+	# Epic-2 T43: arcing electric generator with sparks
+	_build_d2_arc_generator(geom)
+	# Epic-2 T44: floating hover platform that bobs
+	_build_d2_hover_platform(geom)
+	# Epic-2 T45: arms dealer NPC with weapon display
+	_build_d2_arms_dealer_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -10949,5 +10959,492 @@ func _build_d2_smuggler_npc() -> void:
 	label.font_size = 16
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	smug.add_child(label)
+
+
+func _build_d2_holo_wireframe(geom: Node) -> void:
+	## Epic-2 T41: a holographic enemy wireframe billboard — a tall narrow
+	## display showing a rotating wireframe glitch beast silhouette. Used
+	## by mercenaries as a "WANTED" notice.
+	var billboard: Node3D = Node3D.new()
+	billboard.name = "D2HoloWireframe"
+	billboard.position = D2_CENTER + Vector3(6, 0, -4)
+	geom.add_child(billboard)
+	# Stand
+	var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stand_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	stand_mat.metallic = 0.85
+	stand_mat.roughness = 0.30
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.30, 0.85, 0.30)
+	stand.mesh = smesh
+	stand.position = Vector3(0, 0.42, 0)
+	stand.material_override = stand_mat
+	billboard.add_child(stand)
+	# Display panel
+	var panel: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(1.40, 1.85, 0.10)
+	panel.mesh = pmesh
+	panel.position = Vector3(0, 1.80, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.06, 0.05, 0.10)
+	pmat.metallic = 0.40
+	pmat.roughness = 0.30
+	pmat.emission_enabled = true
+	pmat.emission = Color(1.0, 0.30, 0.30)
+	pmat.emission_energy_multiplier = 0.45
+	panel.material_override = pmat
+	billboard.add_child(panel)
+	# Rotating wireframe enemy inside the display
+	var wire_pivot: Node3D = Node3D.new()
+	wire_pivot.position = Vector3(0, 1.80, 0.10)
+	billboard.add_child(wire_pivot)
+	# Use a wireframe sphere (we approximate with thin emissive bars)
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(1.0, 0.30, 0.30)
+	wire_mat.emission_enabled = true
+	wire_mat.emission = Color(1.0, 0.40, 0.40)
+	wire_mat.emission_energy_multiplier = 2.4
+	wire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body box wireframe (12 edges)
+	var size: float = 0.55
+	var edges: Array = [
+		# Bottom rectangle
+		[Vector3(-size, -size, -size), Vector3(size, -size, -size)],
+		[Vector3(size, -size, -size), Vector3(size, -size, size)],
+		[Vector3(size, -size, size), Vector3(-size, -size, size)],
+		[Vector3(-size, -size, size), Vector3(-size, -size, -size)],
+		# Top rectangle
+		[Vector3(-size, size, -size), Vector3(size, size, -size)],
+		[Vector3(size, size, -size), Vector3(size, size, size)],
+		[Vector3(size, size, size), Vector3(-size, size, size)],
+		[Vector3(-size, size, size), Vector3(-size, size, -size)],
+		# Vertical edges
+		[Vector3(-size, -size, -size), Vector3(-size, size, -size)],
+		[Vector3(size, -size, -size), Vector3(size, size, -size)],
+		[Vector3(size, -size, size), Vector3(size, size, size)],
+		[Vector3(-size, -size, size), Vector3(-size, size, size)],
+	]
+	for edge in edges:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var dist: float = (edge[0] as Vector3).distance_to(edge[1] as Vector3)
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.03, dist, 0.03)
+		seg.mesh = em
+		var mid: Vector3 = ((edge[0] as Vector3) + (edge[1] as Vector3)) * 0.5
+		seg.position = mid
+		var dir: Vector3 = ((edge[1] as Vector3) - (edge[0] as Vector3)).normalized()
+		# Orient the box so its Y axis aligns with edge direction
+		var up: Vector3 = Vector3.UP
+		if abs(dir.dot(up)) > 0.99:
+			seg.rotation = Vector3(0, 0, 0)
+		else:
+			var right: Vector3 = up.cross(dir).normalized()
+			var new_up: Vector3 = dir
+			var new_right: Vector3 = right
+			var new_fwd: Vector3 = new_up.cross(new_right)
+			var basis: Basis = Basis(new_right, new_up, new_fwd)
+			seg.basis = basis
+		seg.material_override = wire_mat
+		wire_pivot.add_child(seg)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(wire_pivot, "rotation:y", TAU, 6.0)
+	# WANTED label at top
+	var wanted: Label3D = Label3D.new()
+	wanted.text = "WANTED"
+	wanted.position = Vector3(0, 2.85, 0.06)
+	wanted.modulate = Color(1.0, 0.30, 0.30)
+	wanted.outline_modulate = Color(0, 0, 0, 0.85)
+	wanted.outline_size = 5
+	wanted.font_size = 22
+	wanted.no_depth_test = true
+	billboard.add_child(wanted)
+	# REWARD subtitle
+	var reward: Label3D = Label3D.new()
+	reward.text = "REWARD: 500"
+	reward.position = Vector3(0, 0.95, 0.06)
+	reward.modulate = Color(1.0, 0.85, 0.30)
+	reward.outline_modulate = Color(0, 0, 0, 0.85)
+	reward.outline_size = 4
+	reward.font_size = 14
+	reward.no_depth_test = true
+	billboard.add_child(reward)
+	# Collision around stand
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.30, 2.7, 0.30)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.35, 0)
+	sb.add_child(cs)
+	billboard.add_child(sb)
+
+
+func _build_d2_caged_bugs(geom: Node) -> void:
+	## Epic-2 T42: a stack of 3 wireframe cages on a table, each holding
+	## a captured glitchbug specimen of a different color (green/orange/violet).
+	var cage_root: Node3D = Node3D.new()
+	cage_root.name = "D2CagedBugs"
+	cage_root.position = D2_CENTER + Vector3(-15, 0, -2)
+	geom.add_child(cage_root)
+	# Table
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.18, 0.16, 0.12)
+	table_mat.metallic = 0.30
+	table_mat.roughness = 0.65
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.20, 0.85, 0.85)
+	table.mesh = tmesh
+	table.position = Vector3(0, 0.42, 0)
+	table.material_override = table_mat
+	cage_root.add_child(table)
+	# Helper inline function — 1 cage at given position with given color bug
+	var bug_specs: Array = [
+		[Vector3(-0.40, 1.10, 0), Color(0.40, 1.0, 0.40), Color(0.40, 1.0, 0.40)],
+		[Vector3(0.40, 1.10, 0), Color(1.0, 0.55, 0.20), Color(1.0, 0.55, 0.20)],
+		[Vector3(0.0, 1.65, 0), Color(0.85, 0.40, 1.0), Color(0.85, 0.40, 1.0)],
+	]
+	for spec in bug_specs:
+		var pos: Vector3 = spec[0]
+		var bar_color: Color = spec[1]
+		var bug_color: Color = spec[2]
+		# Cage cube wireframe — 12 edges
+		var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bar_mat.albedo_color = bar_color
+		bar_mat.emission_enabled = true
+		bar_mat.emission = bar_color
+		bar_mat.emission_energy_multiplier = 1.8
+		bar_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var s: float = 0.30
+		# 4 vertical
+		for ox in [-s, s]:
+			for oz in [-s, s]:
+				var bar: MeshInstance3D = MeshInstance3D.new()
+				var bm: CylinderMesh = CylinderMesh.new()
+				bm.top_radius = 0.018
+				bm.bottom_radius = 0.018
+				bm.height = s * 2
+				bar.mesh = bm
+				bar.position = pos + Vector3(ox, 0, oz)
+				bar.material_override = bar_mat
+				cage_root.add_child(bar)
+		# 8 horizontal (top + bottom rectangles)
+		var horizontals: Array = [
+			[Vector3(0, -s, -s), Vector3(s * 2, 0.04, 0.04)],
+			[Vector3(0, -s, s), Vector3(s * 2, 0.04, 0.04)],
+			[Vector3(-s, -s, 0), Vector3(0.04, 0.04, s * 2)],
+			[Vector3(s, -s, 0), Vector3(0.04, 0.04, s * 2)],
+			[Vector3(0, s, -s), Vector3(s * 2, 0.04, 0.04)],
+			[Vector3(0, s, s), Vector3(s * 2, 0.04, 0.04)],
+			[Vector3(-s, s, 0), Vector3(0.04, 0.04, s * 2)],
+			[Vector3(s, s, 0), Vector3(0.04, 0.04, s * 2)],
+		]
+		for h in horizontals:
+			var hbar: MeshInstance3D = MeshInstance3D.new()
+			var hbm: BoxMesh = BoxMesh.new()
+			hbm.size = h[1]
+			hbar.mesh = hbm
+			hbar.position = pos + (h[0] as Vector3)
+			hbar.material_override = bar_mat
+			cage_root.add_child(hbar)
+		# Bug inside — small sphere
+		var bug: MeshInstance3D = MeshInstance3D.new()
+		var bgm: SphereMesh = SphereMesh.new()
+		bgm.radius = 0.14
+		bgm.height = 0.28
+		bug.mesh = bgm
+		bug.position = pos
+		var bgmat: StandardMaterial3D = StandardMaterial3D.new()
+		bgmat.albedo_color = bug_color
+		bgmat.emission_enabled = true
+		bgmat.emission = bug_color
+		bgmat.emission_energy_multiplier = 1.8
+		bgmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bug.material_override = bgmat
+		cage_root.add_child(bug)
+		# Bug bounces inside
+		var bounce: Tween = create_tween().set_loops()
+		bounce.tween_property(bug, "position", pos + Vector3(0.10, 0.08, 0), 0.4).set_ease(Tween.EASE_IN_OUT)
+		bounce.tween_property(bug, "position", pos + Vector3(-0.10, -0.08, 0), 0.4).set_ease(Tween.EASE_IN_OUT)
+		bounce.tween_property(bug, "position", pos + Vector3(0, 0, 0.10), 0.4).set_ease(Tween.EASE_IN_OUT)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "SPECIMENS"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.85, 0.95, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	cage_root.add_child(label)
+	# Collision around table
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.20, 1.85, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	cage_root.add_child(sb)
+
+
+func _build_d2_arc_generator(geom: Node) -> void:
+	## Epic-2 T43: an industrial arc generator — 2 metal coil pillars with
+	## a sparking electrical arc traveling between them, mounted on a base.
+	var gen: Node3D = Node3D.new()
+	gen.name = "D2ArcGenerator"
+	gen.position = D2_CENTER + Vector3(-18, 0, -10)
+	geom.add_child(gen)
+	# Base platform
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.30
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(2.40, 0.40, 1.40)
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.20, 0)
+	base.material_override = dark_mat
+	gen.add_child(base)
+	# 2 coil pillars
+	var coil_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coil_mat.albedo_color = Color(0.55, 0.30, 0.10)
+	coil_mat.metallic = 0.85
+	coil_mat.roughness = 0.30
+	for sx: float in [-0.85, 0.85]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.20
+		pmesh.bottom_radius = 0.30
+		pmesh.height = 1.85
+		pillar.mesh = pmesh
+		pillar.position = Vector3(sx, 1.30, 0)
+		pillar.material_override = coil_mat
+		gen.add_child(pillar)
+		# Top sphere terminal
+		var term: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: SphereMesh = SphereMesh.new()
+		tmesh.radius = 0.30
+		tmesh.height = 0.60
+		term.mesh = tmesh
+		term.position = Vector3(sx, 2.30, 0)
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.85, 0.85, 0.95)
+		tmat.metallic = 0.85
+		tmat.roughness = 0.20
+		tmat.emission_enabled = true
+		tmat.emission = Color(0.55, 0.95, 1.0)
+		tmat.emission_energy_multiplier = 1.4
+		term.material_override = tmat
+		gen.add_child(term)
+	# Arc — 5 thin emissive bars between the terminals at random angles
+	var arc_mat: StandardMaterial3D = StandardMaterial3D.new()
+	arc_mat.albedo_color = Color(0.85, 0.95, 1.0)
+	arc_mat.emission_enabled = true
+	arc_mat.emission = Color(0.95, 0.95, 1.0)
+	arc_mat.emission_energy_multiplier = 3.6
+	arc_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 5:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.36, 0.05, 0.05)
+		seg.mesh = sm
+		seg.position = Vector3(-0.65 + i * 0.34, 2.30 + randf_range(-0.15, 0.15), 0)
+		seg.rotation = Vector3(0, 0, deg_to_rad(randf_range(-25, 25)))
+		seg.material_override = arc_mat
+		gen.add_child(seg)
+		# Flicker
+		var flicker: Tween = create_tween().set_loops()
+		flicker.tween_property(seg, "visible", false, 0.0)
+		flicker.tween_interval(0.06 + randf() * 0.10)
+		flicker.tween_property(seg, "visible", true, 0.0)
+		flicker.tween_interval(0.04 + randf() * 0.10)
+	# Collision around base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 2.20, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.10, 0)
+	sb.add_child(cs)
+	gen.add_child(sb)
+
+
+func _build_d2_hover_platform(geom: Node) -> void:
+	## Epic-2 T44: a small floating hover platform that bobs in place.
+	## Hex-shaped disc with cyan glow underneath, slowly rotating.
+	var plat: Node3D = Node3D.new()
+	plat.name = "D2HoverPlatform"
+	plat.position = D2_CENTER + Vector3(4, 1.6, -16)
+	geom.add_child(plat)
+	# Hex disc
+	var disc_mat: StandardMaterial3D = StandardMaterial3D.new()
+	disc_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	disc_mat.metallic = 0.85
+	disc_mat.roughness = 0.30
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dmesh: PrismMesh = PrismMesh.new()
+	dmesh.size = Vector3(1.40, 0.20, 1.40)
+	disc.mesh = dmesh
+	disc.material_override = disc_mat
+	plat.add_child(disc)
+	# Cyan glow underneath
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.55)
+	glow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.55, 0.95, 1.0)
+	glow_mat.emission_energy_multiplier = 1.8
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var gmesh: CylinderMesh = CylinderMesh.new()
+	gmesh.top_radius = 0.95
+	gmesh.bottom_radius = 0.95
+	gmesh.height = 0.06
+	glow.mesh = gmesh
+	glow.position = Vector3(0, -0.20, 0)
+	glow.material_override = glow_mat
+	plat.add_child(glow)
+	# Edge emissive trim
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 1.8
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var t: float = float(i) / 6.0
+		var angle: float = t * TAU
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(0.30, 0.04, 0.04)
+		trim.mesh = tmesh
+		trim.position = Vector3(cos(angle) * 0.65, 0.10, sin(angle) * 0.65)
+		trim.rotation = Vector3(0, -angle, 0)
+		trim.material_override = trim_mat
+		plat.add_child(trim)
+	# Bob in place
+	var origin: Vector3 = D2_CENTER + Vector3(4, 1.6, -16)
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(plat, "position:y", 2.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(plat, "position:y", 1.6, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(plat, "rotation:y", TAU, 8.0)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.4, 0.30, 1.4)
+	cs.shape = cb
+	sb.add_child(cs)
+	plat.add_child(sb)
+
+
+func _build_d2_arms_dealer_npc() -> void:
+	## Epic-2 T45: arms dealer NPC standing behind a small table with 3
+	## displayed weapons (3 colored vertical bars). Heavy armor + a wide
+	## metal shoulder pad.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var dealer: Node3D = Node3D.new()
+	dealer.name = "D2ArmsDealer"
+	dealer.position = D2_CENTER + Vector3(15, 0, -6)
+	slots.add_child(dealer)
+	# Display table in front of the dealer
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.18, 0.16, 0.12)
+	table_mat.metallic = 0.40
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.40, 0.85, 0.55)
+	table.mesh = tmesh
+	table.position = Vector3(0, 0.42, 0.65)
+	table.material_override = table_mat
+	dealer.add_child(table)
+	# 3 displayed weapons standing on the table
+	var weapon_specs: Array = [
+		[-0.45, Color(0.55, 0.95, 1.0)],
+		[0.0, Color(1.0, 0.40, 0.20)],
+		[0.45, Color(0.85, 0.40, 1.0)],
+	]
+	for spec in weapon_specs:
+		var weapon: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		wmesh.size = Vector3(0.05, 0.85, 0.04)
+		weapon.mesh = wmesh
+		weapon.position = Vector3(spec[0], 1.30, 0.65)
+		var wmat: StandardMaterial3D = StandardMaterial3D.new()
+		var c: Color = spec[1]
+		wmat.albedo_color = c
+		wmat.emission_enabled = true
+		wmat.emission = c
+		wmat.emission_energy_multiplier = 1.8
+		wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		weapon.material_override = wmat
+		dealer.add_child(weapon)
+	# Body capsule
+	var armor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	armor_mat.albedo_color = Color(0.20, 0.20, 0.24)
+	armor_mat.metallic = 0.65
+	armor_mat.roughness = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = armor_mat
+	dealer.add_child(body)
+	# Wide metal shoulder pad (box on top of capsule)
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(1.20, 0.20, 0.55)
+	pad.mesh = pmesh
+	pad.position = Vector3(0, 1.30, 0)
+	pad.material_override = armor_mat
+	dealer.add_child(pad)
+	# Helmet
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(0.55, 0.50, 0.55)
+	helmet.mesh = hmesh
+	helmet.position = Vector3(0, 1.70, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.08, 0.08, 0.10)
+	hmat.metallic = 0.85
+	hmat.roughness = 0.30
+	helmet.material_override = hmat
+	dealer.add_child(helmet)
+	# 1 amber visor stripe
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vmesh: BoxMesh = BoxMesh.new()
+	vmesh.size = Vector3(0.55, 0.10, 0.04)
+	visor.mesh = vmesh
+	visor.position = Vector3(0, 1.72, 0.30)
+	var vmat: StandardMaterial3D = StandardMaterial3D.new()
+	vmat.albedo_color = Color(1.0, 0.65, 0.20)
+	vmat.emission_enabled = true
+	vmat.emission = Color(1.0, 0.75, 0.25)
+	vmat.emission_energy_multiplier = 2.6
+	vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = vmat
+	dealer.add_child(visor)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Arms Dealer"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.65, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dealer.add_child(label)
+
 
 
