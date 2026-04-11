@@ -27,6 +27,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_quest_board(geom)
 	_build_th_stash_chest(geom)
 	_build_th_vendor_kiosk(geom)
+	_build_th_data_fountain(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -1791,3 +1792,227 @@ func _build_th_vendor_kiosk(geom: Node) -> void:
 	var bob: Tween = pivot.create_tween().set_loops()
 	bob.tween_property(ware_pivot, "position:y", 2.25, 1.6).set_ease(Tween.EASE_IN_OUT)
 	bob.tween_property(ware_pivot, "position:y", 1.95, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_data_fountain(geom: Node) -> void:
+	## Epic-10 T11: circular data fountain on the E radial path. Round
+	## basalt rim basin filled with glowing cyan data, central tiered
+	## brass spire with 3 cascading levels, upward jet stream of cyan
+	## particles + downward fall particles, 4 small spout figures around
+	## the rim, and rim ambient glow.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_DataFountain"
+	# E radial path (angle = 0), at radius 6.5
+	pivot.position = TOWN_CENTER + Vector3(6.5, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Round basalt rim basin ----
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmm: TorusMesh = TorusMesh.new()
+	rmm.inner_radius = 1.95
+	rmm.outer_radius = 2.40
+	rim.mesh = rmm
+	rim.material_override = stone_mat
+	rim.position = Vector3(0, 0.30, 0)
+	pivot.add_child(rim)
+	# Rim collision (cylinder ring approximation)
+	var rim_sb: StaticBody3D = StaticBody3D.new()
+	rim_sb.position = Vector3(0, 0.30, 0)
+	var rim_cs: CollisionShape3D = CollisionShape3D.new()
+	var rim_cyl: CylinderShape3D = CylinderShape3D.new()
+	rim_cyl.top_radius = 2.40
+	rim_cyl.bottom_radius = 2.40
+	rim_cyl.height = 0.50
+	rim_cs.shape = rim_cyl
+	rim_sb.add_child(rim_cs)
+	pivot.add_child(rim_sb)
+	# Brass rim trim torus on top of the basalt rim
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var trm: TorusMesh = TorusMesh.new()
+	trm.inner_radius = 2.20
+	trm.outer_radius = 2.40
+	trim.mesh = trm
+	trim.material_override = brass_mat
+	trim.position = Vector3(0, 0.55, 0)
+	pivot.add_child(trim)
+	# ---- Glowing cyan basin water disc ----
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.95
+	wm.bottom_radius = 1.95
+	wm.height = 0.10
+	water.mesh = wm
+	water.material_override = data_mat
+	water.position = Vector3(0, 0.50, 0)
+	pivot.add_child(water)
+	# ---- Central tiered brass spire (3 cascading levels) ----
+	# Tier 1 — wide brass dish with rim
+	var t1: MeshInstance3D = MeshInstance3D.new()
+	var t1m: CylinderMesh = CylinderMesh.new()
+	t1m.top_radius = 0.85
+	t1m.bottom_radius = 0.85
+	t1m.height = 0.10
+	t1.mesh = t1m
+	t1.material_override = brass_mat
+	t1.position = Vector3(0, 1.10, 0)
+	pivot.add_child(t1)
+	# Tier 1 stem
+	var s1: MeshInstance3D = MeshInstance3D.new()
+	var s1m: CylinderMesh = CylinderMesh.new()
+	s1m.top_radius = 0.12
+	s1m.bottom_radius = 0.18
+	s1m.height = 0.65
+	s1.mesh = s1m
+	s1.material_override = brass_mat
+	s1.position = Vector3(0, 0.78, 0)
+	pivot.add_child(s1)
+	# Tier 2 — medium brass dish
+	var t2: MeshInstance3D = MeshInstance3D.new()
+	var t2m: CylinderMesh = CylinderMesh.new()
+	t2m.top_radius = 0.55
+	t2m.bottom_radius = 0.55
+	t2m.height = 0.08
+	t2.mesh = t2m
+	t2.material_override = brass_mat
+	t2.position = Vector3(0, 1.55, 0)
+	pivot.add_child(t2)
+	# Tier 2 stem
+	var s2: MeshInstance3D = MeshInstance3D.new()
+	var s2m: CylinderMesh = CylinderMesh.new()
+	s2m.top_radius = 0.10
+	s2m.bottom_radius = 0.13
+	s2m.height = 0.45
+	s2.mesh = s2m
+	s2.material_override = brass_mat
+	s2.position = Vector3(0, 1.32, 0)
+	pivot.add_child(s2)
+	# Tier 3 — small brass dish (top)
+	var t3: MeshInstance3D = MeshInstance3D.new()
+	var t3m: CylinderMesh = CylinderMesh.new()
+	t3m.top_radius = 0.30
+	t3m.bottom_radius = 0.30
+	t3m.height = 0.06
+	t3.mesh = t3m
+	t3.material_override = brass_mat
+	t3.position = Vector3(0, 1.95, 0)
+	pivot.add_child(t3)
+	# Tier 3 stem
+	var s3: MeshInstance3D = MeshInstance3D.new()
+	var s3m: CylinderMesh = CylinderMesh.new()
+	s3m.top_radius = 0.08
+	s3m.bottom_radius = 0.10
+	s3m.height = 0.35
+	s3.mesh = s3m
+	s3.material_override = brass_mat
+	s3.position = Vector3(0, 1.77, 0)
+	pivot.add_child(s3)
+	# Top finial sphere — bright unshaded data sphere
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.18
+	fm.height = 0.36
+	finial.mesh = fm
+	finial.material_override = data_mat
+	finial.position = Vector3(0, 2.20, 0)
+	pivot.add_child(finial)
+	# ---- Upward jet stream of cyan data particles from the top finial ----
+	var jet: GPUParticles3D = GPUParticles3D.new()
+	jet.position = Vector3(0, 2.30, 0)
+	jet.amount = 36
+	jet.lifetime = 1.8
+	var jmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	jmat.direction = Vector3(0, 1, 0)
+	jmat.spread = 16.0
+	jmat.initial_velocity_min = 1.5
+	jmat.initial_velocity_max = 2.5
+	jmat.gravity = Vector3(0, -2.5, 0)
+	jmat.scale_min = 0.06
+	jmat.scale_max = 0.12
+	jmat.color = Color(0.45, 0.85, 1.0, 1.0)
+	jet.process_material = jmat
+	var jmesh: SphereMesh = SphereMesh.new()
+	jmesh.radius = 0.05
+	jmesh.height = 0.10
+	jet.draw_pass_1 = jmesh
+	pivot.add_child(jet)
+	# ---- 3 downward cascade emitters from each tier dish edge ----
+	var tier_ys: Array = [1.18, 1.62, 2.02]
+	var tier_radii: Array = [0.85, 0.55, 0.30]
+	for i in tier_ys.size():
+		var cascade: GPUParticles3D = GPUParticles3D.new()
+		cascade.position = Vector3(0, tier_ys[i], 0)
+		cascade.amount = 18
+		cascade.lifetime = 1.5
+		var cmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		cmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+		cmat.emission_ring_radius = tier_radii[i]
+		cmat.emission_ring_height = 0.05
+		cmat.emission_ring_axis = Vector3(0, 1, 0)
+		cmat.direction = Vector3(0, -1, 0)
+		cmat.spread = 8.0
+		cmat.initial_velocity_min = 0.4
+		cmat.initial_velocity_max = 0.8
+		cmat.gravity = Vector3(0, -2.5, 0)
+		cmat.scale_min = 0.04
+		cmat.scale_max = 0.08
+		cmat.color = Color(0.45, 0.85, 1.0, 1.0)
+		cascade.process_material = cmat
+		var cmesh: SphereMesh = SphereMesh.new()
+		cmesh.radius = 0.04
+		cmesh.height = 0.08
+		cascade.draw_pass_1 = cmesh
+		pivot.add_child(cascade)
+	# ---- 4 small brass spout figures around the rim (small fish-head boxes) ----
+	for i in 4:
+		var ang: float = float(i) / 4.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var spout: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.18, 0.16, 0.30)
+		spout.mesh = spm
+		spout.material_override = brass_mat
+		spout.position = Vector3(dx * 2.20, 0.65, dz * 2.20)
+		spout.rotation.y = ang + PI / 2.0
+		pivot.add_child(spout)
+		# Spout glowing dot at the tip
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.05
+		tm.height = 0.10
+		tip.mesh = tm
+		tip.material_override = data_mat
+		tip.position = Vector3(dx * 2.05, 0.65, dz * 2.05)
+		pivot.add_child(tip)
+	# ---- Strong cyan OmniLight from the basin ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, 0)
+	lt.light_color = Color(0.45, 0.85, 1.0)
+	lt.light_energy = 3.5
+	lt.omni_range = 9.0
+	pivot.add_child(lt)
+	# ---- Pulses ----
+	# Data pulse — basin water + finial + spout tips breathe together
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
