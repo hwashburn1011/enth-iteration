@@ -96,6 +96,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_geyser_observation_deck(geom)
 	_build_d9_vulcanologist_cinder_npc(town)
 	_build_d9_forge_memorial(geom)
+	_build_d9_memorial_keeper_ash_npc(town)
 	print("[D9Builder] done")
 
 
@@ -8129,4 +8130,180 @@ func _build_d9_forge_memorial(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_memorial_keeper_ash_npc(town: Node) -> void:
+	## Epic-9 T76: Memorial Keeper Ash — solemn hooded NPC tending the
+	## forge memorial obelisk's eternal flame. Long ash-grey hooded robe,
+	## brass hand censer (chained burning bowl) held forward, brass
+	## prayer beads at the waist, and a slow bowed-head sway.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9MemorialKeeperAshSlot"
+	# Stand just outside the memorial base ring (memorial at -18, 14)
+	slot.position = Vector3(D9_CENTER.x - 18, 0, 19)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9MemorialKeeperAsh"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Memorial Keeper Ash")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_memorial_keeper_ash")
+	# Face toward the obelisk (-Z direction)
+	npc.rotation.y = PI
+	slot.add_child(npc)
+	# ---- Ash-grey hooded robe (long box) ----
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.30, 0.28, 0.27)
+	robe_mat.roughness = 0.92
+	robe_mat.metallic = 0.05
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.50, 0.20, 0.05)
+	robe_mat.emission_energy_multiplier = 0.12
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.85, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.95, 0)
+	npc.add_child(robe)
+	# Hood — wider rounded box on top of the robe shoulders
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.40
+	hmesh.height = 0.65
+	hood.mesh = hmesh
+	hood.material_override = robe_mat
+	hood.position = Vector3(0, 1.95, 0)
+	hood.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(hood)
+	# Hood inner shadow — black box just inside the hood opening
+	var shadow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shadow_mat.albedo_color = Color(0.02, 0.02, 0.02)
+	shadow_mat.roughness = 1.0
+	shadow_mat.metallic = 0.0
+	var shadow: MeshInstance3D = MeshInstance3D.new()
+	var shm: BoxMesh = BoxMesh.new()
+	shm.size = Vector3(0.40, 0.30, 0.04)
+	shadow.mesh = shm
+	shadow.material_override = shadow_mat
+	shadow.position = Vector3(0, 1.92, -0.34)
+	npc.add_child(shadow)
+	# Two glowing ember eye-dots inside the hood
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 6.0
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.04
+		em.height = 0.08
+		eye.mesh = em
+		eye.material_override = ember_mat
+		eye.position = Vector3(ex, 1.95, -0.36)
+		npc.add_child(eye)
+	# Brass hand censer — chained burning bowl held in front
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	# Censer pivot so we can sway it
+	var censer_pivot: Node3D = Node3D.new()
+	censer_pivot.position = Vector3(0, 1.40, -0.45)
+	npc.add_child(censer_pivot)
+	# Chain — thin cylinder hanging from the wrist
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var chm: CylinderMesh = CylinderMesh.new()
+	chm.top_radius = 0.012
+	chm.bottom_radius = 0.012
+	chm.height = 0.40
+	chain.mesh = chm
+	chain.material_override = brass_mat
+	chain.position = Vector3(0, -0.20, 0)
+	censer_pivot.add_child(chain)
+	# Censer bowl
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.14
+	bm.height = 0.22
+	bowl.mesh = bm
+	bowl.material_override = brass_mat
+	bowl.position = Vector3(0, -0.45, 0)
+	bowl.scale = Vector3(1.0, 0.65, 1.0)
+	censer_pivot.add_child(bowl)
+	# Censer flame
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame: MeshInstance3D = MeshInstance3D.new()
+	var flm: SphereMesh = SphereMesh.new()
+	flm.radius = 0.10
+	flm.height = 0.20
+	flame.mesh = flm
+	flame.material_override = flame_mat
+	flame.position = Vector3(0, -0.32, 0)
+	censer_pivot.add_child(flame)
+	# Censer light
+	var clt: OmniLight3D = OmniLight3D.new()
+	clt.position = Vector3(0, -0.32, 0)
+	clt.light_color = Color(1.0, 0.55, 0.15)
+	clt.light_energy = 1.6
+	clt.omni_range = 3.5
+	censer_pivot.add_child(clt)
+	# Censer rising smoke motes
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, -0.20, 0)
+	motes.amount = 12
+	motes.lifetime = 1.8
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 12.0
+	pmat.initial_velocity_min = 0.4
+	pmat.initial_velocity_max = 0.8
+	pmat.gravity = Vector3(0, 0.3, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.08
+	pmat.color = Color(0.85, 0.50, 0.20, 0.85)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	censer_pivot.add_child(motes)
+	# Brass prayer beads at the waist — 5 small spheres in a hanging arc
+	for i in 5:
+		var bead: MeshInstance3D = MeshInstance3D.new()
+		var bsm: SphereMesh = SphereMesh.new()
+		bsm.radius = 0.04
+		bsm.height = 0.08
+		bead.mesh = bsm
+		bead.material_override = brass_mat
+		bead.position = Vector3(-0.45 + float(i) * 0.08, 1.05 - float(i) * 0.04, -0.30)
+		npc.add_child(bead)
+	# Body sway — slow bowed-head left/right sway
+	var sway: Tween = npc.create_tween().set_loops()
+	sway.tween_property(npc, "rotation:z", 0.05, 2.0).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(npc, "rotation:z", -0.05, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Censer slow sway
+	var cswing: Tween = npc.create_tween().set_loops()
+	cswing.tween_property(censer_pivot, "rotation:z", 0.18, 1.6).set_ease(Tween.EASE_IN_OUT)
+	cswing.tween_property(censer_pivot, "rotation:z", -0.18, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Eye + censer flame pulse
+	var epulse: Tween = npc.create_tween().set_loops()
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 
