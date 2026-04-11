@@ -32834,6 +32834,30 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_boss_arena_fortifications(geom)
 	# Epic-8 T100: TIDE LEVIATHAN finale boss
 	_build_d8_tide_leviathan(geom)
+	# === EPIC 9: District 9 — Volcanic Forge ===
+	_build_district_9(geom)
+
+
+func _build_district_9(geom: Node) -> void:
+	## Epic 9 entry point — Volcanic Forge, the molten data foundry where
+	## the simulation forges new code into being. Industrial smithing district
+	## with magma channels, anvils, and glowing forge gates.
+	# Epic-9 T1: extend boundary east + D9 volcanic ground
+	_extend_boundary_for_d9(geom)
+	_build_d9_ground(geom)
+	# Epic-9 T2: dock entrance — molten forge gate
+	_build_d9_forge_gate(geom)
+	# Epic-9 T3: GREAT FORGE HEART landmark
+	_build_d9_great_forge_heart(geom)
+	# Epic-9 T4: Forge Master Vulcan hero NPC
+	_build_d9_forge_master_npc()
+
+
+func _extend_boundary_for_d9(geom: Node) -> void:
+	## Epic-9 T1a: push the east boundary wall from x=630 out to x=760.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 760.0
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -40290,6 +40314,470 @@ func _build_d8_tide_leviathan(geom: Node) -> void:
 		cs.shape = cap
 		sb.add_child(cs)
 		boss.add_child(sb)
+
+
+const D9_CENTER := Vector3(680, 0, 0)
+
+
+func _build_d9_ground(geom: Node) -> void:
+	## Epic-9 T1b: D9 ground — dark cracked basalt with glowing magma veins
+	## and a faint orange emission. Replaces the green grass plane at the D9
+	## center patch and overlays cracked obsidian.
+	var ground_root: Node3D = Node3D.new()
+	ground_root.name = "D9VolcanicGround"
+	ground_root.position = Vector3(D9_CENTER.x, 0.01, 0)
+	geom.add_child(ground_root)
+	# Base obsidian plane
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	base_mat.metallic = 0.45
+	base_mat.roughness = 0.55
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: PlaneMesh = PlaneMesh.new()
+	bm.size = Vector2(80, 40)
+	base.mesh = bm
+	base.material_override = base_mat
+	base.position = Vector3(0, 0, 0)
+	ground_root.add_child(base)
+	# Magma vein decals (4 long thin glowing strips crossing the ground)
+	var vein_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vein_mat.albedo_color = Color(0.95, 0.45, 0.10)
+	vein_mat.emission_enabled = true
+	vein_mat.emission = Color(1.0, 0.55, 0.15)
+	vein_mat.emission_energy_multiplier = 2.5
+	vein_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in range(4):
+		var vein: MeshInstance3D = MeshInstance3D.new()
+		var vb: BoxMesh = BoxMesh.new()
+		vb.size = Vector3(60.0, 0.06, 0.55)
+		vein.mesh = vb
+		vein.material_override = vein_mat
+		vein.position = Vector3(0, 0.04, -12.0 + i * 8.0)
+		vein.rotation_degrees = Vector3(0, float(i) * 6.0 - 9.0, 0)
+		ground_root.add_child(vein)
+		# Pulse the emission slightly per vein
+		var pulse: Tween = vein.create_tween().set_loops()
+		var off: float = float(i) * 0.3
+		pulse.tween_property(vein_mat, "emission_energy_multiplier", 3.5, 1.6 + off)
+		pulse.tween_property(vein_mat, "emission_energy_multiplier", 1.8, 1.6 + off)
+	# 12 scattered scorch patches (small dark circles with red embers)
+	for i in range(12):
+		var patch: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 1.20 + randf() * 0.6
+		pm.bottom_radius = 1.20 + randf() * 0.6
+		pm.height = 0.04
+		patch.mesh = pm
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.22, 0.10, 0.05)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.85, 0.30, 0.10)
+		pmat.emission_energy_multiplier = 0.55
+		patch.material_override = pmat
+		patch.position = Vector3(-30.0 + i * 5.0, 0.05, -10.0 + float(i % 4) * 5.0)
+		ground_root.add_child(patch)
+	# Ambient orange light source for the district
+	var amb: OmniLight3D = OmniLight3D.new()
+	amb.light_color = Color(1.0, 0.55, 0.18)
+	amb.light_energy = 1.4
+	amb.omni_range = 30.0
+	amb.position = Vector3(0, 8, 0)
+	ground_root.add_child(amb)
+
+
+func _build_d9_forge_gate(geom: Node) -> void:
+	## Epic-9 T2: massive stone forge gate — twin obsidian pylons with
+	## glowing rune-engraved arch and molten core dripping from the keystone.
+	var gate: Node3D = Node3D.new()
+	gate.name = "D9ForgeGate"
+	gate.position = Vector3(D9_CENTER.x - 30, 0, 0)
+	geom.add_child(gate)
+	# Obsidian material
+	var stone: StandardMaterial3D = StandardMaterial3D.new()
+	stone.albedo_color = Color(0.12, 0.10, 0.12)
+	stone.metallic = 0.55
+	stone.roughness = 0.45
+	# Two pylons
+	for sx in [-3.0, 3.0]:
+		var pylon: MeshInstance3D = MeshInstance3D.new()
+		var pb: BoxMesh = BoxMesh.new()
+		pb.size = Vector3(1.6, 7.5, 1.6)
+		pylon.mesh = pb
+		pylon.material_override = stone
+		pylon.position = Vector3(sx, 3.75, 0)
+		gate.add_child(pylon)
+		# Per-pylon collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 3.75, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bs: BoxShape3D = BoxShape3D.new()
+		bs.size = Vector3(1.6, 7.5, 1.6)
+		cs.shape = bs
+		sb.add_child(cs)
+		gate.add_child(sb)
+	# Arch lintel across the top (long box)
+	var lintel: MeshInstance3D = MeshInstance3D.new()
+	var lb: BoxMesh = BoxMesh.new()
+	lb.size = Vector3(8.0, 1.20, 1.40)
+	lintel.mesh = lb
+	lintel.material_override = stone
+	lintel.position = Vector3(0, 8.10, 0)
+	gate.add_child(lintel)
+	# Glowing rune-engraved emissive band on the lintel
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.95, 0.50, 0.15)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.55, 0.20)
+	rune_mat.emission_energy_multiplier = 3.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sz in [-0.72, 0.72]:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bbm: BoxMesh = BoxMesh.new()
+		bbm.size = Vector3(7.6, 0.18, 0.05)
+		band.mesh = bbm
+		band.material_override = rune_mat
+		band.position = Vector3(0, 8.10, sz)
+		gate.add_child(band)
+	# Six rune cubes spaced along the lintel front
+	for i in range(6):
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rb: BoxMesh = BoxMesh.new()
+		rb.size = Vector3(0.40, 0.40, 0.06)
+		rune.mesh = rb
+		rune.material_override = rune_mat
+		rune.position = Vector3(-3.0 + i * 1.2, 8.10, 0.74)
+		gate.add_child(rune)
+		var pulse: Tween = rune.create_tween().set_loops()
+		var phase: float = float(i) * 0.18
+		pulse.tween_property(rune, "scale", Vector3(1.15, 1.15, 1.0), 0.7 + phase)
+		pulse.tween_property(rune, "scale", Vector3(0.85, 0.85, 1.0), 0.7 + phase)
+	# Molten keystone (spherical orange glowing core under the lintel center)
+	var key_mat: StandardMaterial3D = StandardMaterial3D.new()
+	key_mat.albedo_color = Color(1.0, 0.40, 0.10)
+	key_mat.emission_enabled = true
+	key_mat.emission = Color(1.0, 0.55, 0.18)
+	key_mat.emission_energy_multiplier = 4.5
+	key_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var keystone: MeshInstance3D = MeshInstance3D.new()
+	var ksm: SphereMesh = SphereMesh.new()
+	ksm.radius = 0.55
+	ksm.height = 1.10
+	keystone.mesh = ksm
+	keystone.material_override = key_mat
+	keystone.position = Vector3(0, 7.20, 0)
+	gate.add_child(keystone)
+	var key_pulse: Tween = keystone.create_tween().set_loops()
+	key_pulse.tween_property(key_mat, "emission_energy_multiplier", 6.5, 1.2)
+	key_pulse.tween_property(key_mat, "emission_energy_multiplier", 3.0, 1.2)
+	# Strong orange light at the keystone
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 4.5
+	lt.omni_range = 14.0
+	lt.position = Vector3(0, 7.20, 0)
+	gate.add_child(lt)
+	# Spark particles falling from the keystone
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.position = Vector3(0, 6.80, 0)
+	sparks.amount = 60
+	sparks.lifetime = 1.8
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 35.0
+	pm.initial_velocity_min = 0.55
+	pm.initial_velocity_max = 1.2
+	pm.gravity = Vector3(0, -3.0, 0)
+	pm.scale_min = 0.06
+	pm.scale_max = 0.14
+	pm.color = Color(1.0, 0.55, 0.18, 1.0)
+	sparks.process_material = pm
+	var spark_mesh: SphereMesh = SphereMesh.new()
+	spark_mesh.radius = 0.05
+	spark_mesh.height = 0.10
+	sparks.draw_pass_1 = spark_mesh
+	gate.add_child(sparks)
+
+
+func _build_d9_great_forge_heart(geom: Node) -> void:
+	## Epic-9 T3: GREAT FORGE HEART — massive central molten core surrounded
+	## by stone pillars and a chained ring, the iconic landmark of D9.
+	var heart: Node3D = Node3D.new()
+	heart.name = "D9GreatForgeHeart"
+	heart.position = Vector3(D9_CENTER.x, 0, 0)
+	geom.add_child(heart)
+	# Stone basin (wide cylinder)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.16)
+	stone_mat.roughness = 0.85
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bcm: CylinderMesh = CylinderMesh.new()
+	bcm.top_radius = 4.5
+	bcm.bottom_radius = 5.2
+	bcm.height = 1.40
+	basin.mesh = bcm
+	basin.material_override = stone_mat
+	basin.position = Vector3(0, 0.70, 0)
+	heart.add_child(basin)
+	# Inner molten lava pool (smaller cylinder, emissive)
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.40, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.60, 0.20)
+	lava_mat.emission_energy_multiplier = 3.5
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var lava: MeshInstance3D = MeshInstance3D.new()
+	var lcm: CylinderMesh = CylinderMesh.new()
+	lcm.top_radius = 3.8
+	lcm.bottom_radius = 3.8
+	lcm.height = 0.20
+	lava.mesh = lcm
+	lava.material_override = lava_mat
+	lava.position = Vector3(0, 1.45, 0)
+	heart.add_child(lava)
+	# Central rising molten core (large sphere floating above the lava)
+	var core_mat: StandardMaterial3D = StandardMaterial3D.new()
+	core_mat.albedo_color = Color(1.0, 0.45, 0.12)
+	core_mat.emission_enabled = true
+	core_mat.emission = Color(1.0, 0.62, 0.20)
+	core_mat.emission_energy_multiplier = 5.0
+	core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var csm: SphereMesh = SphereMesh.new()
+	csm.radius = 1.85
+	csm.height = 3.7
+	core.mesh = csm
+	core.material_override = core_mat
+	core.position = Vector3(0, 4.40, 0)
+	heart.add_child(core)
+	# Bob + pulse the core
+	var bob: Tween = core.create_tween().set_loops()
+	bob.tween_property(core, "position:y", 4.95, 2.5)
+	bob.tween_property(core, "position:y", 4.40, 2.5)
+	var pulse: Tween = core.create_tween().set_loops()
+	pulse.tween_property(core_mat, "emission_energy_multiplier", 7.5, 1.4)
+	pulse.tween_property(core_mat, "emission_energy_multiplier", 3.5, 1.4)
+	# Strong orange omni light at the core
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 7.0
+	lt.omni_range = 22.0
+	lt.position = Vector3(0, 4.40, 0)
+	heart.add_child(lt)
+	# 8 stone pillars surrounding the basin in a ring
+	for i in range(8):
+		var ang: float = float(i) * (TAU / 8.0)
+		var radius: float = 7.5
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.55
+		pcm.bottom_radius = 0.70
+		pcm.height = 4.5
+		pillar.mesh = pcm
+		pillar.material_override = stone_mat
+		pillar.position = Vector3(cos(ang) * radius, 2.25, sin(ang) * radius)
+		heart.add_child(pillar)
+		# Iron cap with glowing rune
+		var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cap_mat.albedo_color = Color(0.55, 0.30, 0.12)
+		cap_mat.emission_enabled = true
+		cap_mat.emission = Color(1.0, 0.55, 0.18)
+		cap_mat.emission_energy_multiplier = 1.5
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var ccm: CylinderMesh = CylinderMesh.new()
+		ccm.top_radius = 0.70
+		ccm.bottom_radius = 0.70
+		ccm.height = 0.18
+		cap.mesh = ccm
+		cap.material_override = cap_mat
+		cap.position = Vector3(cos(ang) * radius, 4.60, sin(ang) * radius)
+		heart.add_child(cap)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(cos(ang) * radius, 2.25, sin(ang) * radius)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+		cap_shape.radius = 0.70
+		cap_shape.height = 4.5
+		cs.shape = cap_shape
+		sb.add_child(cs)
+		heart.add_child(sb)
+	# Iron chain torus links between pillars
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.18, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	for i in range(8):
+		var ang_a: float = float(i) * (TAU / 8.0)
+		var ang_b: float = float(i + 1) * (TAU / 8.0)
+		var mid: Vector3 = Vector3(
+			(cos(ang_a) + cos(ang_b)) * 0.5 * 7.5,
+			3.0,
+			(sin(ang_a) + sin(ang_b)) * 0.5 * 7.5
+		)
+		var link: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 0.22
+		tm.outer_radius = 0.32
+		link.mesh = tm
+		link.material_override = iron_mat
+		link.position = mid
+		link.rotation_degrees = Vector3(90, -rad_to_deg((ang_a + ang_b) * 0.5), 0)
+		heart.add_child(link)
+	# Heat haze ember particles rising from the lava
+	var embers: GPUParticles3D = GPUParticles3D.new()
+	embers.position = Vector3(0, 1.55, 0)
+	embers.amount = 120
+	embers.lifetime = 3.5
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	pm.emission_ring_radius = 3.6
+	pm.emission_ring_inner_radius = 1.5
+	pm.emission_ring_height = 0.10
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 12.0
+	pm.initial_velocity_min = 0.85
+	pm.initial_velocity_max = 1.65
+	pm.gravity = Vector3(0, 0.15, 0)
+	pm.scale_min = 0.10
+	pm.scale_max = 0.22
+	pm.color = Color(1.0, 0.55, 0.18, 0.85)
+	embers.process_material = pm
+	var ember_mesh: SphereMesh = SphereMesh.new()
+	ember_mesh.radius = 0.10
+	ember_mesh.height = 0.20
+	embers.draw_pass_1 = ember_mesh
+	heart.add_child(embers)
+	# Basin collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.70, 0)
+	var bcs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 5.2
+	cyl.height = 1.40
+	bcs.shape = cyl
+	stb.add_child(bcs)
+	heart.add_child(stb)
+
+
+func _build_d9_forge_master_npc() -> void:
+	## Epic-9 T4: Forge Master Vulcan — D9 hero NPC. Stone-skinned blacksmith
+	## with a heavy iron hammer and a glowing forge apron.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ForgeMasterSlot"
+	slot.position = Vector3(D9_CENTER.x - 12, 0, 4)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ForgeMaster"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Forge Master Vulcan")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_forge_master")
+	slot.add_child(npc)
+	# Stone-grey skin overlay (thick chest box, dark)
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.32, 0.28, 0.25)
+	skin_mat.roughness = 0.85
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(1.05, 1.10, 0.65)
+	torso.mesh = tb
+	torso.material_override = skin_mat
+	torso.position = Vector3(0, 1.10, 0)
+	npc.add_child(torso)
+	# Glowing forge apron (orange emissive front plate)
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.55, 0.20, 0.08)
+	apron_mat.emission_enabled = true
+	apron_mat.emission = Color(1.0, 0.50, 0.15)
+	apron_mat.emission_energy_multiplier = 1.4
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var ab: BoxMesh = BoxMesh.new()
+	ab.size = Vector3(0.95, 1.30, 0.08)
+	apron.mesh = ab
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.95, 0.36)
+	npc.add_child(apron)
+	# Iron rivets across the apron
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.18, 0.20)
+	iron_mat.metallic = 0.90
+	iron_mat.roughness = 0.30
+	for sx in [-0.30, 0.30]:
+		for sy in [0.30, -0.10, -0.50]:
+			var rivet: MeshInstance3D = MeshInstance3D.new()
+			var rsm: SphereMesh = SphereMesh.new()
+			rsm.radius = 0.05
+			rsm.height = 0.08
+			rivet.mesh = rsm
+			rivet.material_override = iron_mat
+			rivet.position = Vector3(sx, 0.95 + sy, 0.42)
+			npc.add_child(rivet)
+	# Heavy iron hammer held in right hand
+	var hammer_root: Node3D = Node3D.new()
+	hammer_root.position = Vector3(0.55, 1.05, 0.20)
+	hammer_root.rotation_degrees = Vector3(0, 0, -25)
+	npc.add_child(hammer_root)
+	# Hammer haft (wooden)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	wood_mat.roughness = 0.85
+	var haft: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.06
+	hcm.bottom_radius = 0.07
+	hcm.height = 1.10
+	haft.mesh = hcm
+	haft.material_override = wood_mat
+	haft.position = Vector3(0, 0, 0)
+	hammer_root.add_child(haft)
+	# Hammer head (iron block, glowing edge)
+	var head_mat: StandardMaterial3D = StandardMaterial3D.new()
+	head_mat.albedo_color = Color(0.22, 0.20, 0.20)
+	head_mat.metallic = 0.92
+	head_mat.roughness = 0.30
+	head_mat.emission_enabled = true
+	head_mat.emission = Color(1.0, 0.45, 0.12)
+	head_mat.emission_energy_multiplier = 0.85
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(0.55, 0.30, 0.30)
+	head.mesh = hb
+	head.material_override = head_mat
+	head.position = Vector3(0, 0.55, 0)
+	hammer_root.add_child(head)
+	# Forge helmet (dark visor with cyan slit)
+	var helm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	helm_mat.albedo_color = Color(0.18, 0.18, 0.20)
+	helm_mat.metallic = 0.7
+	helm_mat.roughness = 0.4
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.34
+	hsm.height = 0.55
+	helm.mesh = hsm
+	helm.material_override = helm_mat
+	helm.position = Vector3(0, 1.95, 0)
+	npc.add_child(helm)
+	# Visor slit (cyan emissive)
+	var slit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	slit_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	slit_mat.emission_enabled = true
+	slit_mat.emission = Color(0.40, 0.95, 1.0)
+	slit_mat.emission_energy_multiplier = 2.0
+	slit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var slit: MeshInstance3D = MeshInstance3D.new()
+	var slm: BoxMesh = BoxMesh.new()
+	slm.size = Vector3(0.42, 0.06, 0.04)
+	slit.mesh = slm
+	slit.material_override = slit_mat
+	slit.position = Vector3(0, 1.95, 0.32)
+	npc.add_child(slit)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
