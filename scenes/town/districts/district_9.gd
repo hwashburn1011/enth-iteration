@@ -80,6 +80,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_anvil_shrine(geom)
 	_build_d9_slag_golem_patroller(geom)
 	_build_d9_forge_cart_caravan(geom)
+	_build_d9_ore_vein_cliff(geom)
 	print("[D9Builder] done")
 
 
@@ -5504,5 +5505,112 @@ func _build_d9_forge_cart_caravan(geom: Node) -> void:
 	var blink: Tween = pivot.create_tween().set_loops()
 	blink.tween_property(lamp_mat, "emission_energy_multiplier", 8.5, 0.9).set_ease(Tween.EASE_IN_OUT)
 	blink.tween_property(lamp_mat, "emission_energy_multiplier", 4.0, 0.9).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_ore_vein_cliff(geom: Node) -> void:
+	## Epic-9 T60: massive cliff wall with embedded glowing ore veins.
+	## Marks the source of the cart caravan ore. Wide basalt slab with
+	## diagonal ember vein streaks + a mine entrance opening + light.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_OreVeinCliff"
+	pivot.position = D9_CENTER + Vector3(58, 0, 26)
+	geom.add_child(pivot)
+	# Cliff slab — wide tall basalt
+	var cliff: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(14.0, 9.0, 1.6)
+	cliff.mesh = cm
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	rock_mat.metallic = 0.20
+	rock_mat.roughness = 0.85
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(1.0, 0.30, 0.05)
+	rock_mat.emission_energy_multiplier = 0.18
+	cliff.material_override = rock_mat
+	cliff.position = Vector3(0, 4.5, 0.50)
+	pivot.add_child(cliff)
+	# Vein material (unshaded amber)
+	var vein_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vein_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	vein_mat.emission_enabled = true
+	vein_mat.emission = Color(1.0, 0.55, 0.10)
+	vein_mat.emission_energy_multiplier = 4.5
+	vein_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 8 diagonal vein streaks across the cliff face
+	for i in 8:
+		var t: float = float(i) / 7.0
+		var x_off: float = lerp(-5.5, 5.5, t)
+		var y_off: float = 1.5 + sin(float(i) * 1.2) * 2.5
+		var len: float = 1.20 + float(i % 3) * 0.40
+		var thickness: float = 0.10 + float(i % 2) * 0.05
+		var vein: MeshInstance3D = MeshInstance3D.new()
+		var vm: BoxMesh = BoxMesh.new()
+		vm.size = Vector3(thickness, len, 0.05)
+		vein.mesh = vm
+		vein.material_override = vein_mat
+		vein.position = Vector3(x_off, y_off + len * 0.5, -0.34)
+		vein.rotation.z = (float(i % 3) - 1.0) * 0.55
+		pivot.add_child(vein)
+	# Mine entrance — dark archway box (recessed)
+	var arch: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(2.80, 3.20, 0.85)
+	arch.mesh = am
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.02, 0.015, 0.01)
+	dark_mat.roughness = 0.95
+	arch.material_override = dark_mat
+	arch.position = Vector3(0, 1.60, -0.20)
+	pivot.add_child(arch)
+	# Arch frame top — small amber bar across the top of entrance
+	var frame_top: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(3.10, 0.20, 0.20)
+	frame_top.mesh = fm
+	frame_top.material_override = vein_mat
+	frame_top.position = Vector3(0, 3.20, -0.30)
+	pivot.add_child(frame_top)
+	# 2 frame side posts
+	for sx in [-1.45, 1.45]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var fpm: BoxMesh = BoxMesh.new()
+		fpm.size = Vector3(0.18, 3.20, 0.18)
+		post.mesh = fpm
+		post.material_override = vein_mat
+		post.position = Vector3(sx, 1.60, -0.30)
+		pivot.add_child(post)
+	# Mine entrance OmniLight — warm amber spilling out
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.80, -0.50)
+	lt.light_color = Color(1.0, 0.50, 0.12)
+	lt.light_energy = 3.6
+	lt.omni_range = 8.5
+	pivot.add_child(lt)
+	# 3 ore chunk piles at the base of the cliff (loose ore)
+	for i in 3:
+		var px: float = -3.0 + float(i) * 3.0
+		var pile: MeshInstance3D = MeshInstance3D.new()
+		var psm: SphereMesh = SphereMesh.new()
+		psm.radius = 0.45 + float(i % 2) * 0.10
+		psm.height = 0.65 + float(i % 2) * 0.10
+		pile.mesh = psm
+		pile.material_override = vein_mat
+		pile.position = Vector3(px, 0.30, -0.85)
+		pivot.add_child(pile)
+	# Per-vein ember pulse (staggered)
+	# Cycle the cliff emission pulse so the whole face throbs
+	var cliff_pulse: Tween = pivot.create_tween().set_loops()
+	cliff_pulse.tween_property(vein_mat, "emission_energy_multiplier", 6.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	cliff_pulse.tween_property(vein_mat, "emission_energy_multiplier", 3.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Cliff collision — big box
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 4.5, 0.50)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(14.0, 9.0, 1.6)
+	cs.shape = bs
+	stb.add_child(cs)
+	pivot.add_child(stb)
 
 
