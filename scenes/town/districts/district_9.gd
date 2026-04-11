@@ -112,6 +112,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_sky_cinder_fall(geom)
 	_build_d9_forge_heart_acolyte_npc(town)
 	_build_d9_boss_approach_gate(geom)
+	_build_d9_boss_approach_skull_pile(geom)
 	print("[D9Builder] done")
 
 
@@ -10731,4 +10732,168 @@ func _build_d9_boss_approach_gate(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 8.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_boss_approach_skull_pile(geom: Node) -> void:
+	## Epic-9 T92: dramatic warning pile of charred skulls and broken
+	## weapons past the boss approach gate. 12 skull spheres in a low
+	## mound, 4 broken weapon shafts jutting out, scorch decals, and
+	## ember motes rising from the pile. Tells players "many died here".
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BossApproachSkullPile"
+	# Just past the approach gate (gate at -16 Z), on the centerline
+	pivot.position = D9_CENTER + Vector3(0, 0, -18)
+	geom.add_child(pivot)
+	# Materials
+	var skull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skull_mat.albedo_color = Color(0.62, 0.55, 0.45)
+	skull_mat.roughness = 0.85
+	skull_mat.metallic = 0.10
+	skull_mat.emission_enabled = true
+	skull_mat.emission = Color(0.55, 0.20, 0.05)
+	skull_mat.emission_energy_multiplier = 0.30
+	var charred_mat: StandardMaterial3D = StandardMaterial3D.new()
+	charred_mat.albedo_color = Color(0.18, 0.13, 0.10)
+	charred_mat.roughness = 0.92
+	charred_mat.metallic = 0.10
+	charred_mat.emission_enabled = true
+	charred_mat.emission = Color(0.85, 0.25, 0.05)
+	charred_mat.emission_energy_multiplier = 0.45
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.30
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 5.0
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Charred ground patch (low circular slab) ----
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	var gm: CylinderMesh = CylinderMesh.new()
+	gm.top_radius = 2.20
+	gm.bottom_radius = 2.30
+	gm.height = 0.06
+	ground.mesh = gm
+	ground.material_override = charred_mat
+	ground.position = Vector3(0, 0.04, 0)
+	pivot.add_child(ground)
+	# ---- 12 charred skull spheres in a low mound ----
+	# Skulls have a body sphere + 2 dark eye sockets each
+	var skull_data: Array = [
+		# Bottom layer — 7 skulls
+		{"pos": Vector3(0.0, 0.30, 0.0), "rot": 0.0},
+		{"pos": Vector3(0.55, 0.30, 0.20), "rot": 0.6},
+		{"pos": Vector3(-0.55, 0.30, 0.20), "rot": -0.6},
+		{"pos": Vector3(0.30, 0.30, -0.55), "rot": 0.3},
+		{"pos": Vector3(-0.30, 0.30, -0.55), "rot": -0.3},
+		{"pos": Vector3(0.85, 0.30, -0.20), "rot": 1.0},
+		{"pos": Vector3(-0.85, 0.30, -0.20), "rot": -1.0},
+		# Mid layer — 4 skulls
+		{"pos": Vector3(0.20, 0.65, 0.10), "rot": 0.20},
+		{"pos": Vector3(-0.20, 0.65, 0.10), "rot": -0.20},
+		{"pos": Vector3(0.0, 0.65, -0.40), "rot": 0.50},
+		{"pos": Vector3(0.40, 0.65, -0.30), "rot": -0.30},
+		# Top — 1 crowning skull
+		{"pos": Vector3(0.0, 0.95, -0.10), "rot": 0.80},
+	]
+	for sd in skull_data:
+		var sp: Vector3 = sd["pos"]
+		# Skull body
+		var skull: MeshInstance3D = MeshInstance3D.new()
+		var smm: SphereMesh = SphereMesh.new()
+		smm.radius = 0.18
+		smm.height = 0.34
+		skull.mesh = smm
+		skull.material_override = skull_mat
+		skull.position = sp
+		skull.rotation.y = sd["rot"]
+		skull.scale = Vector3(1.0, 0.95, 1.05)
+		pivot.add_child(skull)
+		# 2 dark eye sockets — small dark boxes pressed into the front
+		var eye_dir: Vector3 = Vector3(sin(sd["rot"]), 0, -cos(sd["rot"]))
+		for ex in [-0.06, 0.06]:
+			var perp: Vector3 = Vector3(cos(sd["rot"]), 0, sin(sd["rot"]))
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: BoxMesh = BoxMesh.new()
+			em.size = Vector3(0.05, 0.05, 0.04)
+			eye.mesh = em
+			eye.material_override = charred_mat
+			eye.position = sp + eye_dir * 0.14 + perp * ex + Vector3(0, 0.02, 0)
+			pivot.add_child(eye)
+	# ---- 4 broken weapon shafts jutting out of the pile ----
+	var weapon_data: Array = [
+		{"pos": Vector3(1.20, 0.55, 0.40), "len": 1.40, "tilt_x": -0.30, "tilt_z": 0.50},
+		{"pos": Vector3(-1.10, 0.50, -0.30), "len": 1.20, "tilt_x": 0.40, "tilt_z": -0.40},
+		{"pos": Vector3(0.40, 0.70, -0.95), "len": 1.55, "tilt_x": -0.50, "tilt_z": 0.20},
+		{"pos": Vector3(-0.50, 0.65, 0.85), "len": 1.10, "tilt_x": 0.30, "tilt_z": -0.60},
+	]
+	for wd in weapon_data:
+		var wp: Vector3 = wd["pos"]
+		var wlen: float = wd["len"]
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.04
+		sm.bottom_radius = 0.05
+		sm.height = wlen
+		shaft.mesh = sm
+		shaft.material_override = iron_mat
+		shaft.position = wp + Vector3(0, wlen * 0.40, 0)
+		shaft.rotation = Vector3(wd["tilt_x"], 0, wd["tilt_z"])
+		pivot.add_child(shaft)
+		# Broken jagged tip — small prism at the top
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tipm: PrismMesh = PrismMesh.new()
+		tipm.size = Vector3(0.10, 0.20, 0.06)
+		tip.mesh = tipm
+		tip.material_override = iron_mat
+		# Estimate tip position by extrapolating along the rotation
+		var tip_dir: Vector3 = Vector3(sin(wd["tilt_z"]), cos(wd["tilt_z"]) * cos(wd["tilt_x"]), -sin(wd["tilt_x"]) * cos(wd["tilt_z"]))
+		tip.position = wp + tip_dir * (wlen * 0.85)
+		tip.rotation = Vector3(wd["tilt_x"], 0, wd["tilt_z"])
+		pivot.add_child(tip)
+	# ---- Glowing ember cluster on top of the pile ----
+	var cluster: MeshInstance3D = MeshInstance3D.new()
+	var clm: SphereMesh = SphereMesh.new()
+	clm.radius = 0.18
+	clm.height = 0.36
+	cluster.mesh = clm
+	cluster.material_override = ember_mat
+	cluster.position = Vector3(0, 1.18, -0.10)
+	pivot.add_child(cluster)
+	# Pile OmniLight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.30, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.6
+	lt.omni_range = 7.5
+	pivot.add_child(lt)
+	# Rising ember motes from the pile
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 1.20, 0)
+	motes.amount = 22
+	motes.lifetime = 2.2
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 22.0
+	pmat.initial_velocity_min = 0.5
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3(0, 0.3, 0)
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# Ember pulse
+	var epulse: Tween = pivot.create_tween().set_loops()
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
