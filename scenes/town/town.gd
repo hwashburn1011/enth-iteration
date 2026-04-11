@@ -1323,6 +1323,16 @@ func _build_east_plaza() -> void:
 	_build_data_streams(geom)
 	# Epic-1 T50: directional district signpost cluster at the plaza arch
 	_build_district_signposts(geom)
+	# Epic-1 T51: static onlooker crowd ringing the tournament pit
+	_build_tournament_audience(geom)
+	# Epic-1 T52: animated banner flags swaying on tall poles
+	_build_waving_banners(geom)
+	# Epic-1 T53: spinning turbine generator near the loading dock
+	_build_power_generator(geom)
+	# Epic-1 T54: scattered floating data shard collectibles
+	_build_data_shards(geom)
+	# Epic-1 T55: holographic AI statue centerpiece in the plaza
+	_build_ai_statue(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -3931,3 +3941,389 @@ func _build_district_signposts(geom: Node) -> void:
 	cs.position = Vector3(0, 1.7, 0)
 	sb.add_child(cs)
 	post_root.add_child(sb)
+
+
+func _build_tournament_audience(geom: Node) -> void:
+	## Epic-1 T51: 8 procedural onlooker NPCs ringing the tournament pit at
+	## (40, 0, 12). Each is a simple capsule body with eyes, gently bobbing
+	## in place as if cheering. Pure ambience — no AI or interaction.
+	var pit_center := Vector3(40, 0, 12)
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var dist: float = 5.5
+		var pos: Vector3 = pit_center + Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+		var fan: Node3D = Node3D.new()
+		fan.name = "EastPlazaTournamentFan_%d" % i
+		fan.position = pos
+		geom.add_child(fan)
+		# Capsule body — palette varies per fan
+		var hue: float = float(i) / 8.0
+		var body_color: Color = Color.from_hsv(hue, 0.55, 0.85)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CapsuleMesh = CapsuleMesh.new()
+		bmesh.radius = 0.32
+		bmesh.height = 1.0
+		body.mesh = bmesh
+		body.position = Vector3(0, 0.55, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = body_color
+		bmat.emission_enabled = true
+		bmat.emission = body_color
+		bmat.emission_energy_multiplier = 0.35
+		bmat.metallic = 0.20
+		bmat.roughness = 0.55
+		body.material_override = bmat
+		fan.add_child(body)
+		# 2 small glowing eyes
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.95, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(1.0, 1.0, 1.0)
+		eye_mat.emission_energy_multiplier = 1.4
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# Eyes face the pit center
+		var to_center: Vector3 = (pit_center - pos).normalized()
+		for ex: float in [-0.10, 0.10]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emesh: SphereMesh = SphereMesh.new()
+			emesh.radius = 0.05
+			emesh.height = 0.10
+			eye.mesh = emesh
+			# Offset eyes laterally relative to center-facing direction
+			var right: Vector3 = to_center.cross(Vector3.UP).normalized()
+			eye.position = Vector3(0, 0.95, 0) + right * ex + to_center * 0.30
+			eye.material_override = eye_mat
+			fan.add_child(eye)
+		# Cheering bob tween (random offset so they're not synced)
+		var bob: Tween = create_tween().set_loops()
+		var bob_speed: float = 0.45 + (i * 0.05)
+		bob.tween_property(body, "position:y", 0.75, bob_speed).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(body, "position:y", 0.55, bob_speed).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_waving_banners(geom: Node) -> void:
+	## Epic-1 T52: 4 tall flag poles with cyan/violet pennants gently swaying.
+	## Each banner is a thin box that rotates around its pole base via a tween,
+	## simulating digital wind for ambient motion variety.
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	pole_mat.roughness = 0.30
+	var positions: Array[Vector3] = [
+		Vector3(24, 0, -12),
+		Vector3(40, 0, -12),
+		Vector3(24, 0, 14),
+		Vector3(40, 0, 14),
+	]
+	var colors: Array[Color] = [
+		Color(0.30, 0.85, 1.0),
+		Color(0.85, 0.40, 1.0),
+		Color(0.30, 0.85, 1.0),
+		Color(0.85, 0.40, 1.0),
+	]
+	for i in positions.size():
+		var pole_root: Node3D = Node3D.new()
+		pole_root.name = "EastPlazaWavingBanner_%d" % i
+		pole_root.position = positions[i]
+		geom.add_child(pole_root)
+		# Pole
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.08
+		pmesh.bottom_radius = 0.12
+		pmesh.height = 5.0
+		pole.mesh = pmesh
+		pole.position = Vector3(0, 2.5, 0)
+		pole.material_override = pole_mat
+		pole_root.add_child(pole)
+		# Banner pivot at the top of pole, attaches to one edge so it can sway
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, 4.6, 0)
+		pole_root.add_child(pivot)
+		# Banner panel pointed away from pole
+		var banner: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(1.4, 1.6, 0.04)
+		banner.mesh = bmesh
+		banner.position = Vector3(0.7, -0.8, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(colors[i].r * 0.40, colors[i].g * 0.40, colors[i].b * 0.40)
+		bmat.emission_enabled = true
+		bmat.emission = colors[i]
+		bmat.emission_energy_multiplier = 0.95
+		bmat.metallic = 0.10
+		bmat.roughness = 0.55
+		banner.material_override = bmat
+		pivot.add_child(banner)
+		# Sway tween — rotate pivot around y axis a few degrees back and forth
+		var sway: Tween = create_tween().set_loops()
+		var sway_speed: float = 1.2 + (i * 0.15)
+		sway.tween_property(pivot, "rotation:y", deg_to_rad(20), sway_speed).set_ease(Tween.EASE_IN_OUT)
+		sway.tween_property(pivot, "rotation:y", deg_to_rad(-20), sway_speed).set_ease(Tween.EASE_IN_OUT)
+		# Collision on pole
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 5.0
+		cs.shape = cap
+		cs.position = Vector3(0, 2.5, 0)
+		sb.add_child(cs)
+		pole_root.add_child(sb)
+
+
+func _build_power_generator(geom: Node) -> void:
+	## Epic-1 T53: industrial generator near the loading dock with a spinning
+	## turbine ring on top — sells "this plaza is powered by something" without
+	## any actual gameplay hookup. Position chosen to flank the dock ramp.
+	var gen: Node3D = Node3D.new()
+	gen.name = "EastPlazaPowerGenerator"
+	gen.position = Vector3(42, 0, -10)
+	geom.add_child(gen)
+	# Base housing — chunky metal block
+	var housing_mat: StandardMaterial3D = StandardMaterial3D.new()
+	housing_mat.albedo_color = Color(0.18, 0.20, 0.24)
+	housing_mat.metallic = 0.85
+	housing_mat.roughness = 0.40
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(2.4, 2.0, 2.4)
+	base.mesh = bmesh
+	base.position = Vector3(0, 1.0, 0)
+	base.material_override = housing_mat
+	gen.add_child(base)
+	# Cyan accent strips on each side
+	var accent_mat: StandardMaterial3D = StandardMaterial3D.new()
+	accent_mat.albedo_color = Color(0.20, 0.50, 0.65)
+	accent_mat.emission_enabled = true
+	accent_mat.emission = Color(0.30, 0.85, 1.0)
+	accent_mat.emission_energy_multiplier = 1.6
+	accent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sign_x: float in [-1.0, 1.0]:
+		var strip: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.05, 1.4, 1.6)
+		strip.mesh = smesh
+		strip.position = Vector3(sign_x * 1.21, 1.0, 0)
+		strip.material_override = accent_mat
+		gen.add_child(strip)
+	# Turbine ring — torus that rotates on the y axis
+	var turbine: MeshInstance3D = MeshInstance3D.new()
+	turbine.name = "TurbineRing"
+	var tmesh: TorusMesh = TorusMesh.new()
+	tmesh.inner_radius = 0.85
+	tmesh.outer_radius = 1.10
+	turbine.mesh = tmesh
+	turbine.position = Vector3(0, 2.25, 0)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.20, 0.50, 0.65)
+	tmat.emission_enabled = true
+	tmat.emission = Color(0.40, 0.90, 1.0)
+	tmat.emission_energy_multiplier = 1.4
+	tmat.metallic = 0.65
+	tmat.roughness = 0.20
+	turbine.material_override = tmat
+	gen.add_child(turbine)
+	# 4 spoke bars across the ring
+	for s in 4:
+		var spoke: MeshInstance3D = MeshInstance3D.new()
+		var spmesh: BoxMesh = BoxMesh.new()
+		spmesh.size = Vector3(2.0, 0.10, 0.10)
+		spoke.mesh = spmesh
+		spoke.rotation = Vector3(0, deg_to_rad(45 * s), 0)
+		spoke.material_override = tmat
+		turbine.add_child(spoke)
+	# Spin tween
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(turbine, "rotation:y", TAU, 4.0)
+	# Tall vent pipe rising off the back
+	var pipe: MeshInstance3D = MeshInstance3D.new()
+	var pipemesh: CylinderMesh = CylinderMesh.new()
+	pipemesh.top_radius = 0.18
+	pipemesh.bottom_radius = 0.22
+	pipemesh.height = 3.0
+	pipe.mesh = pipemesh
+	pipe.position = Vector3(0.8, 3.5, -0.8)
+	pipe.material_override = housing_mat
+	gen.add_child(pipe)
+	# Steam particles drifting from the pipe
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 24
+	steam.lifetime = 2.5
+	steam.position = Vector3(0.8, 5.0, -0.8)
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	smat.emission_sphere_radius = 0.15
+	smat.direction = Vector3(0.2, 1, 0)
+	smat.spread = 25.0
+	smat.initial_velocity_min = 0.6
+	smat.initial_velocity_max = 1.2
+	smat.gravity = Vector3.ZERO
+	smat.scale_min = 0.20
+	smat.scale_max = 0.45
+	smat.color = Color(0.85, 0.95, 1.0, 0.5)
+	steam.process_material = smat
+	var stmesh: SphereMesh = SphereMesh.new()
+	stmesh.radius = 0.20
+	stmesh.height = 0.40
+	var stmat: StandardMaterial3D = StandardMaterial3D.new()
+	stmat.albedo_color = Color(0.85, 0.95, 1.0, 0.4)
+	stmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	stmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	stmesh.material = stmat
+	steam.draw_pass_1 = stmesh
+	gen.add_child(steam)
+	# Collision around the housing
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 2.0, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.0, 0)
+	sb.add_child(cs)
+	gen.add_child(sb)
+
+
+func _build_data_shards(geom: Node) -> void:
+	## Epic-1 T54: 8 floating cyan data-shard pickups scattered through the
+	## plaza. Each is a small octahedron-like spinning crystal. Pure decoration
+	## (no pickup logic) — telegraphs the future "collect data shards" loop.
+	var shard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shard_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	shard_mat.emission_enabled = true
+	shard_mat.emission = Color(0.55, 0.95, 1.0)
+	shard_mat.emission_energy_multiplier = 2.2
+	shard_mat.metallic = 0.40
+	shard_mat.roughness = 0.10
+	var positions: Array[Vector3] = [
+		Vector3(26, 1.0, -5),
+		Vector3(31, 1.0, 5),
+		Vector3(34, 1.0, -8),
+		Vector3(38, 1.0, 4),
+		Vector3(28, 1.0, 12),
+		Vector3(42, 1.0, 8),
+		Vector3(36, 1.0, -14),
+		Vector3(30, 1.0, -2),
+	]
+	for i in positions.size():
+		var shard: MeshInstance3D = MeshInstance3D.new()
+		shard.name = "EastPlazaDataShard_%d" % i
+		# Use prism cylinder w/ 4 sides as a faceted crystal
+		var smesh: PrismMesh = PrismMesh.new()
+		smesh.size = Vector3(0.35, 0.55, 0.35)
+		shard.mesh = smesh
+		shard.position = positions[i]
+		shard.material_override = shard_mat
+		geom.add_child(shard)
+		# Spin tween
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(shard, "rotation:y", TAU, 3.0)
+		# Bob tween
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(shard, "position:y", origin_y + 0.35, 1.4).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(shard, "position:y", origin_y, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_ai_statue(geom: Node) -> void:
+	## Epic-1 T55: holographic AI statue centerpiece on the north plaza axis.
+	## A tall pedestal with a translucent humanoid silhouette atop suggesting
+	## a revered AI ancestor monument. Slow rotation telegraphs "hologram".
+	var statue: Node3D = Node3D.new()
+	statue.name = "EastPlazaAIStatue"
+	statue.position = Vector3(32, 0, -12)
+	geom.add_child(statue)
+	# Stone pedestal base — 3 tiers
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.22, 0.28)
+	stone_mat.metallic = 0.45
+	stone_mat.roughness = 0.55
+	var tier_specs: Array = [
+		[Vector3(2.4, 0.30, 2.4), 0.15],
+		[Vector3(1.8, 0.40, 1.8), 0.50],
+		[Vector3(1.3, 0.50, 1.3), 0.95],
+	]
+	for spec in tier_specs:
+		var tier: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = spec[0]
+		tier.mesh = tmesh
+		tier.position = Vector3(0, spec[1], 0)
+		tier.material_override = stone_mat
+		statue.add_child(tier)
+	# Plaque label on front of pedestal
+	var plaque: Label3D = Label3D.new()
+	plaque.text = "ANCESTOR-01\nFIRST AGENT"
+	plaque.position = Vector3(0, 0.50, 0.91)
+	plaque.modulate = Color(0.55, 0.95, 1.0)
+	plaque.outline_modulate = Color(0, 0, 0, 0.85)
+	plaque.outline_size = 4
+	plaque.font_size = 16
+	plaque.no_depth_test = true
+	statue.add_child(plaque)
+	# Hologram pivot above pedestal
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 1.20, 0)
+	statue.add_child(pivot)
+	# Translucent body — capsule
+	var holo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	holo_mat.albedo_color = Color(0.55, 0.95, 1.0, 0.45)
+	holo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	holo_mat.emission_enabled = true
+	holo_mat.emission = Color(0.55, 0.95, 1.0)
+	holo_mat.emission_energy_multiplier = 1.5
+	holo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 1.6
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.85, 0)
+	body.material_override = holo_mat
+	pivot.add_child(body)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.32
+	hmesh.height = 0.64
+	head.mesh = hmesh
+	head.position = Vector3(0, 1.95, 0)
+	head.material_override = holo_mat
+	pivot.add_child(head)
+	# 2 outstretched arms (boxes)
+	for sign_x: float in [-1.0, 1.0]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(0.18, 0.18, 1.10)
+		arm.mesh = amesh
+		arm.position = Vector3(sign_x * 0.50, 1.10, 0)
+		arm.rotation = Vector3(0, sign_x * deg_to_rad(20), 0)
+		arm.material_override = holo_mat
+		pivot.add_child(arm)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 12.0)
+	# Cyan ground halo (a thin emissive ring at the base)
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var halomesh: TorusMesh = TorusMesh.new()
+	halomesh.inner_radius = 1.30
+	halomesh.outer_radius = 1.45
+	halo.mesh = halomesh
+	halo.position = Vector3(0, 1.20, 0)
+	var halo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	halo_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	halo_mat.emission_enabled = true
+	halo_mat.emission = Color(0.55, 0.95, 1.0)
+	halo_mat.emission_energy_multiplier = 1.8
+	halo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = halo_mat
+	statue.add_child(halo)
+	# Collision around pedestal
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.4, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.7, 0)
+	sb.add_child(cs)
+	statue.add_child(sb)
