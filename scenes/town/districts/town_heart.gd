@@ -41,6 +41,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_fountain_wisher_npc(town)
 	_build_th_planter_ring(geom)
 	_build_th_welcome_arch(geom)
+	_build_th_district_tribute_statues(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -4234,3 +4235,144 @@ func _build_th_welcome_arch(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_district_tribute_statues(geom: Node) -> void:
+	## Epic-10 T25: 9 small district tribute statues arranged in a ring
+	## just outside the central beacon rune circle, each honoring a
+	## district master in their accent color. Each statue: small basalt
+	## plinth, robed humanoid figure (body box + head sphere), brass
+	## accent base trim, and a glowing district crest sphere held in the
+	## figure's hands.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_DistrictTributeStatues"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	# 9 district accent colors (D1..D9)
+	var district_colors: Array = [
+		Color(0.40, 0.85, 1.0),    # D1 data cyan
+		Color(0.55, 1.0, 0.40),    # D2 toxic green
+		Color(0.75, 0.45, 1.0),    # D3 violet
+		Color(0.40, 0.95, 0.55),   # D4 bloom green
+		Color(0.65, 0.85, 1.0),    # D5 ice blue
+		Color(1.0, 0.40, 0.85),    # D6 neon magenta
+		Color(1.0, 0.75, 0.40),    # D7 sandstone amber
+		Color(0.30, 0.55, 1.0),    # D8 ocean blue
+		Color(1.0, 0.45, 0.10),    # D9 forge amber
+	]
+	# Place 9 statues in a ring at radius 7.0, starting at +X
+	for i in 9:
+		var ang: float = float(i) / 9.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var sp: Vector3 = Vector3(dx * 7.00, 0, dz * 7.00)
+		var sgroup: Node3D = Node3D.new()
+		sgroup.name = "Tribute_D" + str(i + 1)
+		sgroup.position = sp
+		# Face inward toward the beacon center
+		sgroup.rotation.y = atan2(-dz, -dx) - PI / 2.0
+		pivot.add_child(sgroup)
+		# Per-statue accent material
+		var accent_mat: StandardMaterial3D = StandardMaterial3D.new()
+		accent_mat.albedo_color = district_colors[i]
+		accent_mat.emission_enabled = true
+		accent_mat.emission = district_colors[i]
+		accent_mat.emission_energy_multiplier = 6.5
+		accent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# ---- Small basalt plinth ----
+		var plinth: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(0.85, 0.55, 0.85)
+		plinth.mesh = pmm
+		plinth.material_override = stone_mat
+		plinth.position = Vector3(0, 0.27, 0)
+		sgroup.add_child(plinth)
+		# Plinth collision
+		var plinth_sb: StaticBody3D = StaticBody3D.new()
+		plinth_sb.position = Vector3(0, 0.27, 0)
+		var plinth_cs: CollisionShape3D = CollisionShape3D.new()
+		var plinth_bsh: BoxShape3D = BoxShape3D.new()
+		plinth_bsh.size = Vector3(0.85, 0.55, 0.85)
+		plinth_cs.shape = plinth_bsh
+		plinth_sb.add_child(plinth_cs)
+		sgroup.add_child(plinth_sb)
+		# Brass accent base trim
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var trm: BoxMesh = BoxMesh.new()
+		trm.size = Vector3(0.95, 0.10, 0.95)
+		trim.mesh = trm
+		trim.material_override = brass_mat
+		trim.position = Vector3(0, 0.55, 0)
+		sgroup.add_child(trim)
+		# ---- Robed figure body (tapered box) ----
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmm: BoxMesh = BoxMesh.new()
+		bmm.size = Vector3(0.55, 1.20, 0.40)
+		body.mesh = bmm
+		body.material_override = stone_mat
+		body.position = Vector3(0, 1.20, 0)
+		sgroup.add_child(body)
+		# Body collision
+		var body_sb: StaticBody3D = StaticBody3D.new()
+		body_sb.position = Vector3(0, 1.20, 0)
+		var body_cs: CollisionShape3D = CollisionShape3D.new()
+		var body_bsh: BoxShape3D = BoxShape3D.new()
+		body_bsh.size = Vector3(0.55, 1.20, 0.40)
+		body_cs.shape = body_bsh
+		body_sb.add_child(body_cs)
+		sgroup.add_child(body_sb)
+		# Head sphere
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmm: SphereMesh = SphereMesh.new()
+		hmm.radius = 0.20
+		hmm.height = 0.40
+		head.mesh = hmm
+		head.material_override = stone_mat
+		head.position = Vector3(0, 2.00, 0)
+		sgroup.add_child(head)
+		# Brass crown band on head
+		var crown: MeshInstance3D = MeshInstance3D.new()
+		var crmm: TorusMesh = TorusMesh.new()
+		crmm.inner_radius = 0.18
+		crmm.outer_radius = 0.22
+		crown.mesh = crmm
+		crown.material_override = brass_mat
+		crown.position = Vector3(0, 2.05, 0)
+		crown.rotation.x = PI / 2.0
+		sgroup.add_child(crown)
+		# ---- Glowing district crest sphere held in cupped hands at chest ----
+		var crest: MeshInstance3D = MeshInstance3D.new()
+		var crmesh: SphereMesh = SphereMesh.new()
+		crmesh.radius = 0.16
+		crmesh.height = 0.32
+		crest.mesh = crmesh
+		crest.material_override = accent_mat
+		crest.position = Vector3(0, 1.30, -0.30)
+		sgroup.add_child(crest)
+		# Per-statue accent OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 1.30, -0.40)
+		lt.light_color = district_colors[i]
+		lt.light_energy = 1.4
+		lt.omni_range = 4.0
+		sgroup.add_child(lt)
+		# Per-statue accent pulse with offset period (shimmer effect across the ring)
+		var period: float = 1.8 + float(i) * 0.13
+		var apulse: Tween = sgroup.create_tween().set_loops()
+		apulse.tween_property(accent_mat, "emission_energy_multiplier", 8.5, period).set_ease(Tween.EASE_IN_OUT)
+		apulse.tween_property(accent_mat, "emission_energy_multiplier", 4.5, period).set_ease(Tween.EASE_IN_OUT)
