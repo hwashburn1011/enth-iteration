@@ -8935,6 +8935,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_harpist_npc()
 	# Epic-5 T85: rotating data prism array
 	_build_d5_data_prism_array(geom)
+	# Epic-5 T86: ice fountain centerpiece
+	_build_d5_ice_fountain(geom)
+	# Epic-5 T87: cryo lantern grove
+	_build_d5_cryo_lantern_grove(geom)
+	# Epic-5 T88: directional signpost network
+	_build_d5_signposts(geom)
+	# Epic-5 T89: data tablet shrine
+	_build_d5_tablet_shrine(geom)
+	# Epic-5 T90: small ice elemental creature
+	_build_d5_ice_elemental(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -15801,6 +15811,355 @@ func _build_d5_data_prism_array(geom: Node) -> void:
 		cs.shape = cyl
 		sb.add_child(cs)
 		stand.add_child(sb)
+
+
+func _build_d5_ice_fountain(geom: Node) -> void:
+	## Epic-5 T86: large central ice fountain — circular basin + central
+	## column + 4 outward water-jet arcs frozen mid-flight.
+	var fountain: Node3D = Node3D.new()
+	fountain.name = "IceFountain"
+	fountain.position = Vector3(D5_CENTER.x - 4.0, 0.0, 4.0)
+	geom.add_child(fountain)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.85
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	# Outer basin (low cylinder)
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 2.20
+	bm.bottom_radius = 2.40
+	bm.height = 0.55
+	basin.mesh = bm
+	basin.material_override = ice_mat
+	basin.position = Vector3(0, 0.27, 0)
+	fountain.add_child(basin)
+	# Inner water disc
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.85
+	wm.bottom_radius = 1.85
+	wm.height = 0.06
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.65)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.95, 1.0)
+	water_mat.emission_energy_multiplier = 1.4
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.10
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.50, 0)
+	fountain.add_child(water)
+	# Central tiered column
+	for i in 3:
+		var tier: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.35 - i * 0.08
+		tm.bottom_radius = 0.55 - i * 0.10
+		tm.height = 0.40
+		tier.mesh = tm
+		tier.material_override = ice_mat
+		tier.position = Vector3(0, 0.75 + i * 0.40, 0)
+		fountain.add_child(tier)
+	# Top crystal sphere
+	var top_crystal: MeshInstance3D = MeshInstance3D.new()
+	var tcm: SphereMesh = SphereMesh.new()
+	tcm.radius = 0.30
+	tcm.height = 0.55
+	top_crystal.mesh = tcm
+	top_crystal.material_override = ice_mat
+	top_crystal.position = Vector3(0, 2.20, 0)
+	fountain.add_child(top_crystal)
+	# 4 frozen water-jet arcs (curved cylinders flaring outward)
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i
+		var arc: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.06
+		am.bottom_radius = 0.10
+		am.height = 1.85
+		arc.mesh = am
+		arc.material_override = ice_mat
+		arc.position = Vector3(cos(ang) * 1.10, 1.65, sin(ang) * 1.10)
+		arc.rotation = Vector3(deg_to_rad(35) * sin(ang), ang, deg_to_rad(35) * cos(ang))
+		fountain.add_child(arc)
+	# Subtle water bob
+	var tw: Tween = water.create_tween().set_loops()
+	tw.tween_property(water, "position:y", 0.55, 1.6)
+	tw.tween_property(water, "position:y", 0.50, 1.6)
+	# Central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 1.20, 0)
+	fountain.add_child(light)
+	# Basin collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.27, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.40
+	cap.height = 0.55
+	cs.shape = cap
+	sb.add_child(cs)
+	fountain.add_child(sb)
+
+
+func _build_d5_cryo_lantern_grove(geom: Node) -> void:
+	## Epic-5 T87: 6 small cryo lanterns clustered as a grove around a path,
+	## floating slowly with cyan light each.
+	var grove: Node3D = Node3D.new()
+	grove.name = "CryoLanternGrove"
+	grove.position = Vector3(D5_CENTER.x - 22.0, 0.0, -4.0)
+	geom.add_child(grove)
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.85)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.30, 0.95, 1.0)
+	glass_mat.emission_energy_multiplier = 2.5
+	glass_mat.metallic = 0.30
+	glass_mat.roughness = 0.10
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var lantern: Node3D = Node3D.new()
+		lantern.position = Vector3(cos(ang) * 2.40, randf_range(0.0, 0.30), sin(ang) * 2.40)
+		grove.add_child(lantern)
+		# Lantern body (small box)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.30, 0.40, 0.30)
+		body.mesh = bm
+		body.material_override = glass_mat
+		body.position = Vector3(0, 1.40, 0)
+		lantern.add_child(body)
+		# Top metal cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.40, 0.06, 0.40)
+		cap.mesh = cmm
+		cap.material_override = metal_mat
+		cap.position = Vector3(0, 1.65, 0)
+		lantern.add_child(cap)
+		# Bottom metal cap
+		var bcap: MeshInstance3D = MeshInstance3D.new()
+		var bcm: BoxMesh = BoxMesh.new()
+		bcm.size = Vector3(0.40, 0.06, 0.40)
+		bcap.mesh = bcm
+		bcap.material_override = metal_mat
+		bcap.position = Vector3(0, 1.15, 0)
+		lantern.add_child(bcap)
+		# Light per lantern
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(0.40, 0.95, 1.0)
+		light.light_energy = 1.8
+		light.omni_range = 3.5
+		light.position = Vector3(0, 1.40, 0)
+		lantern.add_child(light)
+		# Float bob (each at slightly different rate)
+		var tw: Tween = lantern.create_tween().set_loops()
+		tw.tween_property(lantern, "position:y", lantern.position.y + 0.30, 1.6 + i * 0.18)
+		tw.tween_property(lantern, "position:y", lantern.position.y, 1.6 + i * 0.18)
+
+
+func _build_d5_signposts(geom: Node) -> void:
+	## Epic-5 T88: 4-way signpost network — central post with 4 directional
+	## arrow signs pointing toward each district.
+	var post_root: Node3D = Node3D.new()
+	post_root.name = "Signposts"
+	post_root.position = Vector3(D5_CENTER.x - 28.0, 0.0, 0.0)
+	geom.add_child(post_root)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Vertical post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.10
+	pm.bottom_radius = 0.14
+	pm.height = 2.85
+	post.mesh = pm
+	post.material_override = wood_mat
+	post.position = Vector3(0, 1.42, 0)
+	post_root.add_child(post)
+	# 4 directional arrow signs
+	var sign_data: Array = [
+		{"text": "← BLOOM CLUSTER", "ang": 180.0, "y": 2.40, "color": Color(0.95, 0.55, 0.75)},
+		{"text": "← MEMORY VAULT", "ang": 180.0, "y": 1.95, "color": Color(0.55, 0.40, 0.95)},
+		{"text": "← STACK OUTSKIRTS", "ang": 180.0, "y": 1.50, "color": Color(0.95, 0.55, 0.30)},
+		{"text": "← EAST PLAZA", "ang": 180.0, "y": 1.05, "color": Color(0.40, 0.95, 1.0)},
+	]
+	for sd in sign_data:
+		var sign_box: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.85, 0.30, 0.06)
+		sign_box.mesh = sm
+		var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sign_mat.albedo_color = sd["color"]
+		sign_mat.emission_enabled = true
+		sign_mat.emission = sd["color"]
+		sign_mat.emission_energy_multiplier = 0.45
+		sign_mat.roughness = 0.65
+		sign_box.material_override = sign_mat
+		sign_box.position = Vector3(-0.85, sd["y"], 0)
+		post_root.add_child(sign_box)
+		# Label
+		var label: Label3D = Label3D.new()
+		label.text = sd["text"]
+		label.modulate = Color(0.10, 0.05, 0.05)
+		label.outline_modulate = Color(0.95, 0.95, 0.95)
+		label.outline_size = 4
+		label.font_size = 36
+		label.pixel_size = 0.0035
+		label.position = Vector3(-0.85, sd["y"], 0.05)
+		post_root.add_child(label)
+	# Post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.14
+	cap.height = 2.85
+	cs.shape = cap
+	sb.add_child(cs)
+	post_root.add_child(sb)
+
+
+func _build_d5_tablet_shrine(geom: Node) -> void:
+	## Epic-5 T89: data tablet shrine — 3 floating glowing tablets above
+	## a stone altar, simulating an offering of preserved knowledge.
+	var shrine: Node3D = Node3D.new()
+	shrine.name = "DataTabletShrine"
+	shrine.position = Vector3(D5_CENTER.x - 18.0, 0.0, -10.0)
+	geom.add_child(shrine)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.60, 0.65)
+	stone_mat.roughness = 0.92
+	# Stone altar
+	var altar: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(2.20, 0.85, 1.40)
+	altar.mesh = am
+	altar.material_override = stone_mat
+	altar.position = Vector3(0, 0.42, 0)
+	shrine.add_child(altar)
+	# 3 floating tablets in a fan
+	var tablet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tablet_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	tablet_mat.emission_enabled = true
+	tablet_mat.emission = Color(0.30, 0.95, 1.0)
+	tablet_mat.emission_energy_multiplier = 2.5
+	tablet_mat.metallic = 0.55
+	tablet_mat.roughness = 0.10
+	tablet_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var tablet: Node3D = Node3D.new()
+		tablet.position = Vector3(-0.85 + i * 0.85, 1.85, 0)
+		shrine.add_child(tablet)
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.55, 0.85, 0.06)
+		slab.mesh = sm
+		slab.material_override = tablet_mat
+		tablet.add_child(slab)
+		# Hover bob (offset)
+		var tw: Tween = tablet.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(tablet, "position:y", 2.10, 1.4)
+		tw.tween_property(tablet, "position:y", 1.85, 1.4)
+		# Subtle rotation
+		var ts: Tween = slab.create_tween().set_loops()
+		ts.tween_property(slab, "rotation_degrees:y", 360.0, 8.0 + i * 0.6)
+		ts.tween_property(slab, "rotation_degrees:y", 0.0, 0.0)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.10, 0)
+	shrine.add_child(light)
+	# Altar collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 0.85, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	shrine.add_child(sb)
+
+
+func _build_d5_ice_elemental(geom: Node) -> void:
+	## Epic-5 T90: small floating ice elemental creature — 3 stacked ice
+	## crystal segments with glowing eyes, hovering and slowly rotating
+	## along a small patrol path.
+	var elemental: Node3D = Node3D.new()
+	elemental.name = "IceElemental"
+	elemental.position = Vector3(D5_CENTER.x + 22.0, 1.5, -2.0)
+	geom.add_child(elemental)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.55, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 1.4
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	# 3 stacked crystal segments (large to small)
+	var sizes: Array = [0.55, 0.40, 0.30]
+	for i in 3:
+		var crystal: MeshInstance3D = MeshInstance3D.new()
+		var cm: PrismMesh = PrismMesh.new()
+		cm.size = Vector3(sizes[i], sizes[i] * 1.4, sizes[i])
+		crystal.mesh = cm
+		crystal.material_override = ice_mat
+		crystal.position = Vector3(0, i * 0.65, 0)
+		crystal.rotation_degrees = Vector3(0, i * 60, 0)
+		elemental.add_child(crystal)
+	# 2 glowing cyan eyes on the top crystal
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.30, 1.0, 1.0)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.07, 0.07]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 1.40, 0.20)
+		elemental.add_child(eye)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.0
+	light.omni_range = 4.0
+	light.position = Vector3(0, 0.85, 0)
+	elemental.add_child(light)
+	# Hover patrol tween
+	var tw: Tween = elemental.create_tween().set_loops()
+	tw.tween_property(elemental, "position", Vector3(D5_CENTER.x + 18.0, 2.0, -2.0), 4.0)
+	tw.tween_property(elemental, "position", Vector3(D5_CENTER.x + 22.0, 1.5, -2.0), 4.0)
+	tw.tween_property(elemental, "position", Vector3(D5_CENTER.x + 22.0, 1.8, -6.0), 4.0)
+	tw.tween_property(elemental, "position", Vector3(D5_CENTER.x + 22.0, 1.5, -2.0), 4.0)
+	# Continuous spin
+	var ts: Tween = elemental.create_tween().set_loops()
+	ts.tween_property(elemental, "rotation_degrees:y", 360.0, 10.0)
+	ts.tween_property(elemental, "rotation_degrees:y", 0.0, 0.0)
 
 
 
