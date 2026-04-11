@@ -32804,6 +32804,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_smokehouse(geom)
 	# Epic-8 T85: wind chimes
 	_build_d8_wind_chimes(geom)
+	# Epic-8 T86: sea cave entrance
+	_build_d8_sea_cave(geom)
+	# Epic-8 T87: docked submarine
+	_build_d8_submarine(geom)
+	# Epic-8 T88: rope coil pyramid
+	_build_d8_rope_coil_pyramid(geom)
+	# Epic-8 T89: shore patrol guard NPC
+	_build_d8_shore_patrol_npc()
+	# Epic-8 T90: circling seagull flock
+	_build_d8_circling_gulls(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -38967,6 +38977,426 @@ func _build_d8_wind_chimes(geom: Node) -> void:
 	cs.shape = cap_shape
 	sb.add_child(cs)
 	chime.add_child(sb)
+
+
+func _build_d8_sea_cave(geom: Node) -> void:
+	## Epic-8 T86: sea cave entrance — dark stone archway with mossy hangings
+	## and a soft inner cyan glow hinting at hidden depths.
+	var cave: Node3D = Node3D.new()
+	cave.name = "D8SeaCave"
+	cave.position = Vector3(D8_CENTER.x + 78, 0, 14)
+	geom.add_child(cave)
+	# Outer cliff blob (large dark stone half-sphere)
+	var stone: StandardMaterial3D = StandardMaterial3D.new()
+	stone.albedo_color = Color(0.20, 0.22, 0.25)
+	stone.roughness = 0.92
+	var cliff: MeshInstance3D = MeshInstance3D.new()
+	var csm: SphereMesh = SphereMesh.new()
+	csm.radius = 4.5
+	csm.height = 8.0
+	cliff.mesh = csm
+	cliff.material_override = stone
+	cliff.position = Vector3(0, 4.0, -2.5)
+	cliff.scale = Vector3(1.2, 1.0, 0.85)
+	cave.add_child(cliff)
+	# Dark archway (large flat black box embedded in front)
+	var dark: StandardMaterial3D = StandardMaterial3D.new()
+	dark.albedo_color = Color(0.04, 0.05, 0.08)
+	dark.roughness = 0.95
+	dark.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var arch: MeshInstance3D = MeshInstance3D.new()
+	var asm: SphereMesh = SphereMesh.new()
+	asm.radius = 2.0
+	asm.height = 4.5
+	arch.mesh = asm
+	arch.material_override = dark
+	arch.position = Vector3(0, 2.3, 0.8)
+	arch.scale = Vector3(0.85, 1.0, 0.55)
+	cave.add_child(arch)
+	# Inner cyan glow (deep emissive sphere set back in the arch)
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.15, 0.55, 0.75)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.25, 0.85, 0.95)
+	glow_mat.emission_energy_multiplier = 2.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var gsm: SphereMesh = SphereMesh.new()
+	gsm.radius = 0.85
+	gsm.height = 1.7
+	glow.mesh = gsm
+	glow.material_override = glow_mat
+	glow.position = Vector3(0, 2.3, -0.5)
+	cave.add_child(glow)
+	var pulse: Tween = glow.create_tween().set_loops()
+	pulse.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 2.0)
+	pulse.tween_property(glow_mat, "emission_energy_multiplier", 1.8, 2.0)
+	# Cyan light source
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(0.30, 0.80, 0.95)
+	lt.light_energy = 3.5
+	lt.omni_range = 7.0
+	lt.position = Vector3(0, 2.3, 0.0)
+	cave.add_child(lt)
+	# Moss hangings (3 vertical green prisms over the arch)
+	var moss_mat: StandardMaterial3D = StandardMaterial3D.new()
+	moss_mat.albedo_color = Color(0.20, 0.45, 0.20)
+	moss_mat.roughness = 0.85
+	moss_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	for i in range(5):
+		var moss: MeshInstance3D = MeshInstance3D.new()
+		var mb: BoxMesh = BoxMesh.new()
+		mb.size = Vector3(0.30, 0.85 + randf() * 0.40, 0.05)
+		moss.mesh = mb
+		moss.material_override = moss_mat
+		moss.position = Vector3(-1.0 + i * 0.5, 4.20, 1.10)
+		var sway: Tween = moss.create_tween().set_loops()
+		var phase: float = float(i) * 0.20
+		sway.tween_property(moss, "rotation_degrees:z", 4.0, 1.6 + phase)
+		sway.tween_property(moss, "rotation_degrees:z", -4.0, 1.6 + phase)
+		cave.add_child(moss)
+	# Stones at the base of the cave
+	for i in range(4):
+		var rock: MeshInstance3D = MeshInstance3D.new()
+		var rsm: SphereMesh = SphereMesh.new()
+		rsm.radius = 0.30 + randf() * 0.15
+		rsm.height = 0.45 + randf() * 0.20
+		rock.mesh = rsm
+		rock.material_override = stone
+		rock.position = Vector3(-1.6 + i * 1.1, 0.20, 1.30)
+		rock.scale = Vector3(1.2, 0.6, 1.0)
+		cave.add_child(rock)
+	# Cliff collision (big block)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.5, -2.0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(7.5, 7.0, 5.0)
+	cs.shape = bs
+	sb.add_child(cs)
+	cave.add_child(sb)
+
+
+func _build_d8_submarine(geom: Node) -> void:
+	## Epic-8 T87: retro submarine half-emerged at dock — long dark hull,
+	## conning tower with portholes and antenna, periscope on top.
+	var sub: Node3D = Node3D.new()
+	sub.name = "D8Submarine"
+	sub.position = Vector3(D8_CENTER.x - 8, 0.30, -10)
+	geom.add_child(sub)
+	# Hull (long dark cigar)
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.18, 0.20, 0.22)
+	hull_mat.metallic = 0.75
+	hull_mat.roughness = 0.45
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hb: SphereMesh = SphereMesh.new()
+	hb.radius = 1.0
+	hb.height = 2.0
+	hull.mesh = hb
+	hull.material_override = hull_mat
+	hull.scale = Vector3(1.2, 0.65, 5.5)
+	hull.position = Vector3(0, 0.55, 0)
+	sub.add_child(hull)
+	# Conning tower (rounded box on top)
+	var tower: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(0.85, 0.95, 1.40)
+	tower.mesh = tb
+	tower.material_override = hull_mat
+	tower.position = Vector3(0, 1.55, -0.5)
+	sub.add_child(tower)
+	# Portholes (3 cyan emissive discs along the hull)
+	var port_mat: StandardMaterial3D = StandardMaterial3D.new()
+	port_mat.albedo_color = Color(0.55, 0.85, 0.95)
+	port_mat.emission_enabled = true
+	port_mat.emission = Color(0.35, 0.85, 1.00)
+	port_mat.emission_energy_multiplier = 1.3
+	for sz in [-2.0, -0.6, 0.8, 2.2]:
+		var port: MeshInstance3D = MeshInstance3D.new()
+		var psm: SphereMesh = SphereMesh.new()
+		psm.radius = 0.16
+		psm.height = 0.10
+		port.mesh = psm
+		port.material_override = port_mat
+		port.position = Vector3(1.20, 0.85, sz)
+		port.rotation_degrees = Vector3(0, 0, 90)
+		sub.add_child(port)
+	# Periscope (thin tall cylinder + small head)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.18
+	var peri: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.06
+	pcm.bottom_radius = 0.06
+	pcm.height = 1.30
+	peri.mesh = pcm
+	peri.material_override = brass
+	peri.position = Vector3(0, 2.65, -0.5)
+	sub.add_child(peri)
+	var peri_head: MeshInstance3D = MeshInstance3D.new()
+	var phb: BoxMesh = BoxMesh.new()
+	phb.size = Vector3(0.18, 0.18, 0.30)
+	peri_head.mesh = phb
+	peri_head.material_override = brass
+	peri_head.position = Vector3(0, 3.30, -0.4)
+	sub.add_child(peri_head)
+	# Antenna
+	var ant: MeshInstance3D = MeshInstance3D.new()
+	var acm: CylinderMesh = CylinderMesh.new()
+	acm.top_radius = 0.02
+	acm.bottom_radius = 0.03
+	acm.height = 0.95
+	ant.mesh = acm
+	ant.material_override = hull_mat
+	ant.position = Vector3(0.20, 2.50, -0.95)
+	sub.add_child(ant)
+	# Front fins (two small flaps)
+	for sx in [-1.0, 1.0]:
+		var fin: MeshInstance3D = MeshInstance3D.new()
+		var fpm: PrismMesh = PrismMesh.new()
+		fpm.size = Vector3(0.08, 0.45, 0.55)
+		fin.mesh = fpm
+		fin.material_override = hull_mat
+		fin.position = Vector3(sx * 1.15, 0.55, 1.85)
+		sub.add_child(fin)
+	# Rear propeller (3-blade fan)
+	var prop_mat: StandardMaterial3D = StandardMaterial3D.new()
+	prop_mat.albedo_color = Color(0.72, 0.55, 0.22)
+	prop_mat.metallic = 0.85
+	prop_mat.roughness = 0.30
+	var prop_pivot: Node3D = Node3D.new()
+	prop_pivot.position = Vector3(0, 0.55, -3.10)
+	sub.add_child(prop_pivot)
+	for b in range(3):
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var bpm: BoxMesh = BoxMesh.new()
+		bpm.size = Vector3(0.85, 0.06, 0.18)
+		blade.mesh = bpm
+		blade.material_override = prop_mat
+		blade.rotation_degrees = Vector3(0, 0, b * 120)
+		prop_pivot.add_child(blade)
+	var spin: Tween = prop_pivot.create_tween().set_loops()
+	spin.tween_property(prop_pivot, "rotation_degrees:z", 360.0, 4.0).from(0.0)
+	# Bob tween
+	var tw: Tween = sub.create_tween().set_loops()
+	tw.tween_property(sub, "position:y", 0.50, 3.0).from(0.20)
+	tw.tween_property(sub, "position:y", 0.20, 3.0)
+	# Hull collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.4, 1.5, 11.0)
+	cs.shape = bs
+	stb.add_child(cs)
+	sub.add_child(stb)
+
+
+func _build_d8_rope_coil_pyramid(geom: Node) -> void:
+	## Epic-8 T88: large pyramid stack of thick rope coils — 3 levels with
+	## 6 coils on the bottom, 3 in the middle, 1 on top.
+	var pile: Node3D = Node3D.new()
+	pile.name = "D8RopeCoilPyramid"
+	pile.position = Vector3(D8_CENTER.x + 18, 0, -2)
+	geom.add_child(pile)
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.78, 0.65, 0.40)
+	rope_mat.roughness = 0.85
+	# Bottom layer (6 coils)
+	var bottom_pos: Array[Vector2] = [
+		Vector2(-1.4, -0.7), Vector2(0.0, -0.7), Vector2(1.4, -0.7),
+		Vector2(-1.4, 0.7), Vector2(0.0, 0.7), Vector2(1.4, 0.7),
+	]
+	for p in bottom_pos:
+		_make_rope_coil(pile, rope_mat, Vector3(p.x, 0.20, p.y), 0.65)
+	# Middle layer (3 coils)
+	var mid_pos: Array[Vector2] = [Vector2(-0.7, 0), Vector2(0.7, 0), Vector2(0, 0)]
+	mid_pos = [Vector2(-0.7, -0.4), Vector2(0.7, -0.4), Vector2(0, 0.5)]
+	for p in mid_pos:
+		_make_rope_coil(pile, rope_mat, Vector3(p.x, 0.55, p.y), 0.55)
+	# Top coil
+	_make_rope_coil(pile, rope_mat, Vector3(0, 0.90, 0), 0.45)
+	# Pile collision (one box for the whole pyramid)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(3.6, 1.10, 2.4)
+	cs.shape = bs
+	sb.add_child(cs)
+	pile.add_child(sb)
+
+
+func _make_rope_coil(parent: Node3D, mat: Material, pos: Vector3, radius: float) -> void:
+	## Helper for T88: create a single torus rope coil at the given position.
+	var coil: MeshInstance3D = MeshInstance3D.new()
+	var tm: TorusMesh = TorusMesh.new()
+	tm.inner_radius = radius * 0.65
+	tm.outer_radius = radius
+	coil.mesh = tm
+	coil.material_override = mat
+	coil.position = pos
+	parent.add_child(coil)
+
+
+func _build_d8_shore_patrol_npc() -> void:
+	## Epic-8 T89: armored shore patrol NPC — chest plate with naval insignia,
+	## helmet, and a tall halberd polearm with a bright cyan blade.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D8ShorePatrolSlot"
+	slot.position = Vector3(D8_CENTER.x + 32, 0, -3)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D8ShorePatrol"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Patrol Captain Reef")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d8_shore_patrol")
+	slot.add_child(npc)
+	# Steel chest plate
+	var steel: StandardMaterial3D = StandardMaterial3D.new()
+	steel.albedo_color = Color(0.55, 0.60, 0.68)
+	steel.metallic = 0.85
+	steel.roughness = 0.30
+	var chest: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.90, 1.00, 0.55)
+	chest.mesh = cb
+	chest.material_override = steel
+	chest.position = Vector3(0, 1.10, 0)
+	npc.add_child(chest)
+	# Cyan emissive insignia (anchor shape stylized as small disc)
+	var insig_mat: StandardMaterial3D = StandardMaterial3D.new()
+	insig_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	insig_mat.emission_enabled = true
+	insig_mat.emission = Color(0.30, 0.85, 0.95)
+	insig_mat.emission_energy_multiplier = 1.4
+	insig_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var insig: MeshInstance3D = MeshInstance3D.new()
+	var ism: SphereMesh = SphereMesh.new()
+	ism.radius = 0.14
+	ism.height = 0.08
+	insig.mesh = ism
+	insig.material_override = insig_mat
+	insig.position = Vector3(0, 1.30, 0.30)
+	npc.add_child(insig)
+	# Helmet
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.32
+	hsm.height = 0.50
+	helm.mesh = hsm
+	helm.material_override = steel
+	helm.position = Vector3(0, 1.95, 0)
+	npc.add_child(helm)
+	# Helmet ridge (cyan crest)
+	var crest: MeshInstance3D = MeshInstance3D.new()
+	var crm: BoxMesh = BoxMesh.new()
+	crm.size = Vector3(0.05, 0.18, 0.45)
+	crest.mesh = crm
+	var crmat: StandardMaterial3D = StandardMaterial3D.new()
+	crmat.albedo_color = Color(0.30, 0.85, 0.95)
+	crmat.emission_enabled = true
+	crmat.emission = Color(0.30, 0.85, 0.95)
+	crmat.emission_energy_multiplier = 1.0
+	crest.material_override = crmat
+	crest.position = Vector3(0, 2.15, 0)
+	npc.add_child(crest)
+	# Halberd shaft (long cylinder held to side)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var scm: CylinderMesh = CylinderMesh.new()
+	scm.top_radius = 0.04
+	scm.bottom_radius = 0.05
+	scm.height = 2.6
+	shaft.mesh = scm
+	shaft.material_override = wood_mat
+	shaft.position = Vector3(0.55, 1.30, 0)
+	npc.add_child(shaft)
+	# Halberd blade (cyan emissive prism)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.55, 0.92, 1.0)
+	blade_mat.emission_enabled = true
+	blade_mat.emission = Color(0.45, 0.85, 0.95)
+	blade_mat.emission_energy_multiplier = 1.6
+	blade_mat.metallic = 0.7
+	blade_mat.roughness = 0.18
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var bpm: PrismMesh = PrismMesh.new()
+	bpm.size = Vector3(0.45, 0.55, 0.06)
+	blade.mesh = bpm
+	blade.material_override = blade_mat
+	blade.position = Vector3(0.55, 2.65, 0)
+	npc.add_child(blade)
+	# Spike at top of halberd
+	var spike: MeshInstance3D = MeshInstance3D.new()
+	var sptm: CylinderMesh = CylinderMesh.new()
+	sptm.top_radius = 0.0
+	sptm.bottom_radius = 0.05
+	sptm.height = 0.35
+	spike.mesh = sptm
+	spike.material_override = blade_mat
+	spike.position = Vector3(0.55, 3.05, 0)
+	npc.add_child(spike)
+
+
+func _build_d8_circling_gulls(geom: Node) -> void:
+	## Epic-8 T90: ambient flock of 8 seagulls circling overhead — each on
+	## its own pivot rotating about a shared center, slight bob.
+	var flock: Node3D = Node3D.new()
+	flock.name = "D8CirclingGulls"
+	flock.position = Vector3(D8_CENTER.x + 25, 12, -5)
+	geom.add_child(flock)
+	var white: StandardMaterial3D = StandardMaterial3D.new()
+	white.albedo_color = Color(0.95, 0.95, 0.92)
+	white.roughness = 0.65
+	var gray: StandardMaterial3D = StandardMaterial3D.new()
+	gray.albedo_color = Color(0.55, 0.58, 0.62)
+	gray.roughness = 0.65
+	for i in range(8):
+		var pivot: Node3D = Node3D.new()
+		pivot.rotation_degrees = Vector3(0, float(i) * 45.0, 0)
+		flock.add_child(pivot)
+		var gull: Node3D = Node3D.new()
+		gull.position = Vector3(8.0 + float(i % 3) * 1.5, float(i % 4) * 0.8, 0)
+		pivot.add_child(gull)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bsm: SphereMesh = SphereMesh.new()
+		bsm.radius = 0.18
+		bsm.height = 0.40
+		body.mesh = bsm
+		body.material_override = white
+		body.scale = Vector3(1.0, 0.7, 1.6)
+		gull.add_child(body)
+		# Wings (two flat prisms)
+		for sx in [-1, 1]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wpm: PrismMesh = PrismMesh.new()
+			wpm.size = Vector3(0.55, 0.04, 0.20)
+			wing.mesh = wpm
+			wing.material_override = gray
+			wing.position = Vector3(sx * 0.30, 0.06, 0)
+			wing.rotation_degrees = Vector3(0, 90 if sx > 0 else -90, 0)
+			gull.add_child(wing)
+			# Per-wing flap tween
+			var flap: Tween = wing.create_tween().set_loops()
+			flap.tween_property(wing, "rotation_degrees:z", 18.0 * sx, 0.35)
+			flap.tween_property(wing, "rotation_degrees:z", -18.0 * sx, 0.35)
+		# Per-pivot orbit tween
+		var orbit: Tween = pivot.create_tween().set_loops()
+		var phase: float = float(i) * 0.5
+		orbit.tween_property(pivot, "rotation_degrees:y", float(i) * 45.0 + 360.0, 18.0 + phase).from(float(i) * 45.0)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
