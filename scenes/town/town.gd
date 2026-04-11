@@ -1273,6 +1273,16 @@ func _build_east_plaza() -> void:
 	_build_power_conduits(geom)
 	# Epic-1 T25: plaza arch gateway at the western entrance
 	_build_plaza_arch_gateway(geom)
+	# Epic-1 T26: sparring arena sub-area at NE plaza corner
+	_build_sparring_arena(geom)
+	# Epic-1 T27: 2 practice dummies inside the sparring arena
+	_build_practice_dummies(geom)
+	# Epic-1 T28: tournament pit (sunken combat ring) at SE corner
+	_build_tournament_pit(geom)
+	# Epic-1 T29: crowd seating ring around the tournament pit
+	_build_crowd_seating(geom)
+	# Epic-1 T30: combat trainer NPC at the sparring arena edge
+	_build_combat_trainer_npc()
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -2107,6 +2117,274 @@ func _build_security_drones(geom: Node) -> void:
 		var tween: Tween = create_tween().set_loops()
 		for waypoint in path:
 			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_sparring_arena(geom: Node) -> void:
+	## Epic-1 T26: square sparring arena at (40, 0, -14) — raised platform with
+	## red boundary stripes
+	var arena: Node3D = Node3D.new()
+	arena.name = "EastPlazaSparringArena"
+	arena.position = Vector3(40, 0, -14)
+	geom.add_child(arena)
+	# Floor pad
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(6, 0.1, 6)
+	pad.mesh = pmesh
+	pad.position = Vector3(0, 0.05, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.10, 0.18, 0.26)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.30, 0.85, 1.0)
+	pmat.emission_energy_multiplier = 0.6
+	pmat.metallic = 0.5
+	pad.material_override = pmat
+	arena.add_child(pad)
+	# Red boundary stripes (4 sides)
+	for entry in [
+		[Vector3(-3, 0.11, 0), Vector3(0.15, 0.02, 6)],
+		[Vector3(3, 0.11, 0), Vector3(0.15, 0.02, 6)],
+		[Vector3(0, 0.11, -3), Vector3(6, 0.02, 0.15)],
+		[Vector3(0, 0.11, 3), Vector3(6, 0.02, 0.15)],
+	]:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = entry[1]
+		stripe.mesh = smesh
+		stripe.position = entry[0]
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(1.0, 0.18, 0.18)
+		smat.emission_enabled = true
+		smat.emission = Color(1.0, 0.20, 0.15)
+		smat.emission_energy_multiplier = 1.6
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		stripe.material_override = smat
+		arena.add_child(stripe)
+	# Floor label
+	var label: Label3D = Label3D.new()
+	label.text = "SPAR ZONE"
+	label.position = Vector3(0, 0.13, 0)
+	label.rotation_degrees = Vector3(-90, 0, 0)
+	label.modulate = Color(1.0, 0.30, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.95)
+	label.outline_size = 6
+	label.font_size = 28
+	label.no_depth_test = true
+	arena.add_child(label)
+
+
+func _build_practice_dummies(geom: Node) -> void:
+	## Epic-1 T27: 2 humanoid practice dummies inside the sparring arena
+	for i: int in 2:
+		var dummy: Node3D = Node3D.new()
+		dummy.name = "EastPlazaSparDummy_%d" % i
+		dummy.position = Vector3(40 + (i * 2 - 1) * 1.5, 0, -14)
+		geom.add_child(dummy)
+		# Body — tall capsule
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CapsuleMesh = CapsuleMesh.new()
+		bmesh.radius = 0.30
+		bmesh.height = 1.5
+		body.mesh = bmesh
+		body.position = Vector3(0, 0.85, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.45, 0.30, 0.20)
+		bmat.emission_enabled = true
+		bmat.emission = Color(0.65, 0.40, 0.20)
+		bmat.emission_energy_multiplier = 0.4
+		bmat.roughness = 0.7
+		body.material_override = bmat
+		dummy.add_child(body)
+		# Target ring around the chest
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 0.32
+		rmesh.outer_radius = 0.40
+		rmesh.rings = 12
+		rmesh.ring_segments = 16
+		ring.mesh = rmesh
+		ring.position = Vector3(0, 0.95, 0)
+		ring.rotation_degrees = Vector3(90, 0, 0)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(1.0, 0.95, 0.30)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.90, 0.20)
+		rmat.emission_energy_multiplier = 1.6
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override = rmat
+		dummy.add_child(ring)
+		# Floating hp label (placeholder)
+		var label: Label3D = Label3D.new()
+		label.text = "HP 100/100"
+		label.position = Vector3(0, 2.0, 0)
+		label.modulate = Color(1.0, 0.95, 0.85)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 5
+		label.font_size = 16
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		dummy.add_child(label)
+		# Collision (the dummy can be hit)
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_capsule: CapsuleShape3D = CapsuleShape3D.new()
+		col_capsule.radius = 0.30
+		col_capsule.height = 1.5
+		col_shape.shape = col_capsule
+		col_shape.position = Vector3(0, 0.85, 0)
+		sb.add_child(col_shape)
+		dummy.add_child(sb)
+
+
+func _build_tournament_pit(geom: Node) -> void:
+	## Epic-1 T28: sunken tournament pit at (40, -0.5, 14) — circular fighting
+	## ring lower than the surrounding plaza
+	var pit: Node3D = Node3D.new()
+	pit.name = "EastPlazaTournamentPit"
+	pit.position = Vector3(40, 0, 14)
+	geom.add_child(pit)
+	# Sunken floor
+	var floor_disc: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: CylinderMesh = CylinderMesh.new()
+	fmesh.top_radius = 4.0
+	fmesh.bottom_radius = 4.0
+	fmesh.height = 0.2
+	fmesh.radial_segments = 24
+	floor_disc.mesh = fmesh
+	floor_disc.position = Vector3(0, -0.4, 0)
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.18, 0.10, 0.04)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.85, 0.30, 0.10)
+	fmat.emission_energy_multiplier = 0.65
+	fmat.metallic = 0.4
+	fmat.roughness = 0.6
+	floor_disc.material_override = fmat
+	pit.add_child(floor_disc)
+	# Outer ring wall (low rim)
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: CylinderMesh = CylinderMesh.new()
+	wmesh.top_radius = 4.2
+	wmesh.bottom_radius = 4.2
+	wmesh.height = 0.6
+	wmesh.radial_segments = 24
+	wall.mesh = wmesh
+	wall.position = Vector3(0, 0.0, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.12, 0.18, 0.26)
+	wmat.emission_enabled = true
+	wmat.emission = Color(1.0, 0.30, 0.20)
+	wmat.emission_energy_multiplier = 0.8
+	wmat.metallic = 0.7
+	wall.material_override = wmat
+	pit.add_child(wall)
+	# Floor label
+	var label: Label3D = Label3D.new()
+	label.text = "ARENA"
+	label.position = Vector3(0, -0.28, 0)
+	label.rotation_degrees = Vector3(-90, 0, 0)
+	label.modulate = Color(1.0, 0.50, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.95)
+	label.outline_size = 7
+	label.font_size = 36
+	label.no_depth_test = true
+	pit.add_child(label)
+
+
+func _build_crowd_seating(geom: Node) -> void:
+	## Epic-1 T29: ring of small spectator seats around the tournament pit
+	## (4 seat blocks at NE/NW/SE/SW)
+	for i: int in 8:
+		var angle: float = i * TAU / 8.0
+		var radius: float = 5.5
+		var seat_pos := Vector3(40 + cos(angle) * radius, 0.3, 14 + sin(angle) * radius)
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(1.4, 0.6, 1.0)
+		seat.mesh = smesh
+		seat.position = seat_pos
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(0.12, 0.18, 0.26)
+		smat.emission_enabled = true
+		smat.emission = Color(0.20, 0.55, 0.75)
+		smat.emission_energy_multiplier = 0.5
+		smat.metallic = 0.5
+		seat.material_override = smat
+		geom.add_child(seat)
+		# Spectator orb (sitting on each seat)
+		var spec: MeshInstance3D = MeshInstance3D.new()
+		var orb_mesh: SphereMesh = SphereMesh.new()
+		orb_mesh.radius = 0.22
+		orb_mesh.height = 0.44
+		spec.mesh = orb_mesh
+		spec.position = seat_pos + Vector3(0, 0.55, 0)
+		var hue := [
+			Color(0.85, 0.55, 0.30),  # orange
+			Color(0.55, 0.35, 0.85),  # violet
+			Color(0.30, 0.85, 0.50),  # green
+			Color(0.85, 0.30, 0.45),  # coral
+			Color(0.30, 0.65, 0.90),  # blue
+			Color(1.0, 0.85, 0.30),   # yellow
+			Color(0.50, 0.90, 0.85),  # teal
+			Color(0.95, 0.45, 0.85),  # magenta
+		][i]
+		var omat: StandardMaterial3D = StandardMaterial3D.new()
+		omat.albedo_color = hue
+		omat.emission_enabled = true
+		omat.emission = hue * 1.3
+		omat.emission_energy_multiplier = 0.6
+		spec.material_override = omat
+		geom.add_child(spec)
+		# Subtle bob animation
+		var tween: Tween = create_tween().set_loops()
+		var bob_pos: Vector3 = spec.position
+		tween.tween_property(spec, "position:y", bob_pos.y + 0.04, 1.0 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(spec, "position:y", bob_pos.y, 1.0 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_combat_trainer_npc() -> void:
+	## Epic-1 T30: combat trainer NPC at the sparring arena edge
+	var trainer: Node3D = Node3D.new()
+	trainer.name = "EastPlazaCombatTrainer"
+	trainer.position = Vector3(36, 0.5, -14)
+	add_child(trainer)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.42
+	sphere.height = 0.84
+	body.mesh = sphere
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.85, 0.18, 0.18)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.25, 0.15)
+	mat.emission_energy_multiplier = 0.7
+	mat.metallic = 0.4
+	body.material_override = mat
+	trainer.add_child(body)
+	# Determined eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.95, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.85, 0.20)
+	eye_mat.emission_energy_multiplier = 2.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for side: float in [-0.13, 0.13]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.07
+		em.height = 0.14
+		eye.mesh = em
+		eye.position = Vector3(side, 0.18, -0.32)
+		eye.material_override = eye_mat
+		body.add_child(eye)
+	var label: Label3D = Label3D.new()
+	label.text = "Combat Trainer"
+	label.position = Vector3(0, 1.4, 0)
+	label.modulate = Color(1.0, 0.50, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	trainer.add_child(label)
 
 
 func _build_ground_light_strips(geom: Node) -> void:
