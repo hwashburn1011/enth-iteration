@@ -115,6 +115,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_boss_approach_skull_pile(geom)
 	_build_d9_boss_approach_sentinels(geom)
 	_build_d9_boss_approach_altars(geom)
+	_build_d9_boss_arena_floor(geom)
 	print("[D9Builder] done")
 
 
@@ -11290,4 +11291,197 @@ func _build_d9_boss_approach_altars(geom: Node) -> void:
 	var apulse: Tween = pivot.create_tween().set_loops()
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_boss_arena_floor(geom: Node) -> void:
+	## Epic-9 T95: FORGE LORD arena floor — round stepped basalt platform
+	## with a central glowing rune circle, 4 cardinal rune crossbars, and
+	## 8 perimeter braziers ringing the rim. Combat ground for the finale.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BossArenaFloor"
+	pivot.position = D9_CENTER + Vector3(0, 0, -34)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.25
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.45, 0.05)
+	rune_mat.emission_energy_multiplier = 7.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 9.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt platform (3 concentric tiers, descending) ----
+	var tier_data: Array = [
+		{"r": 11.00, "h": 0.40, "y": 0.20},
+		{"r": 9.50, "h": 0.40, "y": 0.60},
+		{"r": 8.00, "h": 0.30, "y": 0.95},
+	]
+	for td in tier_data:
+		var t: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = td["r"]
+		tm.bottom_radius = td["r"] + 0.20
+		tm.height = td["h"]
+		t.mesh = tm
+		t.material_override = basalt_mat
+		t.position = Vector3(0, td["y"], 0)
+		pivot.add_child(t)
+	# Combined arena collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cylsh: CylinderShape3D = CylinderShape3D.new()
+	cylsh.top_radius = 8.00
+	cylsh.bottom_radius = 11.00
+	cylsh.height = 1.10
+	cs.shape = cylsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# ---- Central rune circle ----
+	# Outer ring (large torus)
+	var rune_outer: MeshInstance3D = MeshInstance3D.new()
+	var rom: TorusMesh = TorusMesh.new()
+	rom.inner_radius = 5.40
+	rom.outer_radius = 5.80
+	rune_outer.mesh = rom
+	rune_outer.material_override = rune_mat
+	rune_outer.position = Vector3(0, 1.12, 0)
+	pivot.add_child(rune_outer)
+	# Inner ring (smaller torus)
+	var rune_inner: MeshInstance3D = MeshInstance3D.new()
+	var rim_in: TorusMesh = TorusMesh.new()
+	rim_in.inner_radius = 2.40
+	rim_in.outer_radius = 2.65
+	rune_inner.mesh = rim_in
+	rune_inner.material_override = rune_mat
+	rune_inner.position = Vector3(0, 1.12, 0)
+	pivot.add_child(rune_inner)
+	# Center disc — small bright unshaded amber pad
+	var center_pad: MeshInstance3D = MeshInstance3D.new()
+	var cdm: CylinderMesh = CylinderMesh.new()
+	cdm.top_radius = 1.20
+	cdm.bottom_radius = 1.20
+	cdm.height = 0.06
+	center_pad.mesh = cdm
+	center_pad.material_override = rune_mat
+	center_pad.position = Vector3(0, 1.13, 0)
+	pivot.add_child(center_pad)
+	# 4 cardinal rune crossbars connecting outer to inner ring
+	for i in 4:
+		var ang: float = float(i) / 4.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(2.80, 0.06, 0.20)
+		bar.mesh = bm
+		bar.material_override = rune_mat
+		bar.position = Vector3(dx * 4.05, 1.13, dz * 4.05)
+		bar.rotation.y = ang
+		pivot.add_child(bar)
+	# 8 small rune sigil dots between the inner ring and the outer ring (octagonal)
+	for i in 8:
+		var ang: float = (float(i) + 0.5) / 8.0 * TAU
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.25
+		dm.height = 0.10
+		dot.mesh = dm
+		dot.material_override = rune_mat
+		dot.position = Vector3(cos(ang) * 4.00, 1.16, sin(ang) * 4.00)
+		dot.scale = Vector3(1.0, 0.30, 1.0)
+		pivot.add_child(dot)
+	# ---- 8 brass perimeter braziers ringing the arena rim ----
+	for i in 8:
+		var ang: float = float(i) / 8.0 * TAU
+		var bx: float = cos(ang) * 10.50
+		var bz: float = sin(ang) * 10.50
+		# Brazier post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.14
+		pmm.bottom_radius = 0.18
+		pmm.height = 1.40
+		post.mesh = pmm
+		post.material_override = brass_mat
+		post.position = Vector3(bx, 1.15, bz)
+		pivot.add_child(post)
+		# Brazier bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bowm: SphereMesh = SphereMesh.new()
+		bowm.radius = 0.40
+		bowm.height = 0.70
+		bowl.mesh = bowm
+		bowl.material_override = brass_mat
+		bowl.position = Vector3(bx, 1.95, bz)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		pivot.add_child(bowl)
+		# Brazier flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.32
+		flm.height = 0.65
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(bx, 2.20, bz)
+		pivot.add_child(flame)
+		# OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(bx, 2.30, bz)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 3.4
+		lt.omni_range = 11.0
+		pivot.add_child(lt)
+		# Ember mote shower per brazier
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = Vector3(bx, 2.40, bz)
+		motes.amount = 16
+		motes.lifetime = 2.2
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 16.0
+		pmat.initial_velocity_min = 0.5
+		pmat.initial_velocity_max = 1.0
+		pmat.gravity = Vector3(0, 0.3, 0)
+		pmat.scale_min = 0.05
+		pmat.scale_max = 0.10
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.04
+		psmesh.height = 0.08
+		motes.draw_pass_1 = psmesh
+		pivot.add_child(motes)
+	# ---- Strong central arena OmniLight (warm wash from the rune pad) ----
+	var central_lt: OmniLight3D = OmniLight3D.new()
+	central_lt.position = Vector3(0, 2.50, 0)
+	central_lt.light_color = Color(1.0, 0.55, 0.15)
+	central_lt.light_energy = 5.0
+	central_lt.omni_range = 16.0
+	pivot.add_child(central_lt)
+	# Rune pulse + flame flicker tweens
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 9.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
 
