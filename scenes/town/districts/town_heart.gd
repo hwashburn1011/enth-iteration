@@ -30,6 +30,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_data_fountain(geom)
 	_build_th_practice_dummy(geom)
 	_build_th_district_map_kiosk(geom)
+	_build_th_banner_streamers(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -2391,3 +2392,84 @@ func _build_th_district_map_kiosk(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.45).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.45).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_banner_streamers(geom: Node) -> void:
+	## Epic-10 T14: 8 strings of small flag triangles connecting the
+	## perimeter lampposts in a ring. Each string spans between two
+	## adjacent lampposts at lantern height. 5 small triangle flags per
+	## string in alternating district accent colors. Adds a festive arched
+	## canopy effect tying the lampposts together visually.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_BannerStreamers"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	rope_mat.roughness = 0.85
+	rope_mat.metallic = 0.10
+	# 5 flag colors that cycle around the ring (mixed accents)
+	var flag_colors: Array = [
+		Color(0.45, 0.85, 1.0),  # cyan
+		Color(1.0, 0.55, 0.10),  # amber
+		Color(0.75, 0.45, 1.0),  # violet
+		Color(0.40, 0.95, 0.55), # green
+		Color(1.0, 0.40, 0.85),  # magenta
+	]
+	# Lamppost positions (must match T6 lamppost ring at radius 13.20)
+	var lamp_radius: float = 13.20
+	var lamp_height: float = 4.67
+	# 8 strings, each connecting lamppost i to lamppost i+1
+	for i in 8:
+		var ang_a: float = (float(i) + 0.5) / 8.0 * TAU
+		var ang_b: float = (float(i + 1) + 0.5) / 8.0 * TAU
+		var pa: Vector3 = Vector3(cos(ang_a) * lamp_radius, lamp_height, sin(ang_a) * lamp_radius)
+		var pb: Vector3 = Vector3(cos(ang_b) * lamp_radius, lamp_height, sin(ang_b) * lamp_radius)
+		var mid: Vector3 = (pa + pb) * 0.5
+		# Sag the rope midpoint slightly downward
+		mid.y -= 0.30
+		var dir: Vector3 = pb - pa
+		var span: float = dir.length()
+		var rope_ang: float = atan2(dir.x, dir.z)
+		# ---- Rope (long thin box) ----
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.04, 0.04, span)
+		rope.mesh = rm
+		rope.material_override = rope_mat
+		rope.position = mid
+		rope.rotation.y = rope_ang
+		pivot.add_child(rope)
+		# ---- 5 flag triangles hanging from the rope ----
+		for j in 5:
+			var t: float = (float(j) + 0.5) / 5.0
+			# Linear interpolation along the rope
+			var fp: Vector3 = pa.lerp(pb, t)
+			# Sag pull (deeper toward the middle)
+			var sag: float = sin(t * PI) * 0.40
+			fp.y -= sag
+			# Per-flag accent material
+			var col_idx: int = (i * 5 + j) % flag_colors.size()
+			var flag_mat: StandardMaterial3D = StandardMaterial3D.new()
+			flag_mat.albedo_color = flag_colors[col_idx]
+			flag_mat.emission_enabled = true
+			flag_mat.emission = flag_colors[col_idx]
+			flag_mat.emission_energy_multiplier = 4.5
+			flag_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			# Triangle flag (PrismMesh, narrow)
+			var flag: MeshInstance3D = MeshInstance3D.new()
+			var fmm: PrismMesh = PrismMesh.new()
+			fmm.size = Vector3(0.18, 0.30, 0.04)
+			flag.mesh = fmm
+			flag.material_override = flag_mat
+			flag.position = fp + Vector3(0, -0.20, 0)
+			flag.rotation.y = rope_ang
+			# Slight per-flag tilt for variety
+			flag.rotation.z = sin(float(i * 5 + j) * 0.7) * 0.20
+			pivot.add_child(flag)
+			# Per-flag accent pulse with offset period for shimmer effect
+			var period: float = 1.4 + float(j) * 0.10 + float(i) * 0.05
+			var fpulse2: Tween = pivot.create_tween().set_loops()
+			fpulse2.tween_property(flag_mat, "emission_energy_multiplier", 6.5, period).set_ease(Tween.EASE_IN_OUT)
+			fpulse2.tween_property(flag_mat, "emission_energy_multiplier", 3.0, period).set_ease(Tween.EASE_IN_OUT)
