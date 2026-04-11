@@ -70,6 +70,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_chained_anvil_totem(geom)
 	_build_d9_scorched_bone_pile(geom)
 	_build_d9_smelter_trap_pillars(geom)
+	_build_d9_molten_behemoth_midboss(geom)
 	print("[D9Builder] done")
 
 
@@ -4249,5 +4250,161 @@ func _build_d9_smelter_trap_pillars(geom: Node) -> void:
 		cs.shape = cyl
 		stb.add_child(cs)
 		col.add_child(stb)
+
+
+func _build_d9_molten_behemoth_midboss(geom: Node) -> void:
+	## Epic-9 T50: MOLTEN BEHEMOTH mid-boss landmark — centerpiece of the
+	## D9 mid-boss arena. Massive hulking molten-iron beast with glowing
+	## seam emissions, hovering name plate, ember plume, hot-iron core
+	## that pulses through chest cavity.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_MoltenBehemoth_MidBoss"
+	pivot.position = D9_CENTER + Vector3(32, 0, 0)
+	geom.add_child(pivot)
+	# Body — large lumpy ovoid
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 2.20
+	bm.height = 3.80
+	body.mesh = bm
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.06, 0.04)
+	bmat.metallic = 0.85
+	bmat.roughness = 0.40
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.30, 0.05)
+	bmat.emission_energy_multiplier = 1.30
+	body.material_override = bmat
+	body.position = Vector3(0, 2.40, 0)
+	pivot.add_child(body)
+	# Hunched head bulb
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 1.10
+	hm.height = 1.65
+	head.mesh = hm
+	head.material_override = bmat
+	head.position = Vector3(0, 4.85, 1.50)
+	pivot.add_child(head)
+	# Two glowing eyes
+	for ex in [-0.45, 0.45]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.16
+		em.height = 0.32
+		eye.mesh = em
+		var emat: StandardMaterial3D = StandardMaterial3D.new()
+		emat.albedo_color = Color(1.0, 0.85, 0.40)
+		emat.emission_enabled = true
+		emat.emission = Color(1.0, 0.85, 0.40)
+		emat.emission_energy_multiplier = 6.0
+		emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = emat
+		eye.position = Vector3(ex, 5.05, 2.30)
+		pivot.add_child(eye)
+	# 4 spike shoulder plates
+	for i in 4:
+		var ang: float = (TAU / 4.0) * float(i)
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.55, 1.40, 0.55)
+		spike.mesh = spm
+		spike.material_override = bmat
+		spike.position = Vector3(cos(ang) * 1.85, 4.20, sin(ang) * 1.85)
+		spike.rotation.x = -0.30
+		pivot.add_child(spike)
+	# Two massive forearms resting on the ground
+	for ax in [-1.95, 1.95]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.95, 0.85, 2.40)
+		arm.mesh = am
+		arm.material_override = bmat
+		arm.position = Vector3(ax, 0.85, 1.10)
+		arm.rotation.x = 0.20
+		pivot.add_child(arm)
+		# Fist
+		var fist: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.70
+		fm.height = 1.20
+		fist.mesh = fm
+		fist.material_override = bmat
+		fist.position = Vector3(ax, 0.75, 2.25)
+		pivot.add_child(fist)
+	# Heart core — bright glowing sphere visible through chest seams
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.55
+	cm.height = 1.10
+	core.mesh = cm
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.55, 0.10)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.55, 0.10)
+	cmat.emission_energy_multiplier = 8.0
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = cmat
+	core.position = Vector3(0, 2.40, 0.45)
+	pivot.add_child(core)
+	# Heart pulse animation
+	var pulse: Tween = pivot.create_tween().set_loops()
+	pulse.tween_property(core, "scale", Vector3(1.18, 1.18, 1.18), 0.85).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(core, "scale", Vector3(0.92, 0.92, 0.92), 0.85).set_ease(Tween.EASE_IN_OUT)
+	# Body breathing
+	var breath: Tween = pivot.create_tween().set_loops()
+	breath.tween_property(body, "scale", Vector3(1.04, 1.02, 1.04), 1.6).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(body, "scale", Vector3(1.0, 1.0, 1.0), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Ember plume from the back
+	var embers: GPUParticles3D = GPUParticles3D.new()
+	embers.amount = 80
+	embers.lifetime = 3.0
+	embers.position = Vector3(0, 4.80, -1.20)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, -0.30)
+	pmat.spread = 30.0
+	pmat.initial_velocity_min = 0.85
+	pmat.initial_velocity_max = 2.20
+	pmat.gravity = Vector3(0, -0.40, 0)
+	pmat.scale_min = 0.10
+	pmat.scale_max = 0.22
+	pmat.color = Color(1.0, 0.55, 0.15, 0.95)
+	embers.process_material = pmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.20, 0.20)
+	embers.draw_pass_1 = qm
+	pivot.add_child(embers)
+	# Body OmniLight casting orange light over the arena
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 3.20, 0)
+	lt.light_color = Color(1.0, 0.40, 0.08)
+	lt.light_energy = 4.8
+	lt.omni_range = 22.0
+	lt.omni_attenuation = 1.6
+	pivot.add_child(lt)
+	# Floating boss title above the behemoth
+	var label: Label3D = Label3D.new()
+	label.text = "MOLTEN BEHEMOTH"
+	label.position = Vector3(0, 7.20, 0)
+	label.modulate = Color(1.0, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.90)
+	label.outline_size = 7
+	label.font_size = 28
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pivot.add_child(label)
+	# Title bob
+	var label_bob: Tween = pivot.create_tween().set_loops()
+	label_bob.tween_property(label, "position:y", 7.45, 1.4).set_ease(Tween.EASE_IN_OUT)
+	label_bob.tween_property(label, "position:y", 7.20, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Collision body so the player can't walk through the boss
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 2.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var caps: CapsuleShape3D = CapsuleShape3D.new()
+	caps.height = 4.40
+	caps.radius = 2.30
+	cs.shape = caps
+	stb.add_child(cs)
+	pivot.add_child(stb)
 
 
