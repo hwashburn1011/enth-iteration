@@ -1865,6 +1865,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_botanist_npc()
 	# Epic-4 T10: beehive with bee particles
 	_build_d4_beehive(geom)
+	# Epic-4 T11: meadow flowers
+	_build_d4_meadow_flowers(geom)
+	# Epic-4 T12: butterfly particles
+	_build_d4_butterflies(geom)
+	# Epic-4 T13: stone watering well
+	_build_d4_watering_well(geom)
+	# Epic-4 T14: Farmer NPC
+	_build_d4_farmer_npc()
+	# Epic-4 T15: straw scarecrow
+	_build_d4_scarecrow(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -2599,6 +2609,314 @@ func _build_d4_beehive(geom: Node) -> void:
 	cs.position = Vector3(0, 2.0, 0)
 	sb.add_child(cs)
 	hive.add_child(sb)
+
+
+func _build_d4_meadow_flowers(geom: Node) -> void:
+	## Epic-4 T11: 24 small flower stem+head clusters scattered across D4.
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 311
+	var colors: Array[Color] = [
+		Color(1.0, 0.55, 0.85),
+		Color(1.0, 0.95, 0.30),
+		Color(0.85, 0.40, 1.0),
+		Color(1.0, 0.55, 0.20),
+		Color(0.55, 0.95, 1.0),
+	]
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.30, 0.65, 0.30)
+	stem_mat.emission_enabled = true
+	stem_mat.emission = Color(0.45, 1.0, 0.45)
+	stem_mat.emission_energy_multiplier = 0.65
+	for i in 24:
+		var flower: Node3D = Node3D.new()
+		flower.name = "D4MeadowFlower_%d" % i
+		flower.position = D4_CENTER + Vector3(
+			rng.randf_range(-22, 22),
+			0,
+			rng.randf_range(-16, 16)
+		)
+		geom.add_child(flower)
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.04
+		sm.bottom_radius = 0.05
+		sm.height = 0.55
+		stem.mesh = sm
+		stem.position = Vector3(0, 0.27, 0)
+		stem.material_override = stem_mat
+		flower.add_child(stem)
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.10
+		hm.height = 0.20
+		head.mesh = hm
+		head.position = Vector3(0, 0.60, 0)
+		var color: Color = colors[i % colors.size()]
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = color
+		hmat.emission_enabled = true
+		hmat.emission = color
+		hmat.emission_energy_multiplier = 1.8
+		hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		head.material_override = hmat
+		flower.add_child(head)
+
+
+func _build_d4_butterflies(geom: Node) -> void:
+	## Epic-4 T12: 30 butterfly particles drifting near the great bloom.
+	var fly: GPUParticles3D = GPUParticles3D.new()
+	fly.name = "D4Butterflies"
+	fly.position = D4_CENTER + Vector3(0, 3, 0)
+	fly.amount = 30
+	fly.lifetime = 6.0
+	fly.preprocess = 3.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(8, 2, 8)
+	pmat.direction = Vector3(0, 0, 0)
+	pmat.spread = 180.0
+	pmat.initial_velocity_min = 0.30
+	pmat.initial_velocity_max = 0.85
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.10
+	pmat.scale_max = 0.18
+	pmat.color = Color(1.0, 0.55, 0.85, 1.0)
+	fly.process_material = pmat
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.18, 0.04, 0.10)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(1.0, 0.55, 0.85)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.65, 0.85)
+	bmat.emission_energy_multiplier = 1.8
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bm.material = bmat
+	fly.draw_pass_1 = bm
+	geom.add_child(fly)
+
+
+func _build_d4_watering_well(geom: Node) -> void:
+	## Epic-4 T13: stone watering well with bucket.
+	var well: Node3D = Node3D.new()
+	well.name = "D4WateringWell"
+	well.position = D4_CENTER + Vector3(8, 0, -8)
+	geom.add_child(well)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	# Round well wall — torus
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 0.85
+	rmesh.outer_radius = 1.10
+	rim.mesh = rmesh
+	rim.position = Vector3(0, 0.50, 0)
+	rim.material_override = stone_mat
+	well.add_child(rim)
+	# Water inside
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: CylinderMesh = CylinderMesh.new()
+	wmesh.top_radius = 0.85
+	wmesh.bottom_radius = 0.85
+	wmesh.height = 0.06
+	water.mesh = wmesh
+	water.position = Vector3(0, 0.50, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.55, 0.85, 0.85)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.55, 0.85, 1.0)
+	wmat.emission_energy_multiplier = 1.0
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	well.add_child(water)
+	# Wood arch over the well
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	for sx: float in [-0.85, 0.85]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.14, 2.40, 0.14)
+		leg.mesh = lm
+		leg.position = Vector3(sx, 1.20, 0)
+		leg.material_override = wood_mat
+		well.add_child(leg)
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.0, 0.18, 0.18)
+	crossbar.mesh = cm
+	crossbar.position = Vector3(0, 2.40, 0)
+	crossbar.material_override = wood_mat
+	well.add_child(crossbar)
+	# Hanging bucket
+	var bucket: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.20
+	bm.bottom_radius = 0.18
+	bm.height = 0.30
+	bucket.mesh = bm
+	bucket.position = Vector3(0, 1.85, 0)
+	bucket.material_override = wood_mat
+	well.add_child(bucket)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 2.40, 2.20)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.20, 0)
+	sb.add_child(cs)
+	well.add_child(sb)
+
+
+func _build_d4_farmer_npc() -> void:
+	## Epic-4 T14: Farmer NPC with straw hat and pitchfork.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var farmer: Node3D = Node3D.new()
+	farmer.name = "D4Farmer"
+	farmer.position = D4_CENTER + Vector3(15, 0, -8)
+	slots.add_child(farmer)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.40, 0.20)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.65, 0.30)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	farmer.add_child(body)
+	# Straw hat — wide flat cylinder
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.55
+	hm.bottom_radius = 0.55
+	hm.height = 0.10
+	hat.mesh = hm
+	hat.position = Vector3(0, 1.65, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.65, 0.30)
+	hmat.metallic = 0.10
+	hmat.roughness = 0.85
+	hat.material_override = hmat
+	farmer.add_child(hat)
+	# Eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.50, 0.32)
+		eye.material_override = eye_mat
+		farmer.add_child(eye)
+	# Pitchfork
+	var fork: MeshInstance3D = MeshInstance3D.new()
+	var fm: CylinderMesh = CylinderMesh.new()
+	fm.top_radius = 0.05
+	fm.bottom_radius = 0.05
+	fm.height = 2.40
+	fork.mesh = fm
+	fork.position = Vector3(0.50, 1.20, 0)
+	var fork_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fork_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	fork.material_override = fork_mat
+	farmer.add_child(fork)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Farmer"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.85, 0.65, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	farmer.add_child(label)
+
+
+func _build_d4_scarecrow(geom: Node) -> void:
+	## Epic-4 T15: a straw scarecrow on a wooden cross post.
+	var crow: Node3D = Node3D.new()
+	crow.name = "D4Scarecrow"
+	crow.position = D4_CENTER + Vector3(18, 0, -4)
+	geom.add_child(crow)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	# Vertical post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.07
+	pm.bottom_radius = 0.10
+	pm.height = 2.85
+	post.mesh = pm
+	post.position = Vector3(0, 1.42, 0)
+	post.material_override = wood_mat
+	crow.add_child(post)
+	# Cross arms
+	var arms: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(2.0, 0.10, 0.10)
+	arms.mesh = am
+	arms.position = Vector3(0, 2.20, 0)
+	arms.material_override = wood_mat
+	crow.add_child(arms)
+	# Straw head — yellow sphere
+	var straw_mat: StandardMaterial3D = StandardMaterial3D.new()
+	straw_mat.albedo_color = Color(0.95, 0.85, 0.30)
+	straw_mat.emission_enabled = true
+	straw_mat.emission = Color(1.0, 0.95, 0.30)
+	straw_mat.emission_energy_multiplier = 0.55
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.40
+	hmesh.height = 0.80
+	head.mesh = hmesh
+	head.position = Vector3(0, 2.85, 0)
+	head.material_override = straw_mat
+	crow.add_child(head)
+	# Conical hat
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hat_mesh: PrismMesh = PrismMesh.new()
+	hat_mesh.size = Vector3(0.55, 0.40, 0.55)
+	hat.mesh = hat_mesh
+	hat.position = Vector3(0, 3.30, 0)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.18, 0.10, 0.06)
+	hat.material_override = hat_mat
+	crow.add_child(hat)
+	# X eyes (black bars)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.12, 0.12]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.10, 0.10, 0.04)
+		eye.mesh = em
+		eye.position = Vector3(ex, 2.85, 0.36)
+		eye.material_override = eye_mat
+		crow.add_child(eye)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.30
+	cap.height = 3.40
+	cs.shape = cap
+	cs.position = Vector3(0, 1.70, 0)
+	sb.add_child(cs)
+	crow.add_child(sb)
 
 
 
