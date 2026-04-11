@@ -85,6 +85,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_hammer_target_dummy(geom)
 	_build_d9_lava_ferry_boat(geom)
 	_build_d9_obsidian_merchant_stall(geom)
+	_build_d9_forge_guildhall(geom)
 	print("[D9Builder] done")
 
 
@@ -6160,5 +6161,224 @@ func _build_d9_obsidian_merchant_stall(geom: Node) -> void:
 	var lpulse: Tween = pivot.create_tween().set_loops()
 	lpulse.tween_property(lan_mat, "emission_energy_multiplier", 7.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(lan_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_forge_guildhall(geom: Node) -> void:
+	## Epic-9 T65: forge guildhall — a stone-and-brass building landmark
+	## anchoring the cascade pool's western edge. Walls of dark basalt with
+	## glowing window slits, brass roof trim, twin chimneys belching ember
+	## smoke, an iron double-door, and a hammer-and-anvil guild crest above.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeGuildhall"
+	pivot.position = D9_CENTER + Vector3(38, 0.0, -16)
+	geom.add_child(pivot)
+	# Basalt wall material
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.14, 0.11, 0.10)
+	wall_mat.metallic = 0.20
+	wall_mat.roughness = 0.85
+	wall_mat.emission_enabled = true
+	wall_mat.emission = Color(0.50, 0.18, 0.05)
+	wall_mat.emission_energy_multiplier = 0.20
+	# Main hall body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(8.0, 5.0, 6.0)
+	body.mesh = bm
+	body.material_override = wall_mat
+	body.position = Vector3(0, 2.50, 0)
+	pivot.add_child(body)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.50, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(8.0, 5.0, 6.0)
+	cs.shape = bs
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# Brass trim material
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	# Roof trim — flat slab
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(8.40, 0.40, 6.40)
+	roof.mesh = rm
+	roof.material_override = brass_mat
+	roof.position = Vector3(0, 5.20, 0)
+	pivot.add_child(roof)
+	# Roof crest peak (prism)
+	var crest_peak: MeshInstance3D = MeshInstance3D.new()
+	var cpm: PrismMesh = PrismMesh.new()
+	cpm.size = Vector3(8.0, 1.20, 6.0)
+	crest_peak.mesh = cpm
+	crest_peak.material_override = wall_mat
+	crest_peak.position = Vector3(0, 6.00, 0)
+	pivot.add_child(crest_peak)
+	# 4 glowing window slits along the front
+	var win_mat: StandardMaterial3D = StandardMaterial3D.new()
+	win_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	win_mat.emission_enabled = true
+	win_mat.emission = Color(1.0, 0.55, 0.10)
+	win_mat.emission_energy_multiplier = 6.0
+	win_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for wx in [-2.80, -1.20, 1.20, 2.80]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.40, 1.40, 0.10)
+		win.mesh = wm
+		win.material_override = win_mat
+		win.position = Vector3(wx, 3.00, -3.05)
+		pivot.add_child(win)
+	# Iron double doors
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.16, 0.13, 0.11)
+	door_mat.metallic = 0.85
+	door_mat.roughness = 0.40
+	door_mat.emission_enabled = true
+	door_mat.emission = Color(0.65, 0.20, 0.05)
+	door_mat.emission_energy_multiplier = 0.30
+	for dx in [-0.40, 0.40]:
+		var door: MeshInstance3D = MeshInstance3D.new()
+		var dmesh: BoxMesh = BoxMesh.new()
+		dmesh.size = Vector3(0.78, 2.40, 0.18)
+		door.mesh = dmesh
+		door.material_override = door_mat
+		door.position = Vector3(dx, 1.20, -3.05)
+		pivot.add_child(door)
+	# Door brass studs
+	for sx in [-0.65, -0.15, 0.15, 0.65]:
+		for sy in [0.50, 1.20, 1.90]:
+			var stud: MeshInstance3D = MeshInstance3D.new()
+			var stm: SphereMesh = SphereMesh.new()
+			stm.radius = 0.06
+			stm.height = 0.12
+			stud.mesh = stm
+			stud.material_override = brass_mat
+			stud.position = Vector3(sx, sy, -3.10)
+			pivot.add_child(stud)
+	# Twin chimneys
+	for cxx in [-2.50, 2.50]:
+		var chim: MeshInstance3D = MeshInstance3D.new()
+		var chm: BoxMesh = BoxMesh.new()
+		chm.size = Vector3(1.10, 2.40, 1.10)
+		chim.mesh = chm
+		chim.material_override = wall_mat
+		chim.position = Vector3(cxx, 7.00, 0)
+		pivot.add_child(chim)
+		# Chimney brass cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(1.30, 0.18, 1.30)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(cxx, 8.30, 0)
+		pivot.add_child(cap)
+		# Ember smoke particles
+		var smoke: GPUParticles3D = GPUParticles3D.new()
+		smoke.position = Vector3(cxx, 8.50, 0)
+		smoke.amount = 24
+		smoke.lifetime = 3.0
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 12.0
+		pmat.initial_velocity_min = 0.6
+		pmat.initial_velocity_max = 1.2
+		pmat.gravity = Vector3(0, 0.4, 0)
+		pmat.scale_min = 0.18
+		pmat.scale_max = 0.35
+		pmat.color = Color(1.0, 0.45, 0.10, 0.85)
+		smoke.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.10
+		psmesh.height = 0.20
+		smoke.draw_pass_1 = psmesh
+		pivot.add_child(smoke)
+	# Hammer-and-anvil guild crest above the doors
+	# Anvil base
+	var anvil: MeshInstance3D = MeshInstance3D.new()
+	var anm: BoxMesh = BoxMesh.new()
+	anm.size = Vector3(0.90, 0.30, 0.30)
+	anvil.mesh = anm
+	anvil.material_override = brass_mat
+	anvil.position = Vector3(0, 4.20, -3.10)
+	pivot.add_child(anvil)
+	# Anvil horn (small box on the side)
+	var horn: MeshInstance3D = MeshInstance3D.new()
+	var hnm: BoxMesh = BoxMesh.new()
+	hnm.size = Vector3(0.30, 0.18, 0.30)
+	horn.mesh = hnm
+	horn.material_override = brass_mat
+	horn.position = Vector3(0.50, 4.30, -3.10)
+	pivot.add_child(horn)
+	# Hammer head crossing the anvil
+	var hamhead: MeshInstance3D = MeshInstance3D.new()
+	var hhm: BoxMesh = BoxMesh.new()
+	hhm.size = Vector3(0.50, 0.22, 0.30)
+	hamhead.mesh = hhm
+	hamhead.material_override = brass_mat
+	hamhead.position = Vector3(-0.20, 4.55, -3.10)
+	hamhead.rotation.z = -PI / 8.0
+	pivot.add_child(hamhead)
+	# Hammer handle
+	var hamhandle: MeshInstance3D = MeshInstance3D.new()
+	var hhdm: CylinderMesh = CylinderMesh.new()
+	hhdm.top_radius = 0.04
+	hhdm.bottom_radius = 0.04
+	hhdm.height = 0.85
+	hamhandle.mesh = hhdm
+	hamhandle.material_override = brass_mat
+	hamhandle.position = Vector3(0.20, 4.95, -3.10)
+	hamhandle.rotation.z = PI / 8.0
+	pivot.add_child(hamhandle)
+	# Two flanking torches at the door
+	var torch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	torch_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	torch_mat.emission_enabled = true
+	torch_mat.emission = Color(1.0, 0.55, 0.10)
+	torch_mat.emission_energy_multiplier = 8.0
+	torch_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for tx in [-1.40, 1.40]:
+		# Bracket
+		var bkt: MeshInstance3D = MeshInstance3D.new()
+		var bktm: CylinderMesh = CylinderMesh.new()
+		bktm.top_radius = 0.05
+		bktm.bottom_radius = 0.05
+		bktm.height = 0.40
+		bkt.mesh = bktm
+		bkt.material_override = brass_mat
+		bkt.position = Vector3(tx, 2.40, -3.20)
+		bkt.rotation.x = PI / 2.0
+		pivot.add_child(bkt)
+		# Flame ball
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.20
+		flm.height = 0.40
+		flame.mesh = flm
+		flame.material_override = torch_mat
+		flame.position = Vector3(tx, 2.65, -3.30)
+		pivot.add_child(flame)
+		# Light
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(tx, 2.65, -3.30)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 3.0
+		lt.omni_range = 7.0
+		pivot.add_child(lt)
+	# Window pulse animation
+	var winpulse: Tween = pivot.create_tween().set_loops()
+	winpulse.tween_property(win_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	winpulse.tween_property(win_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Torch flicker
+	var flick: Tween = pivot.create_tween().set_loops()
+	flick.tween_property(torch_mat, "emission_energy_multiplier", 10.0, 0.35).set_ease(Tween.EASE_IN_OUT)
+	flick.tween_property(torch_mat, "emission_energy_multiplier", 7.0, 0.35).set_ease(Tween.EASE_IN_OUT)
 
 
