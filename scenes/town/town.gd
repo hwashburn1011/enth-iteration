@@ -1945,6 +1945,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_musician_npc()
 	# Epic-4 T50: BLOOM GUARDIAN mini-boss
 	_build_d4_bloom_guardian(geom)
+	# Epic-4 T51: wooden stable building
+	_build_d4_stable(geom)
+	# Epic-4 T52: friendly horse creature
+	_build_d4_horse(geom)
+	# Epic-4 T53: Stableboy NPC
+	_build_d4_stableboy_npc()
+	# Epic-4 T54: hay loft above the stable
+	_build_d4_hay_loft(geom)
+	# Epic-4 T55: pile of hay bales
+	_build_d4_hay_bales(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -4988,6 +4998,331 @@ func _build_d4_bloom_guardian(geom: Node) -> void:
 	label.font_size = 22
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	guard.add_child(label)
+
+
+func _build_d4_stable(geom: Node) -> void:
+	## Epic-4 T51: wooden stable building with open front and stall doors.
+	var stable: Node3D = Node3D.new()
+	stable.name = "D4Stable"
+	stable.position = D4_CENTER + Vector3(20, 0, 8)
+	geom.add_child(stable)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	wood_mat.metallic = 0.10
+	wood_mat.roughness = 0.65
+	wood_mat.emission_enabled = true
+	wood_mat.emission = Color(0.85, 0.55, 0.30)
+	wood_mat.emission_energy_multiplier = 0.30
+	# Building body — wide box
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(4.0, 2.85, 2.40)
+	body.mesh = bm
+	body.position = Vector3(0, 1.42, 0)
+	body.material_override = wood_mat
+	stable.add_child(body)
+	# Pitched prism roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(4.0, 1.20, 2.40)
+	roof.mesh = rm
+	roof.position = Vector3(0, 3.40, 0)
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	roof.material_override = roof_mat
+	stable.add_child(roof)
+	# 2 stall doors on front (dark recessed boxes)
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.18, 0.10, 0.06)
+	door_mat.metallic = 0.30
+	for sx: float in [-0.95, 0.95]:
+		var door: MeshInstance3D = MeshInstance3D.new()
+		var dm: BoxMesh = BoxMesh.new()
+		dm.size = Vector3(1.40, 1.85, 0.10)
+		door.mesh = dm
+		door.position = Vector3(sx, 0.95, 1.21)
+		door.material_override = door_mat
+		stable.add_child(door)
+	# "STABLE" sign above
+	var label: Label3D = Label3D.new()
+	label.text = "STABLE"
+	label.position = Vector3(0, 4.40, 0)
+	label.modulate = Color(0.85, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	stable.add_child(label)
+	# Collision around the building
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.0, 2.85, 2.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.42, 0)
+	sb.add_child(cs)
+	stable.add_child(sb)
+
+
+func _build_d4_horse(geom: Node) -> void:
+	## Epic-4 T52: a friendly horse standing outside the stable. Body
+	## capsule + 4 legs + head + mane + tail.
+	var horse: Node3D = Node3D.new()
+	horse.name = "D4Horse"
+	horse.position = D4_CENTER + Vector3(16, 0, 8)
+	geom.add_child(horse)
+	# Brown body
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.55, 0.30, 0.10)
+	body_mat.metallic = 0.10
+	body_mat.roughness = 0.55
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.85, 0.55, 0.30)
+	body_mat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.85, 0.85, 1.85)
+	body.mesh = bm
+	body.position = Vector3(0, 1.20, 0)
+	body.material_override = body_mat
+	horse.add_child(body)
+	# 4 legs
+	for ox: float in [-0.30, 0.30]:
+		for oz: float in [-0.65, 0.65]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.18, 1.20, 0.18)
+			leg.mesh = lm
+			leg.position = Vector3(ox, 0.60, oz)
+			leg.material_override = body_mat
+			horse.add_child(leg)
+	# Head — angled box at front
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.55, 0.65, 0.85)
+	head.mesh = hm
+	head.position = Vector3(0, 1.85, 1.20)
+	head.rotation = Vector3(deg_to_rad(20), 0, 0)
+	head.material_override = body_mat
+	horse.add_child(head)
+	# Black mane — small dark box on top of neck
+	var mane: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.20, 0.30, 0.85)
+	mane.mesh = mm
+	mane.position = Vector3(0, 1.85, 0.55)
+	var mmat: StandardMaterial3D = StandardMaterial3D.new()
+	mmat.albedo_color = Color(0.10, 0.06, 0.04)
+	mane.material_override = mmat
+	horse.add_child(mane)
+	# Tail — small dark box at the back
+	var tail: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.10, 0.55, 0.10)
+	tail.mesh = tm
+	tail.position = Vector3(0, 1.10, -1.0)
+	tail.rotation = Vector3(deg_to_rad(-30), 0, 0)
+	tail.material_override = mmat
+	horse.add_child(tail)
+	# 2 small black eyes on the head
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.15, 0.15]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.95, 1.55)
+		eye.material_override = eye_mat
+		horse.add_child(eye)
+	# Slow swaying head animation
+	var sway: Tween = create_tween().set_loops()
+	sway.tween_property(head, "rotation:x", deg_to_rad(15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(head, "rotation:x", deg_to_rad(25), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Friendly name
+	var label: Label3D = Label3D.new()
+	label.text = "Horse"
+	label.position = Vector3(0, 2.85, 0)
+	label.modulate = Color(0.85, 0.65, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	horse.add_child(label)
+
+
+func _build_d4_stableboy_npc() -> void:
+	## Epic-4 T53: Stableboy NPC near the stable holding a feed bucket.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var sb: Node3D = Node3D.new()
+	sb.name = "D4Stableboy"
+	sb.position = D4_CENTER + Vector3(18, 0, 6)
+	slots.add_child(sb)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.40, 0.20)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.55, 0.30)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 1.20
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	body.material_override = bmat
+	sb.add_child(body)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.32
+	hm.height = 0.55
+	head.mesh = hm
+	head.position = Vector3(0, 1.45, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.65, 0.45)
+	head.material_override = hmat
+	sb.add_child(head)
+	# Small straw hat
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hatm: CylinderMesh = CylinderMesh.new()
+	hatm.top_radius = 0.45
+	hatm.bottom_radius = 0.45
+	hatm.height = 0.10
+	hat.mesh = hatm
+	hat.position = Vector3(0, 1.75, 0)
+	var hatmat: StandardMaterial3D = StandardMaterial3D.new()
+	hatmat.albedo_color = Color(0.85, 0.65, 0.30)
+	hat.material_override = hatmat
+	sb.add_child(hat)
+	# Feed bucket held in hand
+	var bucket: MeshInstance3D = MeshInstance3D.new()
+	var bkm: CylinderMesh = CylinderMesh.new()
+	bkm.top_radius = 0.20
+	bkm.bottom_radius = 0.18
+	bkm.height = 0.30
+	bucket.mesh = bkm
+	bucket.position = Vector3(0.45, 0.85, 0.30)
+	var bk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bk_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	bucket.material_override = bk_mat
+	sb.add_child(bucket)
+	# Eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.30)
+		eye.material_override = eye_mat
+		sb.add_child(eye)
+	var label: Label3D = Label3D.new()
+	label.text = "Stableboy"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.85, 0.55, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sb.add_child(label)
+
+
+func _build_d4_hay_loft(geom: Node) -> void:
+	## Epic-4 T54: a hay loft jutting out of the stable's upper level —
+	## small platform with a stack of hay sacks.
+	var loft: Node3D = Node3D.new()
+	loft.name = "D4HayLoft"
+	loft.position = D4_CENTER + Vector3(20, 0, 8)
+	geom.add_child(loft)
+	# Wooden platform deck — small flat box jutting out the front of the stable
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(2.40, 0.18, 0.85)
+	deck.mesh = dm
+	deck.position = Vector3(0, 2.85, 1.55)
+	deck.material_override = wood_mat
+	loft.add_child(deck)
+	# 2 support rope angles to the deck
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.85, 0.85, 0.85)
+	for sx: float in [-0.85, 0.85]:
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rm: CylinderMesh = CylinderMesh.new()
+		rm.top_radius = 0.03
+		rm.bottom_radius = 0.03
+		rm.height = 1.40
+		rope.mesh = rm
+		rope.position = Vector3(sx, 3.40, 1.10)
+		rope.rotation = Vector3(deg_to_rad(45), 0, 0)
+		rope.material_override = rope_mat
+		loft.add_child(rope)
+	# 3 hay sacks stacked on the deck
+	var hay_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hay_mat.albedo_color = Color(0.95, 0.85, 0.30)
+	hay_mat.emission_enabled = true
+	hay_mat.emission = Color(1.0, 0.95, 0.30)
+	hay_mat.emission_energy_multiplier = 0.85
+	for i in 3:
+		var sack: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.55, 0.40, 0.40)
+		sack.mesh = sm
+		sack.position = Vector3(-0.55 + i * 0.55, 3.20, 1.55)
+		sack.material_override = hay_mat
+		loft.add_child(sack)
+
+
+func _build_d4_hay_bales(geom: Node) -> void:
+	## Epic-4 T55: 5 stacked round hay bales near the stable.
+	var bales: Node3D = Node3D.new()
+	bales.name = "D4HayBales"
+	bales.position = D4_CENTER + Vector3(15, 0, 14)
+	geom.add_child(bales)
+	var hay_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hay_mat.albedo_color = Color(0.95, 0.85, 0.30)
+	hay_mat.emission_enabled = true
+	hay_mat.emission = Color(1.0, 0.95, 0.30)
+	hay_mat.emission_energy_multiplier = 0.85
+	hay_mat.metallic = 0.10
+	hay_mat.roughness = 0.65
+	# 3 bales on the ground row + 2 stacked on top
+	var bale_specs: Array = [
+		[Vector3(-0.85, 0.45, 0), 0.0],
+		[Vector3(0, 0.45, 0), 0.0],
+		[Vector3(0.85, 0.45, 0), 0.0],
+		[Vector3(-0.40, 1.20, 0), 0.0],
+		[Vector3(0.40, 1.20, 0), 0.0],
+	]
+	for spec in bale_specs:
+		var bale: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.40
+		bm.bottom_radius = 0.40
+		bm.height = 0.65
+		bale.mesh = bm
+		bale.position = spec[0]
+		bale.rotation = Vector3(0, 0, deg_to_rad(90))
+		bale.material_override = hay_mat
+		bales.add_child(bale)
+	# Collision around the heap
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.85, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	bales.add_child(sb)
 
 
 
