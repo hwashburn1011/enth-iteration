@@ -102,6 +102,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_lava_brook(geom)
 	_build_d9_lava_brook_bridge(geom)
 	_build_d9_basalt_monolith_ridge(geom)
+	_build_d9_obsidian_shard_field(geom)
 	print("[D9Builder] done")
 
 
@@ -9145,4 +9146,99 @@ func _build_d9_basalt_monolith_ridge(geom: Node) -> void:
 	var rpulse: Tween = pivot.create_tween().set_loops()
 	rpulse.tween_property(seam_mat, "emission_energy_multiplier", 7.5, 2.4).set_ease(Tween.EASE_IN_OUT)
 	rpulse.tween_property(seam_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_obsidian_shard_field(geom: Node) -> void:
+	## Epic-9 T82: obsidian shard field along D9's far south border. 18
+	## tall slim glassy obsidian prisms scattered along the south edge,
+	## varying height + tilt + rotation. Each shard has a faint inner
+	## glow and 6 of them have a brighter unshaded amber crack along
+	## the front face. Frames the south horizon and mirrors T81's
+	## monolith ridge.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ObsidianShardField"
+	pivot.position = D9_CENTER + Vector3(0, 0, 32)
+	geom.add_child(pivot)
+	# Materials
+	var obsidian_mat: StandardMaterial3D = StandardMaterial3D.new()
+	obsidian_mat.albedo_color = Color(0.06, 0.05, 0.08)
+	obsidian_mat.metallic = 0.55
+	obsidian_mat.roughness = 0.18
+	obsidian_mat.emission_enabled = true
+	obsidian_mat.emission = Color(0.50, 0.20, 0.55)
+	obsidian_mat.emission_energy_multiplier = 0.35
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	crack_mat.emission_enabled = true
+	crack_mat.emission = Color(1.0, 0.55, 0.10)
+	crack_mat.emission_energy_multiplier = 6.0
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 18 shards spaced ~3 units apart along X, varying Z jitter
+	for i in 18:
+		var sx: float = -25.5 + float(i) * 3.0
+		var jz: float = sin(float(i) * 1.3) * 1.2
+		var h: float = 3.2 + sin(float(i) * 0.7) * 1.4 + (1.0 if i % 4 == 0 else 0.0)
+		var w: float = 0.55 + cos(float(i) * 0.5) * 0.10
+		var tilt_x: float = sin(float(i) * 1.1) * 0.18
+		var tilt_z: float = cos(float(i) * 0.9) * 0.20
+		var roty: float = float(i) * 0.7
+		# Shard body — thin tall prism (PrismMesh)
+		var shard: MeshInstance3D = MeshInstance3D.new()
+		var sm: PrismMesh = PrismMesh.new()
+		sm.size = Vector3(w, h, w * 0.55)
+		shard.mesh = sm
+		shard.material_override = obsidian_mat
+		shard.position = Vector3(sx, h * 0.5, jz)
+		shard.rotation = Vector3(tilt_x, roty, tilt_z)
+		pivot.add_child(shard)
+		# Shard collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, h * 0.5, jz)
+		sb.rotation = Vector3(tilt_x, roty, tilt_z)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(w, h, w * 0.55)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pivot.add_child(sb)
+		# Every 3rd shard gets a glowing crack stripe along its front face
+		if i % 3 == 0:
+			var crack: MeshInstance3D = MeshInstance3D.new()
+			var cmm: BoxMesh = BoxMesh.new()
+			cmm.size = Vector3(0.06, h * 0.70, 0.04)
+			crack.mesh = cmm
+			crack.material_override = crack_mat
+			crack.position = Vector3(sx, h * 0.50, jz - w * 0.30)
+			crack.rotation = Vector3(tilt_x, roty, tilt_z)
+			pivot.add_child(crack)
+			# Subtle OmniLight on the crack
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(sx, h * 0.65, jz - w * 0.35)
+			lt.light_color = Color(1.0, 0.55, 0.15)
+			lt.light_energy = 1.4
+			lt.omni_range = 4.5
+			pivot.add_child(lt)
+	# 4 small ground shard clusters scattered between the tall ones
+	var cluster_xs: Array = [-18.0, -6.0, 6.0, 18.0]
+	for cx in cluster_xs:
+		for j in 4:
+			var off_x: float = randf_range(-1.2, 1.2)
+			var off_z: float = randf_range(-1.0, 1.0)
+			var ch: float = randf_range(0.45, 0.85)
+			var cw: float = randf_range(0.20, 0.32)
+			var small: MeshInstance3D = MeshInstance3D.new()
+			var smm: PrismMesh = PrismMesh.new()
+			smm.size = Vector3(cw, ch, cw * 0.55)
+			small.mesh = smm
+			small.material_override = obsidian_mat
+			small.position = Vector3(cx + off_x, ch * 0.5, off_z)
+			small.rotation = Vector3(randf_range(-0.30, 0.30), randf() * TAU, randf_range(-0.30, 0.30))
+			pivot.add_child(small)
+	# Slow obsidian violet glow + crack pulse
+	var opulse: Tween = pivot.create_tween().set_loops()
+	opulse.tween_property(obsidian_mat, "emission_energy_multiplier", 0.55, 2.2).set_ease(Tween.EASE_IN_OUT)
+	opulse.tween_property(obsidian_mat, "emission_energy_multiplier", 0.25, 2.2).set_ease(Tween.EASE_IN_OUT)
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 
