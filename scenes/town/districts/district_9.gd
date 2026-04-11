@@ -90,6 +90,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_guildhall_banners(geom)
 	_build_d9_guildhall_approach_path(geom)
 	_build_d9_guildhall_training_yard(geom)
+	_build_d9_apprentice_brun_npc(town)
 	print("[D9Builder] done")
 
 
@@ -7137,4 +7138,138 @@ func _build_d9_guildhall_training_yard(geom: Node) -> void:
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 
+
+func _build_d9_apprentice_brun_npc(town: Node) -> void:
+	## Epic-9 T70: Apprentice Brun — young smith trainee inside the
+	## guildhall training yard, swinging a practice hammer at the dummy.
+	## Leather apron over rust shirt, soot bandana, and a glowing
+	## ember-burn cheek mark.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ApprenticeBrunSlot"
+	slot.position = Vector3(D9_CENTER.x + 46.5, 0, -16.5)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ApprenticeBrun"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Apprentice Brun")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_apprentice_brun")
+	npc.rotation.y = PI / 2.0
+	slot.add_child(npc)
+	# Rust shirt
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.55, 0.20, 0.10)
+	shirt_mat.roughness = 0.85
+	shirt_mat.metallic = 0.10
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.95, 1.10, 0.55)
+	shirt.mesh = sm
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 1.10, 0)
+	npc.add_child(shirt)
+	# Leather apron
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.22, 0.13, 0.08)
+	apron_mat.roughness = 0.85
+	apron_mat.metallic = 0.15
+	apron_mat.emission_enabled = true
+	apron_mat.emission = Color(0.55, 0.18, 0.05)
+	apron_mat.emission_energy_multiplier = 0.18
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var apm: BoxMesh = BoxMesh.new()
+	apm.size = Vector3(0.85, 1.00, 0.10)
+	apron.mesh = apm
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 1.00, -0.30)
+	npc.add_child(apron)
+	# Apron strap (top)
+	var strap: MeshInstance3D = MeshInstance3D.new()
+	var stm: BoxMesh = BoxMesh.new()
+	stm.size = Vector3(0.85, 0.08, 0.06)
+	strap.mesh = stm
+	strap.material_override = apron_mat
+	strap.position = Vector3(0, 1.55, -0.30)
+	npc.add_child(strap)
+	# Bandana on the head
+	var bandana_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bandana_mat.albedo_color = Color(0.65, 0.18, 0.12)
+	bandana_mat.roughness = 0.85
+	bandana_mat.emission_enabled = true
+	bandana_mat.emission = Color(0.85, 0.18, 0.05)
+	bandana_mat.emission_energy_multiplier = 0.30
+	var bandana: MeshInstance3D = MeshInstance3D.new()
+	var bdm: BoxMesh = BoxMesh.new()
+	bdm.size = Vector3(0.55, 0.18, 0.50)
+	bandana.mesh = bdm
+	bandana.material_override = bandana_mat
+	bandana.position = Vector3(0, 1.92, 0)
+	npc.add_child(bandana)
+	# Ember-burn cheek mark — unshaded amber dot
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 5.0
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var burn: MeshInstance3D = MeshInstance3D.new()
+	var burnm: SphereMesh = SphereMesh.new()
+	burnm.radius = 0.04
+	burnm.height = 0.08
+	burn.mesh = burnm
+	burn.material_override = ember_mat
+	burn.position = Vector3(0.18, 1.78, -0.27)
+	npc.add_child(burn)
+	# Practice hammer — handle + head, swung
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.80
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(1.0, 0.30, 0.05)
+	iron_mat.emission_energy_multiplier = 0.50
+	var hammer_pivot: Node3D = Node3D.new()
+	hammer_pivot.position = Vector3(-0.30, 1.40, -0.30)
+	npc.add_child(hammer_pivot)
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.04
+	hcm.bottom_radius = 0.05
+	hcm.height = 0.95
+	handle.mesh = hcm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0, -0.45, 0)
+	hammer_pivot.add_child(handle)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var headm: BoxMesh = BoxMesh.new()
+	headm.size = Vector3(0.22, 0.18, 0.30)
+	head.mesh = headm
+	head.material_override = iron_mat
+	head.position = Vector3(0, -0.95, 0)
+	hammer_pivot.add_child(head)
+	# Warm aura OmniLight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, 0)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.4
+	lt.omni_range = 4.0
+	npc.add_child(lt)
+	# Hammer swing — chop down, snap recoil, brief reset hold
+	var swing: Tween = npc.create_tween().set_loops()
+	swing.tween_property(hammer_pivot, "rotation:x", -1.20, 0.55).set_ease(Tween.EASE_OUT)
+	swing.tween_property(hammer_pivot, "rotation:x", -0.10, 0.18).set_ease(Tween.EASE_IN)
+	swing.tween_property(hammer_pivot, "rotation:x", -0.10, 0.45)
+	# Burn pulse
+	var bpulse: Tween = npc.create_tween().set_loops()
+	bpulse.tween_property(ember_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bpulse.tween_property(ember_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
