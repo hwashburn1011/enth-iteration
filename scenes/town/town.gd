@@ -1630,6 +1630,495 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_ambient_lighting(geom)
 	# Epic-2 T100: FINALE — massive hovering Glitch Herald landmark
 	_build_d2_glitch_herald_landmark(geom)
+	# === EPIC 3: Memory Vault — The Datacore Depths ===
+	_build_district_3(geom)
+
+
+func _build_district_3(geom: Node) -> void:
+	## Epic 3 entry point — builds the third district east of D2's boss
+	## arena. Violet/purple arcane theme, ancient code, awakened guardians.
+	# Epic-3 T1: extend boundary further + D3 violet ground
+	_extend_boundary_for_d3(geom)
+	_build_d3_ground(geom)
+	# Epic-3 T2: D3 entrance arch (memory vault doorway)
+	_build_d3_entrance_arch(geom)
+	# Epic-3 T3: giant data crystal landmark at D3 center
+	_build_d3_great_crystal(geom)
+	# Epic-3 T4: awakened guardian mini-boss
+	_build_d3_awakened_guardian(geom)
+	# Epic-3 T5: Lost Coder NPC
+	_build_d3_lost_coder_npc()
+
+
+const D3_CENTER := Vector3(150, 0, 0)
+
+
+func _extend_boundary_for_d3(geom: Node) -> void:
+	## Epic-3 T1a: push the east boundary wall from x=120 out to x=180 to
+	## make room for District 3.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 180.0
+
+
+func _build_d3_ground(geom: Node) -> void:
+	## Epic-3 T1b: D3 ground — violet/purple grid floor extending from
+	## x=120 to x=180. Uses a tweaked variant of the digital grid shader
+	## with violet primary color on a deep black base.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(60, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.name = "D3Ground"
+	ground.mesh = plane
+	ground.position = Vector3(150, 0, 0)
+	# Violet variant of the grid shader
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded;
+uniform vec3 base_color = vec3(0.04, 0.02, 0.08);
+uniform vec3 grid_color = vec3(0.85, 0.40, 1.00);
+uniform float grid_scale = 1.4;
+uniform float line_width = 0.04;
+
+void fragment() {
+	vec2 uv = UV * grid_scale * 30.0;
+	vec2 grid = abs(fract(uv - 0.5) - 0.5) / fwidth(uv);
+	float line = min(grid.x, grid.y);
+	float strength = 1.0 - min(line, 1.0);
+	vec3 color = mix(base_color, grid_color, strength * 0.85);
+	ALBEDO = color;
+}
+"""
+	var smat: ShaderMaterial = ShaderMaterial.new()
+	smat.shader = shader
+	ground.material_override = smat
+	geom.add_child(ground)
+	# Ground collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(60, 0.10, 40)
+	cs.shape = bs
+	cs.position = Vector3(0, -0.05, 0)
+	sb.add_child(cs)
+	ground.add_child(sb)
+
+
+func _build_d3_entrance_arch(geom: Node) -> void:
+	## Epic-3 T2: a tall ornate violet stone arch at the D3 entrance
+	## (just east of D2 boundary at x=120) reading "MEMORY VAULT".
+	var arch: Node3D = Node3D.new()
+	arch.name = "D3EntranceArch"
+	arch.position = Vector3(122, 0, 0)
+	geom.add_child(arch)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.40
+	# 2 wide pillars
+	for sx: float in [-4.5, 4.5]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(1.85, 8.5, 1.85)
+		pillar.mesh = pmesh
+		pillar.position = Vector3(sx, 4.25, 0)
+		pillar.material_override = stone_mat
+		arch.add_child(pillar)
+		# Glowing violet rune stripe
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.06, 6.5, 1.95)
+		stripe.mesh = smesh
+		stripe.position = Vector3(sx + (-0.96 if sx < 0 else 0.96), 4.0, 0)
+		var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stripe_mat.albedo_color = Color(0.85, 0.40, 1.0)
+		stripe_mat.emission_enabled = true
+		stripe_mat.emission = Color(1.0, 0.55, 1.0)
+		stripe_mat.emission_energy_multiplier = 1.8
+		stripe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		stripe.material_override = stripe_mat
+		arch.add_child(stripe)
+		# Collision per pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.85, 8.5, 1.85)
+		cs.shape = cb
+		cs.position = Vector3(sx, 4.25, 0)
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Arched lintel — wide flat box
+	var lintel: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: BoxMesh = BoxMesh.new()
+	lmesh.size = Vector3(11.0, 1.85, 1.95)
+	lintel.mesh = lmesh
+	lintel.position = Vector3(0, 9.40, 0)
+	lintel.material_override = stone_mat
+	arch.add_child(lintel)
+	# Crowning peak — small prism on top of lintel
+	var peak: MeshInstance3D = MeshInstance3D.new()
+	var prmesh: PrismMesh = PrismMesh.new()
+	prmesh.size = Vector3(2.40, 1.40, 1.95)
+	peak.mesh = prmesh
+	peak.position = Vector3(0, 11.0, 0)
+	peak.material_override = stone_mat
+	arch.add_child(peak)
+	# Glowing eye gem in the peak
+	var gem: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 0.30
+	gm.height = 0.60
+	gem.mesh = gm
+	gem.position = Vector3(0, 11.20, 0)
+	var gmat: StandardMaterial3D = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.85, 0.40, 1.0)
+	gmat.emission_enabled = true
+	gmat.emission = Color(1.0, 0.55, 1.0)
+	gmat.emission_energy_multiplier = 3.0
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	gem.material_override = gmat
+	arch.add_child(gem)
+	# Pulse the gem
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(gem, "scale", Vector3(1.30, 1.30, 1.30), 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(gem, "scale", Vector3(0.95, 0.95, 0.95), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Big district name on the lintel both sides
+	for fz: float in [-0.99, 0.99]:
+		var label: Label3D = Label3D.new()
+		label.text = "MEMORY VAULT"
+		label.position = Vector3(0, 9.40, fz)
+		label.rotation = Vector3(0, deg_to_rad(0 if fz > 0 else 180), 0)
+		label.modulate = Color(0.85, 0.55, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 26
+		label.no_depth_test = true
+		arch.add_child(label)
+
+
+func _build_d3_great_crystal(geom: Node) -> void:
+	## Epic-3 T3: a giant 8m-tall data crystal at the D3 center, the
+	## district's main landmark. Translucent violet prism floating just
+	## above a stepped platform with a slow vertical bob and rotation.
+	var crystal: Node3D = Node3D.new()
+	crystal.name = "D3GreatCrystal"
+	crystal.position = D3_CENTER
+	geom.add_child(crystal)
+	# Stepped stone platform
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for i in 3:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(4.0 - i * 0.55, 0.30, 4.0 - i * 0.55)
+		step.mesh = sm
+		step.position = Vector3(0, 0.15 + i * 0.30, 0)
+		step.material_override = stone_mat
+		crystal.add_child(step)
+	# Crystal pivot above the platform (where bob + rotation happen)
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 5.0, 0)
+	crystal.add_child(pivot)
+	# Main crystal — large prism
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.85, 0.40, 1.0, 0.55)
+	crystal_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(1.0, 0.55, 1.0)
+	crystal_mat.emission_energy_multiplier = 2.4
+	crystal_mat.metallic = 0.30
+	crystal_mat.roughness = 0.10
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var prism: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: PrismMesh = PrismMesh.new()
+	pmesh.size = Vector3(2.40, 5.0, 2.40)
+	prism.mesh = pmesh
+	prism.position = Vector3(0, 0, 0)
+	prism.material_override = crystal_mat
+	pivot.add_child(prism)
+	# Inverted crystal underneath (pointing down)
+	var lower: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: PrismMesh = PrismMesh.new()
+	lmesh.size = Vector3(2.40, 2.40, 2.40)
+	lower.mesh = lmesh
+	lower.position = Vector3(0, -3.40, 0)
+	lower.rotation = Vector3(deg_to_rad(180), 0, 0)
+	lower.material_override = crystal_mat
+	pivot.add_child(lower)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 14.0)
+	# Bob in place
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(pivot, "position:y", 5.55, 2.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(pivot, "position:y", 5.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+	# 4 small orbital satellite crystals around the main one
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var sat: MeshInstance3D = MeshInstance3D.new()
+		var sm: PrismMesh = PrismMesh.new()
+		sm.size = Vector3(0.55, 1.20, 0.55)
+		sat.mesh = sm
+		sat.position = Vector3(cos(angle) * 2.40, randf_range(-0.5, 0.5), sin(angle) * 2.40)
+		sat.material_override = crystal_mat
+		pivot.add_child(sat)
+	# Real OmniLight inside the crystal
+	var crystal_light: OmniLight3D = OmniLight3D.new()
+	crystal_light.position = Vector3(0, 0, 0)
+	crystal_light.light_color = Color(1.0, 0.55, 1.0)
+	crystal_light.light_energy = 3.5
+	crystal_light.omni_range = 22.0
+	pivot.add_child(crystal_light)
+	# Halo on the platform
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: TorusMesh = TorusMesh.new()
+	hmesh.inner_radius = 2.40
+	hmesh.outer_radius = 2.85
+	halo.mesh = hmesh
+	halo.position = Vector3(0, 1.05, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.40, 1.0)
+	hmat.emission_enabled = true
+	hmat.emission = Color(1.0, 0.55, 1.0)
+	hmat.emission_energy_multiplier = 2.0
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = hmat
+	crystal.add_child(halo)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "GREAT CRYSTAL"
+	label.position = Vector3(0, 11.0, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	crystal.add_child(label)
+	# Collision around the platform
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.0, 1.40, 4.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	crystal.add_child(sb)
+
+
+func _build_d3_awakened_guardian(geom: Node) -> void:
+	## Epic-3 T4: an awakened guardian mini-boss — a stone humanoid statue
+	## that has come to life. Tall thin body, glowing violet runes
+	## carved into chest, deep amethyst eyes, slow patrol around the
+	## crystal platform.
+	var guardian: Node3D = Node3D.new()
+	guardian.name = "D3AwakenedGuardian"
+	guardian.position = D3_CENTER + Vector3(8, 0, 6)
+	geom.add_child(guardian)
+	# Body — tall stone box
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.16, 0.26)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.40, 2.40, 0.85)
+	torso.mesh = tm
+	torso.position = Vector3(0, 1.90, 0)
+	torso.material_override = stone_mat
+	guardian.add_child(torso)
+	# Head — narrower box
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.85, 0.85, 0.85)
+	head.mesh = hm
+	head.position = Vector3(0, 3.55, 0)
+	head.material_override = stone_mat
+	guardian.add_child(head)
+	# 2 deep amethyst eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_energy_multiplier = 3.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.10
+		em.height = 0.20
+		eye.mesh = em
+		eye.position = Vector3(ex, 3.60, 0.45)
+		eye.material_override = eye_mat
+		guardian.add_child(eye)
+	# 4 violet rune squares carved into chest
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.55, 1.0)
+	rune_mat.emission_energy_multiplier = 2.4
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.20, 0.20, 0.04)
+		rune.mesh = rm
+		rune.position = Vector3(-0.40 + (i % 2) * 0.55, 1.60 + int(i / 2) * 0.55, 0.45)
+		rune.material_override = rune_mat
+		guardian.add_child(rune)
+		# Rune flicker
+		var flicker: Tween = create_tween().set_loops()
+		flicker.tween_interval(1.0 + i * 0.3)
+		flicker.tween_property(rune, "visible", false, 0.0)
+		flicker.tween_interval(0.10)
+		flicker.tween_property(rune, "visible", true, 0.0)
+	# 2 thick legs
+	for sx: float in [-0.40, 0.40]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.40, 0.85, 0.40)
+		leg.mesh = lm
+		leg.position = Vector3(sx, 0.42, 0)
+		leg.material_override = stone_mat
+		guardian.add_child(leg)
+	# Stone sword in front
+	var sword: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.20, 2.40, 0.06)
+	sword.mesh = sm
+	sword.position = Vector3(0.85, 1.40, 0.45)
+	sword.material_override = stone_mat
+	guardian.add_child(sword)
+	# Patrol path circling the crystal
+	var origin: Vector3 = D3_CENTER + Vector3(8, 0, 6)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(guardian, "rotation:y", deg_to_rad(90), 0.5)
+	patrol.tween_property(guardian, "position", D3_CENTER + Vector3(8, 0, -6), 8.0)
+	patrol.tween_property(guardian, "rotation:y", deg_to_rad(180), 0.5)
+	patrol.tween_property(guardian, "position", D3_CENTER + Vector3(-8, 0, -6), 8.0)
+	patrol.tween_property(guardian, "rotation:y", deg_to_rad(270), 0.5)
+	patrol.tween_property(guardian, "position", D3_CENTER + Vector3(-8, 0, 6), 8.0)
+	patrol.tween_property(guardian, "rotation:y", 0.0, 0.5)
+	patrol.tween_property(guardian, "position", origin, 8.0)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "AWAKENED GUARDIAN"
+	label.position = Vector3(0, 4.65, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	guardian.add_child(label)
+
+
+func _build_d3_lost_coder_npc() -> void:
+	## Epic-3 T5: Lost Coder NPC — a wandering ancient programmer ghost
+	## with a translucent body and a glowing keyboard floating in front
+	## of them. The first inhabitant of the Memory Vault.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var coder: Node3D = Node3D.new()
+	coder.name = "D3LostCoder"
+	coder.position = D3_CENTER + Vector3(-12, 0, 4)
+	slots.add_child(coder)
+	# Translucent ghostly body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.55, 1.0, 0.55)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.40, 1.0)
+	bmat.emission_energy_multiplier = 1.4
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.20
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	body.material_override = bmat
+	coder.add_child(body)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.72
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	head.material_override = bmat
+	coder.add_child(head)
+	# 2 white glowing eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.55, 0.32)
+		eye.material_override = eye_mat
+		coder.add_child(eye)
+	# Floating glowing keyboard in front
+	var kb: MeshInstance3D = MeshInstance3D.new()
+	var kbm: BoxMesh = BoxMesh.new()
+	kbm.size = Vector3(0.85, 0.10, 0.30)
+	kb.mesh = kbm
+	kb.position = Vector3(0, 1.0, 0.55)
+	var kbmat: StandardMaterial3D = StandardMaterial3D.new()
+	kbmat.albedo_color = Color(0.04, 0.10, 0.16)
+	kbmat.metallic = 0.65
+	kbmat.emission_enabled = true
+	kbmat.emission = Color(0.40, 1.0, 0.55)
+	kbmat.emission_energy_multiplier = 1.4
+	kb.material_override = kbmat
+	coder.add_child(kb)
+	# 9 small "key" emissive boxes on the keyboard (3x3 grid)
+	for r in 3:
+		for c in 3:
+			var key: MeshInstance3D = MeshInstance3D.new()
+			var km: BoxMesh = BoxMesh.new()
+			km.size = Vector3(0.10, 0.04, 0.06)
+			key.mesh = km
+			key.position = Vector3(-0.30 + c * 0.30, 1.07, 0.45 + r * 0.10)
+			var kmat: StandardMaterial3D = StandardMaterial3D.new()
+			kmat.albedo_color = Color(0.55, 1.0, 0.55)
+			kmat.emission_enabled = true
+			kmat.emission = Color(0.55, 1.0, 0.55)
+			kmat.emission_energy_multiplier = 2.2
+			kmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			key.material_override = kmat
+			coder.add_child(key)
+	# Pulse the body to feel ghostly
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(bmat, "emission_energy_multiplier", 2.4, 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(bmat, "emission_energy_multiplier", 0.85, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Slow drift patrol
+	var origin: Vector3 = D3_CENTER + Vector3(-12, 0, 4)
+	var drift: Tween = create_tween().set_loops()
+	drift.tween_property(coder, "position", origin + Vector3(0, 0, -8), 6.0).set_ease(Tween.EASE_IN_OUT)
+	drift.tween_property(coder, "position", origin, 6.0).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Lost Coder"
+	label.position = Vector3(0, 2.10, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	coder.add_child(label)
+
 
 
 const D2_CENTER := Vector3(85, 0, 0)
