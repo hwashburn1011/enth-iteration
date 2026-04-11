@@ -1648,6 +1648,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_awakened_guardian(geom)
 	# Epic-3 T5: Lost Coder NPC
 	_build_d3_lost_coder_npc()
+	# Epic-3 T6: ancient pillar cluster
+	_build_d3_ancient_pillars(geom)
+	# Epic-3 T7: floating sigil glyphs
+	_build_d3_sigil_glyphs(geom)
+	# Epic-3 T8: small reading chamber alcove
+	_build_d3_reading_chamber(geom)
+	# Epic-3 T9: memory shard collectibles cluster
+	_build_d3_memory_shards(geom)
+	# Epic-3 T10: archivist NPC
+	_build_d3_archivist_npc()
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -2118,6 +2128,343 @@ func _build_d3_lost_coder_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	coder.add_child(label)
+
+
+func _build_d3_ancient_pillars(geom: Node) -> void:
+	## Epic-3 T6: a cluster of 6 ancient violet stone pillars at varying
+	## heights forming a half-circle around the great crystal — like
+	## sentinels guarding the heart of the vault.
+	var cluster: Node3D = Node3D.new()
+	cluster.name = "D3AncientPillars"
+	cluster.position = D3_CENTER + Vector3(0, 0, -10)
+	geom.add_child(cluster)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.30
+	for i in 6:
+		var t: float = float(i) / 5.0
+		var angle: float = (-PI * 0.5) + t * PI
+		var radius: float = 8.0
+		var height: float = 4.0 + (i % 3) * 1.0
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.85, height, 0.85)
+		pillar.mesh = pmesh
+		pillar.position = Vector3(cos(angle) * radius, height * 0.5, sin(angle) * radius)
+		pillar.material_override = stone_mat
+		cluster.add_child(pillar)
+		# Top crown — small pulsing emissive sphere
+		var crown: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.20
+		cm.height = 0.40
+		crown.mesh = cm
+		crown.position = Vector3(cos(angle) * radius, height + 0.20, sin(angle) * radius)
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.85, 0.40, 1.0)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 1.0)
+		cmat.emission_energy_multiplier = 2.4
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crown.material_override = cmat
+		cluster.add_child(crown)
+		# Pulse the crown
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(crown, "scale", Vector3(1.30, 1.30, 1.30), 1.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(crown, "scale", Vector3(0.85, 0.85, 0.85), 1.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		# Collision per pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, height, 0.85)
+		cs.shape = cb
+		cs.position = Vector3(cos(angle) * radius, height * 0.5, sin(angle) * radius)
+		sb.add_child(cs)
+		cluster.add_child(sb)
+
+
+func _build_d3_sigil_glyphs(geom: Node) -> void:
+	## Epic-3 T7: 8 floating violet sigil glyphs drifting through the air
+	## near the crystal. Each is a different ancient symbol Label3D
+	## floating + slowly rotating + bobbing.
+	var symbols: Array[String] = ["Δ", "Φ", "Ψ", "Ω", "Σ", "Λ", "Θ", "Ξ"]
+	for i in symbols.size():
+		var glyph: Node3D = Node3D.new()
+		glyph.name = "D3SigilGlyph_%d" % i
+		var t: float = float(i) / symbols.size()
+		var angle: float = t * TAU
+		glyph.position = D3_CENTER + Vector3(cos(angle) * 6.0, 3.0 + (i % 3) * 0.85, sin(angle) * 6.0)
+		geom.add_child(glyph)
+		# Backing card (translucent)
+		var card: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.65, 0.65, 0.04)
+		card.mesh = cmesh
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.85, 0.40, 1.0, 0.30)
+		cmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 1.0)
+		cmat.emission_energy_multiplier = 1.0
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		card.material_override = cmat
+		glyph.add_child(card)
+		# Symbol label
+		var label: Label3D = Label3D.new()
+		label.text = symbols[i]
+		label.position = Vector3(0, 0, 0.05)
+		label.modulate = Color(1, 1, 1)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 5
+		label.font_size = 28
+		label.no_depth_test = true
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		glyph.add_child(label)
+		# Rotation tween
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(glyph, "rotation:y", TAU, 6.0 + i * 0.5)
+		# Bob tween
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = glyph.position.y
+		bob.tween_property(glyph, "position:y", origin_y + 0.55, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(glyph, "position:y", origin_y, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_reading_chamber(geom: Node) -> void:
+	## Epic-3 T8: a small alcove reading chamber — 3-sided stone walls
+	## containing a podium with a glowing tome and a stool. The "scholar's
+	## corner" of the vault.
+	var chamber: Node3D = Node3D.new()
+	chamber.name = "D3ReadingChamber"
+	chamber.position = D3_CENTER + Vector3(-15, 0, -8)
+	geom.add_child(chamber)
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.14, 0.10, 0.22)
+	wall_mat.metallic = 0.40
+	wall_mat.roughness = 0.55
+	wall_mat.emission_enabled = true
+	wall_mat.emission = Color(0.55, 0.30, 0.85)
+	wall_mat.emission_energy_multiplier = 0.30
+	# Back wall
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.40, 3.40, 0.30)
+	back.mesh = bm
+	back.position = Vector3(0, 1.70, -1.40)
+	back.material_override = wall_mat
+	chamber.add_child(back)
+	# Side walls
+	for sx: float in [-1.55, 1.55]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.30, 3.40, 2.80)
+		side.mesh = sm
+		side.position = Vector3(sx, 1.70, 0)
+		side.material_override = wall_mat
+		chamber.add_child(side)
+	# Podium in the center
+	var podium_mat: StandardMaterial3D = StandardMaterial3D.new()
+	podium_mat.albedo_color = Color(0.20, 0.16, 0.26)
+	podium_mat.metallic = 0.55
+	var podium: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.85, 1.20, 0.55)
+	podium.mesh = pm
+	podium.position = Vector3(0, 0.60, -0.55)
+	podium.material_override = podium_mat
+	chamber.add_child(podium)
+	# Glowing tome on the podium
+	var tome: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.55, 0.10, 0.40)
+	tome.mesh = tm
+	tome.position = Vector3(0, 1.30, -0.55)
+	tome.rotation = Vector3(deg_to_rad(-20), 0, 0)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.85, 0.40, 1.0)
+	tmat.emission_enabled = true
+	tmat.emission = Color(1.0, 0.55, 1.0)
+	tmat.emission_energy_multiplier = 1.6
+	tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tome.material_override = tmat
+	chamber.add_child(tome)
+	# Floating page glyph above the tome (a small pulsing prism)
+	var page: MeshInstance3D = MeshInstance3D.new()
+	var pg: PrismMesh = PrismMesh.new()
+	pg.size = Vector3(0.20, 0.30, 0.06)
+	page.mesh = pg
+	page.position = Vector3(0, 1.85, -0.55)
+	var pgmat: StandardMaterial3D = StandardMaterial3D.new()
+	pgmat.albedo_color = Color(1, 1, 1)
+	pgmat.emission_enabled = true
+	pgmat.emission = Color(1, 1, 1)
+	pgmat.emission_energy_multiplier = 2.6
+	pgmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	page.material_override = pgmat
+	chamber.add_child(page)
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(page, "position:y", 2.10, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(page, "position:y", 1.85, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Stool in front
+	var stool: MeshInstance3D = MeshInstance3D.new()
+	var sm2: CylinderMesh = CylinderMesh.new()
+	sm2.top_radius = 0.22
+	sm2.bottom_radius = 0.22
+	sm2.height = 0.55
+	stool.mesh = sm2
+	stool.position = Vector3(0, 0.27, 0.65)
+	stool.material_override = podium_mat
+	chamber.add_child(stool)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "READING\nCHAMBER"
+	label.position = Vector3(0, 3.85, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	chamber.add_child(label)
+	# Collision around the back wall + sides
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 3.40, 2.80)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.70, 0)
+	sb.add_child(cs)
+	chamber.add_child(sb)
+
+
+func _build_d3_memory_shards(geom: Node) -> void:
+	## Epic-3 T9: 8 small floating "memory shard" prism collectibles
+	## scattered around the great crystal — like Epic 1's data shards but
+	## violet. Spinning + bobbing decorative collectibles.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-6, 1.2, -4),
+		D3_CENTER + Vector3(6, 1.2, -4),
+		D3_CENTER + Vector3(-6, 1.2, 4),
+		D3_CENTER + Vector3(6, 1.2, 4),
+		D3_CENTER + Vector3(-10, 1.2, 0),
+		D3_CENTER + Vector3(10, 1.2, 0),
+		D3_CENTER + Vector3(0, 1.2, -10),
+		D3_CENTER + Vector3(0, 1.2, 10),
+	]
+	var shard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shard_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	shard_mat.emission_enabled = true
+	shard_mat.emission = Color(1.0, 0.55, 1.0)
+	shard_mat.emission_energy_multiplier = 2.4
+	shard_mat.metallic = 0.40
+	shard_mat.roughness = 0.10
+	shard_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var shard: MeshInstance3D = MeshInstance3D.new()
+		shard.name = "D3MemoryShard_%d" % i
+		var smesh: PrismMesh = PrismMesh.new()
+		smesh.size = Vector3(0.30, 0.55, 0.30)
+		shard.mesh = smesh
+		shard.position = positions[i]
+		shard.material_override = shard_mat
+		geom.add_child(shard)
+		# Spin
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(shard, "rotation:y", TAU, 3.0 + i * 0.2)
+		# Bob
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(shard, "position:y", origin_y + 0.40, 1.4).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(shard, "position:y", origin_y, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_archivist_npc() -> void:
+	## Epic-3 T10: Archivist NPC standing inside the reading chamber.
+	## Tall robed figure with a glowing scroll case slung over one shoulder
+	## and a single bright violet eye on the head.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var arch: Node3D = Node3D.new()
+	arch.name = "D3Archivist"
+	arch.position = D3_CENTER + Vector3(-15, 0, -7)
+	slots.add_child(arch)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.16, 0.10, 0.22)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	arch.add_child(body)
+	# Wide hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.50
+	hmesh.height = 0.65
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	arch.add_child(hood)
+	# Single bright violet eye
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.10
+	em.height = 0.20
+	eye.mesh = em
+	eye.position = Vector3(0, 1.45, 0.36)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(1.0, 0.55, 1.0)
+	emat.emission_enabled = true
+	emat.emission = Color(1.0, 0.55, 1.0)
+	emat.emission_energy_multiplier = 3.0
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = emat
+	arch.add_child(eye)
+	# Scroll case slung over shoulder — long cylinder at angle
+	var case_mat: StandardMaterial3D = StandardMaterial3D.new()
+	case_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	case_mat.metallic = 0.40
+	case_mat.roughness = 0.55
+	case_mat.emission_enabled = true
+	case_mat.emission = Color(1.0, 0.65, 0.20)
+	case_mat.emission_energy_multiplier = 0.55
+	var scroll_case: MeshInstance3D = MeshInstance3D.new()
+	var scmesh: CylinderMesh = CylinderMesh.new()
+	scmesh.top_radius = 0.10
+	scmesh.bottom_radius = 0.10
+	scmesh.height = 0.85
+	scroll_case.mesh = scmesh
+	scroll_case.position = Vector3(0.40, 1.0, -0.20)
+	scroll_case.rotation = Vector3(0, 0, deg_to_rad(35))
+	scroll_case.material_override = case_mat
+	arch.add_child(scroll_case)
+	# Pulse eye
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(emat, "emission_energy_multiplier", 4.0, 1.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(emat, "emission_energy_multiplier", 2.0, 1.0).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Archivist"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	arch.add_child(label)
+
 
 
 
