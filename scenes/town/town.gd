@@ -17110,6 +17110,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_great_sign(geom)
 	# Epic-6 T4: bazaar host NPC (greeter)
 	_build_d6_bazaar_host_npc()
+	# Epic-6 T6: street food stalls
+	_build_d6_food_stalls(geom)
+	# Epic-6 T7: noodle vendor NPC
+	_build_d6_noodle_vendor_npc()
+	# Epic-6 T8: hovering delivery drones
+	_build_d6_delivery_drones(geom)
+	# Epic-6 T9: night crowd shoppers
+	_build_d6_night_crowd(geom)
+	# Epic-6 T10: holographic billboard
+	_build_d6_holo_billboard(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -17468,6 +17478,413 @@ func _build_d6_bazaar_host_npc() -> void:
 	cane.material_override = hat_mat
 	cane.position = Vector3(0.45, 0.70, 0.10)
 	npc.add_child(cane)
+
+
+func _build_d6_food_stalls(geom: Node) -> void:
+	## Epic-6 T6: 3 colorful street food stalls in a row — noodles, skewers,
+	## and dumplings, each with a glowing sign.
+	var stalls: Node3D = Node3D.new()
+	stalls.name = "FoodStalls"
+	stalls.position = Vector3(D6_CENTER.x - 16.0, 0.0, 8.0)
+	geom.add_child(stalls)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var stall_data: Array = [
+		{"x": 0.0,  "color": Color(0.95, 0.20, 0.30), "text": "NOODLES"},
+		{"x": 3.20, "color": Color(0.95, 0.65, 0.20), "text": "SKEWERS"},
+		{"x": 6.40, "color": Color(0.30, 0.95, 0.55), "text": "DUMPLINGS"},
+	]
+	for sd in stall_data:
+		var stall: Node3D = Node3D.new()
+		stall.position = Vector3(sd["x"], 0, 0)
+		stalls.add_child(stall)
+		# Counter
+		var counter: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(2.85, 0.10, 1.10)
+		counter.mesh = cm
+		counter.material_override = wood_mat
+		counter.position = Vector3(0, 1.05, 0)
+		stall.add_child(counter)
+		# 4 legs
+		for sx in [-1.20, 1.20]:
+			for sz in [-0.45, 0.45]:
+				var leg: MeshInstance3D = MeshInstance3D.new()
+				var lm: BoxMesh = BoxMesh.new()
+				lm.size = Vector3(0.10, 1.05, 0.10)
+				leg.mesh = lm
+				leg.material_override = wood_mat
+				leg.position = Vector3(sx, 0.52, sz)
+				stall.add_child(leg)
+		# Slanted roof shade
+		var roof: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(3.20, 0.10, 1.30)
+		roof.mesh = rm
+		var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+		roof_mat.albedo_color = sd["color"]
+		roof_mat.emission_enabled = true
+		roof_mat.emission = sd["color"]
+		roof_mat.emission_energy_multiplier = 0.65
+		roof_mat.roughness = 0.65
+		roof.material_override = roof_mat
+		roof.position = Vector3(0, 2.20, -0.10)
+		roof.rotation_degrees = Vector3(-12, 0, 0)
+		stall.add_child(roof)
+		# 2 roof support posts
+		for sx in [-1.20, 1.20]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmm: CylinderMesh = CylinderMesh.new()
+			pmm.top_radius = 0.05
+			pmm.bottom_radius = 0.05
+			pmm.height = 1.10
+			post.mesh = pmm
+			post.material_override = wood_mat
+			post.position = Vector3(sx, 1.65, -0.40)
+			stall.add_child(post)
+		# Glowing neon sign hanging at the front
+		var sign: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.85, 0.45, 0.06)
+		sign.mesh = sm
+		var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sign_mat.albedo_color = sd["color"]
+		sign_mat.emission_enabled = true
+		sign_mat.emission = sd["color"]
+		sign_mat.emission_energy_multiplier = 2.0
+		sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sign.material_override = sign_mat
+		sign.position = Vector3(0, 1.85, 0.55)
+		stall.add_child(sign)
+		var label: Label3D = Label3D.new()
+		label.text = sd["text"]
+		label.modulate = Color(0.10, 0.05, 0.05)
+		label.outline_modulate = Color(1.0, 1.0, 1.0)
+		label.outline_size = 4
+		label.font_size = 56
+		label.pixel_size = 0.005
+		label.position = Vector3(0, 1.85, 0.60)
+		stall.add_child(label)
+		# Stall light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = sd["color"]
+		light.light_energy = 1.6
+		light.omni_range = 4.0
+		light.position = Vector3(0, 1.85, 0)
+		stall.add_child(light)
+		# Stall collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.10, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.85, 2.20, 1.10)
+		cs.shape = cb
+		sb.add_child(cs)
+		stall.add_child(sb)
+
+
+func _build_d6_noodle_vendor_npc() -> void:
+	## Epic-6 T7: noodle vendor NPC behind the noodles stall — apron + headband.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "NoodleVendorSlot"
+	slot.position = Vector3(D6_CENTER.x - 16.0, 0.0, 7.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "NoodleVendor"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Slurp")
+	if "npc_id" in npc:
+		npc.set("npc_id", "noodle_d6")
+	slot.add_child(npc)
+	# White apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	apron_mat.roughness = 0.85
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Red headband
+	var band: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.22
+	bm.bottom_radius = 0.22
+	bm.height = 0.10
+	band.mesh = bm
+	var band_mat: StandardMaterial3D = StandardMaterial3D.new()
+	band_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	band_mat.emission_enabled = true
+	band_mat.emission = Color(0.95, 0.20, 0.20)
+	band_mat.emission_energy_multiplier = 0.85
+	band.material_override = band_mat
+	band.position = Vector3(0, 1.40, 0)
+	npc.add_child(band)
+	# Bowl held in hand (small white cylinder)
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bwm: CylinderMesh = CylinderMesh.new()
+	bwm.top_radius = 0.12
+	bwm.bottom_radius = 0.10
+	bwm.height = 0.10
+	bowl.mesh = bwm
+	bowl.material_override = apron_mat
+	bowl.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(bowl)
+	# Steam from bowl
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 15
+	steam.lifetime = 1.4
+	steam.preprocess = 0.5
+	steam.position = Vector3(0.40, 0.92, 0.20)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 18.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.08
+	pm.scale_max = 0.18
+	pm.color = Color(0.95, 0.92, 0.85, 0.55)
+	steam.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.10
+	sm_mesh.height = 0.20
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	npc.add_child(steam)
+
+
+func _build_d6_delivery_drones(geom: Node) -> void:
+	## Epic-6 T8: 4 hovering delivery drones zipping along set patrol paths
+	## above the bazaar with parcel boxes hanging beneath them.
+	var fleet: Node3D = Node3D.new()
+	fleet.name = "DeliveryDrones"
+	fleet.position = Vector3(D6_CENTER.x, 4.0, 0.0)
+	geom.add_child(fleet)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var rotor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rotor_mat.albedo_color = Color(0.30, 0.95, 1.0, 0.55)
+	rotor_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rotor_mat.emission_enabled = true
+	rotor_mat.emission = Color(0.30, 0.95, 1.0)
+	rotor_mat.emission_energy_multiplier = 1.4
+	rotor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var box_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.95, 0.65, 0.20),
+		Color(0.30, 0.95, 0.55),
+		Color(0.55, 0.40, 0.95),
+	]
+	for i in 4:
+		var drone: Node3D = Node3D.new()
+		drone.position = Vector3(-22.0 + i * 14.0, randf_range(0, 2.0), randf_range(-12, 12))
+		fleet.add_child(drone)
+		# Body (small dark sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.30
+		bm.height = 0.40
+		body.mesh = bm
+		body.material_override = metal_mat
+		body.scale = Vector3(1.0, 0.65, 1.0)
+		drone.add_child(body)
+		# 4 rotor discs
+		for sx in [-0.35, 0.35]:
+			for sz in [-0.35, 0.35]:
+				var rotor: MeshInstance3D = MeshInstance3D.new()
+				var rm: CylinderMesh = CylinderMesh.new()
+				rm.top_radius = 0.22
+				rm.bottom_radius = 0.22
+				rm.height = 0.04
+				rotor.mesh = rm
+				rotor.material_override = rotor_mat
+				rotor.position = Vector3(sx, 0.18, sz)
+				drone.add_child(rotor)
+		# Hanging parcel
+		var parcel: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.35, 0.30, 0.35)
+		parcel.mesh = pm
+		var parcel_mat: StandardMaterial3D = StandardMaterial3D.new()
+		parcel_mat.albedo_color = box_colors[i]
+		parcel_mat.roughness = 0.85
+		parcel.material_override = parcel_mat
+		parcel.position = Vector3(0, -0.35, 0)
+		drone.add_child(parcel)
+		# Patrol tween (long zigzag back and forth)
+		var tw: Tween = drone.create_tween().set_loops()
+		var d: Vector3 = drone.position
+		tw.tween_property(drone, "position", d + Vector3(8.0, 0.5, 4.0), 4.0)
+		tw.tween_property(drone, "position", d + Vector3(8.0, -0.5, -4.0), 4.0)
+		tw.tween_property(drone, "position", d, 4.0)
+		# Small bob
+		var tb: Tween = body.create_tween().set_loops()
+		tb.tween_property(body, "position:y", 0.04, 0.30)
+		tb.tween_property(body, "position:y", 0.0, 0.30)
+
+
+func _build_d6_night_crowd(geom: Node) -> void:
+	## Epic-6 T9: 6 small night crowd shopper figures wandering between
+	## the stalls — small bodies + colored shirts + slow drift.
+	var crowd: Node3D = Node3D.new()
+	crowd.name = "NightCrowd"
+	crowd.position = Vector3(D6_CENTER.x - 12.0, 0.0, 0.0)
+	geom.add_child(crowd)
+	var shirt_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.65, 0.95),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.30),
+		Color(0.85, 0.30, 0.85),
+		Color(0.30, 0.95, 0.85),
+	]
+	for i in 6:
+		var person: Node3D = Node3D.new()
+		person.position = Vector3(
+			randf_range(-8, 16),
+			0,
+			randf_range(-6, 6)
+		)
+		crowd.add_child(person)
+		# Body (cylinder)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.22
+		bm.bottom_radius = 0.22
+		bm.height = 1.10
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = shirt_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = shirt_colors[i]
+		body_mat.emission_energy_multiplier = 0.30
+		body_mat.roughness = 0.65
+		body.material_override = body_mat
+		body.position = Vector3(0, 0.55, 0)
+		person.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+		skin_mat.roughness = 0.65
+		head.material_override = skin_mat
+		head.position = Vector3(0, 1.32, 0)
+		person.add_child(head)
+		# Slow drift tween
+		var tw: Tween = person.create_tween().set_loops()
+		var p: Vector3 = person.position
+		tw.tween_property(person, "position", p + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2)), 3.0 + randf())
+		tw.tween_property(person, "rotation_degrees:y", 180.0, 0.5)
+		tw.tween_property(person, "position", p, 3.0 + randf())
+		tw.tween_property(person, "rotation_degrees:y", 0.0, 0.5)
+		# Walking bob
+		var tb: Tween = body.create_tween().set_loops()
+		tb.tween_property(body, "position:y", 0.62, 0.30)
+		tb.tween_property(body, "position:y", 0.55, 0.30)
+
+
+func _build_d6_holo_billboard(geom: Node) -> void:
+	## Epic-6 T10: large holographic billboard panel hovering above the
+	## bazaar — translucent cyan with shifting block patterns.
+	var bb: Node3D = Node3D.new()
+	bb.name = "HoloBillboard"
+	bb.position = Vector3(D6_CENTER.x + 8.0, 0.0, -14.0)
+	geom.add_child(bb)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.30, 0.35)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Tall support post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.30, 5.85, 0.30)
+	post.mesh = pm
+	post.material_override = metal_mat
+	post.position = Vector3(0, 2.92, 0)
+	bb.add_child(post)
+	# Hovering panel
+	var panel: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(4.20, 2.40, 0.06)
+	panel.mesh = pmm
+	var panel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	panel_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.55)
+	panel_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	panel_mat.emission_enabled = true
+	panel_mat.emission = Color(0.30, 0.95, 1.0)
+	panel_mat.emission_energy_multiplier = 1.6
+	panel_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	panel.material_override = panel_mat
+	panel.position = Vector3(0, 5.85, 0)
+	bb.add_child(panel)
+	# 12 small flickering "ad blocks" inside the panel
+	var ad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ad_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	ad_mat.emission_enabled = true
+	ad_mat.emission = Color(0.95, 0.30, 0.95)
+	ad_mat.emission_energy_multiplier = 2.5
+	ad_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for r in 3:
+		for c in 4:
+			var block: MeshInstance3D = MeshInstance3D.new()
+			var bbm: BoxMesh = BoxMesh.new()
+			bbm.size = Vector3(0.85, 0.55, 0.04)
+			block.mesh = bbm
+			block.material_override = ad_mat
+			block.position = Vector3(-1.55 + c * 1.10, 5.20 + r * 0.75, 0.06)
+			bb.add_child(block)
+			# Flicker
+			var tw: Tween = block.create_tween().set_loops()
+			tw.tween_interval((r * 4 + c) * 0.10)
+			tw.tween_property(block, "scale:y", 1.20, 0.45)
+			tw.tween_property(block, "scale:y", 0.55, 0.45)
+	var label: Label3D = Label3D.new()
+	label.text = "AD\nLOAD"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.05, 0.20, 0.40)
+	label.outline_size = 6
+	label.font_size = 56
+	label.pixel_size = 0.010
+	label.position = Vector3(0, 5.85, 0.10)
+	bb.add_child(label)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 8.0
+	light.position = Vector3(0, 5.85, 1.20)
+	bb.add_child(light)
+	# Post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.30
+	cap.height = 5.85
+	cs.shape = cap
+	sb.add_child(cs)
+	bb.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
