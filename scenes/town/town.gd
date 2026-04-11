@@ -32734,6 +32734,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_parrots(geom)
 	# Epic-8 T50: SEA TYRANT mid-boss landmark
 	_build_d8_sea_tyrant(geom)
+	# Epic-8 T51: rowboats line
+	_build_d8_rowboats(geom)
+	# Epic-8 T52: oar maker NPC
+	_build_d8_oar_maker_npc()
+	# Epic-8 T53: fish market stall
+	_build_d8_fish_market(geom)
+	# Epic-8 T54: fishmonger NPC
+	_build_d8_fishmonger_npc()
+	# Epic-8 T55: hanging fish dryer
+	_build_d8_fish_dryer(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -36102,6 +36112,328 @@ func _build_d8_sea_tyrant(geom: Node) -> void:
 	pcs.shape = pcb
 	psb.add_child(pcs)
 	tyrant.add_child(psb)
+
+
+func _build_d8_rowboats(geom: Node) -> void:
+	## Epic-8 T51: 4 small rowboats lined up — long curved hulls + 2
+	## oars laid across each + bobbing tweens.
+	var line: Node3D = Node3D.new()
+	line.name = "Rowboats"
+	line.position = Vector3(D8_CENTER.x - 22.0, 0.30, 8.0)
+	geom.add_child(line)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	for i in 4:
+		var boat: Node3D = Node3D.new()
+		boat.position = Vector3(0, 0, i * 2.40)
+		line.add_child(boat)
+		# Long hull (box scaled long)
+		var hull: MeshInstance3D = MeshInstance3D.new()
+		var hm: BoxMesh = BoxMesh.new()
+		hm.size = Vector3(2.40, 0.40, 0.85)
+		hull.mesh = hm
+		hull.material_override = wood_mat
+		hull.position = Vector3(0, 0.20, 0)
+		boat.add_child(hull)
+		# Pointed ends
+		for sx in [-1.40, 1.40]:
+			var end: MeshInstance3D = MeshInstance3D.new()
+			var em: PrismMesh = PrismMesh.new()
+			em.size = Vector3(0.85, 0.40, 0.55)
+			end.mesh = em
+			end.material_override = wood_mat
+			end.position = Vector3(sx, 0.20, 0)
+			end.rotation_degrees = Vector3(0, 0, 90.0 if sx > 0 else -90.0)
+			boat.add_child(end)
+		# 2 oars laid across the boat
+		for sz in [-0.30, 0.30]:
+			var oar: MeshInstance3D = MeshInstance3D.new()
+			var omm: CylinderMesh = CylinderMesh.new()
+			omm.top_radius = 0.04
+			omm.bottom_radius = 0.04
+			omm.height = 1.85
+			oar.mesh = omm
+			oar.material_override = wood_mat
+			oar.position = Vector3(0, 0.45, sz)
+			oar.rotation_degrees = Vector3(0, 0, 90)
+			boat.add_child(oar)
+			# Oar paddle (small flat box)
+			var paddle: MeshInstance3D = MeshInstance3D.new()
+			var pmm: BoxMesh = BoxMesh.new()
+			pmm.size = Vector3(0.30, 0.06, 0.18)
+			paddle.mesh = pmm
+			paddle.material_override = wood_mat
+			paddle.position = Vector3(0.85, 0.45, sz)
+			boat.add_child(paddle)
+		# Bobbing tween
+		var tw: Tween = boat.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(boat, "position:y", 0.18, 1.4)
+		tw.tween_property(boat, "position:y", 0.0, 1.4)
+		# Boat collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.20, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(3.40, 0.85, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		boat.add_child(sb)
+
+
+func _build_d8_oar_maker_npc() -> void:
+	## Epic-8 T52: oar maker NPC — leather apron + held wooden oar shaft.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "OarMakerSlot"
+	slot.position = Vector3(D8_CENTER.x - 18.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "OarMaker"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Splinter")
+	if "npc_id" in npc:
+		npc.set("npc_id", "oar_maker_d8")
+	slot.add_child(npc)
+	# Apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.40, 0.25, 0.12)
+	apron_mat.roughness = 0.65
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Held oar (long thin cylinder + paddle)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var oar: MeshInstance3D = MeshInstance3D.new()
+	var om: CylinderMesh = CylinderMesh.new()
+	om.top_radius = 0.04
+	om.bottom_radius = 0.05
+	om.height = 1.85
+	oar.mesh = om
+	oar.material_override = wood_mat
+	oar.position = Vector3(0.45, 1.0, 0.20)
+	oar.rotation_degrees = Vector3(0, 0, -25)
+	npc.add_child(oar)
+	# Paddle blade
+	var paddle: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.20, 0.04, 0.18)
+	paddle.mesh = pmm
+	paddle.material_override = wood_mat
+	paddle.position = Vector3(1.30, 1.55, 0.20)
+	paddle.rotation_degrees = Vector3(0, 0, -25)
+	npc.add_child(paddle)
+
+
+func _build_d8_fish_market(geom: Node) -> void:
+	## Epic-8 T53: fish market stall — wooden counter with displayed fish
+	## on ice + colorful awning.
+	var market: Node3D = Node3D.new()
+	market.name = "FishMarket"
+	market.position = Vector3(D8_CENTER.x - 12.0, 0.0, 22.0)
+	geom.add_child(market)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Counter
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.85, 1.0, 1.10)
+	counter.mesh = cm
+	counter.material_override = wood_mat
+	counter.position = Vector3(0, 0.55, 0)
+	market.add_child(counter)
+	# Slanted blue awning
+	var awning: MeshInstance3D = MeshInstance3D.new()
+	var amm: BoxMesh = BoxMesh.new()
+	amm.size = Vector3(3.20, 0.10, 1.30)
+	awning.mesh = amm
+	var awning_mat: StandardMaterial3D = StandardMaterial3D.new()
+	awning_mat.albedo_color = Color(0.20, 0.55, 0.85)
+	awning_mat.emission_enabled = true
+	awning_mat.emission = Color(0.20, 0.55, 0.85)
+	awning_mat.emission_energy_multiplier = 0.45
+	awning.material_override = awning_mat
+	awning.position = Vector3(0, 2.20, -0.10)
+	awning.rotation_degrees = Vector3(-12, 0, 0)
+	market.add_child(awning)
+	# 2 awning support posts
+	for sx in [-1.20, 1.20]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.05
+		pmm.bottom_radius = 0.05
+		pmm.height = 1.20
+		post.mesh = pmm
+		post.material_override = wood_mat
+		post.position = Vector3(sx, 1.65, -0.40)
+		market.add_child(post)
+	# Ice chips on counter
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.65)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.85, 0.95, 1.0)
+	ice_mat.emission_energy_multiplier = 0.85
+	for i in 8:
+		var ice: MeshInstance3D = MeshInstance3D.new()
+		var im: BoxMesh = BoxMesh.new()
+		im.size = Vector3(0.18, 0.10, 0.18)
+		ice.mesh = im
+		ice.material_override = ice_mat
+		ice.position = Vector3(
+			randf_range(-1.0, 1.0),
+			1.10,
+			randf_range(-0.40, 0.40)
+		)
+		market.add_child(ice)
+	# 6 displayed fish (silver prisms)
+	var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fish_mat.albedo_color = Color(0.65, 0.75, 0.85)
+	fish_mat.metallic = 0.55
+	fish_mat.roughness = 0.30
+	for i in 6:
+		var fish: MeshInstance3D = MeshInstance3D.new()
+		var fmm: PrismMesh = PrismMesh.new()
+		fmm.size = Vector3(0.30, 0.10, 0.10)
+		fish.mesh = fmm
+		fish.material_override = fish_mat
+		fish.position = Vector3(
+			-0.85 + (i % 3) * 0.85,
+			1.18,
+			-0.20 + (i / 3) * 0.40
+		)
+		fish.rotation_degrees = Vector3(0, randf_range(-25, 25), 90)
+		market.add_child(fish)
+	# Counter collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 2.20, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	market.add_child(sb)
+
+
+func _build_d8_fishmonger_npc() -> void:
+	## Epic-8 T54: fishmonger NPC — apron + held large fish.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "FishmongerSlot"
+	slot.position = Vector3(D8_CENTER.x - 12.0, 0.0, 21.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Fishmonger"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Scaler")
+	if "npc_id" in npc:
+		npc.set("npc_id", "fishmonger_d8")
+	slot.add_child(npc)
+	# White apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	apron_mat.roughness = 0.85
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Held large fish
+	var fish: MeshInstance3D = MeshInstance3D.new()
+	var fm: PrismMesh = PrismMesh.new()
+	fm.size = Vector3(0.30, 0.18, 0.18)
+	fish.mesh = fm
+	var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fish_mat.albedo_color = Color(0.65, 0.75, 0.85)
+	fish_mat.metallic = 0.55
+	fish_mat.roughness = 0.30
+	fish.material_override = fish_mat
+	fish.position = Vector3(0.40, 0.85, 0.20)
+	fish.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(fish)
+
+
+func _build_d8_fish_dryer(geom: Node) -> void:
+	## Epic-8 T55: hanging fish dryer — wooden frame with rope between
+	## 2 posts + 6 fish hanging.
+	var dryer: Node3D = Node3D.new()
+	dryer.name = "FishDryer"
+	dryer.position = Vector3(D8_CENTER.x - 6.0, 0.0, 22.0)
+	geom.add_child(dryer)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# 2 vertical posts
+	for sx in [-1.85, 1.85]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.08
+		pm.bottom_radius = 0.10
+		pm.height = 2.85
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(sx, 1.42, 0)
+		dryer.add_child(post)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.10
+		cap.height = 2.85
+		cs.shape = cap
+		sb.add_child(cs)
+		dryer.add_child(sb)
+	# Top rope
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rmm: CylinderMesh = CylinderMesh.new()
+	rmm.top_radius = 0.025
+	rmm.bottom_radius = 0.025
+	rmm.height = 3.85
+	rope.mesh = rmm
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope.material_override = rope_mat
+	rope.position = Vector3(0, 2.85, 0)
+	rope.rotation_degrees = Vector3(0, 0, 90)
+	dryer.add_child(rope)
+	# 6 hanging fish
+	var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fish_mat.albedo_color = Color(0.65, 0.55, 0.30)
+	fish_mat.roughness = 0.85
+	for i in 6:
+		var fish: MeshInstance3D = MeshInstance3D.new()
+		var fmm: PrismMesh = PrismMesh.new()
+		fmm.size = Vector3(0.10, 0.55, 0.18)
+		fish.mesh = fmm
+		fish.material_override = fish_mat
+		fish.position = Vector3(-1.40 + i * 0.55, 2.30, 0)
+		dryer.add_child(fish)
+		# Subtle sway
+		var tw: Tween = fish.create_tween().set_loops()
+		tw.tween_interval(i * 0.10)
+		tw.tween_property(fish, "rotation_degrees:z", 4.0, 1.4)
+		tw.tween_property(fish, "rotation_degrees:z", -4.0, 1.4)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
