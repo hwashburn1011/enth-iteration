@@ -17160,6 +17160,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_graffiti_walls(geom)
 	# Epic-6 T30: power transformer
 	_build_d6_power_transformer(geom)
+	# Epic-6 T31: parked motorbikes
+	_build_d6_motorbikes(geom)
+	# Epic-6 T32: courier NPC with phone
+	_build_d6_courier_npc()
+	# Epic-6 T33: phone booth kiosk
+	_build_d6_phone_booth(geom)
+	# Epic-6 T34: synth musician NPC
+	_build_d6_synth_musician_npc()
+	# Epic-6 T35: satellite dish cluster
+	_build_d6_satellite_dishes(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -19607,6 +19617,455 @@ func _build_d6_power_transformer(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	trans.add_child(sb)
+
+
+func _build_d6_motorbikes(geom: Node) -> void:
+	## Epic-6 T31: 3 parked cyber motorbikes — sleek body + 2 wheels each +
+	## colored neon trim under the seat.
+	var bikes: Node3D = Node3D.new()
+	bikes.name = "Motorbikes"
+	bikes.position = Vector3(D6_CENTER.x + 4.0, 0.0, -16.0)
+	geom.add_child(bikes)
+	var bike_colors: Array = [
+		Color(0.95, 0.20, 0.85),
+		Color(0.30, 0.95, 1.0),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 3:
+		var bike: Node3D = Node3D.new()
+		bike.position = Vector3(i * 2.0, 0, 0)
+		bike.rotation_degrees = Vector3(0, randf_range(-15, 15), 0)
+		bikes.add_child(bike)
+		# Body chassis
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.40, 0.30, 0.40)
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = Color(0.10, 0.10, 0.15)
+		body_mat.metallic = 0.85
+		body_mat.roughness = 0.30
+		body.material_override = body_mat
+		body.position = Vector3(0, 0.55, 0)
+		bike.add_child(body)
+		# Seat
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.55, 0.18, 0.30)
+		seat.mesh = sm
+		var seat_mat: StandardMaterial3D = StandardMaterial3D.new()
+		seat_mat.albedo_color = Color(0.20, 0.18, 0.22)
+		seat_mat.roughness = 0.55
+		seat.material_override = seat_mat
+		seat.position = Vector3(-0.10, 0.85, 0)
+		bike.add_child(seat)
+		# Front fairing (windshield prism)
+		var fair: MeshInstance3D = MeshInstance3D.new()
+		var fm: PrismMesh = PrismMesh.new()
+		fm.size = Vector3(0.40, 0.40, 0.20)
+		fair.mesh = fm
+		fair.material_override = body_mat
+		fair.position = Vector3(0.65, 0.85, 0)
+		fair.rotation_degrees = Vector3(0, 0, -25)
+		bike.add_child(fair)
+		# Handlebars
+		var bars: MeshInstance3D = MeshInstance3D.new()
+		var brm: CylinderMesh = CylinderMesh.new()
+		brm.top_radius = 0.025
+		brm.bottom_radius = 0.025
+		brm.height = 0.55
+		bars.mesh = brm
+		bars.material_override = body_mat
+		bars.position = Vector3(0.55, 1.0, 0)
+		bars.rotation_degrees = Vector3(90, 0, 0)
+		bike.add_child(bars)
+		# Front + rear wheels
+		var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wheel_mat.albedo_color = Color(0.05, 0.05, 0.08)
+		wheel_mat.roughness = 0.85
+		for wx in [0.65, -0.65]:
+			var wheel: MeshInstance3D = MeshInstance3D.new()
+			var wm: CylinderMesh = CylinderMesh.new()
+			wm.top_radius = 0.30
+			wm.bottom_radius = 0.30
+			wm.height = 0.18
+			wheel.mesh = wm
+			wheel.material_override = wheel_mat
+			wheel.position = Vector3(wx, 0.30, 0)
+			wheel.rotation_degrees = Vector3(0, 0, 90)
+			bike.add_child(wheel)
+		# Neon underglow strip
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(1.40, 0.04, 0.30)
+		glow.mesh = gm
+		var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+		glow_mat.albedo_color = bike_colors[i]
+		glow_mat.emission_enabled = true
+		glow_mat.emission = bike_colors[i]
+		glow_mat.emission_energy_multiplier = 3.0
+		glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow.material_override = glow_mat
+		glow.position = Vector3(0, 0.40, 0)
+		bike.add_child(glow)
+		# Underglow light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = bike_colors[i]
+		light.light_energy = 1.4
+		light.omni_range = 2.5
+		light.position = Vector3(0, 0.30, 0)
+		bike.add_child(light)
+		# Bike collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.85, 1.30, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		bike.add_child(sb)
+
+
+func _build_d6_courier_npc() -> void:
+	## Epic-6 T32: courier NPC — leather jacket + helmet + phone in hand,
+	## stationed near the parked bikes.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CourierSlot"
+	slot.position = Vector3(D6_CENTER.x + 8.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Courier"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Lag")
+	if "npc_id" in npc:
+		npc.set("npc_id", "courier_d6")
+	slot.add_child(npc)
+	# Leather jacket
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jm: BoxMesh = BoxMesh.new()
+	jm.size = Vector3(0.65, 1.05, 0.45)
+	jacket.mesh = jm
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.15, 0.10, 0.08)
+	jacket_mat.metallic = 0.30
+	jacket_mat.roughness = 0.45
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 0.55, 0)
+	npc.add_child(jacket)
+	# Helmet (sphere)
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.24
+	hm.height = 0.42
+	helmet.mesh = hm
+	var helmet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	helmet_mat.albedo_color = Color(0.95, 0.20, 0.30)
+	helmet_mat.metallic = 0.55
+	helmet_mat.roughness = 0.20
+	helmet.material_override = helmet_mat
+	helmet.position = Vector3(0, 1.45, 0)
+	npc.add_child(helmet)
+	# Visor (cyan strip)
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.40, 0.10, 0.04)
+	visor.mesh = vm
+	var visor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	visor_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	visor_mat.emission_enabled = true
+	visor_mat.emission = Color(0.30, 1.0, 1.0)
+	visor_mat.emission_energy_multiplier = 2.0
+	visor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = visor_mat
+	visor.position = Vector3(0, 1.42, 0.20)
+	npc.add_child(visor)
+	# Phone in hand (small flat box with cyan screen)
+	var phone: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.12, 0.20, 0.03)
+	phone.mesh = pmm
+	var phone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	phone_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	phone_mat.emission_enabled = true
+	phone_mat.emission = Color(0.30, 1.0, 1.0)
+	phone_mat.emission_energy_multiplier = 2.5
+	phone_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	phone.material_override = phone_mat
+	phone.position = Vector3(0.40, 0.85, 0.22)
+	phone.rotation_degrees = Vector3(-30, 0, 0)
+	npc.add_child(phone)
+
+
+func _build_d6_phone_booth(geom: Node) -> void:
+	## Epic-6 T33: retro phone booth kiosk — tall translucent box with neon
+	## frame outline and a glowing receiver inside.
+	var booth: Node3D = Node3D.new()
+	booth.name = "PhoneBooth"
+	booth.position = Vector3(D6_CENTER.x + 18.0, 0.0, -10.0)
+	geom.add_child(booth)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.08, 0.15)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.30
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.30)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.40, 0.85, 1.0)
+	glass_mat.emission_energy_multiplier = 0.45
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.05
+	# Box body (translucent)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.10, 2.40, 1.10)
+	body.mesh = bm
+	body.material_override = glass_mat
+	body.position = Vector3(0, 1.20, 0)
+	booth.add_child(body)
+	# Frame outline (4 corner pillars)
+	for sx in [-0.55, 0.55]:
+		for sz in [-0.55, 0.55]:
+			var pillar: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.10, 2.40, 0.10)
+			pillar.mesh = pm
+			pillar.material_override = dark_mat
+			pillar.position = Vector3(sx, 1.20, sz)
+			booth.add_child(pillar)
+	# Top neon outline (magenta tube around the top)
+	var neon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	neon_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	neon_mat.emission_enabled = true
+	neon_mat.emission = Color(0.95, 0.20, 0.85)
+	neon_mat.emission_energy_multiplier = 3.5
+	neon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for w in [
+		{"size": Vector3(1.10, 0.06, 0.06), "pos": Vector3(0, 2.45,  0.55)},
+		{"size": Vector3(1.10, 0.06, 0.06), "pos": Vector3(0, 2.45, -0.55)},
+		{"size": Vector3(0.06, 0.06, 1.10), "pos": Vector3( 0.55, 2.45, 0)},
+		{"size": Vector3(0.06, 0.06, 1.10), "pos": Vector3(-0.55, 2.45, 0)},
+	]:
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = w["size"]
+		tube.mesh = tm
+		tube.material_override = neon_mat
+		tube.position = w["pos"]
+		booth.add_child(tube)
+	# Phone receiver inside (small dark cylinder + cord)
+	var receiver: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.06, 0.20, 0.10)
+	receiver.mesh = rm
+	receiver.material_override = dark_mat
+	receiver.position = Vector3(0.30, 1.55, 0.40)
+	booth.add_child(receiver)
+	# Top "TEL" label
+	var label: Label3D = Label3D.new()
+	label.text = "TEL"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.95, 0.20, 0.85)
+	label.outline_size = 6
+	label.font_size = 56
+	label.pixel_size = 0.008
+	label.position = Vector3(0, 2.65, 0.55)
+	booth.add_child(label)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 1.6
+	light.omni_range = 3.5
+	light.position = Vector3(0, 1.55, 0)
+	booth.add_child(light)
+	# Booth collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.10, 2.40, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	booth.add_child(sb)
+
+
+func _build_d6_synth_musician_npc() -> void:
+	## Epic-6 T34: synth musician NPC — colorful jacket + behind a small
+	## floating keyboard with bright sequencer LEDs.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SynthMusicianSlot"
+	slot.position = Vector3(D6_CENTER.x + 4.0, 0.0, -10.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "SynthMusician"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Bitcrush")
+	if "npc_id" in npc:
+		npc.set("npc_id", "synth_d6")
+	slot.add_child(npc)
+	# Holographic jacket
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jm: BoxMesh = BoxMesh.new()
+	jm.size = Vector3(0.65, 1.05, 0.40)
+	jacket.mesh = jm
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.55, 0.30, 0.95)
+	jacket_mat.emission_enabled = true
+	jacket_mat.emission = Color(0.55, 0.30, 0.95)
+	jacket_mat.emission_energy_multiplier = 0.45
+	jacket_mat.metallic = 0.30
+	jacket_mat.roughness = 0.55
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 0.55, 0)
+	npc.add_child(jacket)
+	# Floating keyboard (long flat box in front)
+	var key: MeshInstance3D = MeshInstance3D.new()
+	var km: BoxMesh = BoxMesh.new()
+	km.size = Vector3(1.40, 0.10, 0.40)
+	key.mesh = km
+	var key_mat: StandardMaterial3D = StandardMaterial3D.new()
+	key_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	key_mat.metallic = 0.85
+	key_mat.roughness = 0.30
+	key.material_override = key_mat
+	key.position = Vector3(0, 0.85, 0.40)
+	npc.add_child(key)
+	# 12 small LED keys on top of the keyboard
+	var led_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 12:
+		var led: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.08, 0.04, 0.30)
+		led.mesh = lm
+		var led_mat: StandardMaterial3D = StandardMaterial3D.new()
+		led_mat.albedo_color = led_colors[i % 4]
+		led_mat.emission_enabled = true
+		led_mat.emission = led_colors[i % 4]
+		led_mat.emission_energy_multiplier = 2.5
+		led_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		led.material_override = led_mat
+		led.position = Vector3(-0.65 + i * 0.12, 0.92, 0.40)
+		npc.add_child(led)
+		# Sequencer flicker
+		var tw: Tween = led.create_tween().set_loops()
+		tw.tween_interval(i * 0.08)
+		tw.tween_property(led, "scale:y", 1.40, 0.20)
+		tw.tween_property(led, "scale:y", 0.65, 0.20)
+	# Hands hovering over the keyboard
+	for sx in [-0.30, 0.30]:
+		var hand: MeshInstance3D = MeshInstance3D.new()
+		var hmm: SphereMesh = SphereMesh.new()
+		hmm.radius = 0.08
+		hmm.height = 0.16
+		hand.mesh = hmm
+		var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+		hand.material_override = skin_mat
+		hand.position = Vector3(sx, 1.0, 0.30)
+		npc.add_child(hand)
+
+
+func _build_d6_satellite_dishes(geom: Node) -> void:
+	## Epic-6 T35: cluster of 4 rooftop satellite dishes on a metal rack +
+	## blinking red status lights.
+	var dishes: Node3D = Node3D.new()
+	dishes.name = "SatelliteDishes"
+	dishes.position = Vector3(D6_CENTER.x - 14.0, 0.0, -16.0)
+	geom.add_child(dishes)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Rack base
+	var rack: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(3.40, 0.30, 1.40)
+	rack.mesh = rm
+	rack.material_override = metal_mat
+	rack.position = Vector3(0, 0.15, 0)
+	dishes.add_child(rack)
+	# 4 vertical posts + dishes
+	for i in 4:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.08
+		pm.height = 1.85
+		post.mesh = pm
+		post.material_override = metal_mat
+		post.position = Vector3(-1.30 + i * 0.85, 1.10, 0)
+		dishes.add_child(post)
+		# Dish (half sphere flattened)
+		var dish: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.55
+		dm.height = 0.55
+		dish.mesh = dm
+		dish.material_override = metal_mat
+		dish.position = Vector3(-1.30 + i * 0.85, 2.0, 0.20)
+		dish.scale = Vector3(1.0, 0.30, 1.0)
+		dish.rotation_degrees = Vector3(45 + i * 5, 0, 0)
+		dishes.add_child(dish)
+		# Receiver (small box at center of dish)
+		var rec: MeshInstance3D = MeshInstance3D.new()
+		var rcm: SphereMesh = SphereMesh.new()
+		rcm.radius = 0.06
+		rcm.height = 0.12
+		rec.mesh = rcm
+		var rec_mat: StandardMaterial3D = StandardMaterial3D.new()
+		rec_mat.albedo_color = Color(0.30, 0.95, 1.0)
+		rec_mat.emission_enabled = true
+		rec_mat.emission = Color(0.30, 1.0, 1.0)
+		rec_mat.emission_energy_multiplier = 2.5
+		rec_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rec.material_override = rec_mat
+		rec.position = Vector3(-1.30 + i * 0.85, 2.0, 0.45)
+		dishes.add_child(rec)
+		# Red blinking status light
+		var status: MeshInstance3D = MeshInstance3D.new()
+		var stm: SphereMesh = SphereMesh.new()
+		stm.radius = 0.05
+		stm.height = 0.10
+		status.mesh = stm
+		var stat_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stat_mat.albedo_color = Color(0.95, 0.20, 0.20)
+		stat_mat.emission_enabled = true
+		stat_mat.emission = Color(0.95, 0.20, 0.20)
+		stat_mat.emission_energy_multiplier = 4.0
+		stat_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		status.material_override = stat_mat
+		status.position = Vector3(-1.30 + i * 0.85, 0.55, 0.65)
+		dishes.add_child(status)
+		var tw: Tween = status.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(status, "scale", Vector3.ONE * 1.40, 0.30)
+		tw.tween_property(status, "scale", Vector3.ONE * 0.40, 0.30)
+	# Rack collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 1.85, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	dishes.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
