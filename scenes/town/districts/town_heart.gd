@@ -23,6 +23,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_bench_ring(geom)
 	_build_th_caretaker_npc(town)
 	_build_th_perimeter_lampposts(geom)
+	_build_th_save_shrine(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -1004,3 +1005,218 @@ func _build_th_perimeter_lampposts(geom: Node) -> void:
 	var bpulse: Tween = pivot.create_tween().set_loops()
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 11.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_save_shrine(geom: Node) -> void:
+	## Epic-10 T7: small save/rest shrine just outside the rune ring on
+	## the north radial path. Stepped basalt altar with brass top, central
+	## glowing save crystal pillar, brass arch over the crystal, 4 candle
+	## tapers around the corners, and a glowing rune circle on the ground.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SaveShrine"
+	# North radial path, just outside the rune ring at radius 6.5
+	pivot.position = TOWN_CENTER + Vector3(0, 0, -6.5)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.45, 0.85, 1.0)
+	crystal_mat.emission_energy_multiplier = 8.5
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 7.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt altar (2 levels) ----
+	var base1: MeshInstance3D = MeshInstance3D.new()
+	var b1m: BoxMesh = BoxMesh.new()
+	b1m.size = Vector3(2.40, 0.40, 2.40)
+	base1.mesh = b1m
+	base1.material_override = stone_mat
+	base1.position = Vector3(0, 0.20, 0)
+	pivot.add_child(base1)
+	var base2: MeshInstance3D = MeshInstance3D.new()
+	var b2m: BoxMesh = BoxMesh.new()
+	b2m.size = Vector3(1.85, 0.55, 1.85)
+	base2.mesh = b2m
+	base2.material_override = stone_mat
+	base2.position = Vector3(0, 0.68, 0)
+	pivot.add_child(base2)
+	# Combined collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.50, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bsh: BoxShape3D = BoxShape3D.new()
+	bsh.size = Vector3(2.40, 1.00, 2.40)
+	cs.shape = bsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# Brass top plate
+	var top_plate: MeshInstance3D = MeshInstance3D.new()
+	var tpm: BoxMesh = BoxMesh.new()
+	tpm.size = Vector3(1.95, 0.10, 1.95)
+	top_plate.mesh = tpm
+	top_plate.material_override = brass_mat
+	top_plate.position = Vector3(0, 1.00, 0)
+	pivot.add_child(top_plate)
+	# ---- Central save crystal pillar ----
+	# Crystal pedestal (small brass disc)
+	var pedestal: MeshInstance3D = MeshInstance3D.new()
+	var pedm: CylinderMesh = CylinderMesh.new()
+	pedm.top_radius = 0.30
+	pedm.bottom_radius = 0.40
+	pedm.height = 0.18
+	pedestal.mesh = pedm
+	pedestal.material_override = brass_mat
+	pedestal.position = Vector3(0, 1.14, 0)
+	pivot.add_child(pedestal)
+	# Crystal body (tall prism)
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var crm: PrismMesh = PrismMesh.new()
+	crm.size = Vector3(0.55, 1.65, 0.55)
+	crystal.mesh = crm
+	crystal.material_override = crystal_mat
+	crystal.position = Vector3(0, 2.05, 0)
+	pivot.add_child(crystal)
+	# Crystal collision so player has something to interact with
+	var crys_sb: StaticBody3D = StaticBody3D.new()
+	crys_sb.position = Vector3(0, 2.05, 0)
+	var crys_cs: CollisionShape3D = CollisionShape3D.new()
+	var crys_bsh: BoxShape3D = BoxShape3D.new()
+	crys_bsh.size = Vector3(0.55, 1.65, 0.55)
+	crys_cs.shape = crys_bsh
+	crys_sb.add_child(crys_cs)
+	pivot.add_child(crys_sb)
+	# ---- Brass arch over the crystal ----
+	# 2 vertical posts at the corners of the top plate
+	for px in [-0.85, 0.85]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.08
+		pm.height = 2.20
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = Vector3(px, 2.15, 0)
+		pivot.add_child(post)
+	# Top crossbar
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(2.00, 0.18, 0.18)
+	crossbar.mesh = cbm
+	crossbar.material_override = brass_mat
+	crossbar.position = Vector3(0, 3.20, 0)
+	pivot.add_child(crossbar)
+	# Hanging crystal ornament from the crossbar (small upside-down prism)
+	var orn: MeshInstance3D = MeshInstance3D.new()
+	var ornm: PrismMesh = PrismMesh.new()
+	ornm.size = Vector3(0.25, 0.40, 0.25)
+	orn.mesh = ornm
+	orn.material_override = crystal_mat
+	orn.position = Vector3(0, 2.95, 0)
+	orn.rotation.x = PI
+	pivot.add_child(orn)
+	# ---- 4 candle tapers at the corners of the top plate ----
+	for cpos in [Vector3(-0.80, 1.10, -0.80), Vector3(0.80, 1.10, -0.80), Vector3(-0.80, 1.10, 0.80), Vector3(0.80, 1.10, 0.80)]:
+		# Candle body
+		var candle: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.05
+		cm.bottom_radius = 0.06
+		cm.height = 0.40
+		candle.mesh = cm
+		candle.material_override = brass_mat
+		candle.position = cpos + Vector3(0, 0.15, 0)
+		pivot.add_child(candle)
+		# Flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.08
+		flm.height = 0.18
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = cpos + Vector3(0, 0.42, 0)
+		pivot.add_child(flame)
+		# Tiny OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = cpos + Vector3(0, 0.42, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.2
+		lt.omni_range = 3.5
+		pivot.add_child(lt)
+	# ---- Strong central crystal OmniLight ----
+	var clt: OmniLight3D = OmniLight3D.new()
+	clt.position = Vector3(0, 2.30, 0)
+	clt.light_color = Color(0.45, 0.85, 1.0)
+	clt.light_energy = 4.0
+	clt.omni_range = 11.0
+	pivot.add_child(clt)
+	# ---- Glowing rune circle on the ground in front of the altar ----
+	var rune_ring: MeshInstance3D = MeshInstance3D.new()
+	var rrm: TorusMesh = TorusMesh.new()
+	rrm.inner_radius = 1.00
+	rrm.outer_radius = 1.20
+	rune_ring.mesh = rrm
+	rune_ring.material_override = crystal_mat
+	rune_ring.position = Vector3(0, 0.06, 1.85)
+	pivot.add_child(rune_ring)
+	# 4 small rune dots on the ring
+	for i in 4:
+		var ang: float = float(i) / 4.0 * TAU
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.10
+		dm.height = 0.05
+		dot.mesh = dm
+		dot.material_override = crystal_mat
+		dot.position = Vector3(cos(ang) * 1.10, 0.07, 1.85 + sin(ang) * 1.10)
+		dot.scale = Vector3(1.0, 0.30, 1.0)
+		pivot.add_child(dot)
+	# ---- Drifting data motes around the crystal ----
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 2.20, 0)
+	motes.amount = 22
+	motes.lifetime = 2.6
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.50
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 180.0
+	pmat.initial_velocity_min = 0.3
+	pmat.initial_velocity_max = 0.7
+	pmat.gravity = Vector3(0, 0.0, 0)
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(0.45, 0.85, 1.0, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.05
+	psmesh.height = 0.10
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# ---- Pulses ----
+	# Crystal + ornament + rune ring pulse
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(crystal_mat, "emission_energy_multiplier", 10.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(crystal_mat, "emission_energy_multiplier", 6.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Candle flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.4).set_ease(Tween.EASE_IN_OUT)
