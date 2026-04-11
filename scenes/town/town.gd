@@ -32714,6 +32714,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_bottle_artisan_npc()
 	# Epic-8 T40: warning mines
 	_build_d8_mines(geom)
+	# Epic-8 T41: large warship
+	_build_d8_warship(geom)
+	# Epic-8 T42: navy captain NPC
+	_build_d8_navy_captain_npc()
+	# Epic-8 T43: cannons row
+	_build_d8_cannons_row(geom)
+	# Epic-8 T44: gunpowder barrels
+	_build_d8_gunpowder_barrels(geom)
+	# Epic-8 T45: lifeguard tower
+	_build_d8_lifeguard_tower(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -35275,6 +35285,357 @@ func _build_d8_mines(geom: Node) -> void:
 		var twb: Tween = mine.create_tween().set_loops()
 		twb.tween_property(mine, "position:y", 0.18, 1.6)
 		twb.tween_property(mine, "position:y", 0.0, 1.6)
+
+
+func _build_d8_warship(geom: Node) -> void:
+	## Epic-8 T41: large naval warship — long hull + 3 masts + cannon
+	## ports along the side + decorative bow.
+	var ship: Node3D = Node3D.new()
+	ship.name = "Warship"
+	ship.position = Vector3(D8_CENTER.x - 4.0, 0.30, -16.0)
+	geom.add_child(ship)
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.30, 0.18, 0.08)
+	dark_wood.roughness = 0.92
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Long hull
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(8.50, 1.85, 2.85)
+	hull.mesh = hm
+	hull.material_override = dark_wood
+	hull.position = Vector3(0, 0.92, 0)
+	ship.add_child(hull)
+	# Pointed bow
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bwm: PrismMesh = PrismMesh.new()
+	bwm.size = Vector3(2.85, 1.85, 1.40)
+	bow.mesh = bwm
+	bow.material_override = dark_wood
+	bow.position = Vector3(5.40, 0.92, 0)
+	bow.rotation_degrees = Vector3(0, 0, -90)
+	ship.add_child(bow)
+	# Upper deck
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(8.0, 0.30, 2.40)
+	deck.mesh = dm
+	deck.material_override = wood_mat
+	deck.position = Vector3(0, 2.0, 0)
+	ship.add_child(deck)
+	# 3 cannon ports along the side
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.05, 0.04, 0.05)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var port: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(0.55, 0.55, 0.06)
+		port.mesh = pmm
+		port.material_override = dark_mat
+		port.position = Vector3(-2.40 + i * 2.40, 1.20, 1.45)
+		ship.add_child(port)
+	# 3 tall masts
+	for sx in [-2.85, 0.0, 2.85]:
+		var mast: MeshInstance3D = MeshInstance3D.new()
+		var mm: CylinderMesh = CylinderMesh.new()
+		mm.top_radius = 0.10
+		mm.bottom_radius = 0.18
+		mm.height = 6.85
+		mast.mesh = mm
+		mast.material_override = dark_wood
+		mast.position = Vector3(sx, 5.40, 0)
+		ship.add_child(mast)
+		# Sail (large white box)
+		var sail: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.85, 2.85, 0.10)
+		sail.mesh = sm
+		var sail_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sail_mat.albedo_color = Color(0.92, 0.92, 0.85)
+		sail_mat.roughness = 0.85
+		sail.material_override = sail_mat
+		sail.position = Vector3(sx, 5.40, 0)
+		ship.add_child(sail)
+	# Bobbing tween
+	var tw: Tween = ship.create_tween().set_loops()
+	tw.tween_property(ship, "position:y", 0.45, 1.8)
+	tw.tween_property(ship, "position:y", 0.30, 1.8)
+	# Hull collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(11.0, 1.85, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	ship.add_child(sb)
+
+
+func _build_d8_navy_captain_npc() -> void:
+	## Epic-8 T42: navy captain NPC — formal navy uniform + bicorne hat +
+	## held cutlass.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "NavyCaptainSlot"
+	slot.position = Vector3(D8_CENTER.x - 8.0, 0.0, -8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "NavyCaptain"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Riptide")
+	if "npc_id" in npc:
+		npc.set("npc_id", "navy_captain_d8")
+	slot.add_child(npc)
+	# Navy uniform
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.10, 0.20, 0.55)
+	coat_mat.metallic = 0.30
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Gold trim down the front
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.06, 1.10, 0.04)
+	trim.mesh = tm
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 0.85
+	gold_mat.metallic = 0.95
+	trim.material_override = gold_mat
+	trim.position = Vector3(0, 0.60, 0.24)
+	npc.add_child(trim)
+	# Bicorne hat (2 angled brim pieces)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.10, 0.20, 0.55)
+	hat_mat.metallic = 0.30
+	for sz in [-1, 1]:
+		var brim: MeshInstance3D = MeshInstance3D.new()
+		var brm: BoxMesh = BoxMesh.new()
+		brm.size = Vector3(0.18, 0.04, 0.42)
+		brim.mesh = brm
+		brim.material_override = hat_mat
+		brim.position = Vector3(0, 1.55, sz * 0.18)
+		brim.rotation_degrees = Vector3(0, 0, sz * 25.0)
+		npc.add_child(brim)
+	# Cutlass (curved blade simulated with prism + handle)
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blm: PrismMesh = PrismMesh.new()
+	blm.size = Vector3(0.06, 0.85, 0.06)
+	blade.mesh = blm
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	blade.material_override = blade_mat
+	blade.position = Vector3(0.45, 1.0, 0.20)
+	blade.rotation_degrees = Vector3(0, 0, -25)
+	npc.add_child(blade)
+
+
+func _build_d8_cannons_row(geom: Node) -> void:
+	## Epic-8 T43: row of 4 dock cannons — dark metal barrels on wooden
+	## carriages.
+	var cannons: Node3D = Node3D.new()
+	cannons.name = "CannonsRow"
+	cannons.position = Vector3(D8_CENTER.x + 14.0, 0.0, -22.0)
+	geom.add_child(cannons)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.20)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	for i in 4:
+		var cannon: Node3D = Node3D.new()
+		cannon.position = Vector3(i * 1.85, 0, 0)
+		cannons.add_child(cannon)
+		# Wooden carriage base
+		var carriage: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(0.85, 0.40, 0.85)
+		carriage.mesh = cm
+		carriage.material_override = wood_mat
+		carriage.position = Vector3(0, 0.20, 0)
+		cannon.add_child(carriage)
+		# 2 wheels
+		for sx in [-0.40, 0.40]:
+			var wheel: MeshInstance3D = MeshInstance3D.new()
+			var wm: CylinderMesh = CylinderMesh.new()
+			wm.top_radius = 0.20
+			wm.bottom_radius = 0.20
+			wm.height = 0.10
+			wheel.mesh = wm
+			wheel.material_override = wood_mat
+			wheel.position = Vector3(sx, 0.20, 0.40)
+			wheel.rotation_degrees = Vector3(0, 0, 90)
+			cannon.add_child(wheel)
+		# Iron cannon barrel (long cylinder)
+		var barrel: MeshInstance3D = MeshInstance3D.new()
+		var brm: CylinderMesh = CylinderMesh.new()
+		brm.top_radius = 0.14
+		brm.bottom_radius = 0.18
+		brm.height = 1.10
+		barrel.mesh = brm
+		barrel.material_override = iron_mat
+		barrel.position = Vector3(0, 0.65, 0.30)
+		barrel.rotation_degrees = Vector3(75, 0, 0)
+		cannon.add_child(barrel)
+		# Cannon collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 0.85, 1.10)
+		cs.shape = cb
+		sb.add_child(cs)
+		cannon.add_child(sb)
+
+
+func _build_d8_gunpowder_barrels(geom: Node) -> void:
+	## Epic-8 T44: stack of 4 gunpowder barrels with red warning markings.
+	var barrels: Node3D = Node3D.new()
+	barrels.name = "GunpowderBarrels"
+	barrels.position = Vector3(D8_CENTER.x + 22.0, 0.0, -22.0)
+	geom.add_child(barrels)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.92
+	var hoop_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hoop_mat.albedo_color = Color(0.20, 0.18, 0.20)
+	hoop_mat.metallic = 0.85
+	var warning_mat: StandardMaterial3D = StandardMaterial3D.new()
+	warning_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	warning_mat.emission_enabled = true
+	warning_mat.emission = Color(0.85, 0.20, 0.20)
+	warning_mat.emission_energy_multiplier = 1.4
+	warning_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var positions: Array = [
+		Vector3(-0.55, 0.42, 0),
+		Vector3( 0.55, 0.42, 0),
+		Vector3(-0.55, 0.42, 0.85),
+		Vector3( 0.55, 0.42, 0.85),
+	]
+	for p in positions:
+		var barrel: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.30
+		bm.bottom_radius = 0.30
+		bm.height = 0.85
+		barrel.mesh = bm
+		barrel.material_override = wood_mat
+		barrel.position = p
+		barrels.add_child(barrel)
+		# 2 hoops
+		for hy in [-0.30, 0.30]:
+			var hoop: MeshInstance3D = MeshInstance3D.new()
+			var hmm: CylinderMesh = CylinderMesh.new()
+			hmm.top_radius = 0.32
+			hmm.bottom_radius = 0.32
+			hmm.height = 0.04
+			hoop.mesh = hmm
+			hoop.material_override = hoop_mat
+			hoop.position = Vector3(p.x, p.y + hy, p.z)
+			barrels.add_child(hoop)
+		# Red warning X on the front
+		var warning: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.30, 0.06, 0.04)
+		warning.mesh = wm
+		warning.material_override = warning_mat
+		warning.position = Vector3(p.x, p.y, p.z + 0.32)
+		barrels.add_child(warning)
+	# Group collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.42, 0.42)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 0.85, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	barrels.add_child(sb)
+
+
+func _build_d8_lifeguard_tower(geom: Node) -> void:
+	## Epic-8 T45: small wooden lifeguard tower — elevated platform on
+	## angled posts + sloped roof + warning sign.
+	var tower: Node3D = Node3D.new()
+	tower.name = "LifeguardTower"
+	tower.position = Vector3(D8_CENTER.x + 4.0, 0.0, 18.0)
+	geom.add_child(tower)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	wood_mat.emission_enabled = true
+	wood_mat.emission = Color(0.95, 0.55, 0.10)
+	wood_mat.emission_energy_multiplier = 0.30
+	wood_mat.roughness = 0.85
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.45, 0.28, 0.12)
+	dark_wood.roughness = 0.85
+	# 4 angled support posts
+	for sx in [-0.85, 0.85]:
+		for sz in [-0.85, 0.85]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.18, 2.40, 0.18)
+			post.mesh = pm
+			post.material_override = dark_wood
+			post.position = Vector3(sx, 1.20, sz)
+			tower.add_child(post)
+	# Elevated platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(2.20, 0.20, 2.20)
+	platform.mesh = pmm
+	platform.material_override = wood_mat
+	platform.position = Vector3(0, 2.40, 0)
+	tower.add_child(platform)
+	# 3 walls (side walls + back, leaving the front open)
+	for w in [
+		{"size": Vector3(2.20, 1.40, 0.10), "pos": Vector3(0, 3.20, -1.05)},
+		{"size": Vector3(0.10, 1.40, 2.20), "pos": Vector3(-1.05, 3.20, 0)},
+		{"size": Vector3(0.10, 1.40, 2.20), "pos": Vector3( 1.05, 3.20, 0)},
+	]:
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = w["size"]
+		wall.mesh = wm
+		wall.material_override = wood_mat
+		wall.position = w["pos"]
+		tower.add_child(wall)
+	# Sloped roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(2.40, 0.55, 2.40)
+	roof.mesh = rm
+	roof.material_override = dark_wood
+	roof.position = Vector3(0, 4.20, 0)
+	tower.add_child(roof)
+	# Tower collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.50, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 4.85, 2.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	tower.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
