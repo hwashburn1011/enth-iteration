@@ -32891,6 +32891,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_repair_station(geom)
 	# Epic-9 T25: iron ingot stacks
 	_build_d9_ingot_stacks(geom)
+	# Epic-9 T26: forge engineer NPC
+	_build_d9_forge_engineer_npc()
+	# Epic-9 T27: overhead steam pipes
+	_build_d9_steam_pipes(geom)
+	# Epic-9 T28: drilling rig
+	_build_d9_drilling_rig(geom)
+	# Epic-9 T29: spark waterfall
+	_build_d9_spark_waterfall(geom)
+	# Epic-9 T30: parked cart yard
+	_build_d9_cart_yard(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -42664,6 +42674,473 @@ func _build_d9_ingot_stacks(geom: Node) -> void:
 		cs.shape = bs
 		stb.add_child(cs)
 		stack.add_child(stb)
+
+
+func _build_d9_forge_engineer_npc() -> void:
+	## Epic-9 T26: forge engineer NPC with a mechanical arm and a heavy wrench.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ForgeEngineerSlot"
+	slot.position = Vector3(D9_CENTER.x + 8, 0, 4)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ForgeEngineer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Engineer Cogwright")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_forge_engineer")
+	slot.add_child(npc)
+	# Khaki overall jumpsuit
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.55, 0.45, 0.25)
+	suit_mat.roughness = 0.85
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sb: BoxMesh = BoxMesh.new()
+	sb.size = Vector3(0.95, 1.20, 0.55)
+	suit.mesh = sb
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 1.05, 0)
+	npc.add_child(suit)
+	# Goggles (cyan emissive lenses on a strap)
+	var lens_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lens_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	lens_mat.emission_enabled = true
+	lens_mat.emission = Color(0.40, 0.95, 1.0)
+	lens_mat.emission_energy_multiplier = 1.8
+	lens_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-0.16, 0.16]:
+		var lens: MeshInstance3D = MeshInstance3D.new()
+		var lsm: SphereMesh = SphereMesh.new()
+		lsm.radius = 0.12
+		lsm.height = 0.08
+		lens.mesh = lsm
+		lens.material_override = lens_mat
+		lens.position = Vector3(sx, 1.92, 0.30)
+		npc.add_child(lens)
+	# Goggle strap (dark band)
+	var strap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	strap_mat.albedo_color = Color(0.20, 0.15, 0.10)
+	var strap: MeshInstance3D = MeshInstance3D.new()
+	var stb: BoxMesh = BoxMesh.new()
+	stb.size = Vector3(0.70, 0.08, 0.06)
+	strap.mesh = stb
+	strap.material_override = strap_mat
+	strap.position = Vector3(0, 1.92, 0)
+	npc.add_child(strap)
+	# Mechanical right arm (iron segments instead of normal arm)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.55, 0.55, 0.58)
+	iron_mat.metallic = 0.92
+	iron_mat.roughness = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.20
+	# Upper arm
+	var upper: MeshInstance3D = MeshInstance3D.new()
+	var ucm: CylinderMesh = CylinderMesh.new()
+	ucm.top_radius = 0.10
+	ucm.bottom_radius = 0.12
+	ucm.height = 0.55
+	upper.mesh = ucm
+	upper.material_override = iron_mat
+	upper.position = Vector3(0.55, 1.30, 0)
+	npc.add_child(upper)
+	# Brass elbow joint
+	var elbow: MeshInstance3D = MeshInstance3D.new()
+	var esm: SphereMesh = SphereMesh.new()
+	esm.radius = 0.14
+	esm.height = 0.28
+	elbow.mesh = esm
+	elbow.material_override = brass_mat
+	elbow.position = Vector3(0.55, 1.00, 0)
+	npc.add_child(elbow)
+	# Forearm
+	var fore: MeshInstance3D = MeshInstance3D.new()
+	fore.mesh = ucm
+	fore.material_override = iron_mat
+	fore.position = Vector3(0.55, 0.70, 0)
+	npc.add_child(fore)
+	# Iron pincer hand (2 small box claws)
+	for sz in [-0.06, 0.06]:
+		var claw: MeshInstance3D = MeshInstance3D.new()
+		var ccb: BoxMesh = BoxMesh.new()
+		ccb.size = Vector3(0.10, 0.20, 0.05)
+		claw.mesh = ccb
+		claw.material_override = iron_mat
+		claw.position = Vector3(0.55, 0.40, sz)
+		npc.add_child(claw)
+	# Heavy wrench in left hand (long iron bar with curved jaw)
+	var wrench_root: Node3D = Node3D.new()
+	wrench_root.position = Vector3(-0.50, 0.95, 0.25)
+	wrench_root.rotation_degrees = Vector3(0, 0, 12)
+	npc.add_child(wrench_root)
+	var wr_haft: MeshInstance3D = MeshInstance3D.new()
+	var wcm: CylinderMesh = CylinderMesh.new()
+	wcm.top_radius = 0.05
+	wcm.bottom_radius = 0.05
+	wcm.height = 0.85
+	wr_haft.mesh = wcm
+	wr_haft.material_override = iron_mat
+	wrench_root.add_child(wr_haft)
+	var wr_jaw: MeshInstance3D = MeshInstance3D.new()
+	var wjb: BoxMesh = BoxMesh.new()
+	wjb.size = Vector3(0.18, 0.18, 0.08)
+	wr_jaw.mesh = wjb
+	wr_jaw.material_override = iron_mat
+	wr_jaw.position = Vector3(0, 0.50, 0)
+	wrench_root.add_child(wr_jaw)
+
+
+func _build_d9_steam_pipes(geom: Node) -> void:
+	## Epic-9 T27: overhead industrial pipe network — long horizontal pipes
+	## with elbow joints and small steam vent puffs.
+	var pipes: Node3D = Node3D.new()
+	pipes.name = "D9SteamPipes"
+	pipes.position = Vector3(D9_CENTER.x, 0, 0)
+	geom.add_child(pipes)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.45, 0.42, 0.40)
+	iron_mat.metallic = 0.7
+	iron_mat.roughness = 0.45
+	# 2 long horizontal pipes high overhead
+	for i in range(2):
+		var pipe: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.30
+		pcm.bottom_radius = 0.30
+		pcm.height = 28.0
+		pipe.mesh = pcm
+		pipe.material_override = iron_mat
+		pipe.position = Vector3(0, 7.0, -8.0 + i * 16.0)
+		pipe.rotation_degrees = Vector3(0, 0, 90)
+		pipes.add_child(pipe)
+	# 4 vertical drop pipes connecting the horizontals to the ground
+	for sx in [-12.0, -4.0, 4.0, 12.0]:
+		var drop: MeshInstance3D = MeshInstance3D.new()
+		var dcm: CylinderMesh = CylinderMesh.new()
+		dcm.top_radius = 0.22
+		dcm.bottom_radius = 0.25
+		dcm.height = 7.0
+		drop.mesh = dcm
+		drop.material_override = iron_mat
+		drop.position = Vector3(sx, 3.5, -8.0)
+		pipes.add_child(drop)
+		# Brass elbow joint
+		var brass: StandardMaterial3D = StandardMaterial3D.new()
+		brass.albedo_color = Color(0.85, 0.65, 0.20)
+		brass.metallic = 0.95
+		brass.roughness = 0.20
+		var elbow: MeshInstance3D = MeshInstance3D.new()
+		var esm: SphereMesh = SphereMesh.new()
+		esm.radius = 0.32
+		esm.height = 0.55
+		elbow.mesh = esm
+		elbow.material_override = brass
+		elbow.position = Vector3(sx, 7.0, -8.0)
+		pipes.add_child(elbow)
+		# Steam vent particles at the base
+		var steam: GPUParticles3D = GPUParticles3D.new()
+		steam.position = Vector3(sx, 0.20, -8.0)
+		steam.amount = 25
+		steam.lifetime = 2.5
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 18.0
+		pm.initial_velocity_min = 0.50
+		pm.initial_velocity_max = 1.10
+		pm.gravity = Vector3(0, 0.30, 0)
+		pm.scale_min = 0.20
+		pm.scale_max = 0.45
+		pm.color = Color(0.85, 0.92, 0.95, 0.55)
+		steam.process_material = pm
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.18
+		sm.height = 0.36
+		steam.draw_pass_1 = sm
+		pipes.add_child(steam)
+	# Pressure gauges (small brass discs on the horizontals)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	for sx in [-8.0, 0.0, 8.0]:
+		for sz in [-8.0, 8.0]:
+			var gauge: MeshInstance3D = MeshInstance3D.new()
+			var gcm: CylinderMesh = CylinderMesh.new()
+			gcm.top_radius = 0.18
+			gcm.bottom_radius = 0.18
+			gcm.height = 0.10
+			gauge.mesh = gcm
+			gauge.material_override = brass
+			gauge.position = Vector3(sx, 7.0, sz + (0.32 if sz < 0 else -0.32))
+			gauge.rotation_degrees = Vector3(90, 0, 0)
+			pipes.add_child(gauge)
+
+
+func _build_d9_drilling_rig(geom: Node) -> void:
+	## Epic-9 T28: industrial drilling rig — vertical iron mast with a
+	## spinning drill bit at the bottom and ore dust ring around the impact.
+	var rig: Node3D = Node3D.new()
+	rig.name = "D9DrillingRig"
+	rig.position = Vector3(D9_CENTER.x + 22, 0, 8)
+	geom.add_child(rig)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.45, 0.42, 0.40)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	# 4 corner posts forming a tower frame
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pcm: CylinderMesh = CylinderMesh.new()
+			pcm.top_radius = 0.10
+			pcm.bottom_radius = 0.14
+			pcm.height = 6.50
+			post.mesh = pcm
+			post.material_override = iron_mat
+			post.position = Vector3(sx, 3.25, sz)
+			rig.add_child(post)
+	# Top platform
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(2.40, 0.18, 2.40)
+	top.mesh = tb
+	top.material_override = iron_mat
+	top.position = Vector3(0, 6.55, 0)
+	rig.add_child(top)
+	# Vertical drill mast (long thin cylinder)
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var mcm: CylinderMesh = CylinderMesh.new()
+	mcm.top_radius = 0.18
+	mcm.bottom_radius = 0.22
+	mcm.height = 5.50
+	mast.mesh = mcm
+	mast.material_override = iron_mat
+	mast.position = Vector3(0, 3.50, 0)
+	rig.add_child(mast)
+	# Spinning drill bit (cone tapering to a point)
+	var bit_pivot: Node3D = Node3D.new()
+	bit_pivot.position = Vector3(0, 0.85, 0)
+	rig.add_child(bit_pivot)
+	var bit: MeshInstance3D = MeshInstance3D.new()
+	var bcm: CylinderMesh = CylinderMesh.new()
+	bcm.top_radius = 0.18
+	bcm.bottom_radius = 0.0
+	bcm.height = 1.20
+	bit.mesh = bcm
+	bit.material_override = iron_mat
+	bit_pivot.add_child(bit)
+	# Spiral flutes around the bit (3 thin boxes at angles)
+	for i in range(3):
+		var flute: MeshInstance3D = MeshInstance3D.new()
+		var flb: BoxMesh = BoxMesh.new()
+		flb.size = Vector3(0.04, 1.10, 0.10)
+		flute.mesh = flb
+		flute.material_override = iron_mat
+		flute.rotation_degrees = Vector3(0, float(i) * 120, 8)
+		flute.position = Vector3(cos(deg_to_rad(i * 120)) * 0.16, 0, sin(deg_to_rad(i * 120)) * 0.16)
+		bit_pivot.add_child(flute)
+	# Spin tween
+	var spin: Tween = bit_pivot.create_tween().set_loops()
+	spin.tween_property(bit_pivot, "rotation_degrees:y", 360.0, 1.5).from(0.0)
+	# Ore dust ring particles at the impact point
+	var dust: GPUParticles3D = GPUParticles3D.new()
+	dust.position = Vector3(0, 0.10, 0)
+	dust.amount = 50
+	dust.lifetime = 1.4
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	pm.emission_ring_radius = 0.40
+	pm.emission_ring_inner_radius = 0.15
+	pm.emission_ring_height = 0.05
+	pm.direction = Vector3(0, 0.5, 0)
+	pm.spread = 60.0
+	pm.initial_velocity_min = 0.85
+	pm.initial_velocity_max = 1.65
+	pm.gravity = Vector3(0, -1.5, 0)
+	pm.scale_min = 0.06
+	pm.scale_max = 0.16
+	pm.color = Color(0.55, 0.40, 0.20, 0.85)
+	dust.process_material = pm
+	var dust_mesh: SphereMesh = SphereMesh.new()
+	dust_mesh.radius = 0.06
+	dust_mesh.height = 0.12
+	dust.draw_pass_1 = dust_mesh
+	rig.add_child(dust)
+	# Rig collision (single box for the tower)
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 3.25, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.40, 6.50, 2.40)
+	cs.shape = bs
+	stb.add_child(cs)
+	rig.add_child(stb)
+
+
+func _build_d9_spark_waterfall(geom: Node) -> void:
+	## Epic-9 T29: a waterfall of sparks cascading from a high stone ledge
+	## down into a small lava basin at its base.
+	var fall: Node3D = Node3D.new()
+	fall.name = "D9SparkWaterfall"
+	fall.position = Vector3(D9_CENTER.x + 26, 0, -10)
+	geom.add_child(fall)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.16)
+	stone_mat.roughness = 0.85
+	# Tall stone ledge (cliff block)
+	var ledge: MeshInstance3D = MeshInstance3D.new()
+	var lb: BoxMesh = BoxMesh.new()
+	lb.size = Vector3(3.40, 5.50, 2.20)
+	ledge.mesh = lb
+	ledge.material_override = stone_mat
+	ledge.position = Vector3(0, 2.75, 0)
+	fall.add_child(ledge)
+	# Small basin at the base
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bcm: CylinderMesh = CylinderMesh.new()
+	bcm.top_radius = 1.55
+	bcm.bottom_radius = 1.85
+	bcm.height = 0.55
+	basin.mesh = bcm
+	basin.material_override = stone_mat
+	basin.position = Vector3(0, 0.27, 1.85)
+	fall.add_child(basin)
+	# Lava puddle in the basin
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.55, 0.18)
+	lava_mat.emission_energy_multiplier = 4.5
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var lava: MeshInstance3D = MeshInstance3D.new()
+	var lcm: CylinderMesh = CylinderMesh.new()
+	lcm.top_radius = 1.30
+	lcm.bottom_radius = 1.30
+	lcm.height = 0.10
+	lava.mesh = lcm
+	lava.material_override = lava_mat
+	lava.position = Vector3(0, 0.55, 1.85)
+	fall.add_child(lava)
+	# Spark waterfall GPU particles falling from the top of the ledge
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.position = Vector3(0, 5.40, 1.10)
+	sparks.amount = 140
+	sparks.lifetime = 2.5
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(1.40, 0.05, 0.10)
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 12.0
+	pm.initial_velocity_min = 0.85
+	pm.initial_velocity_max = 1.65
+	pm.gravity = Vector3(0, -3.5, 0)
+	pm.scale_min = 0.08
+	pm.scale_max = 0.18
+	pm.color = Color(1.0, 0.55, 0.18, 1.0)
+	sparks.process_material = pm
+	var spark_mesh: SphereMesh = SphereMesh.new()
+	spark_mesh.radius = 0.06
+	spark_mesh.height = 0.12
+	sparks.draw_pass_1 = spark_mesh
+	fall.add_child(sparks)
+	# Bright orange omni light at the lava basin
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 4.0
+	lt.omni_range = 10.0
+	lt.position = Vector3(0, 1.0, 1.85)
+	fall.add_child(lt)
+	# Cliff collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 2.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(3.40, 5.50, 2.20)
+	cs.shape = bs
+	stb.add_child(cs)
+	fall.add_child(stb)
+
+
+func _build_d9_cart_yard(geom: Node) -> void:
+	## Epic-9 T30: yard of 3 parked mine carts on parallel rails — empty
+	## carts waiting for ore loading.
+	var yard: Node3D = Node3D.new()
+	yard.name = "D9CartYard"
+	yard.position = Vector3(D9_CENTER.x + 18, 0, -16)
+	geom.add_child(yard)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.85
+	iron.roughness = 0.40
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	for i in range(3):
+		var slot_root: Node3D = Node3D.new()
+		slot_root.position = Vector3(0, 0, i * 2.40)
+		yard.add_child(slot_root)
+		# Two short rails
+		for sz in [-0.45, 0.45]:
+			var rail: MeshInstance3D = MeshInstance3D.new()
+			var rb: BoxMesh = BoxMesh.new()
+			rb.size = Vector3(2.40, 0.10, 0.10)
+			rail.mesh = rb
+			rail.material_override = iron
+			rail.position = Vector3(0, 0.05, sz)
+			slot_root.add_child(rail)
+		# 3 wooden ties
+		for j in range(3):
+			var tie: MeshInstance3D = MeshInstance3D.new()
+			var tb: BoxMesh = BoxMesh.new()
+			tb.size = Vector3(0.30, 0.06, 1.30)
+			tie.mesh = tb
+			tie.material_override = wood
+			tie.position = Vector3(-0.85 + float(j) * 0.85, 0.02, 0)
+			slot_root.add_child(tie)
+		# Mine cart body (slightly varied positions, mostly empty)
+		var cart: MeshInstance3D = MeshInstance3D.new()
+		var cb: BoxMesh = BoxMesh.new()
+		cb.size = Vector3(1.40, 0.85, 1.10)
+		cart.mesh = cb
+		cart.material_override = wood
+		cart.position = Vector3(-0.20 + float(i) * 0.10, 0.55, 0)
+		slot_root.add_child(cart)
+		# Iron rim
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmb: BoxMesh = BoxMesh.new()
+		rmb.size = Vector3(1.50, 0.08, 1.20)
+		rim.mesh = rmb
+		rim.material_override = iron
+		rim.position = Vector3(-0.20 + float(i) * 0.10, 0.92, 0)
+		slot_root.add_child(rim)
+		# 4 torus wheels
+		for sx in [-0.55, 0.55]:
+			for sz in [-0.45, 0.45]:
+				var wheel: MeshInstance3D = MeshInstance3D.new()
+				var tm: TorusMesh = TorusMesh.new()
+				tm.inner_radius = 0.18
+				tm.outer_radius = 0.28
+				wheel.mesh = tm
+				wheel.material_override = iron
+				wheel.position = Vector3(-0.20 + float(i) * 0.10 + sx, 0.20, sz)
+				wheel.rotation_degrees = Vector3(0, 0, 90)
+				slot_root.add_child(wheel)
+		# Cart collision
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(-0.20 + float(i) * 0.10, 0.55, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bs: BoxShape3D = BoxShape3D.new()
+		bs.size = Vector3(1.50, 1.10, 1.20)
+		cs.shape = bs
+		stb.add_child(cs)
+		slot_root.add_child(stb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
