@@ -66,6 +66,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_battle_smith_npc(town)
 	_build_d9_practice_weapon_stand(geom)
 	_build_d9_cooling_rack(geom)
+	_build_d9_lava_forge_cracks(geom)
 	print("[D9Builder] done")
 
 
@@ -3982,4 +3983,32 @@ func _build_d9_cooling_rack(geom: Node) -> void:
 	cs.shape = bs
 	stb.add_child(cs)
 	rack.add_child(stb)
+
+
+func _build_d9_lava_forge_cracks(geom: Node) -> void:
+	## Epic-9 T46: 12 jagged emissive crack planes radiating from the
+	## mid-boss arena center. Visual warning that the player is entering
+	## a high-danger combat zone.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_LavaForgeCracks"
+	pivot.position = D9_CENTER + Vector3(28, 0.02, 0)
+	geom.add_child(pivot)
+	for i in 12:
+		var angle: float = (TAU / 12.0) * float(i)
+		var dist: float = 4.0 + float(i % 3) * 2.5
+		var crack: MeshInstance3D = MeshInstance3D.new()
+		var pm: PlaneMesh = PlaneMesh.new()
+		pm.size = Vector2(0.55 + float(i % 4) * 0.18, 5.0 + float(i % 3) * 1.2)
+		crack.mesh = pm
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.08, 0.04, 0.02)
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.32, 0.05)
+		mat.emission_energy_multiplier = 3.4
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crack.material_override = mat
+		crack.position = Vector3(cos(angle) * dist, 0, sin(angle) * dist)
+		crack.rotation.y = angle
+		pivot.add_child(crack)
+
 
