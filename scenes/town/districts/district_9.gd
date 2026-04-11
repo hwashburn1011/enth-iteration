@@ -109,6 +109,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_sentinel_oath_wall(geom)
 	_build_d9_slag_heap_pit(geom)
 	_build_d9_slagmaster_borg_npc(town)
+	_build_d9_sky_cinder_fall(geom)
 	print("[D9Builder] done")
 
 
@@ -10310,4 +10311,69 @@ func _build_d9_slagmaster_borg_npc(town: Node) -> void:
 	var fpulse: Tween = npc.create_tween().set_loops()
 	fpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_sky_cinder_fall(geom: Node) -> void:
+	## Epic-9 T89: district-wide sky-cinder fall ambient. 4 GPUParticles3D
+	## emitters spaced across D9 raining downward ember motes from the
+	## sky to give the whole district volcanic ashfall ambience. Each
+	## emitter covers a wide horizontal box and uses a slow downward
+	## drift with mild gravity.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_SkyCinderFall"
+	pivot.position = D9_CENTER + Vector3(0, 18.0, 0)
+	geom.add_child(pivot)
+	# Cinder mote material — small unshaded amber dots
+	var ember_mesh: SphereMesh = SphereMesh.new()
+	ember_mesh.radius = 0.05
+	ember_mesh.height = 0.10
+	# 4 emitters spread across D9's footprint
+	# Use overlapping wide boxes so the rain feels continuous
+	var emitter_data: Array = [
+		{"pos": Vector3(-25.0, 0, -15.0), "amount": 60, "color": Color(1.0, 0.55, 0.10, 1.0)},
+		{"pos": Vector3(25.0, 0, -15.0), "amount": 60, "color": Color(1.0, 0.55, 0.10, 1.0)},
+		{"pos": Vector3(-25.0, 0, 15.0), "amount": 60, "color": Color(1.0, 0.50, 0.10, 1.0)},
+		{"pos": Vector3(25.0, 0, 15.0), "amount": 60, "color": Color(1.0, 0.50, 0.10, 1.0)},
+	]
+	for ed in emitter_data:
+		var emit: GPUParticles3D = GPUParticles3D.new()
+		emit.position = ed["pos"]
+		emit.amount = ed["amount"]
+		emit.lifetime = 8.0
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pmat.emission_box_extents = Vector3(18.0, 0.5, 18.0)
+		pmat.direction = Vector3(0, -1, 0)
+		pmat.spread = 8.0
+		pmat.initial_velocity_min = 0.6
+		pmat.initial_velocity_max = 1.2
+		pmat.gravity = Vector3(0, -0.4, 0)
+		pmat.scale_min = 0.6
+		pmat.scale_max = 1.2
+		pmat.color = ed["color"]
+		emit.process_material = pmat
+		emit.draw_pass_1 = ember_mesh
+		pivot.add_child(emit)
+	# Subtle ash drift overlay — slower, larger, darker particles for variety
+	var ash: GPUParticles3D = GPUParticles3D.new()
+	ash.position = Vector3(0, 0, 0)
+	ash.amount = 80
+	ash.lifetime = 12.0
+	var amat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	amat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	amat.emission_box_extents = Vector3(35.0, 0.5, 35.0)
+	amat.direction = Vector3(0, -1, 0)
+	amat.spread = 12.0
+	amat.initial_velocity_min = 0.3
+	amat.initial_velocity_max = 0.6
+	amat.gravity = Vector3(0.4, -0.25, 0)
+	amat.scale_min = 0.20
+	amat.scale_max = 0.40
+	amat.color = Color(0.45, 0.30, 0.18, 0.55)
+	ash.process_material = amat
+	var amesh: SphereMesh = SphereMesh.new()
+	amesh.radius = 0.10
+	amesh.height = 0.20
+	ash.draw_pass_1 = amesh
+	pivot.add_child(ash)
 
