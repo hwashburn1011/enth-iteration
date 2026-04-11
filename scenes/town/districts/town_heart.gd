@@ -80,6 +80,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_fountain_cherub_sprites(geom)
 	_build_th_iterations_memorial_wall(geom)
 	_build_th_memorial_mourner_npc(town)
+	_build_th_wishing_pond(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -11233,3 +11234,247 @@ func _build_th_memorial_mourner_npc(town: Node) -> void:
 	var epulse: Tween = ovl.create_tween().set_loops()
 	epulse.tween_property(glow_mat, "emission_energy_multiplier", 6.5, 2.2).set_ease(Tween.EASE_IN_OUT)
 	epulse.tween_property(glow_mat, "emission_energy_multiplier", 3.0, 2.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_wishing_pond(geom: Node) -> void:
+	## Epic-10 T64: Wishing Pond — small reflective square pool in the NNW
+	## mid-plaza area, balancing the SSE memorial wall. Brass-rimmed shallow
+	## basin with a glowing cyan water surface, 4 floating data lily pads,
+	## a scattering of glowing wishing coins on the bottom, and gentle
+	## upward ripple particles. Peaceful counterpoint to the memorial.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_WishingPond"
+	# NNW position at radius 11.5, angle ~PI*0.62 (between N and NW)
+	var ang_pos: float = PI * 0.62
+	var rad_pos: float = 11.5
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 0, pz_p)
+	pivot.rotation.y = atan2(-px_p, -pz_p)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.46, 0.55)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.18, 0.55, 0.85, 0.85)
+	water_mat.metallic = 0.85
+	water_mat.roughness = 0.05
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.75, 1.0)
+	water_mat.emission_energy_multiplier = 1.5
+	var lily_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lily_mat.albedo_color = Color(0.30, 0.85, 0.45)
+	lily_mat.metallic = 0.10
+	lily_mat.roughness = 0.65
+	lily_mat.emission_enabled = true
+	lily_mat.emission = Color(0.40, 0.95, 0.50)
+	lily_mat.emission_energy_multiplier = 1.20
+	var coin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coin_mat.albedo_color = Color(1.0, 0.78, 0.20)
+	coin_mat.metallic = 0.95
+	coin_mat.roughness = 0.20
+	coin_mat.emission_enabled = true
+	coin_mat.emission = Color(1.0, 0.80, 0.20)
+	coin_mat.emission_energy_multiplier = 2.5
+	# ---- Pond basin (square) ----
+	var pond_w: float = 3.20
+	# Stone footing under the pond
+	var foot: MeshInstance3D = MeshInstance3D.new()
+	var fmm: BoxMesh = BoxMesh.new()
+	fmm.size = Vector3(pond_w + 0.50, 0.18, pond_w + 0.50)
+	foot.mesh = fmm
+	foot.material_override = stone_mat
+	foot.position = Vector3(0, 0.09, 0)
+	pivot.add_child(foot)
+	# Brass rim (4 boxes around perimeter)
+	var rim_h: float = 0.18
+	var rim_t: float = 0.10
+	var sides: Array = [
+		Vector3(0, 0.27, (pond_w * 0.5) + (rim_t * 0.5)),
+		Vector3(0, 0.27, -(pond_w * 0.5) - (rim_t * 0.5)),
+		Vector3((pond_w * 0.5) + (rim_t * 0.5), 0.27, 0),
+		Vector3(-(pond_w * 0.5) - (rim_t * 0.5), 0.27, 0),
+	]
+	for i in range(4):
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmm: BoxMesh = BoxMesh.new()
+		if i < 2:
+			rmm.size = Vector3(pond_w + (rim_t * 2.0), rim_h, rim_t)
+		else:
+			rmm.size = Vector3(rim_t, rim_h, pond_w + (rim_t * 2.0))
+		rim.mesh = rmm
+		rim.material_override = brass_mat
+		rim.position = sides[i]
+		pivot.add_child(rim)
+	# Pond bottom (dark stone slab)
+	var bottom_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bottom_mat.albedo_color = Color(0.10, 0.18, 0.28)
+	bottom_mat.metallic = 0.20
+	bottom_mat.roughness = 0.90
+	bottom_mat.emission_enabled = true
+	bottom_mat.emission = Color(0.15, 0.40, 0.65)
+	bottom_mat.emission_energy_multiplier = 0.25
+	var bot: MeshInstance3D = MeshInstance3D.new()
+	var bmm: BoxMesh = BoxMesh.new()
+	bmm.size = Vector3(pond_w, 0.04, pond_w)
+	bot.mesh = bmm
+	bot.material_override = bottom_mat
+	bot.position = Vector3(0, 0.20, 0)
+	pivot.add_child(bot)
+	# Water surface (slightly below rim top)
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wmm: BoxMesh = BoxMesh.new()
+	wmm.size = Vector3(pond_w - 0.04, 0.05, pond_w - 0.04)
+	water.mesh = wmm
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.32, 0)
+	pivot.add_child(water)
+	# Collision (player can't walk in)
+	var sb: StaticBody3D = StaticBody3D.new()
+	pivot.add_child(sb)
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var cs: BoxShape3D = BoxShape3D.new()
+	cs.size = Vector3(pond_w + 0.30, 0.50, pond_w + 0.30)
+	col.shape = cs
+	col.position = Vector3(0, 0.25, 0)
+	sb.add_child(col)
+	# ---- 4 lily pads (data lilies) ----
+	var lily_positions: Array = [
+		Vector3(-0.85, 0.355, -0.85),
+		Vector3(0.85, 0.355, 0.85),
+		Vector3(0.85, 0.355, -0.85),
+		Vector3(-0.85, 0.355, 0.85),
+	]
+	for i2 in range(4):
+		var lp: Node3D = Node3D.new()
+		lp.position = lily_positions[i2]
+		pivot.add_child(lp)
+		# Pad disc
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.32
+		pmm.bottom_radius = 0.32
+		pmm.height = 0.04
+		pad.mesh = pmm
+		pad.material_override = lily_mat
+		pad.position = Vector3(0, 0, 0)
+		lp.add_child(pad)
+		# Tiny flower bud (sphere)
+		var bud_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bud_mat.albedo_color = Color(1.0, 0.65, 0.85)
+		bud_mat.emission_enabled = true
+		bud_mat.emission = Color(1.0, 0.70, 0.90)
+		bud_mat.emission_energy_multiplier = 4.0
+		bud_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var bud: MeshInstance3D = MeshInstance3D.new()
+		var bdm: SphereMesh = SphereMesh.new()
+		bdm.radius = 0.10
+		bdm.height = 0.20
+		bud.mesh = bdm
+		bud.material_override = bud_mat
+		bud.position = Vector3(0, 0.10, 0)
+		lp.add_child(bud)
+		# Tiny rim brass particles (4 dots around the pad)
+		for k in range(4):
+			var dot: MeshInstance3D = MeshInstance3D.new()
+			var ddm: SphereMesh = SphereMesh.new()
+			ddm.radius = 0.025
+			ddm.height = 0.05
+			dot.mesh = ddm
+			dot.material_override = brass_mat
+			var ka: float = float(k) * (PI / 2.0)
+			dot.position = Vector3(cos(ka) * 0.27, 0.04, sin(ka) * 0.27)
+			lp.add_child(dot)
+		# Bud pulse
+		var pulse: Tween = lp.create_tween().set_loops()
+		pulse.tween_interval(float(i2) * 0.30)
+		pulse.tween_property(bud_mat, "emission_energy_multiplier", 6.5, 1.2).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(bud_mat, "emission_energy_multiplier", 2.5, 1.2).set_ease(Tween.EASE_IN_OUT)
+		# Pad slight horizontal drift (subtle X+Z sway)
+		var drift: Tween = lp.create_tween().set_loops()
+		drift.tween_property(lp, "position:y", lily_positions[i2].y + 0.018, 1.6).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(lp, "position:y", lily_positions[i2].y - 0.018, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# ---- Wishing coins on the pond bottom (8 scattered coins) ----
+	var coin_positions: Array = [
+		Vector3(-0.35, 0.235, 0.30),
+		Vector3(0.55, 0.235, -0.20),
+		Vector3(0.10, 0.235, 0.65),
+		Vector3(-0.55, 0.235, -0.40),
+		Vector3(0.40, 0.235, 0.45),
+		Vector3(-0.20, 0.235, -0.55),
+		Vector3(0.75, 0.235, 0.10),
+		Vector3(-0.65, 0.235, 0.05),
+	]
+	for i3 in range(8):
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.045
+		cmm.bottom_radius = 0.045
+		cmm.height = 0.02
+		coin.mesh = cmm
+		coin.material_override = coin_mat
+		coin.position = coin_positions[i3]
+		coin.rotation.y = float(i3) * 0.35
+		pivot.add_child(coin)
+	# ---- Central inscription stone (small) ----
+	var stone: MeshInstance3D = MeshInstance3D.new()
+	var stmm: BoxMesh = BoxMesh.new()
+	stmm.size = Vector3(0.45, 0.08, 0.30)
+	stone.mesh = stmm
+	stone.material_override = stone_mat
+	stone.position = Vector3(0, 0.40, -1.20)
+	pivot.add_child(stone)
+	# Brass plate inset on stone
+	var plate: MeshInstance3D = MeshInstance3D.new()
+	var pltm: BoxMesh = BoxMesh.new()
+	pltm.size = Vector3(0.36, 0.02, 0.22)
+	plate.mesh = pltm
+	plate.material_override = brass_mat
+	plate.position = Vector3(0, 0.46, -1.20)
+	pivot.add_child(plate)
+	# ---- Ripple particles (gentle upward shimmer) ----
+	var rip: GPUParticles3D = GPUParticles3D.new()
+	var rp: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	rp.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	rp.emission_box_extents = Vector3(pond_w * 0.45, 0.02, pond_w * 0.45)
+	rp.direction = Vector3(0, 1, 0)
+	rp.spread = 8.0
+	rp.gravity = Vector3(0, 0.10, 0)
+	rp.initial_velocity_min = 0.20
+	rp.initial_velocity_max = 0.45
+	rp.scale_min = 0.03
+	rp.scale_max = 0.07
+	rp.color = Color(0.55, 0.95, 1.0, 0.85)
+	rip.process_material = rp
+	var rip_mesh: SphereMesh = SphereMesh.new()
+	rip_mesh.radius = 0.03
+	rip_mesh.height = 0.06
+	rip.draw_pass_1 = rip_mesh
+	rip.amount = 22
+	rip.lifetime = 2.6
+	rip.position = Vector3(0, 0.34, 0)
+	pivot.add_child(rip)
+	# ---- Cool aura light over the pond ----
+	var lt2: OmniLight3D = OmniLight3D.new()
+	lt2.position = Vector3(0, 1.0, 0)
+	lt2.light_color = Color(0.40, 0.85, 1.0)
+	lt2.light_energy = 1.4
+	lt2.omni_range = 5.0
+	pivot.add_child(lt2)
+	# Subtle water surface emission breathing
+	var wpulse: Tween = pivot.create_tween().set_loops()
+	wpulse.tween_property(water_mat, "emission_energy_multiplier", 2.2, 2.4).set_ease(Tween.EASE_IN_OUT)
+	wpulse.tween_property(water_mat, "emission_energy_multiplier", 1.0, 2.4).set_ease(Tween.EASE_IN_OUT)
