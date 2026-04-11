@@ -32764,6 +32764,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_dock_bridge(geom)
 	# Epic-8 T65: sea anemones
 	_build_d8_anemones(geom)
+	# Epic-8 T66: lighthouse beacon
+	_build_d8_lighthouse(geom)
+	# Epic-8 T67: cargo containers
+	_build_d8_cargo_containers(geom)
+	# Epic-8 T68: harbor master NPC
+	_build_d8_quay_master_npc()
+	# Epic-8 T69: buoy field
+	_build_d8_buoy_field(geom)
+	# Epic-8 T70: floating fishing boat
+	_build_d8_tied_fishing_boat(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -37133,6 +37143,416 @@ func _build_d8_anemones(geom: Node) -> void:
 		cs.shape = cap
 		sb.add_child(cs)
 		anem.add_child(sb)
+
+
+func _build_d8_lighthouse(geom: Node) -> void:
+	## Epic-8 T66: lighthouse beacon — tall striped stone tower with rotating
+	## emissive lamp on top, anchored at far east edge of the harbor.
+	var house: Node3D = Node3D.new()
+	house.name = "D8Lighthouse"
+	house.position = Vector3(D8_CENTER.x + 75, 0, -22)
+	geom.add_child(house)
+	# Base platform: wide stone disc
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.45, 0.45, 0.50)
+	base_mat.roughness = 0.85
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var base_mesh: CylinderMesh = CylinderMesh.new()
+	base_mesh.top_radius = 2.6
+	base_mesh.bottom_radius = 3.0
+	base_mesh.height = 0.5
+	base.mesh = base_mesh
+	base.material_override = base_mat
+	base.position = Vector3(0, 0.25, 0)
+	house.add_child(base)
+	# Tower body: 3 striped segments (white / red / white)
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.90, 0.90, 0.88)
+	white_mat.roughness = 0.7
+	var red_mat: StandardMaterial3D = StandardMaterial3D.new()
+	red_mat.albedo_color = Color(0.75, 0.18, 0.18)
+	red_mat.roughness = 0.7
+	for i in range(3):
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 1.5 - i * 0.18
+		sm.bottom_radius = 1.7 - i * 0.18
+		sm.height = 2.4
+		seg.mesh = sm
+		seg.material_override = red_mat if i == 1 else white_mat
+		seg.position = Vector3(0, 0.5 + 1.2 + i * 2.4, 0)
+		house.add_child(seg)
+	# Lamp room: glass cylinder
+	var lamp_glass: StandardMaterial3D = StandardMaterial3D.new()
+	lamp_glass.albedo_color = Color(0.85, 0.95, 1.0, 0.45)
+	lamp_glass.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lamp_glass.metallic = 0.3
+	lamp_glass.roughness = 0.15
+	var lamp_room: MeshInstance3D = MeshInstance3D.new()
+	var lr_mesh: CylinderMesh = CylinderMesh.new()
+	lr_mesh.top_radius = 1.05
+	lr_mesh.bottom_radius = 1.05
+	lr_mesh.height = 1.4
+	lamp_room.mesh = lr_mesh
+	lamp_room.material_override = lamp_glass
+	lamp_room.position = Vector3(0, 0.5 + 1.2 + 7.2 + 0.7, 0)
+	house.add_child(lamp_room)
+	# Roof cone (red)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.0
+	rm.bottom_radius = 1.2
+	rm.height = 1.1
+	roof.mesh = rm
+	roof.material_override = red_mat
+	roof.position = Vector3(0, 0.5 + 1.2 + 7.2 + 1.4 + 0.55, 0)
+	house.add_child(roof)
+	# Rotating beam: a long emissive prism inside the lamp room
+	var beam_pivot: Node3D = Node3D.new()
+	beam_pivot.position = Vector3(0, 0.5 + 1.2 + 7.2 + 0.7, 0)
+	house.add_child(beam_pivot)
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(1.0, 0.95, 0.65)
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(1.0, 0.92, 0.55)
+	beam_mat.emission_energy_multiplier = 3.5
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(8.0, 0.4, 0.6)
+	beam.mesh = bm
+	beam.material_override = beam_mat
+	beam.position = Vector3(4.0, 0, 0)
+	beam_pivot.add_child(beam)
+	var lamp_light: OmniLight3D = OmniLight3D.new()
+	lamp_light.light_color = Color(1.0, 0.92, 0.55)
+	lamp_light.light_energy = 4.0
+	lamp_light.omni_range = 18.0
+	lamp_light.position = Vector3(0, 0, 0)
+	beam_pivot.add_child(lamp_light)
+	var spin: Tween = beam_pivot.create_tween().set_loops()
+	spin.tween_property(beam_pivot, "rotation_degrees:y", 360.0, 6.0).from(0.0)
+	# Tower collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.5, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.7
+	cap.height = 8.5
+	cs.shape = cap
+	sb.add_child(cs)
+	house.add_child(sb)
+
+
+func _build_d8_cargo_containers(geom: Node) -> void:
+	## Epic-8 T67: stacked colorful shipping containers on the dock — 6
+	## containers in a 3x2 stack with weathered metal materials.
+	var stack: Node3D = Node3D.new()
+	stack.name = "D8CargoStack"
+	stack.position = Vector3(D8_CENTER.x + 60, 0, 8)
+	geom.add_child(stack)
+	var hues: Array[Color] = [
+		Color(0.78, 0.22, 0.18),
+		Color(0.18, 0.42, 0.72),
+		Color(0.85, 0.62, 0.20),
+		Color(0.30, 0.58, 0.30),
+		Color(0.62, 0.32, 0.55),
+		Color(0.20, 0.55, 0.62),
+	]
+	var positions: Array[Vector3] = [
+		Vector3(0, 1.25, 0),
+		Vector3(2.6, 1.25, 0),
+		Vector3(5.2, 1.25, 0),
+		Vector3(0, 3.75, 0),
+		Vector3(2.6, 3.75, 0),
+		Vector3(5.2, 3.75, 0),
+	]
+	for i in range(6):
+		var cont: MeshInstance3D = MeshInstance3D.new()
+		var box: BoxMesh = BoxMesh.new()
+		box.size = Vector3(2.4, 2.4, 5.4)
+		cont.mesh = box
+		var cm: StandardMaterial3D = StandardMaterial3D.new()
+		cm.albedo_color = hues[i]
+		cm.metallic = 0.55
+		cm.roughness = 0.65
+		cont.material_override = cm
+		cont.position = positions[i]
+		stack.add_child(cont)
+		# Door lines: two thin dark stripes on the front
+		for sx in [-0.6, 0.6]:
+			var line: MeshInstance3D = MeshInstance3D.new()
+			var lb: BoxMesh = BoxMesh.new()
+			lb.size = Vector3(0.04, 2.2, 0.05)
+			line.mesh = lb
+			var lm: StandardMaterial3D = StandardMaterial3D.new()
+			lm.albedo_color = Color(0.10, 0.10, 0.10)
+			line.material_override = lm
+			line.position = Vector3(sx, 0, 2.72)
+			cont.add_child(line)
+		# Per-container collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bs: BoxShape3D = BoxShape3D.new()
+		bs.size = Vector3(2.4, 2.4, 5.4)
+		cs.shape = bs
+		sb.add_child(cs)
+		cont.add_child(sb)
+
+
+func _build_d8_quay_master_npc() -> void:
+	## Epic-8 T68: harbor master NPC — uniformed dockworker with clipboard.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D8QuayMasterSlot"
+	slot.position = Vector3(D8_CENTER.x + 50, 0, 4)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D8HarborMaster"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Harbormaster Quay")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d8_harbor_master")
+	slot.add_child(npc)
+	# Navy peacoat
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.10, 0.18, 0.32)
+	coat_mat.roughness = 0.75
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.85, 1.0, 0.55)
+	coat.mesh = cb
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.05, 0)
+	npc.add_child(coat)
+	# Brass buttons (3)
+	for i in range(3):
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.05
+		sm.height = 0.10
+		btn.mesh = sm
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.85, 0.65, 0.20)
+		bmat.metallic = 0.95
+		bmat.roughness = 0.20
+		btn.material_override = bmat
+		btn.position = Vector3(0, 1.30 - i * 0.22, 0.30)
+		npc.add_child(btn)
+	# Captain's hat
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.08, 0.10, 0.18)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hcb: CylinderMesh = CylinderMesh.new()
+	hcb.top_radius = 0.32
+	hcb.bottom_radius = 0.32
+	hcb.height = 0.18
+	hat.mesh = hcb
+	hat.material_override = hat_mat
+	hat.position = Vector3(0, 1.95, 0)
+	npc.add_child(hat)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brim_mesh: CylinderMesh = CylinderMesh.new()
+	brim_mesh.top_radius = 0.42
+	brim_mesh.bottom_radius = 0.42
+	brim_mesh.height = 0.04
+	brim.mesh = brim_mesh
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 1.86, 0.05)
+	npc.add_child(brim)
+	# Clipboard in front
+	var clip: MeshInstance3D = MeshInstance3D.new()
+	var clb: BoxMesh = BoxMesh.new()
+	clb.size = Vector3(0.32, 0.42, 0.03)
+	clip.mesh = clb
+	var clmat: StandardMaterial3D = StandardMaterial3D.new()
+	clmat.albedo_color = Color(0.85, 0.78, 0.55)
+	clip.material_override = clmat
+	clip.position = Vector3(0, 0.95, 0.42)
+	clip.rotation_degrees = Vector3(-15, 0, 0)
+	npc.add_child(clip)
+
+
+func _build_d8_buoy_field(geom: Node) -> void:
+	## Epic-8 T69: 6 bobbing harbor buoys with red navigation lights, scattered
+	## offshore. Each buoy has its own bob tween offset.
+	var field: Node3D = Node3D.new()
+	field.name = "D8BuoyField"
+	field.position = Vector3(D8_CENTER.x + 35, 0.2, -15)
+	geom.add_child(field)
+	var positions: Array[Vector2] = [
+		Vector2(0, 0),
+		Vector2(6, 3),
+		Vector2(12, -2),
+		Vector2(18, 4),
+		Vector2(24, -1),
+		Vector2(30, 2),
+	]
+	for i in range(positions.size()):
+		var p: Vector2 = positions[i]
+		var buoy: Node3D = Node3D.new()
+		buoy.position = Vector3(p.x, 0, p.y)
+		field.add_child(buoy)
+		# Hull: red sphere flattened
+		var hull: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.40
+		hm.height = 0.55
+		hull.mesh = hm
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = Color(0.78, 0.18, 0.18)
+		hmat.roughness = 0.6
+		hull.material_override = hmat
+		hull.position = Vector3(0, 0.30, 0)
+		buoy.add_child(hull)
+		# Mast
+		var mast: MeshInstance3D = MeshInstance3D.new()
+		var mm: CylinderMesh = CylinderMesh.new()
+		mm.top_radius = 0.04
+		mm.bottom_radius = 0.04
+		mm.height = 0.85
+		mast.mesh = mm
+		var mmat: StandardMaterial3D = StandardMaterial3D.new()
+		mmat.albedo_color = Color(0.75, 0.75, 0.78)
+		mmat.metallic = 0.6
+		mmat.roughness = 0.4
+		mast.material_override = mmat
+		mast.position = Vector3(0, 0.85, 0)
+		buoy.add_child(mast)
+		# Red top light
+		var light_mat: StandardMaterial3D = StandardMaterial3D.new()
+		light_mat.albedo_color = Color(1.0, 0.25, 0.25)
+		light_mat.emission_enabled = true
+		light_mat.emission = Color(1.0, 0.20, 0.20)
+		light_mat.emission_energy_multiplier = 2.5
+		light_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var light_orb: MeshInstance3D = MeshInstance3D.new()
+		var lo: SphereMesh = SphereMesh.new()
+		lo.radius = 0.10
+		lo.height = 0.20
+		light_orb.mesh = lo
+		light_orb.material_override = light_mat
+		light_orb.position = Vector3(0, 1.30, 0)
+		buoy.add_child(light_orb)
+		# Bob tween
+		var tw: Tween = buoy.create_tween().set_loops()
+		var off: float = float(i) * 0.35
+		tw.tween_property(buoy, "position:y", 0.18, 1.4 + off).from(0.0)
+		tw.tween_property(buoy, "position:y", 0.0, 1.4 + off)
+		# Pulse light
+		var pulse: Tween = light_orb.create_tween().set_loops()
+		pulse.tween_property(light_mat, "emission_energy_multiplier", 4.0, 0.8)
+		pulse.tween_property(light_mat, "emission_energy_multiplier", 1.5, 0.8)
+
+
+func _build_d8_tied_fishing_boat(geom: Node) -> void:
+	## Epic-8 T70: small wooden fishing boat tied to the dock — bobbing hull,
+	## simple cabin, mast with net hanging off the side.
+	var boat: Node3D = Node3D.new()
+	boat.name = "D8TiedFishingBoat"
+	boat.position = Vector3(D8_CENTER.x + 20, 0.3, 14)
+	geom.add_child(boat)
+	# Hull (wide flat box)
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.45, 0.28, 0.15)
+	hull_mat.roughness = 0.85
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(2.4, 0.85, 5.6)
+	hull.mesh = hb
+	hull.material_override = hull_mat
+	hull.position = Vector3(0, 0.40, 0)
+	boat.add_child(hull)
+	# Pointed bow prism
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bp: PrismMesh = PrismMesh.new()
+	bp.size = Vector3(2.4, 0.85, 1.4)
+	bow.mesh = bp
+	bow.material_override = hull_mat
+	bow.position = Vector3(0, 0.40, -3.5)
+	bow.rotation_degrees = Vector3(0, 90, 0)
+	boat.add_child(bow)
+	# Cabin (small box at stern)
+	var cabin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cabin_mat.albedo_color = Color(0.85, 0.82, 0.72)
+	cabin_mat.roughness = 0.6
+	var cabin: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(1.8, 1.1, 1.6)
+	cabin.mesh = cb
+	cabin.material_override = cabin_mat
+	cabin.position = Vector3(0, 1.35, 1.4)
+	boat.add_child(cabin)
+	# Cabin window (cyan emissive)
+	var win_mat: StandardMaterial3D = StandardMaterial3D.new()
+	win_mat.albedo_color = Color(0.55, 0.85, 0.95)
+	win_mat.emission_enabled = true
+	win_mat.emission = Color(0.45, 0.80, 0.90)
+	win_mat.emission_energy_multiplier = 0.9
+	var win: MeshInstance3D = MeshInstance3D.new()
+	var wb: BoxMesh = BoxMesh.new()
+	wb.size = Vector3(1.0, 0.5, 0.04)
+	win.mesh = wb
+	win.material_override = win_mat
+	win.position = Vector3(0, 1.45, 0.62)
+	boat.add_child(win)
+	# Mast
+	var mast_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mast_mat.albedo_color = Color(0.55, 0.40, 0.25)
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var mm: CylinderMesh = CylinderMesh.new()
+	mm.top_radius = 0.08
+	mm.bottom_radius = 0.10
+	mm.height = 3.5
+	mast.mesh = mm
+	mast.material_override = mast_mat
+	mast.position = Vector3(0, 2.6, -1.0)
+	boat.add_child(mast)
+	# Hanging net (translucent dark mesh box)
+	var net_mat: StandardMaterial3D = StandardMaterial3D.new()
+	net_mat.albedo_color = Color(0.20, 0.25, 0.20, 0.6)
+	net_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var net: MeshInstance3D = MeshInstance3D.new()
+	var nb: BoxMesh = BoxMesh.new()
+	nb.size = Vector3(0.05, 1.6, 1.4)
+	net.mesh = nb
+	net.material_override = net_mat
+	net.position = Vector3(1.25, 1.3, -0.5)
+	boat.add_child(net)
+	# Tie rope (cylinder to dock)
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.78, 0.70, 0.45)
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.04
+	rm.bottom_radius = 0.04
+	rm.height = 1.6
+	rope.mesh = rm
+	rope.material_override = rope_mat
+	rope.position = Vector3(-1.4, 0.6, -2.0)
+	rope.rotation_degrees = Vector3(0, 0, 60)
+	boat.add_child(rope)
+	# Bob tween for the whole boat
+	var tw: Tween = boat.create_tween().set_loops()
+	tw.tween_property(boat, "position:y", 0.55, 2.2).from(0.30)
+	tw.tween_property(boat, "position:y", 0.30, 2.2)
+	var sway: Tween = boat.create_tween().set_loops()
+	sway.tween_property(boat, "rotation_degrees:z", 2.5, 1.8)
+	sway.tween_property(boat, "rotation_degrees:z", -2.5, 1.8)
+	# Hull collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.7, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.4, 1.4, 6.8)
+	cs.shape = bs
+	sb.add_child(cs)
+	boat.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
