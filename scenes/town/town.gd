@@ -1975,6 +1975,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_sheep_flock(geom)
 	# Epic-4 T65: sheepdog herding the flock
 	_build_d4_sheepdog(geom)
+	# Epic-4 T66: cherry orchard rows
+	_build_d4_cherry_orchard(geom)
+	# Epic-4 T67: preserves stand with jars
+	_build_d4_preserves_stand(geom)
+	# Epic-4 T68: child NPC playing with a hoop
+	_build_d4_child_npc()
+	# Epic-4 T69: dandelion meadow patch
+	_build_d4_dandelion_patch(geom)
+	# Epic-4 T70: rope swing hanging from a tree branch
+	_build_d4_rope_swing(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -5991,6 +6001,354 @@ func _build_d4_sheepdog(geom: Node) -> void:
 	var twag: Tween = tail.create_tween().set_loops()
 	twag.tween_property(tail, "rotation_degrees:y", 25.0, 0.25)
 	twag.tween_property(tail, "rotation_degrees:y", -25.0, 0.25)
+
+
+func _build_d4_cherry_orchard(geom: Node) -> void:
+	## Epic-4 T66: 3 rows × 3 cherry trees with pink blossoms and red fruit.
+	var orchard: Node3D = Node3D.new()
+	orchard.name = "CherryOrchard"
+	orchard.position = Vector3(D4_CENTER.x - 13.0, 0.0, -10.0)
+	geom.add_child(orchard)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.35, 0.22, 0.12)
+	trunk_mat.roughness = 0.90
+	var blossom_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blossom_mat.albedo_color = Color(0.95, 0.75, 0.85)
+	blossom_mat.emission_enabled = true
+	blossom_mat.emission = Color(0.85, 0.55, 0.70)
+	blossom_mat.emission_energy_multiplier = 0.20
+	blossom_mat.roughness = 0.70
+	var cherry_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cherry_mat.albedo_color = Color(0.90, 0.10, 0.15)
+	cherry_mat.emission_enabled = true
+	cherry_mat.emission = Color(0.85, 0.10, 0.10)
+	cherry_mat.emission_energy_multiplier = 0.40
+	cherry_mat.roughness = 0.30
+	for r in 3:
+		for c in 3:
+			var tree: Node3D = Node3D.new()
+			tree.position = Vector3(c * 2.6, 0, r * 2.6)
+			orchard.add_child(tree)
+			# Trunk
+			var trunk: MeshInstance3D = MeshInstance3D.new()
+			var tm: CylinderMesh = CylinderMesh.new()
+			tm.top_radius = 0.10
+			tm.bottom_radius = 0.16
+			tm.height = 1.6
+			trunk.mesh = tm
+			trunk.material_override = trunk_mat
+			trunk.position = Vector3(0, 0.80, 0)
+			tree.add_child(trunk)
+			# Canopy of 3 blossom spheres
+			for i in 3:
+				var canopy: MeshInstance3D = MeshInstance3D.new()
+				var sm: SphereMesh = SphereMesh.new()
+				sm.radius = 0.55
+				sm.height = 0.95
+				canopy.mesh = sm
+				canopy.material_override = blossom_mat
+				canopy.position = Vector3(
+					randf_range(-0.30, 0.30),
+					1.70 + randf_range(-0.10, 0.20),
+					randf_range(-0.30, 0.30)
+				)
+				tree.add_child(canopy)
+			# Cherry clusters (5 small bright red spheres)
+			for i in 5:
+				var cherry: MeshInstance3D = MeshInstance3D.new()
+				var cm: SphereMesh = SphereMesh.new()
+				cm.radius = 0.07
+				cm.height = 0.14
+				cherry.mesh = cm
+				cherry.material_override = cherry_mat
+				cherry.position = Vector3(
+					randf_range(-0.45, 0.45),
+					1.55 + randf_range(-0.10, 0.30),
+					randf_range(-0.45, 0.45)
+				)
+				tree.add_child(cherry)
+			# Trunk collision
+			var sb: StaticBody3D = StaticBody3D.new()
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.18
+			cap.height = 1.6
+			cs.shape = cap
+			cs.position = Vector3(0, 0.80, 0)
+			sb.add_child(cs)
+			tree.add_child(sb)
+
+
+func _build_d4_preserves_stand(geom: Node) -> void:
+	## Epic-4 T67: roadside preserves stand — wooden table with rows of
+	## colored jars (jam, honey, pickles).
+	var stand: Node3D = Node3D.new()
+	stand.name = "PreservesStand"
+	stand.position = Vector3(D4_CENTER.x - 9.0, 0.0, 8.0)
+	geom.add_child(stand)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.50, 0.32, 0.16)
+	wood_mat.roughness = 0.85
+	# Table top
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(2.4, 0.10, 0.85)
+	top.mesh = tm
+	top.material_override = wood_mat
+	top.position = Vector3(0, 0.90, 0)
+	stand.add_child(top)
+	# Legs
+	var leg_positions: Array = [
+		Vector3( 1.10, 0.45,  0.35),
+		Vector3( 1.10, 0.45, -0.35),
+		Vector3(-1.10, 0.45,  0.35),
+		Vector3(-1.10, 0.45, -0.35),
+	]
+	for lp in leg_positions:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.10, 0.90, 0.10)
+		leg.mesh = lm
+		leg.material_override = wood_mat
+		leg.position = lp
+		stand.add_child(leg)
+	# Roof shade (slanted)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(2.6, 0.06, 1.10)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.65, 0.20, 0.15)
+	roof_mat.roughness = 0.85
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 1.85, -0.10)
+	roof.rotation_degrees = Vector3(-12, 0, 0)
+	stand.add_child(roof)
+	# Roof support posts
+	for sx in [-1.10, 1.10]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.05
+		pm.bottom_radius = 0.05
+		pm.height = 0.95
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(sx, 1.40, -0.30)
+		stand.add_child(post)
+	# Jars — 9 jars in 3 rows of 3
+	var jar_colors: Array = [
+		Color(0.85, 0.20, 0.20),  # strawberry jam
+		Color(0.95, 0.65, 0.10),  # honey
+		Color(0.65, 0.85, 0.20),  # pickles
+	]
+	for row_idx in 3:
+		for col in 3:
+			var jar: MeshInstance3D = MeshInstance3D.new()
+			var jm: CylinderMesh = CylinderMesh.new()
+			jm.top_radius = 0.10
+			jm.bottom_radius = 0.10
+			jm.height = 0.28
+			jar.mesh = jm
+			var jar_mat: StandardMaterial3D = StandardMaterial3D.new()
+			jar_mat.albedo_color = jar_colors[row_idx]
+			jar_mat.emission_enabled = true
+			jar_mat.emission = jar_colors[row_idx]
+			jar_mat.emission_energy_multiplier = 0.25
+			jar_mat.metallic = 0.40
+			jar_mat.roughness = 0.20
+			jar.material_override = jar_mat
+			jar.position = Vector3(-0.80 + col * 0.80, 1.10, -0.25 + row_idx * 0.25)
+			stand.add_child(jar)
+			# Lid (small dark cap)
+			var lid: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.11
+			lm.bottom_radius = 0.11
+			lm.height = 0.04
+			lid.mesh = lm
+			var lid_mat: StandardMaterial3D = StandardMaterial3D.new()
+			lid_mat.albedo_color = Color(0.20, 0.18, 0.15)
+			lid_mat.metallic = 0.70
+			lid_mat.roughness = 0.50
+			lid.material_override = lid_mat
+			lid.position = Vector3(-0.80 + col * 0.80, 1.26, -0.25 + row_idx * 0.25)
+			stand.add_child(lid)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.85, 1.10)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	stand.add_child(sb)
+
+
+func _build_d4_child_npc() -> void:
+	## Epic-4 T68: child NPC playing with a wooden hoop, smaller scale than adult NPCs.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ChildSlot"
+	slot.position = Vector3(D4_CENTER.x - 7.0, 0.0, 5.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ChildPlaying"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sprout")
+	if "npc_id" in npc:
+		npc.set("npc_id", "child_d4")
+	npc.scale = Vector3(0.65, 0.65, 0.65)
+	slot.add_child(npc)
+	# Wooden hoop (torus, vertical) next to the child
+	var hoop: MeshInstance3D = MeshInstance3D.new()
+	var tm: TorusMesh = TorusMesh.new()
+	tm.inner_radius = 0.45
+	tm.outer_radius = 0.55
+	hoop.mesh = tm
+	var hoop_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hoop_mat.albedo_color = Color(0.60, 0.40, 0.20)
+	hoop_mat.roughness = 0.85
+	hoop.material_override = hoop_mat
+	hoop.position = Vector3(0.70, 0.55, 0)
+	hoop.rotation_degrees = Vector3(0, 0, 0)
+	slot.add_child(hoop)
+	# Hoop spin tween
+	var tw: Tween = hoop.create_tween().set_loops()
+	tw.tween_property(hoop, "rotation_degrees:y", 360.0, 2.0)
+	tw.tween_property(hoop, "rotation_degrees:y", 0.0, 0.0)
+	# Tiny bouncing motion on the child
+	var tb: Tween = npc.create_tween().set_loops()
+	tb.tween_property(npc, "position:y", 0.10, 0.45)
+	tb.tween_property(npc, "position:y", 0.0, 0.45)
+
+
+func _build_d4_dandelion_patch(geom: Node) -> void:
+	## Epic-4 T69: meadow patch of dandelion puffballs — white fluffy spheres
+	## on thin green stems with subtle drift particles.
+	var patch: Node3D = Node3D.new()
+	patch.name = "DandelionPatch"
+	patch.position = Vector3(D4_CENTER.x + 11.0, 0.0, -2.0)
+	geom.add_child(patch)
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.30, 0.65, 0.25)
+	stem_mat.roughness = 0.75
+	var puff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	puff_mat.albedo_color = Color(0.95, 0.95, 0.95, 0.85)
+	puff_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	puff_mat.emission_enabled = true
+	puff_mat.emission = Color(0.85, 0.85, 0.85)
+	puff_mat.emission_energy_multiplier = 0.30
+	puff_mat.roughness = 0.95
+	for i in 14:
+		var dande: Node3D = Node3D.new()
+		dande.position = Vector3(
+			randf_range(-2.5, 2.5),
+			0.0,
+			randf_range(-2.5, 2.5)
+		)
+		patch.add_child(dande)
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.015
+		stm.bottom_radius = 0.025
+		stm.height = 0.50 + randf() * 0.20
+		stem.mesh = stm
+		stem.material_override = stem_mat
+		stem.position = Vector3(0, stm.height * 0.5, 0)
+		dande.add_child(stem)
+		var puff: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.09
+		pm.height = 0.18
+		puff.mesh = pm
+		puff.material_override = puff_mat
+		puff.position = Vector3(0, stm.height + 0.05, 0)
+		dande.add_child(puff)
+		# Subtle sway tween
+		var tw: Tween = dande.create_tween().set_loops()
+		tw.tween_property(dande, "rotation_degrees:z", 4.0, 1.5 + randf())
+		tw.tween_property(dande, "rotation_degrees:z", -4.0, 1.5 + randf())
+
+
+func _build_d4_rope_swing(geom: Node) -> void:
+	## Epic-4 T70: rope swing — overhead horizontal branch with two ropes
+	## holding a wooden plank seat that gently swings.
+	var swing: Node3D = Node3D.new()
+	swing.name = "RopeSwing"
+	swing.position = Vector3(D4_CENTER.x - 10.0, 0.0, -4.0)
+	geom.add_child(swing)
+	# Tall trunk supporting the branch
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.35, 0.22, 0.12)
+	trunk_mat.roughness = 0.90
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var trm: CylinderMesh = CylinderMesh.new()
+	trm.top_radius = 0.18
+	trm.bottom_radius = 0.30
+	trm.height = 4.0
+	trunk.mesh = trm
+	trunk.material_override = trunk_mat
+	trunk.position = Vector3(-1.5, 2.0, 0)
+	swing.add_child(trunk)
+	# Overhead branch (horizontal cylinder)
+	var branch: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.10
+	brm.bottom_radius = 0.12
+	brm.height = 2.4
+	branch.mesh = brm
+	branch.material_override = trunk_mat
+	branch.position = Vector3(0, 3.5, 0)
+	branch.rotation_degrees = Vector3(0, 0, 90)
+	swing.add_child(branch)
+	# Pivot for swing motion
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 3.5, 0)
+	swing.add_child(pivot)
+	# 2 ropes
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.75, 0.65, 0.45)
+	rope_mat.roughness = 0.85
+	for sx in [-0.40, 0.40]:
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rrm: CylinderMesh = CylinderMesh.new()
+		rrm.top_radius = 0.025
+		rrm.bottom_radius = 0.025
+		rrm.height = 2.4
+		rope.mesh = rrm
+		rope.material_override = rope_mat
+		rope.position = Vector3(sx, -1.20, 0)
+		pivot.add_child(rope)
+	# Wooden plank seat
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(1.10, 0.08, 0.35)
+	seat.mesh = sm
+	var seat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seat_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	seat_mat.roughness = 0.85
+	seat.material_override = seat_mat
+	seat.position = Vector3(0, -2.40, 0)
+	pivot.add_child(seat)
+	# Gentle swing tween (rotate the pivot)
+	var tw: Tween = pivot.create_tween().set_loops()
+	tw.tween_property(pivot, "rotation_degrees:x", 12.0, 1.4)
+	tw.tween_property(pivot, "rotation_degrees:x", -12.0, 1.4)
+	# Trunk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(-1.5, 2.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.32
+	cap.height = 4.0
+	cs.shape = cap
+	sb.add_child(cs)
+	swing.add_child(sb)
 
 
 
