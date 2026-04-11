@@ -89,6 +89,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_combat_trial_pit(geom)
 	_build_th_pit_master_npc(town)
 	_build_th_champion_trophy_hall(geom)
+	_build_th_champion_herald_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -13471,3 +13472,288 @@ func _build_th_champion_trophy_hall(geom: Node) -> void:
 	lt.light_energy = 1.85
 	lt.omni_range = 5.5
 	pivot.add_child(lt)
+
+
+func _build_th_champion_herald_npc(town: Node) -> void:
+	## Epic-10 T73: Champion Herald Vox NPC — herald NPC standing in front
+	## of the Champion Trophy Hall, holding a brass medal aloft as if
+	## presenting it to a crowd. Crimson-and-gold ceremonial tabard, brass
+	## scroll horn at his hip, dramatic raised-arm pose with periodic medal
+	## hoist gesture.
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node = npc_scene.instantiate()
+	npc.name = "ChampionHerald_Vox"
+	# Position: just in front of the trophy hall (ENE r=11.5, ang ~PI*0.18)
+	var ang_pos: float = PI * 0.18
+	var rad_pos: float = 9.30
+	var px: float = cos(ang_pos) * rad_pos - 0.20
+	var pz: float = sin(ang_pos) * rad_pos - 0.85
+	if npc is Node3D:
+		(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+		# Face away from trophy hall (toward plaza center) — herald addresses crowd
+		(npc as Node3D).rotation.y = atan2(-px, -pz)
+	if "npc_name" in npc:
+		npc.set("npc_name", "Herald Vox")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_champion_herald")
+	town.add_child(npc)
+	# ---- Cosmetic overlay ----
+	var ovl: Node3D = Node3D.new()
+	ovl.name = "HeraldOverlay"
+	if npc is Node3D:
+		(npc as Node3D).add_child(ovl)
+	# Materials
+	var crimson_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crimson_mat.albedo_color = Color(0.65, 0.10, 0.12)
+	crimson_mat.metallic = 0.10
+	crimson_mat.roughness = 0.78
+	crimson_mat.emission_enabled = true
+	crimson_mat.emission = Color(0.85, 0.20, 0.20)
+	crimson_mat.emission_energy_multiplier = 0.30
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.78, 0.20)
+	gold_mat.metallic = 0.95
+	gold_mat.roughness = 0.20
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.80, 0.20)
+	gold_mat.emission_energy_multiplier = 1.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.85, 0.78, 0.65)
+	skin_mat.roughness = 0.85
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.18, 0.16, 0.20)
+	dark_mat.roughness = 0.85
+	# Crimson tabard (front + back panels)
+	var tabard_front: MeshInstance3D = MeshInstance3D.new()
+	var tfm: BoxMesh = BoxMesh.new()
+	tfm.size = Vector3(0.85, 1.45, 0.06)
+	tabard_front.mesh = tfm
+	tabard_front.material_override = crimson_mat
+	tabard_front.position = Vector3(0, 1.10, -0.32)
+	ovl.add_child(tabard_front)
+	# Inner dark robe under tabard
+	var inner: MeshInstance3D = MeshInstance3D.new()
+	var inm: BoxMesh = BoxMesh.new()
+	inm.size = Vector3(0.92, 1.85, 0.50)
+	inner.mesh = inm
+	inner.material_override = dark_mat
+	inner.position = Vector3(0, 1.00, 0)
+	ovl.add_child(inner)
+	# Gold trim border on tabard (top + bottom strips)
+	var top_trim: MeshInstance3D = MeshInstance3D.new()
+	var ttm: BoxMesh = BoxMesh.new()
+	ttm.size = Vector3(0.85, 0.06, 0.08)
+	top_trim.mesh = ttm
+	top_trim.material_override = gold_mat
+	top_trim.position = Vector3(0, 1.80, -0.34)
+	ovl.add_child(top_trim)
+	var bot_trim: MeshInstance3D = MeshInstance3D.new()
+	var btm: BoxMesh = BoxMesh.new()
+	btm.size = Vector3(0.85, 0.06, 0.08)
+	bot_trim.mesh = btm
+	bot_trim.material_override = gold_mat
+	bot_trim.position = Vector3(0, 0.40, -0.34)
+	ovl.add_child(bot_trim)
+	# Gold central emblem on tabard (small medallion)
+	var emblem: MeshInstance3D = MeshInstance3D.new()
+	var emm: SphereMesh = SphereMesh.new()
+	emm.radius = 0.10
+	emm.height = 0.20
+	emblem.mesh = emm
+	emblem.material_override = gold_mat
+	emblem.position = Vector3(0, 1.20, -0.36)
+	ovl.add_child(emblem)
+	# Robe hem flare
+	var hem: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.45
+	hmm.bottom_radius = 0.62
+	hmm.height = 0.55
+	hem.mesh = hmm
+	hem.material_override = dark_mat
+	hem.position = Vector3(0, 0.30, 0)
+	ovl.add_child(hem)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.20
+	hdm.height = 0.42
+	head.mesh = hdm
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.95, 0)
+	ovl.add_child(head)
+	# Crimson cap with gold band
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cpm: CylinderMesh = CylinderMesh.new()
+	cpm.top_radius = 0.18
+	cpm.bottom_radius = 0.22
+	cpm.height = 0.20
+	cap.mesh = cpm
+	cap.material_override = crimson_mat
+	cap.position = Vector3(0, 2.18, 0)
+	ovl.add_child(cap)
+	# Cap gold band
+	var band: MeshInstance3D = MeshInstance3D.new()
+	var bdm: TorusMesh = TorusMesh.new()
+	bdm.inner_radius = 0.20
+	bdm.outer_radius = 0.24
+	band.mesh = bdm
+	band.material_override = gold_mat
+	band.position = Vector3(0, 2.10, 0)
+	band.rotation.x = PI / 2.0
+	ovl.add_child(band)
+	# Cap top brass spike
+	var spike: MeshInstance3D = MeshInstance3D.new()
+	var spm: PrismMesh = PrismMesh.new()
+	spm.size = Vector3(0.06, 0.18, 0.06)
+	spike.mesh = spm
+	spike.material_override = gold_mat
+	spike.position = Vector3(0, 2.36, 0)
+	ovl.add_child(spike)
+	# Two cyan eye dots
+	for s in [-1.0, 1.0]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emn: SphereMesh = SphereMesh.new()
+		emn.radius = 0.025
+		emn.height = 0.05
+		eye.mesh = emn
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_energy_multiplier = 5.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = eye_mat
+		eye.position = Vector3(0.07 * s, 1.97, 0.18)
+		ovl.add_child(eye)
+	# ---- Brass scroll horn at the hip ----
+	var horn_pivot: Node3D = Node3D.new()
+	horn_pivot.position = Vector3(0.42, 0.95, 0.10)
+	horn_pivot.rotation.z = -0.50
+	ovl.add_child(horn_pivot)
+	# Horn body (cone via cylinder)
+	var horn: MeshInstance3D = MeshInstance3D.new()
+	var hrm: CylinderMesh = CylinderMesh.new()
+	hrm.top_radius = 0.05
+	hrm.bottom_radius = 0.16
+	hrm.height = 0.55
+	horn.mesh = hrm
+	horn.material_override = brass_mat
+	horn.position = Vector3(0, 0, 0)
+	horn_pivot.add_child(horn)
+	# Horn flare ring
+	var flare: MeshInstance3D = MeshInstance3D.new()
+	var fltm: TorusMesh = TorusMesh.new()
+	fltm.inner_radius = 0.15
+	fltm.outer_radius = 0.19
+	flare.mesh = fltm
+	flare.material_override = brass_mat
+	flare.position = Vector3(0, -0.27, 0)
+	flare.rotation.x = PI / 2.0
+	horn_pivot.add_child(flare)
+	# ---- Right arm raised, holding gold medal aloft ----
+	var arm_pivot: Node3D = Node3D.new()
+	arm_pivot.position = Vector3(0.20, 1.65, 0)
+	arm_pivot.rotation.z = -1.20  # arm raised up and slightly out
+	ovl.add_child(arm_pivot)
+	# Upper arm
+	var upper: MeshInstance3D = MeshInstance3D.new()
+	var upm: CylinderMesh = CylinderMesh.new()
+	upm.top_radius = 0.07
+	upm.bottom_radius = 0.09
+	upm.height = 0.45
+	upper.mesh = upm
+	upper.material_override = crimson_mat
+	upper.position = Vector3(0, 0.22, 0)
+	arm_pivot.add_child(upper)
+	# Forearm (continuing up)
+	var fore: MeshInstance3D = MeshInstance3D.new()
+	var fom: CylinderMesh = CylinderMesh.new()
+	fom.top_radius = 0.06
+	fom.bottom_radius = 0.07
+	fom.height = 0.42
+	fore.mesh = fom
+	fore.material_override = skin_mat
+	fore.position = Vector3(0, 0.62, 0)
+	arm_pivot.add_child(fore)
+	# Hand fist (small sphere at top)
+	var fist: MeshInstance3D = MeshInstance3D.new()
+	var fsm: SphereMesh = SphereMesh.new()
+	fsm.radius = 0.08
+	fsm.height = 0.16
+	fist.mesh = fsm
+	fist.material_override = skin_mat
+	fist.position = Vector3(0, 0.85, 0)
+	arm_pivot.add_child(fist)
+	# Gold medal held in fist (large disc + ribbon)
+	var medal: MeshInstance3D = MeshInstance3D.new()
+	var mdm: CylinderMesh = CylinderMesh.new()
+	mdm.top_radius = 0.16
+	mdm.bottom_radius = 0.16
+	mdm.height = 0.06
+	medal.mesh = mdm
+	medal.material_override = gold_mat
+	medal.position = Vector3(0, 1.04, 0)
+	medal.rotation.x = PI / 2.0
+	arm_pivot.add_child(medal)
+	# Medal ribbon (small crimson strip)
+	var ribbon: MeshInstance3D = MeshInstance3D.new()
+	var rbm: BoxMesh = BoxMesh.new()
+	rbm.size = Vector3(0.10, 0.18, 0.02)
+	ribbon.mesh = rbm
+	ribbon.material_override = crimson_mat
+	ribbon.position = Vector3(0, 0.95, 0)
+	arm_pivot.add_child(ribbon)
+	# Medal center cyan emblem
+	var memm: StandardMaterial3D = StandardMaterial3D.new()
+	memm.albedo_color = Color(0.55, 0.95, 1.0)
+	memm.emission_enabled = true
+	memm.emission = Color(0.55, 0.95, 1.0)
+	memm.emission_energy_multiplier = 5.5
+	memm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var memblem: MeshInstance3D = MeshInstance3D.new()
+	var memmm: SphereMesh = SphereMesh.new()
+	memmm.radius = 0.06
+	memmm.height = 0.12
+	memblem.mesh = memmm
+	memblem.material_override = memm
+	memblem.position = Vector3(0, 1.04, -0.04)
+	arm_pivot.add_child(memblem)
+	# ---- Left arm at side (folded) ----
+	var larm: MeshInstance3D = MeshInstance3D.new()
+	var lam: CylinderMesh = CylinderMesh.new()
+	lam.top_radius = 0.07
+	lam.bottom_radius = 0.09
+	lam.height = 0.85
+	larm.mesh = lam
+	larm.material_override = crimson_mat
+	larm.position = Vector3(-0.45, 1.20, 0)
+	ovl.add_child(larm)
+	# Subtle warm spotlight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.85, 0.10)
+	lt.light_color = Color(1.0, 0.85, 0.45)
+	lt.light_energy = 1.55
+	lt.omni_range = 4.0
+	ovl.add_child(lt)
+	# ---- Periodic medal hoist gesture (arm extends higher every cycle) ----
+	var hoist: Tween = arm_pivot.create_tween().set_loops()
+	hoist.tween_property(arm_pivot, "rotation:z", -1.10, 1.4).set_ease(Tween.EASE_IN_OUT)
+	hoist.tween_property(arm_pivot, "rotation:z", -1.45, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Medal emblem pulse
+	var mp: Tween = arm_pivot.create_tween().set_loops()
+	mp.tween_property(memm, "emission_energy_multiplier", 8.0, 1.2).set_ease(Tween.EASE_IN_OUT)
+	mp.tween_property(memm, "emission_energy_multiplier", 4.0, 1.2).set_ease(Tween.EASE_IN_OUT)
+	# Slow body breathing (chest expansion)
+	var breath: Tween = ovl.create_tween().set_loops()
+	breath.tween_property(ovl, "scale:y", 1.014, 2.2).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(ovl, "scale:y", 0.992, 2.2).set_ease(Tween.EASE_IN_OUT)
