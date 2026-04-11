@@ -101,6 +101,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_salvager_rax_npc(town)
 	_build_d9_lava_brook(geom)
 	_build_d9_lava_brook_bridge(geom)
+	_build_d9_basalt_monolith_ridge(geom)
 	print("[D9Builder] done")
 
 
@@ -9046,4 +9047,102 @@ func _build_d9_lava_brook_bridge(geom: Node) -> void:
 	var lpulse: Tween = pivot.create_tween().set_loops()
 	lpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_basalt_monolith_ridge(geom: Node) -> void:
+	## Epic-9 T81: tall jagged basalt monoliths framing D9's far north
+	## border. 9 monoliths in a staggered row, varying height + width +
+	## tilt + glowing magma seam stripe. Acts as a horizon ridge that
+	## sells "ancient volcano looming behind the district".
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BasaltMonolithRidge"
+	pivot.position = D9_CENTER + Vector3(0, 0, -32)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.08, 0.07, 0.06)
+	basalt_mat.metallic = 0.18
+	basalt_mat.roughness = 0.92
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.40, 0.12, 0.04)
+	basalt_mat.emission_energy_multiplier = 0.18
+	var seam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seam_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	seam_mat.emission_enabled = true
+	seam_mat.emission = Color(1.0, 0.45, 0.05)
+	seam_mat.emission_energy_multiplier = 5.5
+	seam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 9 monoliths spaced ~6 units apart along X, tallest in the middle
+	var monolith_data: Array = [
+		{"x": -24.0, "h": 5.5, "w": 2.4, "tilt": -0.04},
+		{"x": -18.0, "h": 7.2, "w": 2.6, "tilt": 0.03},
+		{"x": -12.0, "h": 8.8, "w": 2.8, "tilt": -0.06},
+		{"x": -6.0, "h": 10.5, "w": 3.0, "tilt": 0.02},
+		{"x": 0.0, "h": 12.0, "w": 3.4, "tilt": 0.00},
+		{"x": 6.0, "h": 10.8, "w": 3.0, "tilt": -0.03},
+		{"x": 12.0, "h": 9.0, "w": 2.7, "tilt": 0.05},
+		{"x": 18.0, "h": 7.5, "w": 2.6, "tilt": -0.02},
+		{"x": 24.0, "h": 6.0, "w": 2.4, "tilt": 0.04},
+	]
+	for i in monolith_data.size():
+		var md: Dictionary = monolith_data[i]
+		var mx: float = md["x"]
+		var mh: float = md["h"]
+		var mw: float = md["w"]
+		var tilt: float = md["tilt"]
+		# Random small Z-jitter for staggered row
+		var jz: float = sin(float(i) * 1.7) * 1.4
+		# Monolith body — tapered tall box
+		var mono: MeshInstance3D = MeshInstance3D.new()
+		var mm: BoxMesh = BoxMesh.new()
+		mm.size = Vector3(mw, mh, mw * 0.85)
+		mono.mesh = mm
+		mono.material_override = basalt_mat
+		mono.position = Vector3(mx, mh * 0.5, jz)
+		mono.rotation.z = tilt
+		mono.rotation.y = sin(float(i) * 0.9) * 0.20
+		pivot.add_child(mono)
+		# Monolith collision — keep player out of the ridge
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(mx, mh * 0.5, jz)
+		sb.rotation.z = tilt
+		sb.rotation.y = mono.rotation.y
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(mw, mh, mw * 0.85)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pivot.add_child(sb)
+		# Pyramid-cap top (PrismMesh)
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: PrismMesh = PrismMesh.new()
+		capm.size = Vector3(mw, mw * 0.65, mw * 0.85)
+		cap.mesh = capm
+		cap.material_override = basalt_mat
+		cap.position = Vector3(mx, mh + (mw * 0.32), jz)
+		cap.rotation.z = tilt
+		cap.rotation.y = mono.rotation.y
+		pivot.add_child(cap)
+		# Vertical glowing magma seam stripe down the front face
+		var seam: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.18, mh * 0.85, 0.06)
+		seam.mesh = sm
+		seam.material_override = seam_mat
+		seam.position = Vector3(mx, mh * 0.50, jz + mw * 0.45)
+		seam.rotation.z = tilt
+		seam.rotation.y = mono.rotation.y
+		pivot.add_child(seam)
+		# Subtle ridge OmniLight at the seam top — every other monolith
+		if i % 2 == 0:
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(mx, mh * 0.85, jz + mw * 0.55)
+			lt.light_color = Color(1.0, 0.55, 0.15)
+			lt.light_energy = 1.6
+			lt.omni_range = 6.0
+			pivot.add_child(lt)
+	# Slow ridge seam pulse — single shared material so all monoliths breathe together
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(seam_mat, "emission_energy_multiplier", 7.5, 2.4).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(seam_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
 
