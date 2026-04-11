@@ -13,6 +13,11 @@ signal died
 const INTEGRITY_HP_SCALE: float = 8.0
 
 @export var base_max_health: float = 100.0
+## When false the integrity-based recalculation is bypassed entirely. Used
+## for enemies, which want hand-tuned per-type HP and don't share the
+## player's stat-driven progression curve.
+@export var enable_stat_scaling: bool = true
+
 var max_health: float
 var current_health: float
 var is_dead: bool = false
@@ -103,6 +108,8 @@ func _on_stats_changed(stats: Node) -> void:
 	## Heals up to the new ceiling if max grew, clamps current down if it
 	## shrunk (e.g. equipment with negative integrity, debuff). Never auto
 	## revives a dead component.
+	if not enable_stat_scaling:
+		return
 	var prev_max: float = max_health
 	max_health = base_max_health + stats.get_stat("integrity") * INTEGRITY_HP_SCALE
 	if not is_dead:

@@ -33,6 +33,15 @@ func _ready() -> void:
 	add_to_group(&"enemies")
 	spawn_position = global_position
 	hitbox_component.damage_source = self
+	# Enemies use hand-tuned per-type HP/compute, not the player's
+	# integrity/memory progression scaling. Disable the auto-recalc so any
+	# future stats_changed call (e.g. equipment, debuffs) doesn't stomp the
+	# values set by the enemy subclass _ready or apply_variant().
+	if &"enable_stat_scaling" in health_component:
+		health_component.enable_stat_scaling = false
+	var compute: Node = get_node_or_null("ComputeComponent") as Node
+	if compute and &"enable_stat_scaling" in compute:
+		compute.enable_stat_scaling = false
 	_build_enemy_visual()
 	_create_health_bar()
 	# Guard against duplicate connections on pool reuse (_ready fires every add_child)
@@ -318,8 +327,12 @@ func apply_variant(tier: int) -> void:
 	# Scale up (1.2x elite, 1.5x champion)
 	var scale_mult: float = 1.0 + tier * 0.2
 	model.scale *= scale_mult
-	# Stat boost
-	health_component.max_health *= 1.0 + tier * 0.5
+	# Stat boost — write to base_max_health so the multiplier survives any
+	# future stats_changed recalculation (currently disabled for enemies,
+	# but write to the canonical field to be safe).
+	var hp_mult: float = 1.0 + tier * 0.5
+	health_component.base_max_health *= hp_mult
+	health_component.max_health *= hp_mult
 	health_component.current_health = health_component.max_health
 	stats_component.base_processing *= 1.0 + tier * 0.3
 	# Aura particles

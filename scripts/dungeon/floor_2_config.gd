@@ -45,6 +45,10 @@ static func _buff_elite(_spawner: Node) -> void:
 	for node: Node in tree.get_nodes_in_group(&"enemies"):
 		if node.get_script().get_global_name() == "RogueProcess":
 			var elite: CharacterBody3D = node
+			# Write to base_max_health (canonical field) and mirror to
+			# max_health so the value sticks even if stat scaling is later
+			# re-enabled on enemies.
+			elite.health_component.base_max_health *= 3.0
 			elite.health_component.max_health *= 3.0
 			elite.health_component.current_health = elite.health_component.max_health
 			elite.model.scale = Vector3(1.5, 1.5, 1.5)

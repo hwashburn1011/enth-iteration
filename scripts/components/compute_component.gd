@@ -15,6 +15,9 @@ const BANDWIDTH_REGEN_SCALE: float = 0.20
 
 @export var base_max_compute: float = 50.0
 @export var base_regen_rate: float = 2.0
+## When false the memory/bandwidth recalculation is bypassed entirely. Set
+## false on enemies that don't share the player's progression curve.
+@export var enable_stat_scaling: bool = true
 
 var max_compute: float
 var regen_rate: float
@@ -84,6 +87,8 @@ func _on_stats_changed(stats: Node) -> void:
 	## Recalculate max from memory, regen from bandwidth. If max grew, lift
 	## current by the diff so a level-up feels immediate (you don't have to
 	## wait for regen to fill the new headroom).
+	if not enable_stat_scaling:
+		return
 	var prev_max: float = max_compute
 	max_compute = base_max_compute + stats.get_stat("memory") * MEMORY_COMPUTE_SCALE
 	regen_rate = base_regen_rate + stats.get_stat("bandwidth") * BANDWIDTH_REGEN_SCALE
