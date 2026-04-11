@@ -1846,6 +1846,8 @@ func _build_district_3(geom: Node) -> void:
 	_build_district_6(geom)
 	# === EPIC 7: Ascension Spires — The High Sandstone Monastery ===
 	_build_district_7(geom)
+	# === EPIC 8: Tidal Harbor — The Working Seaside Port ===
+	_build_district_8(geom)
 
 
 func _build_district_4(geom: Node) -> void:
@@ -32626,6 +32628,361 @@ func _build_d7_mountain_sage(geom: Node) -> void:
 	pcs.shape = pcb
 	psb.add_child(pcs)
 	sage.add_child(psb)
+
+
+const D8_CENTER := Vector3(540, 0, 0)
+
+
+func _build_district_8(geom: Node) -> void:
+	## Epic 8 entry point — Tidal Harbor, the working seaside port.
+	# Epic-8 T1: extend boundary + D8 ocean ground
+	_extend_boundary_for_d8(geom)
+	_build_d8_ground(geom)
+	# Epic-8 T2: dock entrance arch
+	_build_d8_dock_entrance(geom)
+	# Epic-8 T3: GREAT LIGHTHOUSE landmark
+	_build_d8_great_lighthouse(geom)
+	# Epic-8 T4: harbor master NPC
+	_build_d8_harbor_master_npc()
+
+
+func _extend_boundary_for_d8(geom: Node) -> void:
+	## Epic-8 T1a: push the east boundary wall from x=530 out to x=630.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 630.0
+
+
+func _build_d8_ground(geom: Node) -> void:
+	## Epic-8 T1b: D8 ground — translucent teal water plane with a wood
+	## boardwalk pattern overlaid for the dock area.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(80, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.mesh = plane
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.20, 0.55, 0.65)
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.20, 0.65, 0.75)
+	water_mat.emission_energy_multiplier = 0.30
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.20
+	ground.material_override = water_mat
+	ground.position = Vector3(D8_CENTER.x, 0.01, 0)
+	ground.name = "D8WaterGround"
+	geom.add_child(ground)
+	# 4 wooden boardwalk planks running east-west
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	for i in 4:
+		var plank: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(75.0, 0.18, 1.40)
+		plank.mesh = pm
+		plank.material_override = wood_mat
+		plank.position = Vector3(D8_CENTER.x, 0.10, -10.0 + i * 6.85)
+		geom.add_child(plank)
+	# 30 small bubble particles randomly placed (water atmosphere)
+	var bubble_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bubble_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.55)
+	bubble_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bubble_mat.emission_enabled = true
+	bubble_mat.emission = Color(0.85, 0.95, 1.0)
+	bubble_mat.emission_energy_multiplier = 0.65
+	bubble_mat.metallic = 0.65
+	bubble_mat.roughness = 0.05
+	for i in 30:
+		var bubble: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.08 + randf() * 0.10
+		bm.height = 0.16 + randf() * 0.18
+		bubble.mesh = bm
+		bubble.material_override = bubble_mat
+		bubble.position = Vector3(
+			D8_CENTER.x + randf_range(-32, 32),
+			0.18,
+			randf_range(-18, 18)
+		)
+		geom.add_child(bubble)
+
+
+func _build_d8_dock_entrance(geom: Node) -> void:
+	## Epic-8 T2: dock entrance arch — 2 wooden pilings with a curved
+	## driftwood crossbar + hanging fishing nets.
+	var arch: Node3D = Node3D.new()
+	arch.name = "D8DockEntrance"
+	arch.position = Vector3(D8_CENTER.x - 32.0, 0.0, 0.0)
+	geom.add_child(arch)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.92
+	var weathered: StandardMaterial3D = StandardMaterial3D.new()
+	weathered.albedo_color = Color(0.55, 0.45, 0.30)
+	weathered.roughness = 0.92
+	# 2 thick wooden pilings
+	for sx in [-2.40, 2.40]:
+		var piling: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.30
+		pm.bottom_radius = 0.40
+		pm.height = 5.85
+		piling.mesh = pm
+		piling.material_override = wood_mat
+		piling.position = Vector3(sx, 2.92, 0)
+		arch.add_child(piling)
+		# Piling collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.40
+		cap.height = 5.85
+		cs.shape = cap
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Curved driftwood crossbar
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: CylinderMesh = CylinderMesh.new()
+	cbm.top_radius = 0.18
+	cbm.bottom_radius = 0.22
+	cbm.height = 5.50
+	crossbar.mesh = cbm
+	crossbar.material_override = weathered
+	crossbar.position = Vector3(0, 5.85, 0)
+	crossbar.rotation_degrees = Vector3(0, 0, 90)
+	arch.add_child(crossbar)
+	# Hanging fishing nets (2 large translucent meshy boxes)
+	var net_mat: StandardMaterial3D = StandardMaterial3D.new()
+	net_mat.albedo_color = Color(0.95, 0.85, 0.55, 0.55)
+	net_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	net_mat.emission_enabled = true
+	net_mat.emission = Color(0.95, 0.75, 0.30)
+	net_mat.emission_energy_multiplier = 0.45
+	net_mat.roughness = 0.85
+	for sx in [-1.40, 1.40]:
+		var net: MeshInstance3D = MeshInstance3D.new()
+		var nm: BoxMesh = BoxMesh.new()
+		nm.size = Vector3(1.40, 1.85, 0.10)
+		net.mesh = nm
+		net.material_override = net_mat
+		net.position = Vector3(sx, 4.20, 0.10)
+		arch.add_child(net)
+	# Glowing brass sign at center
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(2.40, 0.85, 0.10)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.95, 0.65, 0.10)
+	sign_mat.emission_energy_multiplier = 1.4
+	sign_mat.metallic = 0.55
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 5.30, 0.30)
+	arch.add_child(sign)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.85, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 8.0
+	light.position = Vector3(0, 4.20, 0)
+	arch.add_child(light)
+
+
+func _build_d8_great_lighthouse(geom: Node) -> void:
+	## Epic-8 T3: GREAT LIGHTHOUSE landmark — towering tapered cylinder +
+	## red and white striped paint + bright rotating top beacon.
+	var lh: Node3D = Node3D.new()
+	lh.name = "GreatLighthouse"
+	lh.position = Vector3(D8_CENTER.x, 0.0, 0.0)
+	geom.add_child(lh)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.65, 0.62, 0.55)
+	stone_mat.roughness = 0.85
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	white_mat.roughness = 0.65
+	var red_mat: StandardMaterial3D = StandardMaterial3D.new()
+	red_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	red_mat.emission_enabled = true
+	red_mat.emission = Color(0.85, 0.20, 0.20)
+	red_mat.emission_energy_multiplier = 0.45
+	red_mat.roughness = 0.65
+	# Stone base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 2.20
+	bm.bottom_radius = 2.85
+	bm.height = 1.40
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.70, 0)
+	lh.add_child(base)
+	# Tall tapered tower (5 stacked sections alternating white/red stripes)
+	for i in 5:
+		var section: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 1.85 - i * 0.20
+		sm.bottom_radius = 2.0 - i * 0.20
+		sm.height = 2.40
+		section.mesh = sm
+		section.material_override = white_mat if i % 2 == 0 else red_mat
+		section.position = Vector3(0, 2.40 + i * 2.40, 0)
+		lh.add_child(section)
+	# Top dome with windows (open look-out room)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 1.40
+	dm.height = 1.10
+	dome.mesh = dm
+	dome.material_override = stone_mat
+	dome.position = Vector3(0, 14.85, 0)
+	lh.add_child(dome)
+	# Rotating beacon (bright sphere on a pivot)
+	var beacon_pivot: Node3D = Node3D.new()
+	beacon_pivot.position = Vector3(0, 14.40, 0)
+	lh.add_child(beacon_pivot)
+	var beacon: MeshInstance3D = MeshInstance3D.new()
+	var bcm: SphereMesh = SphereMesh.new()
+	bcm.radius = 0.55
+	bcm.height = 0.95
+	beacon.mesh = bcm
+	var beacon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beacon_mat.albedo_color = Color(1.0, 0.95, 0.30)
+	beacon_mat.emission_enabled = true
+	beacon_mat.emission = Color(1.0, 0.85, 0.20)
+	beacon_mat.emission_energy_multiplier = 5.0
+	beacon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beacon.material_override = beacon_mat
+	beacon.position = Vector3(0, 0, 0)
+	beacon_pivot.add_child(beacon)
+	# Light beam (long thin cylinder rotating with the beacon)
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 0.10
+	beam_m.bottom_radius = 0.85
+	beam_m.height = 28.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(1.0, 0.95, 0.55, 0.45)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(1.0, 0.85, 0.30)
+	beam_mat.emission_energy_multiplier = 2.0
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(14.0, 0, 0)
+	beam.rotation_degrees = Vector3(0, 0, 90)
+	beacon_pivot.add_child(beam)
+	# Beacon rotation (sweeps around)
+	var trot: Tween = beacon_pivot.create_tween().set_loops()
+	trot.tween_property(beacon_pivot, "rotation_degrees:y", 360.0, 8.0)
+	trot.tween_property(beacon_pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Massive central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.95, 0.55)
+	light.light_energy = 5.5
+	light.omni_range = 24.0
+	light.position = Vector3(0, 14.40, 0)
+	lh.add_child(light)
+	# Light pulse
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 1.6)
+	twl.tween_property(light, "light_energy", 5.0, 1.6)
+	# Tower collision (single capsule)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 7.40, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.40
+	cap.height = 14.0
+	cs.shape = cap
+	sb.add_child(cs)
+	lh.add_child(sb)
+
+
+func _build_d8_harbor_master_npc() -> void:
+	## Epic-8 T4: harbor master NPC — navy blue captain's coat + cap +
+	## held brass spyglass.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "HarborMasterSlot"
+	slot.position = Vector3(D8_CENTER.x - 28.0, 0.0, 4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "HarborMaster"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tideturn")
+	if "npc_id" in npc:
+		npc.set("npc_id", "harbor_master_d8")
+	slot.add_child(npc)
+	# Navy blue captain's coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.10, 0.20, 0.55)
+	coat_mat.metallic = 0.30
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Captain's cap (cylinder + flat brim)
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cmm: CylinderMesh = CylinderMesh.new()
+	cmm.top_radius = 0.22
+	cmm.bottom_radius = 0.22
+	cmm.height = 0.18
+	cap.mesh = cmm
+	cap.material_override = coat_mat
+	cap.position = Vector3(0, 1.50, 0)
+	npc.add_child(cap)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.30
+	brm.bottom_radius = 0.30
+	brm.height = 0.04
+	brim.mesh = brm
+	brim.material_override = coat_mat
+	brim.position = Vector3(0, 1.42, 0.10)
+	npc.add_child(brim)
+	# Gold cap badge
+	var badge: MeshInstance3D = MeshInstance3D.new()
+	var bdm: BoxMesh = BoxMesh.new()
+	bdm.size = Vector3(0.10, 0.06, 0.04)
+	badge.mesh = bdm
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 1.4
+	gold_mat.metallic = 0.95
+	badge.material_override = gold_mat
+	badge.position = Vector3(0, 1.55, 0.20)
+	npc.add_child(badge)
+	# Brass spyglass (small cylinder)
+	var spy: MeshInstance3D = MeshInstance3D.new()
+	var spm: CylinderMesh = CylinderMesh.new()
+	spm.top_radius = 0.05
+	spm.bottom_radius = 0.06
+	spm.height = 0.30
+	spy.mesh = spm
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	spy.material_override = brass_mat
+	spy.position = Vector3(0.40, 0.85, 0.20)
+	spy.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(spy)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
