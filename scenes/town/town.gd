@@ -1935,6 +1935,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_birdhouse(geom)
 	# Epic-4 T45: hanging clothesline with sheets
 	_build_d4_clothesline(geom)
+	# Epic-4 T46: stone arch bridge over a stream
+	_build_d4_stone_bridge(geom)
+	# Epic-4 T47: small flowing stream
+	_build_d4_small_stream(geom)
+	# Epic-4 T48: friendly frog creature
+	_build_d4_frog_creature(geom)
+	# Epic-4 T49: Musician NPC with lute
+	_build_d4_musician_npc()
+	# Epic-4 T50: BLOOM GUARDIAN mini-boss
+	_build_d4_bloom_guardian(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -4643,6 +4653,341 @@ func _build_d4_clothesline(geom: Node) -> void:
 		smat.emission_energy_multiplier = 0.55
 		sheet.material_override = smat
 		line.add_child(sheet)
+
+
+func _build_d4_stone_bridge(geom: Node) -> void:
+	## Epic-4 T46: stone arch bridge over the small stream — wide flat
+	## deck on 2 stone arches with side rails.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "D4StoneBridge"
+	bridge.position = D4_CENTER + Vector3(-12, 0, -3)
+	geom.add_child(bridge)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	# Wide deck box
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(4.0, 0.30, 1.85)
+	deck.mesh = dm
+	deck.position = Vector3(0, 1.0, 0)
+	deck.material_override = stone_mat
+	bridge.add_child(deck)
+	# 2 stone arch supports — half cylinders
+	for sx: float in [-1.40, 1.40]:
+		var arch: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.85
+		am.bottom_radius = 0.85
+		am.height = 1.85
+		arch.mesh = am
+		arch.position = Vector3(sx, 0.50, 0)
+		arch.rotation = Vector3(deg_to_rad(90), 0, 0)
+		arch.material_override = stone_mat
+		bridge.add_child(arch)
+	# 2 side rails
+	for sz: float in [-0.85, 0.85]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(4.0, 0.55, 0.10)
+		rail.mesh = rm
+		rail.position = Vector3(0, 1.40, sz)
+		rail.material_override = stone_mat
+		bridge.add_child(rail)
+	# 6 small post markers along each rail
+	for sz: float in [-0.85, 0.85]:
+		for i in 6:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.18, 0.30, 0.18)
+			post.mesh = pm
+			post.position = Vector3(-1.85 + i * 0.74, 1.55, sz)
+			post.material_override = stone_mat
+			bridge.add_child(post)
+	# Collision around deck
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.0, 0.30, 1.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.0, 0)
+	sb.add_child(cs)
+	bridge.add_child(sb)
+
+
+func _build_d4_small_stream(geom: Node) -> void:
+	## Epic-4 T47: a small flowing stream running through D4 — long thin
+	## emissive blue strip on the ground passing under the stone bridge.
+	var stream: MeshInstance3D = MeshInstance3D.new()
+	stream.name = "D4Stream"
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(40.0, 0.10, 0.85)
+	stream.mesh = sm
+	stream.position = D4_CENTER + Vector3(-12, 0.06, -3)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.30, 0.65, 0.95, 0.85)
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smat.emission_enabled = true
+	smat.emission = Color(0.55, 0.85, 1.0)
+	smat.emission_energy_multiplier = 1.4
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	stream.material_override = smat
+	geom.add_child(stream)
+
+
+func _build_d4_frog_creature(geom: Node) -> void:
+	## Epic-4 T48: a friendly green frog sitting on a lily pad near the
+	## stream. Has 2 large eyes and a hop tween.
+	var frog: Node3D = Node3D.new()
+	frog.name = "D4Frog"
+	frog.position = D4_CENTER + Vector3(-15, 0.10, -3)
+	geom.add_child(frog)
+	# Lily pad under frog
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.40
+	pm.bottom_radius = 0.40
+	pm.height = 0.06
+	pad.mesh = pm
+	pad.position = Vector3(0, 0.0, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.20, 0.55, 0.20)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.45, 1.0, 0.45)
+	pmat.emission_energy_multiplier = 0.85
+	pad.material_override = pmat
+	frog.add_child(pad)
+	# Frog body — flattened sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.20
+	bm.height = 0.30
+	body.mesh = bm
+	body.position = Vector3(0, 0.20, 0)
+	body.scale = Vector3(1.4, 0.85, 1.0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.85, 0.30)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.45, 1.0, 0.45)
+	bmat.emission_energy_multiplier = 1.0
+	body.material_override = bmat
+	frog.add_child(body)
+	# 2 large bulging eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.95, 0.95, 0.95)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 1.0, 1.0)
+	eye_mat.emission_energy_multiplier = 1.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.08
+		em.height = 0.16
+		eye.mesh = em
+		eye.position = Vector3(ex, 0.40, 0.10)
+		eye.material_override = eye_mat
+		frog.add_child(eye)
+		# Black pupil
+		var pupil: MeshInstance3D = MeshInstance3D.new()
+		var pum: SphereMesh = SphereMesh.new()
+		pum.radius = 0.03
+		pum.height = 0.06
+		pupil.mesh = pum
+		pupil.position = Vector3(ex, 0.42, 0.16)
+		var pumat: StandardMaterial3D = StandardMaterial3D.new()
+		pumat.albedo_color = Color(0.05, 0.05, 0.10)
+		pumat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pupil.material_override = pumat
+		frog.add_child(pupil)
+	# Hop tween
+	var hop: Tween = create_tween().set_loops()
+	hop.tween_property(body, "position:y", 0.45, 0.30).set_ease(Tween.EASE_OUT)
+	hop.tween_property(body, "position:y", 0.20, 0.25).set_ease(Tween.EASE_IN)
+	hop.tween_interval(1.5)
+
+
+func _build_d4_musician_npc() -> void:
+	## Epic-4 T49: Musician NPC near the gazebo with a small wooden lute.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var mus: Node3D = Node3D.new()
+	mus.name = "D4Musician"
+	mus.position = D4_CENTER + Vector3(3, 0, -14)
+	slots.add_child(mus)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.20, 0.55)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	mus.add_child(body)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.65, 0.45)
+	head.material_override = hmat
+	mus.add_child(head)
+	# Wooden lute body — oval shape
+	var lute: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.30
+	lm.height = 0.55
+	lute.mesh = lm
+	lute.position = Vector3(0.40, 0.85, 0.40)
+	lute.scale = Vector3(0.85, 0.65, 1.20)
+	var lutemat: StandardMaterial3D = StandardMaterial3D.new()
+	lutemat.albedo_color = Color(0.55, 0.30, 0.10)
+	lutemat.emission_enabled = true
+	lutemat.emission = Color(0.85, 0.55, 0.20)
+	lutemat.emission_energy_multiplier = 0.55
+	lute.material_override = lutemat
+	mus.add_child(lute)
+	# Lute neck — long thin cylinder
+	var neck: MeshInstance3D = MeshInstance3D.new()
+	var nm: CylinderMesh = CylinderMesh.new()
+	nm.top_radius = 0.04
+	nm.bottom_radius = 0.05
+	nm.height = 0.85
+	neck.mesh = nm
+	neck.position = Vector3(0.40, 1.30, 0.40)
+	neck.rotation = Vector3(0, 0, deg_to_rad(20))
+	neck.material_override = lutemat
+	mus.add_child(neck)
+	# Music notes floating around the head
+	var note_mat: StandardMaterial3D = StandardMaterial3D.new()
+	note_mat.albedo_color = Color(1.0, 0.95, 0.30)
+	note_mat.emission_enabled = true
+	note_mat.emission = Color(1.0, 0.95, 0.30)
+	note_mat.emission_energy_multiplier = 2.4
+	note_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var note: Label3D = Label3D.new()
+		note.text = "♪"
+		note.position = Vector3(-0.55 + i * 0.55, 2.10 + sin(i * 0.85) * 0.30, 0)
+		note.modulate = Color(1.0, 0.95, 0.30)
+		note.outline_modulate = Color(0, 0, 0, 0.85)
+		note.outline_size = 4
+		note.font_size = 22
+		note.no_depth_test = true
+		note.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		mus.add_child(note)
+	var label: Label3D = Label3D.new()
+	label.text = "Musician"
+	label.position = Vector3(0, 2.55, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	mus.add_child(label)
+
+
+func _build_d4_bloom_guardian(geom: Node) -> void:
+	## Epic-4 T50: BLOOM GUARDIAN — friendly mini-boss with a giant
+	## flower-bud body, 4 leaf wings, and a slow patrol around the central
+	## bloom. Pure decorative — peaceful guardian, not hostile.
+	var guard: Node3D = Node3D.new()
+	guard.name = "D4BloomGuardian"
+	guard.position = D4_CENTER + Vector3(8, 0, -8)
+	geom.add_child(guard)
+	# Big flower bud body — large pink sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.85
+	bm.height = 1.70
+	body.mesh = bm
+	body.position = Vector3(0, 1.20, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(1.0, 0.55, 0.85)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.65, 0.85)
+	bmat.emission_energy_multiplier = 1.6
+	bmat.metallic = 0.20
+	bmat.roughness = 0.30
+	body.material_override = bmat
+	guard.add_child(body)
+	# Yellow center pollen disc on the body's front
+	var center: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.40
+	cm.height = 0.80
+	center.mesh = cm
+	center.position = Vector3(0, 1.20, 0.55)
+	center.scale = Vector3(1.0, 1.0, 0.4)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.95, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.95, 0.30)
+	cmat.emission_energy_multiplier = 2.4
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	center.material_override = cmat
+	guard.add_child(center)
+	# 2 white friendly eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.08
+		em.height = 0.16
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.85)
+		eye.material_override = eye_mat
+		guard.add_child(eye)
+	# 4 leaf wings around the body
+	var wing_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wing_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	wing_mat.emission_enabled = true
+	wing_mat.emission = Color(0.45, 1.0, 0.45)
+	wing_mat.emission_energy_multiplier = 1.2
+	wing_mat.metallic = 0.20
+	wing_mat.roughness = 0.55
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var wing: MeshInstance3D = MeshInstance3D.new()
+		var wm: PrismMesh = PrismMesh.new()
+		wm.size = Vector3(0.30, 0.85, 0.10)
+		wing.mesh = wm
+		wing.position = Vector3(cos(angle) * 1.10, 1.20, sin(angle) * 1.10)
+		wing.rotation = Vector3(0, -angle, deg_to_rad(20))
+		wing.material_override = wing_mat
+		guard.add_child(wing)
+	# Slow patrol path
+	var origin: Vector3 = D4_CENTER + Vector3(8, 0, -8)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(guard, "position", origin + Vector3(-8, 0, 0), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(guard, "position", origin + Vector3(0, 0, 8), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(guard, "position", origin, 8.0).set_ease(Tween.EASE_IN_OUT)
+	# Pulse the body
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(body, "scale", Vector3(1.10, 1.10, 1.10), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(body, "scale", Vector3(1.0, 1.0, 1.0), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Friendly name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "BLOOM GUARDIAN"
+	label.position = Vector3(0, 2.85, 0)
+	label.modulate = Color(1.0, 0.65, 0.85)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	guard.add_child(label)
 
 
 
