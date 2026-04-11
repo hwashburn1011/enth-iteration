@@ -21,6 +21,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_compass_plaza(geom)
 	_build_th_district_nameplates(geom)
 	_build_th_bench_ring(geom)
+	_build_th_caretaker_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -659,3 +660,161 @@ func _build_th_bench_ring(geom: Node) -> void:
 	var gpulse: Tween = pivot.create_tween().set_loops()
 	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 6.0, 2.2).set_ease(Tween.EASE_IN_OUT)
 	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 2.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_caretaker_npc(town: Node) -> void:
+	## Epic-10 T5: Town Caretaker Cipher — friendly hub keeper standing
+	## just outside the beacon at the south radial path. Robe in town
+	## hub colors (slate + brass + cyan accents), holding a glowing data
+	## tablet, with a brass headset visor and a slow welcoming wave.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THCaretakerSlot"
+	# Stand on the south radial path, just outside the rune ring
+	slot.position = TOWN_CENTER + Vector3(0, 0, 6.5)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THCaretaker"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Caretaker Cipher")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_caretaker_cipher")
+	# Face the beacon (-Z direction)
+	npc.rotation.y = PI
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.22, 0.26, 0.32)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.18
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.45, 0.65)
+	robe_mat.emission_energy_multiplier = 0.25
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Long slate robe ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.65, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.85, 0)
+	npc.add_child(robe)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.65, 0)
+	npc.add_child(collar)
+	# Cyan vertical accent stripe down the chest (data seam)
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var seamesh: BoxMesh = BoxMesh.new()
+	seamesh.size = Vector3(0.16, 1.50, 0.06)
+	seam.mesh = seamesh
+	seam.material_override = data_mat
+	seam.position = Vector3(0, 0.92, -0.30)
+	npc.add_child(seam)
+	# Brass shoulder pauldrons (small)
+	for sx in [-0.55, 0.55]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.18
+		pm.height = 0.35
+		paul.mesh = pm
+		paul.material_override = brass_mat
+		paul.position = Vector3(sx, 1.55, 0)
+		paul.scale = Vector3(1.0, 0.55, 1.0)
+		npc.add_child(paul)
+	# ---- Brass headset visor band over the head ----
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: TorusMesh = TorusMesh.new()
+	vm.inner_radius = 0.30
+	vm.outer_radius = 0.36
+	visor.mesh = vm
+	visor.material_override = brass_mat
+	visor.position = Vector3(0, 1.95, 0)
+	visor.rotation.x = PI / 2.0
+	npc.add_child(visor)
+	# Glowing visor lens (front)
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(0.55, 0.10, 0.04)
+	lens.mesh = lm
+	lens.material_override = data_mat
+	lens.position = Vector3(0, 1.92, -0.32)
+	npc.add_child(lens)
+	# Headset side dish (small disc on the left side)
+	var ear_dish: MeshInstance3D = MeshInstance3D.new()
+	var edm: CylinderMesh = CylinderMesh.new()
+	edm.top_radius = 0.10
+	edm.bottom_radius = 0.10
+	edm.height = 0.05
+	ear_dish.mesh = edm
+	ear_dish.material_override = brass_mat
+	ear_dish.position = Vector3(-0.32, 1.92, 0)
+	ear_dish.rotation.z = PI / 2.0
+	npc.add_child(ear_dish)
+	# ---- Data tablet held in the right hand on a tween pivot ----
+	# Hand pivot — small Node3D anchored at his right wrist
+	var hand_pivot: Node3D = Node3D.new()
+	hand_pivot.position = Vector3(0.55, 1.20, -0.10)
+	npc.add_child(hand_pivot)
+	# Tablet body — flat brass box
+	var tablet: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.40, 0.55, 0.05)
+	tablet.mesh = tm
+	tablet.material_override = brass_mat
+	tablet.position = Vector3(0, 0, 0)
+	hand_pivot.add_child(tablet)
+	# Tablet glowing screen (smaller cyan rectangle on the front)
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var scrm: BoxMesh = BoxMesh.new()
+	scrm.size = Vector3(0.32, 0.45, 0.03)
+	screen.mesh = scrm
+	screen.material_override = data_mat
+	screen.position = Vector3(0, 0, -0.04)
+	hand_pivot.add_child(screen)
+	# 3 small data icon dots glowing on the screen
+	for iy in [0.12, 0.0, -0.12]:
+		var icon: MeshInstance3D = MeshInstance3D.new()
+		var icm: SphereMesh = SphereMesh.new()
+		icm.radius = 0.04
+		icm.height = 0.08
+		icon.mesh = icm
+		icon.material_override = data_mat
+		icon.position = Vector3(0, iy, -0.06)
+		hand_pivot.add_child(icon)
+	# ---- Subtle warm OmniLight aura ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, -0.20)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Welcoming wave tween — slow tablet hand rocking back and forth ----
+	var wave: Tween = npc.create_tween().set_loops()
+	wave.tween_property(hand_pivot, "rotation:z", 0.30, 1.6).set_ease(Tween.EASE_IN_OUT)
+	wave.tween_property(hand_pivot, "rotation:z", -0.10, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Visor lens + tablet screen pulse (shared data material)
+	var dpulse: Tween = npc.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
