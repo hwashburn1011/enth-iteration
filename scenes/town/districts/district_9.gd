@@ -74,6 +74,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_sky_lava_lantern(geom)
 	_build_d9_forge_sentry_mech(geom)
 	_build_d9_molten_cascade(geom)
+	_build_d9_forge_priestess_npc(town)
 	print("[D9Builder] done")
 
 
@@ -4772,5 +4773,138 @@ func _build_d9_molten_cascade(geom: Node) -> void:
 	cs.shape = bs
 	stb.add_child(cs)
 	pivot.add_child(stb)
+
+
+func _build_d9_forge_priestess_npc(town: Node) -> void:
+	## Epic-9 T54: Forge Priestess Ember — caretaker of the molten cascade.
+	## Robed NPC standing beside the lava pool with a glowing brazier-staff
+	## and a heated halo above her head.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ForgePriestessSlot"
+	slot.position = Vector3(D9_CENTER.x + 50, 0, 11)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ForgePriestess"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Forge Priestess Ember")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_forge_priestess")
+	slot.add_child(npc)
+	# Dark robe overlay (long body box)
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.14, 0.10, 0.09)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.10
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rb: BoxMesh = BoxMesh.new()
+	rb.size = Vector3(0.85, 1.40, 0.55)
+	robe.mesh = rb
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.95, 0)
+	npc.add_child(robe)
+	# Glowing chest pendant (small unshaded amber sphere)
+	var pendant: MeshInstance3D = MeshInstance3D.new()
+	var pm: SphereMesh = SphereMesh.new()
+	pm.radius = 0.10
+	pm.height = 0.20
+	pendant.mesh = pm
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(1.0, 0.55, 0.10)
+	pmat.emission_enabled = true
+	pmat.emission = Color(1.0, 0.55, 0.10)
+	pmat.emission_energy_multiplier = 6.0
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pendant.material_override = pmat
+	pendant.position = Vector3(0, 1.20, -0.30)
+	npc.add_child(pendant)
+	# Hooded head shroud (darker box on top)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(0.55, 0.40, 0.45)
+	hood.mesh = hb
+	hood.material_override = robe_mat
+	hood.position = Vector3(0, 1.85, 0)
+	npc.add_child(hood)
+	# Brazier staff — long shaft with a flaming bowl on top
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.04
+	sm.bottom_radius = 0.04
+	sm.height = 2.10
+	staff.mesh = sm
+	var staff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	staff_mat.albedo_color = Color(0.18, 0.13, 0.10)
+	staff_mat.metallic = 0.65
+	staff_mat.roughness = 0.45
+	staff.material_override = staff_mat
+	staff.position = Vector3(0.45, 1.05, 0)
+	npc.add_child(staff)
+	# Brazier bowl on top of staff
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.18
+	bm.height = 0.24
+	bowl.mesh = bm
+	var bowl_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bowl_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	bowl_mat.emission_enabled = true
+	bowl_mat.emission = Color(1.0, 0.60, 0.15)
+	bowl_mat.emission_energy_multiplier = 7.0
+	bowl_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bowl.material_override = bowl_mat
+	bowl.position = Vector3(0.45, 2.15, 0)
+	bowl.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(bowl)
+	# Flame particles rising from the bowl
+	var flame: GPUParticles3D = GPUParticles3D.new()
+	flame.amount = 25
+	flame.lifetime = 1.2
+	flame.position = Vector3(0.45, 2.25, 0)
+	var fmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	fmat.direction = Vector3(0, 1, 0)
+	fmat.spread = 18.0
+	fmat.initial_velocity_min = 0.50
+	fmat.initial_velocity_max = 1.20
+	fmat.gravity = Vector3(0, -0.20, 0)
+	fmat.scale_min = 0.10
+	fmat.scale_max = 0.22
+	fmat.color = Color(1.0, 0.55, 0.15, 0.95)
+	flame.process_material = fmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.20, 0.20)
+	flame.draw_pass_1 = qm
+	npc.add_child(flame)
+	# Heated halo above her head — torus
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var trm: TorusMesh = TorusMesh.new()
+	trm.inner_radius = 0.45
+	trm.outer_radius = 0.50
+	halo.mesh = trm
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(1.0, 0.50, 0.10)
+	hmat.emission_enabled = true
+	hmat.emission = Color(1.0, 0.55, 0.15)
+	hmat.emission_energy_multiplier = 4.5
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = hmat
+	halo.position = Vector3(0, 2.30, 0)
+	halo.rotation.x = PI / 2.0
+	npc.add_child(halo)
+	# Halo slow spin
+	var spin: Tween = npc.create_tween().set_loops()
+	spin.tween_property(halo, "rotation:y", TAU, 6.0)
+	# Brazier light at the bowl
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0.45, 2.20, 0)
+	lt.light_color = Color(1.0, 0.50, 0.12)
+	lt.light_energy = 2.6
+	lt.omni_range = 6.5
+	npc.add_child(lt)
 
 
