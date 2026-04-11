@@ -60,6 +60,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_east_approach_road(geom)
 	_build_th_north_approach_road(geom)
 	_build_th_west_approach_road(geom)
+	_build_th_south_approach_road(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -7760,3 +7761,143 @@ func _build_th_west_approach_road(geom: Node) -> void:
 	var bpulse: Tween = pivot.create_tween().set_loops()
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 10.5, 1.5).set_ease(Tween.EASE_IN_OUT)
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 7.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_south_approach_road(geom: Node) -> void:
+	## Epic-10 T44: long paved approach road extending south from the
+	## south entry arch (T37). Mirror of the north approach road but
+	## laid along +Z. Completes the 4-cardinal arterial road network
+	## around the Town Heart Plaza.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SouthApproachRoad"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 17.50)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.22, 0.24, 0.28)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var seam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seam_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	seam_mat.emission_enabled = true
+	seam_mat.emission = Color(0.45, 0.85, 1.0)
+	seam_mat.emission_energy_multiplier = 5.5
+	seam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+	bulb_mat.emission_enabled = true
+	bulb_mat.emission = Color(1.0, 0.65, 0.20)
+	bulb_mat.emission_energy_multiplier = 8.5
+	bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 8 wide road slabs going south (+Z)
+	for i in 8:
+		var sz: float = float(i) * 3.50
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(4.20, 0.10, 3.50)
+		slab.mesh = sm
+		slab.material_override = stone_mat
+		slab.position = Vector3(0, 0.05, sz)
+		pivot.add_child(slab)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.05, sz)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(4.20, 0.20, 3.50)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pivot.add_child(sb)
+		for tx in [-2.05, 2.05]:
+			var trim: MeshInstance3D = MeshInstance3D.new()
+			var tmm: BoxMesh = BoxMesh.new()
+			tmm.size = Vector3(0.18, 0.10, 3.50)
+			trim.mesh = tmm
+			trim.material_override = brass_mat
+			trim.position = Vector3(tx, 0.10, sz)
+			pivot.add_child(trim)
+		var seam: MeshInstance3D = MeshInstance3D.new()
+		var seamesh: BoxMesh = BoxMesh.new()
+		seamesh.size = Vector3(0.30, 0.06, 3.20)
+		seam.mesh = seamesh
+		seam.material_override = seam_mat
+		seam.position = Vector3(0, 0.13, sz)
+		pivot.add_child(seam)
+	# 6 flanking lampposts (3 per side)
+	var lamp_zs: Array = [3.5, 14.0, 24.5]
+	for lz in lamp_zs:
+		for sx in [-2.50, 2.50]:
+			var lgroup: Node3D = Node3D.new()
+			lgroup.position = Vector3(sx, 0, lz)
+			pivot.add_child(lgroup)
+			var base: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.65, 0.30, 0.65)
+			base.mesh = bm
+			base.material_override = stone_mat
+			base.position = Vector3(0, 0.15, 0)
+			lgroup.add_child(base)
+			var shaft: MeshInstance3D = MeshInstance3D.new()
+			var smm: CylinderMesh = CylinderMesh.new()
+			smm.top_radius = 0.08
+			smm.bottom_radius = 0.12
+			smm.height = 3.80
+			shaft.mesh = smm
+			shaft.material_override = brass_mat
+			shaft.position = Vector3(0, 2.20, 0)
+			lgroup.add_child(shaft)
+			var shaft_sb: StaticBody3D = StaticBody3D.new()
+			shaft_sb.position = Vector3(0, 2.20, 0)
+			var shaft_cs: CollisionShape3D = CollisionShape3D.new()
+			var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
+			shaft_cyl.top_radius = 0.10
+			shaft_cyl.bottom_radius = 0.12
+			shaft_cyl.height = 3.80
+			shaft_cs.shape = shaft_cyl
+			shaft_sb.add_child(shaft_cs)
+			lgroup.add_child(shaft_sb)
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var bdm: TorusMesh = TorusMesh.new()
+			bdm.inner_radius = 0.10
+			bdm.outer_radius = 0.16
+			band.mesh = bdm
+			band.material_override = brass_mat
+			band.position = Vector3(0, 2.40, 0)
+			lgroup.add_child(band)
+			var arch: MeshInstance3D = MeshInstance3D.new()
+			var am: BoxMesh = BoxMesh.new()
+			am.size = Vector3(0.65, 0.10, 0.10)
+			arch.mesh = am
+			arch.material_override = brass_mat
+			arch.position = Vector3(-sx * 0.30, 4.20, 0)
+			lgroup.add_child(arch)
+			var bulb: MeshInstance3D = MeshInstance3D.new()
+			var blm: SphereMesh = SphereMesh.new()
+			blm.radius = 0.20
+			blm.height = 0.40
+			bulb.mesh = blm
+			bulb.material_override = bulb_mat
+			bulb.position = Vector3(-sx * 0.55, 4.05, 0)
+			lgroup.add_child(bulb)
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(-sx * 0.55, 4.05, 0)
+			lt.light_color = Color(1.0, 0.65, 0.20)
+			lt.light_energy = 3.5
+			lt.omni_range = 11.0
+			lgroup.add_child(lt)
+	# Pulses
+	var spulse2: Tween = pivot.create_tween().set_loops()
+	spulse2.tween_property(seam_mat, "emission_energy_multiplier", 7.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	spulse2.tween_property(seam_mat, "emission_energy_multiplier", 4.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	var bpulse2: Tween = pivot.create_tween().set_loops()
+	bpulse2.tween_property(bulb_mat, "emission_energy_multiplier", 10.5, 1.5).set_ease(Tween.EASE_IN_OUT)
+	bpulse2.tween_property(bulb_mat, "emission_energy_multiplier", 7.0, 1.5).set_ease(Tween.EASE_IN_OUT)
