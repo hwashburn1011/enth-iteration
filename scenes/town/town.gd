@@ -8785,6 +8785,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_crystal_tree(geom)
 	# Epic-5 T10: ambient snowfall particles
 	_build_d5_snowfall(geom)
+	# Epic-5 T11: glacier wall with embedded data slabs
+	_build_d5_glacier_wall(geom)
+	# Epic-5 T12: frozen waterfall
+	_build_d5_frozen_waterfall(geom)
+	# Epic-5 T13: data archaeologist NPC
+	_build_d5_data_archaeologist_npc()
+	# Epic-5 T14: ice fishing hole on frozen pond
+	_build_d5_ice_fishing_hole(geom)
+	# Epic-5 T15: aurora light pillars
+	_build_d5_aurora_pillars(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -9472,6 +9482,341 @@ func _build_d5_snowfall(geom: Node) -> void:
 	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	flake_mesh.material = fmat
 	geom.add_child(snow)
+
+
+func _build_d5_glacier_wall(geom: Node) -> void:
+	## Epic-5 T11: 12m-wide glacier wall with embedded data slabs glowing
+	## from within. Acts as visual backdrop on the north side of D5.
+	var wall: Node3D = Node3D.new()
+	wall.name = "GlacierWall"
+	wall.position = Vector3(D5_CENTER.x + 4.0, 0.0, -16.0)
+	geom.add_child(wall)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.65
+	ice_mat.metallic = 0.45
+	ice_mat.roughness = 0.20
+	# Main wall slab
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(14.0, 5.50, 1.40)
+	slab.mesh = sm
+	slab.material_override = ice_mat
+	slab.position = Vector3(0, 2.75, 0)
+	wall.add_child(slab)
+	# 5 jagged ice spikes rising from the top
+	for i in 5:
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.85, 1.40 + randf() * 0.85, 0.85)
+		spike.mesh = spm
+		spike.material_override = ice_mat
+		spike.position = Vector3(-5.5 + i * 2.75, 5.50 + spm.size.y * 0.5, 0)
+		wall.add_child(spike)
+	# 6 embedded data slabs (small bright glowing rectangles)
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.30, 1.0, 1.0)
+	data_mat.emission_energy_multiplier = 3.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var data: MeshInstance3D = MeshInstance3D.new()
+		var dm: BoxMesh = BoxMesh.new()
+		dm.size = Vector3(0.55, 0.85, 0.06)
+		data.mesh = dm
+		data.material_override = data_mat
+		data.position = Vector3(-5.0 + i * 2.0, 1.50 + randf_range(-0.30, 0.85), 0.72)
+		wall.add_child(data)
+		# Subtle pulse
+		var tw: Tween = data.create_tween().set_loops()
+		tw.tween_interval(i * 0.25)
+		tw.tween_property(data, "scale:y", 1.20, 0.8)
+		tw.tween_property(data, "scale:y", 0.85, 0.8)
+	# Wall collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(14.0, 5.50, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	wall.add_child(sb)
+
+
+func _build_d5_frozen_waterfall(geom: Node) -> void:
+	## Epic-5 T12: frozen waterfall — 3 vertical translucent ice columns
+	## frozen mid-flow with cyan light underneath, evoking suspended motion.
+	var fall: Node3D = Node3D.new()
+	fall.name = "FrozenWaterfall"
+	fall.position = Vector3(D5_CENTER.x - 16.0, 0.0, 14.0)
+	geom.add_child(fall)
+	# Stone cliff base
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	stone_mat.roughness = 0.92
+	var cliff: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(4.20, 4.50, 1.20)
+	cliff.mesh = cm
+	cliff.material_override = stone_mat
+	cliff.position = Vector3(0, 2.25, -1.0)
+	fall.add_child(cliff)
+	# 3 frozen flow columns (slightly curving forward)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.55, 0.85, 0.95, 0.75)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.85
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	for sx in [-1.20, 0.0, 1.20]:
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var cm2: CylinderMesh = CylinderMesh.new()
+		cm2.top_radius = 0.30
+		cm2.bottom_radius = 0.55
+		cm2.height = 4.20
+		col.mesh = cm2
+		col.material_override = ice_mat
+		col.position = Vector3(sx, 2.10, 0)
+		# Slight forward lean
+		col.rotation_degrees = Vector3(8, 0, 0)
+		fall.add_child(col)
+	# Pool at the base (flat translucent disc)
+	var pool: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 2.20
+	pm.bottom_radius = 2.20
+	pm.height = 0.10
+	pool.mesh = pm
+	pool.material_override = ice_mat
+	pool.position = Vector3(0, 0.05, 0.65)
+	fall.add_child(pool)
+	# Light beneath pool
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.85, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 0.40, 0.65)
+	fall.add_child(light)
+	# Pulse the light
+	var tw: Tween = light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", 3.0, 1.4)
+	tw.tween_property(light, "light_energy", 2.5, 1.4)
+	# Cliff collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.25, -1.0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 4.50, 1.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	fall.add_child(sb)
+
+
+func _build_d5_data_archaeologist_npc() -> void:
+	## Epic-5 T13: data archaeologist NPC — heavy parka, holding a small
+	## glowing data fragment they "excavated" from the ice.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "DataArchaeologistSlot"
+	slot.position = Vector3(D5_CENTER.x - 6.0, 0.0, -10.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "DataArchaeologist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Stratlin")
+	if "npc_id" in npc:
+		npc.set("npc_id", "archaeo_d5")
+	slot.add_child(npc)
+	# Heavy parka (large box)
+	var parka: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.75, 1.05, 0.50)
+	parka.mesh = pmm
+	var parka_mat: StandardMaterial3D = StandardMaterial3D.new()
+	parka_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	parka_mat.roughness = 0.85
+	parka.material_override = parka_mat
+	parka.position = Vector3(0, 0.55, 0)
+	npc.add_child(parka)
+	# Fur trim hood (white sphere)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.24
+	hm.height = 0.42
+	hood.mesh = hm
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	fur_mat.roughness = 0.95
+	hood.material_override = fur_mat
+	hood.position = Vector3(0, 1.40, 0)
+	npc.add_child(hood)
+	# Held data fragment (small bright cube)
+	var frag: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.20, 0.20, 0.20)
+	frag.mesh = fm
+	var frag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	frag_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	frag_mat.emission_enabled = true
+	frag_mat.emission = Color(0.30, 1.0, 1.0)
+	frag_mat.emission_energy_multiplier = 3.5
+	frag_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	frag.material_override = frag_mat
+	frag.position = Vector3(0.45, 0.85, 0.18)
+	npc.add_child(frag)
+	# Fragment hover + spin
+	var ts: Tween = frag.create_tween().set_loops()
+	ts.tween_property(frag, "rotation_degrees:y", 360.0, 4.0)
+	ts.tween_property(frag, "rotation_degrees:y", 0.0, 0.0)
+	var th: Tween = frag.create_tween().set_loops()
+	th.tween_property(frag, "position:y", 0.95, 1.2)
+	th.tween_property(frag, "position:y", 0.85, 1.2)
+
+
+func _build_d5_ice_fishing_hole(geom: Node) -> void:
+	## Epic-5 T14: ice fishing hole on a frozen pond — round disc of ice
+	## with a circular hole in the center, a tiny stool, and a fishing rod.
+	var hole: Node3D = Node3D.new()
+	hole.name = "IceFishingHole"
+	hole.position = Vector3(D5_CENTER.x + 4.0, 0.0, 8.0)
+	geom.add_child(hole)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.88, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.40
+	ice_mat.metallic = 0.45
+	ice_mat.roughness = 0.20
+	# Frozen pond disc (large flat cylinder)
+	var pond: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 3.20
+	pm.bottom_radius = 3.20
+	pm.height = 0.12
+	pond.mesh = pm
+	pond.material_override = ice_mat
+	pond.position = Vector3(0, 0.06, 0)
+	hole.add_child(pond)
+	# Dark hole in center (small dark cylinder above)
+	var dark: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 0.40
+	dm.bottom_radius = 0.40
+	dm.height = 0.05
+	dark.mesh = dm
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.05, 0.10, 0.15)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dark.material_override = dark_mat
+	dark.position = Vector3(0, 0.13, 0)
+	hole.add_child(dark)
+	# Wooden stool (3 legs + seat)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.28
+	sm.bottom_radius = 0.28
+	sm.height = 0.08
+	seat.mesh = sm
+	seat.material_override = wood_mat
+	seat.position = Vector3(1.20, 0.45, 0)
+	hole.add_child(seat)
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.04
+		lm.height = 0.42
+		leg.mesh = lm
+		leg.material_override = wood_mat
+		leg.position = Vector3(1.20 + cos(ang) * 0.20, 0.21, sin(ang) * 0.20)
+		hole.add_child(leg)
+	# Fishing rod (long thin cylinder pointing into hole)
+	var rod: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.02
+	rm.bottom_radius = 0.04
+	rm.height = 1.85
+	rod.mesh = rm
+	rod.material_override = wood_mat
+	rod.position = Vector3(0.65, 0.65, 0)
+	rod.rotation_degrees = Vector3(0, 0, 65)
+	hole.add_child(rod)
+	# Fishing line (very thin line down to hole)
+	var line: MeshInstance3D = MeshInstance3D.new()
+	var lmm: CylinderMesh = CylinderMesh.new()
+	lmm.top_radius = 0.005
+	lmm.bottom_radius = 0.005
+	lmm.height = 0.95
+	line.mesh = lmm
+	var line_mat: StandardMaterial3D = StandardMaterial3D.new()
+	line_mat.albedo_color = Color(0.95, 0.95, 0.90)
+	line.material_override = line_mat
+	line.position = Vector3(0.05, 0.65, 0)
+	hole.add_child(line)
+
+
+func _build_d5_aurora_pillars(geom: Node) -> void:
+	## Epic-5 T15: 5 tall aurora light pillars — vertical translucent
+	## colored beams shifting through cyan/violet/green hues.
+	var aurora: Node3D = Node3D.new()
+	aurora.name = "AuroraPillars"
+	aurora.position = Vector3(D5_CENTER.x + 18.0, 0.0, 4.0)
+	geom.add_child(aurora)
+	var beam_colors: Array = [
+		Color(0.30, 0.85, 0.95),
+		Color(0.55, 0.40, 0.95),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.55, 0.85),
+		Color(0.40, 0.75, 1.0),
+	]
+	for i in 5:
+		var pillar: Node3D = Node3D.new()
+		pillar.position = Vector3(i * 2.60, 0, 0)
+		aurora.add_child(pillar)
+		var beam: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.10
+		bm.bottom_radius = 0.45
+		bm.height = 11.0
+		beam.mesh = bm
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(beam_colors[i].r, beam_colors[i].g, beam_colors[i].b, 0.55)
+		bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		bmat.emission_enabled = true
+		bmat.emission = beam_colors[i]
+		bmat.emission_energy_multiplier = 1.6
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		beam.material_override = bmat
+		beam.position = Vector3(0, 5.50, 0)
+		pillar.add_child(beam)
+		# Slow color shift on the underlying material
+		var tw: Tween = bmat.create_tween().set_loops()
+		var alt: Color = beam_colors[(i + 2) % 5]
+		tw.tween_property(bmat, "emission", alt, 4.0 + i * 0.3)
+		tw.tween_property(bmat, "emission", beam_colors[i], 4.0 + i * 0.3)
+		# Light at the base
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = beam_colors[i]
+		light.light_energy = 1.4
+		light.omni_range = 4.0
+		light.position = Vector3(0, 1.0, 0)
+		pillar.add_child(light)
 
 
 
