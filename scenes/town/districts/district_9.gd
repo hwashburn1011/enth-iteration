@@ -73,6 +73,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_molten_behemoth_midboss(geom)
 	_build_d9_sky_lava_lantern(geom)
 	_build_d9_forge_sentry_mech(geom)
+	_build_d9_molten_cascade(geom)
 	print("[D9Builder] done")
 
 
@@ -4652,6 +4653,123 @@ func _build_d9_forge_sentry_mech(geom: Node) -> void:
 	caps.height = 2.40
 	caps.radius = 0.75
 	cs.shape = caps
+	stb.add_child(cs)
+	pivot.add_child(stb)
+
+
+func _build_d9_molten_cascade(geom: Node) -> void:
+	## Epic-9 T53: a molten lava cascade pouring from a basalt cliff face
+	## into a glowing pool below. Vertical sheet mesh + a wider splash pool
+	## with rising particle haze. Hero scenery for the second half of D9.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_MoltenCascade"
+	pivot.position = D9_CENTER + Vector3(54, 0, 8)
+	geom.add_child(pivot)
+	# Cliff backdrop — tall basalt slab
+	var cliff: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(7.5, 8.0, 1.2)
+	cliff.mesh = cm
+	var cliff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cliff_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	cliff_mat.metallic = 0.20
+	cliff_mat.roughness = 0.85
+	cliff_mat.emission_enabled = true
+	cliff_mat.emission = Color(1.0, 0.30, 0.05)
+	cliff_mat.emission_energy_multiplier = 0.18
+	cliff.material_override = cliff_mat
+	cliff.position = Vector3(0, 4.0, 0.50)
+	pivot.add_child(cliff)
+	# Falling lava sheet (vertical plane)
+	var sheet: MeshInstance3D = MeshInstance3D.new()
+	var pm: PlaneMesh = PlaneMesh.new()
+	pm.size = Vector2(2.40, 7.50)
+	sheet.mesh = pm
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.55, 0.10)
+	lava_mat.emission_energy_multiplier = 5.5
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lava_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	sheet.material_override = lava_mat
+	sheet.position = Vector3(0, 4.0, -0.10)
+	sheet.rotation.x = PI / 2.0
+	pivot.add_child(sheet)
+	# Pool basin — wide flat cylinder at the base
+	var pool: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 3.20
+	pcm.bottom_radius = 3.20
+	pcm.height = 0.30
+	pool.mesh = pcm
+	var pool_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pool_mat.albedo_color = Color(1.0, 0.50, 0.12)
+	pool_mat.emission_enabled = true
+	pool_mat.emission = Color(1.0, 0.55, 0.10)
+	pool_mat.emission_energy_multiplier = 4.0
+	pool_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pool.material_override = pool_mat
+	pool.position = Vector3(0, 0.15, -1.80)
+	pivot.add_child(pool)
+	# Rising heat particles from the splash zone
+	var haze: GPUParticles3D = GPUParticles3D.new()
+	haze.amount = 60
+	haze.lifetime = 3.0
+	haze.position = Vector3(0, 0.40, -1.80)
+	var hmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	hmat.direction = Vector3(0, 1, 0)
+	hmat.spread = 25.0
+	hmat.initial_velocity_min = 0.55
+	hmat.initial_velocity_max = 1.40
+	hmat.gravity = Vector3(0, 0.20, 0)
+	hmat.scale_min = 0.30
+	hmat.scale_max = 0.65
+	hmat.color = Color(1.0, 0.55, 0.20, 0.55)
+	haze.process_material = hmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.55, 0.55)
+	haze.draw_pass_1 = qm
+	pivot.add_child(haze)
+	# Bright splash glow at the impact point
+	var splash: MeshInstance3D = MeshInstance3D.new()
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.85
+	sm.height = 1.10
+	splash.mesh = sm
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(1.0, 0.70, 0.20)
+	smat.emission_enabled = true
+	smat.emission = Color(1.0, 0.65, 0.20)
+	smat.emission_energy_multiplier = 7.5
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	splash.material_override = smat
+	splash.position = Vector3(0, 0.55, -0.95)
+	splash.scale = Vector3(1.0, 0.45, 1.0)
+	pivot.add_child(splash)
+	# Two amber lights flanking the cascade
+	for ox in [-2.0, 2.0]:
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(ox, 2.0, -1.20)
+		lt.light_color = Color(1.0, 0.45, 0.10)
+		lt.light_energy = 3.4
+		lt.omni_range = 9.0
+		pivot.add_child(lt)
+	# Subtle vertical UV-style scroll on the falling sheet via emission tween
+	var stream: Tween = pivot.create_tween().set_loops()
+	stream.tween_property(lava_mat, "emission_energy_multiplier", 7.0, 0.7).set_ease(Tween.EASE_IN_OUT)
+	stream.tween_property(lava_mat, "emission_energy_multiplier", 4.5, 0.7).set_ease(Tween.EASE_IN_OUT)
+	# Splash bulb pulse
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(splash, "scale", Vector3(1.18, 0.55, 1.18), 0.55).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(splash, "scale", Vector3(0.92, 0.40, 0.92), 0.55).set_ease(Tween.EASE_IN_OUT)
+	# Cliff collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 4.0, 0.50)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(7.5, 8.0, 1.2)
+	cs.shape = bs
 	stb.add_child(cs)
 	pivot.add_child(stb)
 
