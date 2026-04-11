@@ -116,6 +116,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_boss_approach_sentinels(geom)
 	_build_d9_boss_approach_altars(geom)
 	_build_d9_boss_arena_floor(geom)
+	_build_d9_forge_lord(geom)
 	print("[D9Builder] done")
 
 
@@ -11484,4 +11485,293 @@ func _build_d9_boss_arena_floor(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_forge_lord(geom: Node) -> void:
+	## Epic-9 T96: FORGE LORD — massive humanoid boss landmark standing
+	## at the center of the arena. 9m towering iron-and-flame god-king
+	## holding a giant 6m warhammer overhead. Crown of horns, glowing
+	## molten chest forge core, glowing visor band, scorched cape behind,
+	## ember mote shower, and strong central red OmniLight.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeLord"
+	# Stand at the center of the arena (arena floor at -34, deck height ~1.1)
+	pivot.position = D9_CENTER + Vector3(0, 1.10, -34)
+	geom.add_child(pivot)
+	# Materials
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.16, 0.12, 0.09)
+	iron_mat.metallic = 0.90
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.45
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.85
+	var molten_mat: StandardMaterial3D = StandardMaterial3D.new()
+	molten_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	molten_mat.emission_enabled = true
+	molten_mat.emission = Color(1.0, 0.45, 0.05)
+	molten_mat.emission_energy_multiplier = 9.0
+	molten_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 7.5
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cape_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cape_mat.albedo_color = Color(0.40, 0.10, 0.06)
+	cape_mat.roughness = 0.85
+	cape_mat.emission_enabled = true
+	cape_mat.emission = Color(0.85, 0.20, 0.05)
+	cape_mat.emission_energy_multiplier = 0.45
+	# ---- Lower body (massive armored greaves + waist) ----
+	var legs: MeshInstance3D = MeshInstance3D.new()
+	var lgm: BoxMesh = BoxMesh.new()
+	lgm.size = Vector3(2.40, 2.20, 1.40)
+	legs.mesh = lgm
+	legs.material_override = iron_mat
+	legs.position = Vector3(0, 1.10, 0)
+	pivot.add_child(legs)
+	# Greave brass trim (waist band)
+	var waist: MeshInstance3D = MeshInstance3D.new()
+	var wsm: BoxMesh = BoxMesh.new()
+	wsm.size = Vector3(2.60, 0.30, 1.55)
+	waist.mesh = wsm
+	waist.material_override = brass_mat
+	waist.position = Vector3(0, 2.30, 0)
+	pivot.add_child(waist)
+	# Lower body collision (cover legs)
+	var legs_sb: StaticBody3D = StaticBody3D.new()
+	legs_sb.position = Vector3(0, 1.10, 0)
+	var legs_cs: CollisionShape3D = CollisionShape3D.new()
+	var legs_bsh: BoxShape3D = BoxShape3D.new()
+	legs_bsh.size = Vector3(2.40, 2.20, 1.40)
+	legs_cs.shape = legs_bsh
+	legs_sb.add_child(legs_cs)
+	pivot.add_child(legs_sb)
+	# ---- Massive armored torso ----
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(3.20, 3.00, 1.65)
+	torso.mesh = tm
+	torso.material_override = iron_mat
+	torso.position = Vector3(0, 4.00, 0)
+	pivot.add_child(torso)
+	# Torso collision
+	var torso_sb: StaticBody3D = StaticBody3D.new()
+	torso_sb.position = Vector3(0, 4.00, 0)
+	var torso_cs: CollisionShape3D = CollisionShape3D.new()
+	var torso_bsh: BoxShape3D = BoxShape3D.new()
+	torso_bsh.size = Vector3(3.20, 3.00, 1.65)
+	torso_cs.shape = torso_bsh
+	torso_sb.add_child(torso_cs)
+	pivot.add_child(torso_sb)
+	# Brass chest plates (3 vertical bands)
+	for px in [-0.85, 0.0, 0.85]:
+		var plate: MeshInstance3D = MeshInstance3D.new()
+		var ppm: BoxMesh = BoxMesh.new()
+		ppm.size = Vector3(0.50, 2.85, 0.10)
+		plate.mesh = ppm
+		plate.material_override = brass_mat
+		plate.position = Vector3(px, 4.00, -0.85)
+		pivot.add_child(plate)
+	# ---- Glowing molten chest forge core ----
+	# Outer rim torus
+	var core_rim: MeshInstance3D = MeshInstance3D.new()
+	var crm: TorusMesh = TorusMesh.new()
+	crm.inner_radius = 0.55
+	crm.outer_radius = 0.75
+	core_rim.mesh = crm
+	core_rim.material_override = brass_mat
+	core_rim.position = Vector3(0, 4.20, -0.90)
+	pivot.add_child(core_rim)
+	# Bright molten center sphere
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var corem: SphereMesh = SphereMesh.new()
+	corem.radius = 0.50
+	corem.height = 0.95
+	core.mesh = corem
+	core.material_override = molten_mat
+	core.position = Vector3(0, 4.20, -0.92)
+	pivot.add_child(core)
+	# ---- Pauldrons (massive brass shoulder caps) ----
+	for sx in [-1.95, 1.95]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var pmm: SphereMesh = SphereMesh.new()
+		pmm.radius = 0.85
+		pmm.height = 1.55
+		paul.mesh = pmm
+		paul.material_override = brass_mat
+		paul.position = Vector3(sx, 5.10, 0)
+		paul.scale = Vector3(1.0, 0.55, 1.10)
+		pivot.add_child(paul)
+		# Spike on each pauldron (small prism)
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.45, 0.85, 0.45)
+		spike.mesh = spm
+		spike.material_override = iron_mat
+		spike.position = Vector3(sx, 5.55, 0)
+		pivot.add_child(spike)
+	# ---- Helm ----
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hmm: BoxMesh = BoxMesh.new()
+	hmm.size = Vector3(1.60, 1.40, 1.30)
+	helm.mesh = hmm
+	helm.material_override = iron_mat
+	helm.position = Vector3(0, 6.30, 0)
+	pivot.add_child(helm)
+	# Helm collision
+	var helm_sb: StaticBody3D = StaticBody3D.new()
+	helm_sb.position = Vector3(0, 6.30, 0)
+	var helm_cs: CollisionShape3D = CollisionShape3D.new()
+	var helm_bsh: BoxShape3D = BoxShape3D.new()
+	helm_bsh.size = Vector3(1.60, 1.40, 1.30)
+	helm_cs.shape = helm_bsh
+	helm_sb.add_child(helm_cs)
+	pivot.add_child(helm_sb)
+	# Glowing visor band — wide horizontal stripe across the helm front
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(1.30, 0.20, 0.06)
+	visor.mesh = vm
+	visor.material_override = molten_mat
+	visor.position = Vector3(0, 6.40, -0.68)
+	pivot.add_child(visor)
+	# ---- Crown of horns (5 brass horns radiating up from the helm) ----
+	for i in 5:
+		var ang: float = (float(i) - 2.0) * 0.45
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var honm: PrismMesh = PrismMesh.new()
+		honm.size = Vector3(0.30, 1.30, 0.30)
+		horn.mesh = honm
+		horn.material_override = brass_mat
+		horn.position = Vector3(sin(ang) * 0.65, 7.40, -0.20)
+		horn.rotation.z = ang
+		pivot.add_child(horn)
+	# ---- Massive 6m warhammer held overhead ----
+	# Hammer pivot anchored at the right hand position
+	var hammer_pivot: Node3D = Node3D.new()
+	hammer_pivot.position = Vector3(2.80, 5.50, 0)
+	pivot.add_child(hammer_pivot)
+	# Hammer shaft
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var shm: CylinderMesh = CylinderMesh.new()
+	shm.top_radius = 0.18
+	shm.bottom_radius = 0.22
+	shm.height = 6.00
+	shaft.mesh = shm
+	shaft.material_override = iron_mat
+	shaft.position = Vector3(0.5, 2.50, 0)
+	shaft.rotation.z = -0.5
+	hammer_pivot.add_child(shaft)
+	# Hammer brass binding rings
+	for ry in [1.0, 3.0, 5.0]:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.18
+		rmm.outer_radius = 0.30
+		ring.mesh = rmm
+		ring.material_override = brass_mat
+		ring.position = Vector3(0.5 + ry * 0.12, ry, 0)
+		ring.rotation.z = -0.5 + PI / 2.0
+		hammer_pivot.add_child(ring)
+	# Massive hammer head (huge box)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var headm: BoxMesh = BoxMesh.new()
+	headm.size = Vector3(2.20, 1.60, 2.40)
+	head.mesh = headm
+	head.material_override = iron_mat
+	head.position = Vector3(1.20, 5.40, 0)
+	pivot.add_child(head)
+	# Hammer head collision
+	var head_sb: StaticBody3D = StaticBody3D.new()
+	head_sb.position = Vector3(1.20, 5.40, 0)
+	var head_cs: CollisionShape3D = CollisionShape3D.new()
+	var head_bsh: BoxShape3D = BoxShape3D.new()
+	head_bsh.size = Vector3(2.20, 1.60, 2.40)
+	head_cs.shape = head_bsh
+	head_sb.add_child(head_cs)
+	pivot.add_child(head_sb)
+	# Glowing molten core stripe through the hammer head
+	var head_core: MeshInstance3D = MeshInstance3D.new()
+	var hcm: BoxMesh = BoxMesh.new()
+	hcm.size = Vector3(2.40, 0.40, 0.40)
+	head_core.mesh = hcm
+	head_core.material_override = molten_mat
+	head_core.position = Vector3(1.20, 5.40, 0)
+	pivot.add_child(head_core)
+	# Brass hammer head end-caps
+	for hcz in [-1.20, 1.20]:
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(2.30, 1.70, 0.18)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(1.20, 5.40, hcz)
+		pivot.add_child(cap)
+	# ---- Scorched cape behind (wide drape) ----
+	var cape: MeshInstance3D = MeshInstance3D.new()
+	var capem: BoxMesh = BoxMesh.new()
+	capem.size = Vector3(3.40, 4.20, 0.10)
+	cape.mesh = capem
+	cape.material_override = cape_mat
+	cape.position = Vector3(0, 3.80, 0.95)
+	cape.rotation.x = 0.18
+	pivot.add_child(cape)
+	# Cape glowing edge stripe (bottom hem)
+	var hem: MeshInstance3D = MeshInstance3D.new()
+	var hemm: BoxMesh = BoxMesh.new()
+	hemm.size = Vector3(3.40, 0.20, 0.06)
+	hem.mesh = hemm
+	hem.material_override = ember_mat
+	hem.position = Vector3(0, 1.80, 1.30)
+	pivot.add_child(hem)
+	# ---- Strong central red OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 5.00, -0.50)
+	lt.light_color = Color(1.0, 0.40, 0.10)
+	lt.light_energy = 6.0
+	lt.omni_range = 22.0
+	pivot.add_child(lt)
+	# ---- Ember mote shower from the helm + chest core ----
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 6.80, -0.20)
+	motes.amount = 40
+	motes.lifetime = 3.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 28.0
+	pmat.initial_velocity_min = 0.8
+	pmat.initial_velocity_max = 1.6
+	pmat.gravity = Vector3(0, 0.4, 0)
+	pmat.scale_min = 0.08
+	pmat.scale_max = 0.16
+	pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.06
+	psmesh.height = 0.12
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# ---- Pulses ----
+	# Molten core + visor + hammer core pulse
+	var mpulse: Tween = pivot.create_tween().set_loops()
+	mpulse.tween_property(molten_mat, "emission_energy_multiplier", 12.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	mpulse.tween_property(molten_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Brass pulse (subtle)
+	var bpulse: Tween = pivot.create_tween().set_loops()
+	bpulse.tween_property(brass_mat, "emission_energy_multiplier", 1.20, 2.0).set_ease(Tween.EASE_IN_OUT)
+	bpulse.tween_property(brass_mat, "emission_energy_multiplier", 0.65, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Slow body sway — entire god-king rocks slightly side-to-side as if "alive"
+	var sway: Tween = pivot.create_tween().set_loops()
+	sway.tween_property(pivot, "rotation:y", 0.05, 3.5).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(pivot, "rotation:y", -0.05, 3.5).set_ease(Tween.EASE_IN_OUT)
 
