@@ -32881,6 +32881,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_weapon_mannequin(geom)
 	# Epic-9 T20: soot vents
 	_build_d9_soot_vents(geom)
+	# Epic-9 T21: weapon vendor stall
+	_build_d9_weapon_stall(geom)
+	# Epic-9 T22: weapon vendor NPC
+	_build_d9_weapon_vendor_npc()
+	# Epic-9 T23: hanging smelter pots
+	_build_d9_smelter_pots(geom)
+	# Epic-9 T24: repair anvil station
+	_build_d9_repair_station(geom)
+	# Epic-9 T25: iron ingot stacks
+	_build_d9_ingot_stacks(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -42209,6 +42219,451 @@ func _build_d9_soot_vents(geom: Node) -> void:
 		smoke_mesh.height = 0.40
 		smoke.draw_pass_1 = smoke_mesh
 		vent.add_child(smoke)
+
+
+func _build_d9_weapon_stall(geom: Node) -> void:
+	## Epic-9 T21: stone counter weapon stall with 4 weapons displayed on top
+	## (axe, mace, dagger, longsword) and a stone awning behind.
+	var stall: Node3D = Node3D.new()
+	stall.name = "D9WeaponStall"
+	stall.position = Vector3(D9_CENTER.x + 14, 0, 6)
+	geom.add_child(stall)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.55, 0.58, 0.62)
+	iron.metallic = 0.92
+	iron.roughness = 0.30
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	# Stone counter (long box)
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(3.40, 1.10, 0.85)
+	counter.mesh = cb
+	counter.material_override = stone_mat
+	counter.position = Vector3(0, 0.55, 0)
+	stall.add_child(counter)
+	# Stone back wall (tall thin box behind)
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(3.40, 2.20, 0.18)
+	back.mesh = bb
+	back.material_override = stone_mat
+	back.position = Vector3(0, 1.10, -0.50)
+	stall.add_child(back)
+	# Awning (sloped overhead box)
+	var awn: MeshInstance3D = MeshInstance3D.new()
+	var ab: BoxMesh = BoxMesh.new()
+	ab.size = Vector3(3.60, 0.18, 1.20)
+	awn.mesh = ab
+	awn.material_override = wood
+	awn.position = Vector3(0, 2.30, 0.10)
+	awn.rotation_degrees = Vector3(-12, 0, 0)
+	stall.add_child(awn)
+	# Weapon 1: axe (haft + curved blade box)
+	var axe_root: Node3D = Node3D.new()
+	axe_root.position = Vector3(-1.20, 1.20, 0)
+	axe_root.rotation_degrees = Vector3(0, 0, 90)
+	stall.add_child(axe_root)
+	var axe_haft: MeshInstance3D = MeshInstance3D.new()
+	var ahcm: CylinderMesh = CylinderMesh.new()
+	ahcm.top_radius = 0.04
+	ahcm.bottom_radius = 0.05
+	ahcm.height = 1.10
+	axe_haft.mesh = ahcm
+	axe_haft.material_override = wood
+	axe_root.add_child(axe_haft)
+	var axe_head: MeshInstance3D = MeshInstance3D.new()
+	var ahb: BoxMesh = BoxMesh.new()
+	ahb.size = Vector3(0.30, 0.45, 0.06)
+	axe_head.mesh = ahb
+	axe_head.material_override = iron
+	axe_head.position = Vector3(0.20, 0.45, 0)
+	axe_root.add_child(axe_head)
+	# Weapon 2: mace (haft + spiked spherical head)
+	var mace_root: Node3D = Node3D.new()
+	mace_root.position = Vector3(-0.40, 1.20, 0)
+	mace_root.rotation_degrees = Vector3(0, 0, 90)
+	stall.add_child(mace_root)
+	var mace_haft: MeshInstance3D = MeshInstance3D.new()
+	mace_haft.mesh = ahcm
+	mace_haft.material_override = wood
+	mace_root.add_child(mace_haft)
+	var mace_head: MeshInstance3D = MeshInstance3D.new()
+	var mhsm: SphereMesh = SphereMesh.new()
+	mhsm.radius = 0.18
+	mhsm.height = 0.36
+	mace_head.mesh = mhsm
+	mace_head.material_override = iron
+	mace_head.position = Vector3(0, 0.50, 0)
+	mace_root.add_child(mace_head)
+	# Weapon 3: dagger (small straight blade)
+	var dagger: MeshInstance3D = MeshInstance3D.new()
+	var dgb: BoxMesh = BoxMesh.new()
+	dgb.size = Vector3(0.06, 0.55, 0.04)
+	dagger.mesh = dgb
+	dagger.material_override = iron
+	dagger.position = Vector3(0.40, 1.40, 0)
+	dagger.rotation_degrees = Vector3(0, 0, 90)
+	stall.add_child(dagger)
+	var dagger_hilt: MeshInstance3D = MeshInstance3D.new()
+	var dhb: BoxMesh = BoxMesh.new()
+	dhb.size = Vector3(0.04, 0.18, 0.04)
+	dagger_hilt.mesh = dhb
+	dagger_hilt.material_override = wood
+	dagger_hilt.position = Vector3(0.70, 1.40, 0)
+	dagger_hilt.rotation_degrees = Vector3(0, 0, 90)
+	stall.add_child(dagger_hilt)
+	# Weapon 4: longsword
+	var sword: MeshInstance3D = MeshInstance3D.new()
+	var sb: BoxMesh = BoxMesh.new()
+	sb.size = Vector3(0.10, 1.30, 0.04)
+	sword.mesh = sb
+	sword.material_override = iron
+	sword.position = Vector3(1.20, 1.40, 0)
+	sword.rotation_degrees = Vector3(0, 0, 90)
+	stall.add_child(sword)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	var sword_guard: MeshInstance3D = MeshInstance3D.new()
+	var sgb: BoxMesh = BoxMesh.new()
+	sgb.size = Vector3(0.30, 0.06, 0.06)
+	sword_guard.mesh = sgb
+	sword_guard.material_override = brass
+	sword_guard.position = Vector3(0.55, 1.40, 0)
+	stall.add_child(sword_guard)
+	# Counter collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(3.40, 1.10, 0.85)
+	cs.shape = bs
+	stb.add_child(cs)
+	stall.add_child(stb)
+
+
+func _build_d9_weapon_vendor_npc() -> void:
+	## Epic-9 T22: weapon vendor NPC behind the stall — burly figure with
+	## a leather vest and braided beard.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9WeaponVendorSlot"
+	slot.position = Vector3(D9_CENTER.x + 14, 0, 5)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9WeaponVendor"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Brunhild Ironarm")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_weapon_vendor")
+	slot.add_child(npc)
+	# Leather vest (burly chest)
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.42, 0.22, 0.10)
+	vest_mat.roughness = 0.85
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vb: BoxMesh = BoxMesh.new()
+	vb.size = Vector3(1.05, 1.10, 0.65)
+	vest.mesh = vb
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 1.10, 0)
+	npc.add_child(vest)
+	# Brass studs across the vest (8)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	for sx in [-0.30, -0.10, 0.10, 0.30]:
+		for sy in [0.30, -0.10]:
+			var stud: MeshInstance3D = MeshInstance3D.new()
+			var ssm: SphereMesh = SphereMesh.new()
+			ssm.radius = 0.04
+			ssm.height = 0.08
+			stud.mesh = ssm
+			stud.material_override = brass
+			stud.position = Vector3(sx, 1.10 + sy, 0.34)
+			npc.add_child(stud)
+	# Braided beard (dark prism hanging from chin)
+	var beard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beard_mat.albedo_color = Color(0.20, 0.15, 0.10)
+	beard_mat.roughness = 0.85
+	var beard: MeshInstance3D = MeshInstance3D.new()
+	var bpm: PrismMesh = PrismMesh.new()
+	bpm.size = Vector3(0.40, 0.50, 0.18)
+	beard.mesh = bpm
+	beard.material_override = beard_mat
+	beard.position = Vector3(0, 1.62, 0.30)
+	beard.rotation_degrees = Vector3(180, 0, 0)
+	npc.add_child(beard)
+	# Brass beard rings (2 small toruses)
+	for sy in [1.50, 1.32]:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 0.07
+		tm.outer_radius = 0.10
+		ring.mesh = tm
+		ring.material_override = brass
+		ring.position = Vector3(0, sy, 0.32)
+		ring.rotation_degrees = Vector3(0, 0, 90)
+		npc.add_child(ring)
+	# Sledgehammer leaning against the side
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.22, 0.20, 0.20)
+	iron_mat.metallic = 0.90
+	iron_mat.roughness = 0.30
+	var ham_root: Node3D = Node3D.new()
+	ham_root.position = Vector3(-0.55, 1.05, 0.20)
+	ham_root.rotation_degrees = Vector3(0, 0, 18)
+	npc.add_child(ham_root)
+	var haft: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.06
+	hcm.bottom_radius = 0.07
+	hcm.height = 1.40
+	haft.mesh = hcm
+	haft.material_override = wood_mat
+	haft.position = Vector3(0, 0, 0)
+	ham_root.add_child(haft)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdb: BoxMesh = BoxMesh.new()
+	hdb.size = Vector3(0.45, 0.22, 0.22)
+	head.mesh = hdb
+	head.material_override = iron_mat
+	head.position = Vector3(0, 0.70, 0)
+	ham_root.add_child(head)
+
+
+func _build_d9_smelter_pots(geom: Node) -> void:
+	## Epic-9 T23: 2 hanging cauldrons of molten metal suspended from iron
+	## frames, glowing orange and pulsing.
+	var pots: Node3D = Node3D.new()
+	pots.name = "D9SmelterPots"
+	pots.position = Vector3(D9_CENTER.x - 12, 0, 12)
+	geom.add_child(pots)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.85
+	iron.roughness = 0.45
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.55, 0.18)
+	lava_mat.emission_energy_multiplier = 4.0
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in range(2):
+		var unit: Node3D = Node3D.new()
+		unit.position = Vector3(i * 4.0, 0, 0)
+		pots.add_child(unit)
+		# A-frame: 2 angled posts and a top cross-bar
+		for sx in [-1.0, 1.0]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pcm: CylinderMesh = CylinderMesh.new()
+			pcm.top_radius = 0.10
+			pcm.bottom_radius = 0.14
+			pcm.height = 3.50
+			post.mesh = pcm
+			post.material_override = iron
+			post.position = Vector3(sx * 0.85, 1.75, 0)
+			post.rotation_degrees = Vector3(0, 0, sx * 18.0)
+			unit.add_child(post)
+			# Per-post collision
+			var sb: StaticBody3D = StaticBody3D.new()
+			sb.position = Vector3(sx * 0.85, 1.75, 0)
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.18
+			cap.height = 3.0
+			cs.shape = cap
+			sb.add_child(cs)
+			unit.add_child(sb)
+		# Top cross-bar
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bcm: CylinderMesh = CylinderMesh.new()
+		bcm.top_radius = 0.08
+		bcm.bottom_radius = 0.08
+		bcm.height = 2.20
+		bar.mesh = bcm
+		bar.material_override = iron
+		bar.position = Vector3(0, 3.40, 0)
+		bar.rotation_degrees = Vector3(0, 0, 90)
+		unit.add_child(bar)
+		# Chain (two thin cylinders dropping down)
+		for sx in [-0.20, 0.20]:
+			var chain: MeshInstance3D = MeshInstance3D.new()
+			var chm: CylinderMesh = CylinderMesh.new()
+			chm.top_radius = 0.05
+			chm.bottom_radius = 0.05
+			chm.height = 1.20
+			chain.mesh = chm
+			chain.material_override = iron
+			chain.position = Vector3(sx, 2.65, 0)
+			unit.add_child(chain)
+		# Cauldron (wide cylinder with rounded bottom)
+		var pot: MeshInstance3D = MeshInstance3D.new()
+		var pcm2: CylinderMesh = CylinderMesh.new()
+		pcm2.top_radius = 0.85
+		pcm2.bottom_radius = 0.55
+		pcm2.height = 0.95
+		pot.mesh = pcm2
+		pot.material_override = iron
+		pot.position = Vector3(0, 1.55, 0)
+		unit.add_child(pot)
+		# Molten content (emissive disc at the rim)
+		var lava: MeshInstance3D = MeshInstance3D.new()
+		var lcm: CylinderMesh = CylinderMesh.new()
+		lcm.top_radius = 0.78
+		lcm.bottom_radius = 0.78
+		lcm.height = 0.10
+		lava.mesh = lcm
+		lava.material_override = lava_mat
+		lava.position = Vector3(0, 1.95, 0)
+		unit.add_child(lava)
+		var pulse: Tween = lava.create_tween().set_loops()
+		var phase: float = float(i) * 0.4
+		pulse.tween_property(lava_mat, "emission_energy_multiplier", 5.5, 1.0 + phase)
+		pulse.tween_property(lava_mat, "emission_energy_multiplier", 2.5, 1.0 + phase)
+		# Light from the cauldron
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.light_color = Color(1.0, 0.55, 0.18)
+		lt.light_energy = 3.0
+		lt.omni_range = 7.0
+		lt.position = Vector3(0, 2.10, 0)
+		unit.add_child(lt)
+
+
+func _build_d9_repair_station(geom: Node) -> void:
+	## Epic-9 T24: small specialized repair anvil with a tongs and a stack
+	## of repair scrap on a stone bench beside it.
+	var station: Node3D = Node3D.new()
+	station.name = "D9RepairStation"
+	station.position = Vector3(D9_CENTER.x + 6, 0, -8)
+	geom.add_child(station)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.92
+	iron.roughness = 0.30
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	# Smaller anvil (compact)
+	var stump: MeshInstance3D = MeshInstance3D.new()
+	var scm: CylinderMesh = CylinderMesh.new()
+	scm.top_radius = 0.32
+	scm.bottom_radius = 0.36
+	scm.height = 0.70
+	stump.mesh = scm
+	stump.material_override = wood
+	stump.position = Vector3(0, 0.35, 0)
+	station.add_child(stump)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(0.65, 0.16, 0.32)
+	top.mesh = tb
+	top.material_override = iron
+	top.position = Vector3(0, 0.78, 0)
+	station.add_child(top)
+	# Tongs lying across the top (2 thin curved cylinders)
+	var tongs_root: Node3D = Node3D.new()
+	tongs_root.position = Vector3(0, 0.92, 0)
+	tongs_root.rotation_degrees = Vector3(0, 25, 0)
+	station.add_child(tongs_root)
+	for sz in [-0.04, 0.04]:
+		var tg: MeshInstance3D = MeshInstance3D.new()
+		var tcm: CylinderMesh = CylinderMesh.new()
+		tcm.top_radius = 0.03
+		tcm.bottom_radius = 0.04
+		tcm.height = 0.65
+		tg.mesh = tcm
+		tg.material_override = iron
+		tg.position = Vector3(0, 0, sz)
+		tg.rotation_degrees = Vector3(0, 0, 90)
+		tongs_root.add_child(tg)
+	# Stone bench (long box) beside the anvil
+	var bench: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(1.20, 0.65, 0.55)
+	bench.mesh = bb
+	bench.material_override = stone_mat
+	bench.position = Vector3(1.20, 0.32, 0)
+	station.add_child(bench)
+	# Repair scrap pile (3 small bent iron bars)
+	for i in range(3):
+		var scrap: MeshInstance3D = MeshInstance3D.new()
+		var sb: BoxMesh = BoxMesh.new()
+		sb.size = Vector3(0.30 + randf() * 0.15, 0.05, 0.08)
+		scrap.mesh = sb
+		scrap.material_override = iron
+		scrap.position = Vector3(1.10 + randf() * 0.20, 0.70, -0.10 + float(i) * 0.10)
+		scrap.rotation_degrees = Vector3(0, randf_range(-25, 25), randf_range(-15, 15))
+		station.add_child(scrap)
+	# Combined collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0.55, 0.45, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.50, 1.10, 0.85)
+	cs.shape = bs
+	stb.add_child(cs)
+	station.add_child(stb)
+
+
+func _build_d9_ingot_stacks(geom: Node) -> void:
+	## Epic-9 T25: 3 organized stacks of finished iron ingot bars at the
+	## edge of the smithing area.
+	var stacks: Node3D = Node3D.new()
+	stacks.name = "D9IngotStacks"
+	stacks.position = Vector3(D9_CENTER.x - 4, 0, 12)
+	geom.add_child(stacks)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.55, 0.55, 0.58)
+	iron.metallic = 0.90
+	iron.roughness = 0.30
+	for i in range(3):
+		var stack: Node3D = Node3D.new()
+		stack.position = Vector3(i * 1.30, 0, 0)
+		stacks.add_child(stack)
+		# 6 ingots stacked in a brick-like pattern (3 bottom, 2 middle, 1 top)
+		var positions: Array[Vector3] = [
+			Vector3(-0.35, 0.10, 0),
+			Vector3(0.0, 0.10, 0),
+			Vector3(0.35, 0.10, 0),
+			Vector3(-0.18, 0.30, 0),
+			Vector3(0.18, 0.30, 0),
+			Vector3(0.0, 0.50, 0),
+		]
+		for p in positions:
+			var ingot: MeshInstance3D = MeshInstance3D.new()
+			var ib: BoxMesh = BoxMesh.new()
+			ib.size = Vector3(0.32, 0.18, 0.55)
+			ingot.mesh = ib
+			ingot.material_override = iron
+			ingot.position = p
+			stack.add_child(ingot)
+		# Stack collision
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(0, 0.35, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bs: BoxShape3D = BoxShape3D.new()
+		bs.size = Vector3(1.10, 0.70, 0.65)
+		cs.shape = bs
+		stb.add_child(cs)
+		stack.add_child(stb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
