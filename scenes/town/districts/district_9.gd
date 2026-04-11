@@ -77,6 +77,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_priestess_npc(town)
 	_build_d9_basalt_stepping_stones(geom)
 	_build_d9_ember_elemental(geom)
+	_build_d9_forge_anvil_shrine(geom)
 	print("[D9Builder] done")
 
 
@@ -5071,5 +5072,146 @@ func _build_d9_ember_elemental(geom: Node) -> void:
 	var pulse2: Tween = pivot.create_tween().set_loops()
 	pulse2.tween_property(core, "scale", Vector3(1.18, 1.18, 1.18), 0.85).set_ease(Tween.EASE_IN_OUT)
 	pulse2.tween_property(core, "scale", Vector3(0.92, 0.92, 0.92), 0.85).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_forge_anvil_shrine(geom: Node) -> void:
+	## Epic-9 T57: small forge shrine — anvil on a basalt plinth with a
+	## propped hammer, ringed by a glowing rune circle. Suggests a
+	## save/rest point in the second half of D9.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeAnvilShrine"
+	pivot.position = D9_CENTER + Vector3(60, 0, -4)
+	geom.add_child(pivot)
+	# Basalt plinth — wide stone disc
+	var plinth: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 1.40
+	pcm.bottom_radius = 1.55
+	pcm.height = 0.80
+	plinth.mesh = pcm
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.12, 0.10, 0.09)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(1.0, 0.32, 0.05)
+	stone_mat.emission_energy_multiplier = 0.30
+	plinth.material_override = stone_mat
+	plinth.position = Vector3(0, 0.40, 0)
+	pivot.add_child(plinth)
+	# Anvil body on top of plinth
+	var anvil: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(1.20, 0.55, 0.80)
+	anvil.mesh = am
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.35
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(1.0, 0.40, 0.10)
+	iron_mat.emission_energy_multiplier = 0.55
+	anvil.material_override = iron_mat
+	anvil.position = Vector3(0, 1.10, 0)
+	pivot.add_child(anvil)
+	# Anvil horn nub
+	var horn: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.40, 0.45, 0.65)
+	horn.mesh = hm
+	horn.material_override = iron_mat
+	horn.position = Vector3(0.75, 1.10, 0)
+	horn.rotation.z = -PI / 2.0
+	pivot.add_child(horn)
+	# Hammer propped against the anvil — head + shaft
+	var hammer_head: MeshInstance3D = MeshInstance3D.new()
+	var hhm: BoxMesh = BoxMesh.new()
+	hhm.size = Vector3(0.32, 0.32, 0.55)
+	hammer_head.mesh = hhm
+	hammer_head.material_override = iron_mat
+	hammer_head.position = Vector3(-0.85, 1.30, 0.05)
+	hammer_head.rotation.z = 0.40
+	pivot.add_child(hammer_head)
+	var hammer_shaft: MeshInstance3D = MeshInstance3D.new()
+	var hsm: CylinderMesh = CylinderMesh.new()
+	hsm.top_radius = 0.05
+	hsm.bottom_radius = 0.055
+	hsm.height = 1.10
+	hammer_shaft.mesh = hsm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.80
+	hammer_shaft.material_override = wood_mat
+	hammer_shaft.position = Vector3(-0.55, 0.85, 0.05)
+	hammer_shaft.rotation.z = 0.40
+	pivot.add_child(hammer_shaft)
+	# Glowing rune circle on the ground around the plinth
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var trm: TorusMesh = TorusMesh.new()
+	trm.inner_radius = 2.20
+	trm.outer_radius = 2.35
+	ring.mesh = trm
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.55, 0.10)
+	ring_mat.emission_energy_multiplier = 4.5
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = ring_mat
+	ring.position = Vector3(0, 0.04, 0)
+	pivot.add_child(ring)
+	# 4 rune symbols around the ring (small unshaded box decals)
+	for i in 4:
+		var ang: float = (TAU / 4.0) * float(i) + PI / 4.0
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmsh: BoxMesh = BoxMesh.new()
+		rmsh.size = Vector3(0.40, 0.04, 0.40)
+		rune.mesh = rmsh
+		rune.material_override = ring_mat
+		rune.position = Vector3(cos(ang) * 2.27, 0.05, sin(ang) * 2.27)
+		rune.rotation.y = ang
+		pivot.add_child(rune)
+	# Glowing focus orb floating above the anvil
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var om: SphereMesh = SphereMesh.new()
+	om.radius = 0.18
+	om.height = 0.36
+	orb.mesh = om
+	var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	orb_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	orb_mat.emission_enabled = true
+	orb_mat.emission = Color(1.0, 0.70, 0.25)
+	orb_mat.emission_energy_multiplier = 8.0
+	orb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	orb.material_override = orb_mat
+	orb.position = Vector3(0, 2.20, 0)
+	pivot.add_child(orb)
+	# Orb bob + ring slow rotation
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(orb, "position:y", 2.45, 1.5).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(orb, "position:y", 2.00, 1.5).set_ease(Tween.EASE_IN_OUT)
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(ring, "rotation:y", TAU, 12.0)
+	# Ring emission pulse
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(ring_mat, "emission_energy_multiplier", 6.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(ring_mat, "emission_energy_multiplier", 3.2, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Shrine OmniLight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.80, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 3.4
+	lt.omni_range = 9.0
+	pivot.add_child(lt)
+	# Plinth + anvil collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.40, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.height = 0.80
+	cyl.radius = 1.55
+	cs.shape = cyl
+	stb.add_child(cs)
+	pivot.add_child(stb)
 
 
