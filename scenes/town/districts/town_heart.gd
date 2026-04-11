@@ -73,6 +73,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_road_planters(geom)
 	_build_th_courier_hut(geom)
 	_build_th_bookstall(geom)
+	_build_th_postman_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -9954,3 +9955,205 @@ func _build_th_bookstall(geom: Node) -> void:
 	var bpulse2: Tween = pivot.create_tween().set_loops()
 	bpulse2.tween_property(book_mat, "emission_energy_multiplier", 7.5, 2.0).set_ease(Tween.EASE_IN_OUT)
 	bpulse2.tween_property(book_mat, "emission_energy_multiplier", 4.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_postman_npc(town: Node) -> void:
+	## Epic-10 T57: Postman Quill — courier NPC standing in the courier
+	## hut doorway. Brown leather courier coat, brass shoulder strap +
+	## leather satchel, peaked brass cap, sealed letter held in his right
+	## hand on a present pivot.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THPostmanQuillSlot"
+	# Stand in front of the courier hut doorway (NW radial at 12.5, hut faces inward)
+	var ang: float = 3.0 * PI / 4.0
+	# Slightly outside the hut along the inward direction
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 11.20, 0, sin(ang) * 11.20)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THPostmanQuill"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Postman Quill")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_postman_quill")
+	# Face inward toward the beacon
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.30, 0.20, 0.12)
+	coat_mat.roughness = 0.85
+	coat_mat.metallic = 0.18
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.55, 0.30, 0.10)
+	coat_mat.emission_energy_multiplier = 0.20
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.18, 0.10, 0.06)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var paper_mat: StandardMaterial3D = StandardMaterial3D.new()
+	paper_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	paper_mat.roughness = 0.85
+	paper_mat.emission_enabled = true
+	paper_mat.emission = Color(1.0, 0.65, 0.20)
+	paper_mat.emission_energy_multiplier = 0.40
+	var seal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seal_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	seal_mat.emission_enabled = true
+	seal_mat.emission = Color(1.0, 0.55, 0.10)
+	seal_mat.emission_energy_multiplier = 6.5
+	seal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Brown leather courier coat ----
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.05, 1.45, 0.55)
+	coat.mesh = cmesh
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.10, 0)
+	npc.add_child(coat)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(1.05, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.85, 0)
+	npc.add_child(collar)
+	# 3 brass front buttons
+	for by in [1.55, 1.30, 1.05]:
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.05
+		bm.height = 0.10
+		btn.mesh = bm
+		btn.material_override = brass_mat
+		btn.position = Vector3(0, by, -0.30)
+		npc.add_child(btn)
+	# ---- Diagonal brass shoulder strap (left shoulder to right hip) ----
+	var strap: MeshInstance3D = MeshInstance3D.new()
+	var stm: BoxMesh = BoxMesh.new()
+	stm.size = Vector3(0.10, 1.30, 0.06)
+	strap.mesh = stm
+	strap.material_override = brass_mat
+	strap.position = Vector3(0, 1.40, -0.32)
+	strap.rotation.z = 0.45
+	npc.add_child(strap)
+	# Leather satchel at his right hip
+	var satchel: MeshInstance3D = MeshInstance3D.new()
+	var sbm: BoxMesh = BoxMesh.new()
+	sbm.size = Vector3(0.50, 0.45, 0.18)
+	satchel.mesh = sbm
+	satchel.material_override = leather_mat
+	satchel.position = Vector3(0.55, 0.90, -0.05)
+	npc.add_child(satchel)
+	# Satchel brass clasp
+	var clasp: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.16, 0.10, 0.06)
+	clasp.mesh = clm
+	clasp.material_override = brass_mat
+	clasp.position = Vector3(0.55, 1.05, -0.16)
+	npc.add_child(clasp)
+	# Glowing data tag on the satchel (small unshaded amber dot)
+	var tag: MeshInstance3D = MeshInstance3D.new()
+	var tgm: SphereMesh = SphereMesh.new()
+	tgm.radius = 0.06
+	tgm.height = 0.12
+	tag.mesh = tgm
+	tag.material_override = seal_mat
+	tag.position = Vector3(0.55, 0.85, -0.18)
+	npc.add_child(tag)
+	# ---- Peaked brass cap on the head ----
+	var cap_band: MeshInstance3D = MeshInstance3D.new()
+	var cbm: TorusMesh = TorusMesh.new()
+	cbm.inner_radius = 0.30
+	cbm.outer_radius = 0.36
+	cap_band.mesh = cbm
+	cap_band.material_override = brass_mat
+	cap_band.position = Vector3(0, 1.95, 0)
+	cap_band.rotation.x = PI / 2.0
+	npc.add_child(cap_band)
+	# Cap top (small dome)
+	var cap_top: MeshInstance3D = MeshInstance3D.new()
+	var ctm: SphereMesh = SphereMesh.new()
+	ctm.radius = 0.32
+	ctm.height = 0.45
+	cap_top.mesh = ctm
+	cap_top.material_override = coat_mat
+	cap_top.position = Vector3(0, 2.10, 0)
+	cap_top.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(cap_top)
+	# Cap front bill (small flat box poking forward)
+	var bill: MeshInstance3D = MeshInstance3D.new()
+	var blm: BoxMesh = BoxMesh.new()
+	blm.size = Vector3(0.40, 0.06, 0.20)
+	bill.mesh = blm
+	bill.material_override = brass_mat
+	bill.position = Vector3(0, 1.90, -0.30)
+	npc.add_child(bill)
+	# ---- Left arm at his side ----
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.18, 0.85, 0.18)
+	left_arm.mesh = lam
+	left_arm.material_override = coat_mat
+	left_arm.position = Vector3(-0.55, 1.05, 0)
+	npc.add_child(left_arm)
+	# ---- Right arm + sealed letter on a present pivot ----
+	var present_pivot: Node3D = Node3D.new()
+	present_pivot.position = Vector3(0.55, 1.50, 0)
+	npc.add_child(present_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = coat_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	present_pivot.add_child(right_arm)
+	# Sealed letter (small flat papyrus rectangle)
+	var letter: MeshInstance3D = MeshInstance3D.new()
+	var ltm: BoxMesh = BoxMesh.new()
+	ltm.size = Vector3(0.32, 0.40, 0.04)
+	letter.mesh = ltm
+	letter.material_override = paper_mat
+	letter.position = Vector3(0, -0.95, 0)
+	present_pivot.add_child(letter)
+	# Glowing wax seal on the letter (small unshaded amber dot)
+	var seal: MeshInstance3D = MeshInstance3D.new()
+	var slm: SphereMesh = SphereMesh.new()
+	slm.radius = 0.06
+	slm.height = 0.12
+	seal.mesh = slm
+	seal.material_override = seal_mat
+	seal.position = Vector3(0, -0.95, -0.04)
+	present_pivot.add_child(seal)
+	# Initial pose — arm raised forward presenting the letter
+	present_pivot.rotation.x = -1.20
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.30)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Slow present-and-recover gesture tween (offers letter forward then back) ----
+	var present: Tween = npc.create_tween().set_loops()
+	present.tween_property(present_pivot, "rotation:x", -1.55, 0.55).set_ease(Tween.EASE_OUT)
+	present.tween_property(present_pivot, "rotation:x", -1.20, 0.45).set_ease(Tween.EASE_IN)
+	present.tween_property(present_pivot, "rotation:x", -1.20, 1.60)
+	# Seal + tag pulse
+	var spulse: Tween = npc.create_tween().set_loops()
+	spulse.tween_property(seal_mat, "emission_energy_multiplier", 8.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(seal_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
