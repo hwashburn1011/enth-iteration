@@ -113,6 +113,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_heart_acolyte_npc(town)
 	_build_d9_boss_approach_gate(geom)
 	_build_d9_boss_approach_skull_pile(geom)
+	_build_d9_boss_approach_sentinels(geom)
 	print("[D9Builder] done")
 
 
@@ -10896,4 +10897,215 @@ func _build_d9_boss_approach_skull_pile(geom: Node) -> void:
 	var epulse: Tween = pivot.create_tween().set_loops()
 	epulse.tween_property(ember_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	epulse.tween_property(ember_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_boss_approach_sentinels(geom: Node) -> void:
+	## Epic-9 T93: 6 small armored forge guardian sentinels flanking the
+	## boss approach path between the gate and the arena. 3 per side, each
+	## a stocky armored body box on a basalt plinth, helm with glowing
+	## visor slit, vertical sword held in front, and a glowing chest core.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BossApproachSentinels"
+	pivot.position = D9_CENTER + Vector3(0, 0, -20)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.45, 0.15, 0.04)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.65, 0.20, 0.05)
+	iron_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 6.0
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 6 sentinels — 3 per side, marching toward the arena
+	# Side X is +/- 3.5 (path is ~7m wide), Z spaced 0, -3, -6 along the path
+	var sentinel_positions: Array = [
+		{"x": -3.50, "z": 0.0},
+		{"x": 3.50, "z": 0.0},
+		{"x": -3.50, "z": -3.0},
+		{"x": 3.50, "z": -3.0},
+		{"x": -3.50, "z": -6.0},
+		{"x": 3.50, "z": -6.0},
+	]
+	for sp in sentinel_positions:
+		var sgroup: Node3D = Node3D.new()
+		sgroup.name = "Sentinel_" + str(sp["x"]) + "_" + str(sp["z"])
+		sgroup.position = Vector3(sp["x"], 0, sp["z"])
+		# Inner-facing
+		if sp["x"] > 0:
+			sgroup.rotation.y = -PI / 2.0
+		else:
+			sgroup.rotation.y = PI / 2.0
+		pivot.add_child(sgroup)
+		# ---- Basalt plinth ----
+		var plinth: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(1.20, 0.45, 1.20)
+		plinth.mesh = pm
+		plinth.material_override = basalt_mat
+		plinth.position = Vector3(0, 0.22, 0)
+		sgroup.add_child(plinth)
+		# Plinth collision
+		var plsb: StaticBody3D = StaticBody3D.new()
+		plsb.position = Vector3(0, 0.22, 0)
+		var plcs: CollisionShape3D = CollisionShape3D.new()
+		var plbsh: BoxShape3D = BoxShape3D.new()
+		plbsh.size = Vector3(1.20, 0.45, 1.20)
+		plcs.shape = plbsh
+		plsb.add_child(plcs)
+		sgroup.add_child(plsb)
+		# ---- Stocky armored body box ----
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.85, 1.55, 0.65)
+		body.mesh = bm
+		body.material_override = iron_mat
+		body.position = Vector3(0, 1.22, 0)
+		sgroup.add_child(body)
+		# Body collision
+		var bsb: StaticBody3D = StaticBody3D.new()
+		bsb.position = Vector3(0, 1.22, 0)
+		var bcs: CollisionShape3D = CollisionShape3D.new()
+		var bbsh: BoxShape3D = BoxShape3D.new()
+		bbsh.size = Vector3(0.85, 1.55, 0.65)
+		bcs.shape = bbsh
+		bsb.add_child(bcs)
+		sgroup.add_child(bsb)
+		# Brass chest seam
+		var seam: MeshInstance3D = MeshInstance3D.new()
+		var smm: BoxMesh = BoxMesh.new()
+		smm.size = Vector3(0.14, 1.40, 0.06)
+		seam.mesh = smm
+		seam.material_override = brass_mat
+		seam.position = Vector3(0, 1.22, -0.34)
+		sgroup.add_child(seam)
+		# Glowing chest core sphere
+		var core: MeshInstance3D = MeshInstance3D.new()
+		var ccm: SphereMesh = SphereMesh.new()
+		ccm.radius = 0.10
+		ccm.height = 0.20
+		core.mesh = ccm
+		core.material_override = ember_mat
+		core.position = Vector3(0, 1.40, -0.36)
+		sgroup.add_child(core)
+		# ---- Pauldrons (small brass cap shoulders) ----
+		for px in [-0.50, 0.50]:
+			var paul: MeshInstance3D = MeshInstance3D.new()
+			var paum: SphereMesh = SphereMesh.new()
+			paum.radius = 0.18
+			paum.height = 0.34
+			paul.mesh = paum
+			paul.material_override = brass_mat
+			paul.position = Vector3(px, 1.85, 0)
+			paul.scale = Vector3(1.0, 0.55, 1.0)
+			sgroup.add_child(paul)
+		# ---- Helm (rounded box with glowing visor slit) ----
+		var helm: MeshInstance3D = MeshInstance3D.new()
+		var hmm: BoxMesh = BoxMesh.new()
+		hmm.size = Vector3(0.55, 0.55, 0.55)
+		helm.mesh = hmm
+		helm.material_override = iron_mat
+		helm.position = Vector3(0, 2.30, 0)
+		sgroup.add_child(helm)
+		# Visor slit
+		var visor: MeshInstance3D = MeshInstance3D.new()
+		var vm: BoxMesh = BoxMesh.new()
+		vm.size = Vector3(0.40, 0.06, 0.04)
+		visor.mesh = vm
+		visor.material_override = ember_mat
+		visor.position = Vector3(0, 2.35, -0.30)
+		sgroup.add_child(visor)
+		# Helm crown ridge (small prism)
+		var crown_ridge: MeshInstance3D = MeshInstance3D.new()
+		var crm: PrismMesh = PrismMesh.new()
+		crm.size = Vector3(0.18, 0.18, 0.55)
+		crown_ridge.mesh = crm
+		crown_ridge.material_override = brass_mat
+		crown_ridge.position = Vector3(0, 2.65, 0)
+		sgroup.add_child(crown_ridge)
+		# ---- Vertical sword held in front ----
+		# Pommel
+		var pommel: MeshInstance3D = MeshInstance3D.new()
+		var pomm: SphereMesh = SphereMesh.new()
+		pomm.radius = 0.07
+		pomm.height = 0.14
+		pommel.mesh = pomm
+		pommel.material_override = brass_mat
+		pommel.position = Vector3(0, 0.55, -0.50)
+		sgroup.add_child(pommel)
+		# Grip
+		var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+		wood_mat.roughness = 0.85
+		var grip: MeshInstance3D = MeshInstance3D.new()
+		var gm: CylinderMesh = CylinderMesh.new()
+		gm.top_radius = 0.05
+		gm.bottom_radius = 0.05
+		gm.height = 0.32
+		grip.mesh = gm
+		grip.material_override = wood_mat
+		grip.position = Vector3(0, 0.78, -0.50)
+		sgroup.add_child(grip)
+		# Crossguard
+		var guard: MeshInstance3D = MeshInstance3D.new()
+		var gdm: BoxMesh = BoxMesh.new()
+		gdm.size = Vector3(0.45, 0.07, 0.07)
+		guard.mesh = gdm
+		guard.material_override = brass_mat
+		guard.position = Vector3(0, 0.95, -0.50)
+		sgroup.add_child(guard)
+		# Blade
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var bldm: BoxMesh = BoxMesh.new()
+		bldm.size = Vector3(0.16, 1.40, 0.04)
+		blade.mesh = bldm
+		blade.material_override = iron_mat
+		blade.position = Vector3(0, 1.70, -0.50)
+		sgroup.add_child(blade)
+		# Blade core stripe
+		var blade_core: MeshInstance3D = MeshInstance3D.new()
+		var bcm: BoxMesh = BoxMesh.new()
+		bcm.size = Vector3(0.04, 1.30, 0.05)
+		blade_core.mesh = bcm
+		blade_core.material_override = ember_mat
+		blade_core.position = Vector3(0, 1.70, -0.51)
+		sgroup.add_child(blade_core)
+		# Blade tip
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tipm: PrismMesh = PrismMesh.new()
+		tipm.size = Vector3(0.16, 0.20, 0.04)
+		tip.mesh = tipm
+		tip.material_override = iron_mat
+		tip.position = Vector3(0, 2.50, -0.50)
+		sgroup.add_child(tip)
+		# Subtle OmniLight per sentinel
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 1.50, -0.45)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.6
+		lt.omni_range = 4.5
+		sgroup.add_child(lt)
+	# Shared chest core + visor + blade core pulse
+	var pulse: Tween = pivot.create_tween().set_loops()
+	pulse.tween_property(ember_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 
