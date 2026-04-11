@@ -28,6 +28,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_stash_chest(geom)
 	_build_th_vendor_kiosk(geom)
 	_build_th_data_fountain(geom)
+	_build_th_practice_dummy(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -2016,3 +2017,196 @@ func _build_th_data_fountain(geom: Node) -> void:
 	var dpulse: Tween = pivot.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_practice_dummy(geom: Node) -> void:
+	## Epic-10 T12: practice dummy training spot on the W radial path.
+	## Wooden sparring dummy with glowing chest core and capsule collision,
+	## a small 3-weapon rack beside it (sword/spear/axe), and a sand pit
+	## floor patch under the dummy.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_PracticeDummy"
+	# W radial path (angle = pi from +X), at radius 6.5
+	pivot.position = TOWN_CENTER + Vector3(-6.5, 0, 0)
+	# Face the beacon (+X direction)
+	pivot.rotation.y = PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var sand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sand_mat.albedo_color = Color(0.42, 0.30, 0.18)
+	sand_mat.roughness = 0.95
+	sand_mat.emission_enabled = true
+	sand_mat.emission = Color(0.55, 0.30, 0.10)
+	sand_mat.emission_energy_multiplier = 0.18
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	wood_mat.metallic = 0.10
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var weapon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	weapon_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	weapon_mat.emission_enabled = true
+	weapon_mat.emission = Color(1.0, 0.55, 0.10)
+	weapon_mat.emission_energy_multiplier = 5.5
+	weapon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var core_mat: StandardMaterial3D = StandardMaterial3D.new()
+	core_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	core_mat.emission_enabled = true
+	core_mat.emission = Color(1.0, 0.55, 0.10)
+	core_mat.emission_energy_multiplier = 6.5
+	core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Sand pit floor patch ----
+	var sand: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 1.85
+	sm.bottom_radius = 1.95
+	sm.height = 0.08
+	sand.mesh = sm
+	sand.material_override = sand_mat
+	sand.position = Vector3(0, 0.05, 0)
+	pivot.add_child(sand)
+	# ---- Wooden sparring dummy ----
+	var dummy_pivot: Node3D = Node3D.new()
+	dummy_pivot.position = Vector3(0, 0, 0)
+	pivot.add_child(dummy_pivot)
+	# Base post
+	var dummy_post: MeshInstance3D = MeshInstance3D.new()
+	var dpm: CylinderMesh = CylinderMesh.new()
+	dpm.top_radius = 0.10
+	dpm.bottom_radius = 0.14
+	dpm.height = 0.85
+	dummy_post.mesh = dpm
+	dummy_post.material_override = wood_mat
+	dummy_post.position = Vector3(0, 0.42, 0)
+	dummy_pivot.add_child(dummy_post)
+	# Body box
+	var dummy_body: MeshInstance3D = MeshInstance3D.new()
+	var dbm: BoxMesh = BoxMesh.new()
+	dbm.size = Vector3(0.65, 0.95, 0.40)
+	dummy_body.mesh = dbm
+	dummy_body.material_override = wood_mat
+	dummy_body.position = Vector3(0, 1.30, 0)
+	dummy_pivot.add_child(dummy_body)
+	# Arms — sticking out boxes
+	for ax in [-0.55, 0.55]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(0.50, 0.16, 0.16)
+		arm.mesh = amesh
+		arm.material_override = wood_mat
+		arm.position = Vector3(ax, 1.45, 0)
+		dummy_pivot.add_child(arm)
+	# Head — small sphere
+	var dummy_head: MeshInstance3D = MeshInstance3D.new()
+	var dhm: SphereMesh = SphereMesh.new()
+	dhm.radius = 0.18
+	dhm.height = 0.36
+	dummy_head.mesh = dhm
+	dummy_head.material_override = wood_mat
+	dummy_head.position = Vector3(0, 2.00, 0)
+	dummy_pivot.add_child(dummy_head)
+	# Glowing chest core
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var corem: SphereMesh = SphereMesh.new()
+	corem.radius = 0.14
+	corem.height = 0.28
+	core.mesh = corem
+	core.material_override = core_mat
+	core.position = Vector3(0, 1.30, -0.22)
+	dummy_pivot.add_child(core)
+	# Capsule collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var caps: CapsuleShape3D = CapsuleShape3D.new()
+	caps.radius = 0.40
+	caps.height = 1.80
+	cs.shape = caps
+	sb.add_child(cs)
+	dummy_pivot.add_child(sb)
+	# Idle wobble
+	var wobble: Tween = dummy_pivot.create_tween().set_loops()
+	wobble.tween_property(dummy_pivot, "rotation:x", 0.05, 1.4).set_ease(Tween.EASE_IN_OUT)
+	wobble.tween_property(dummy_pivot, "rotation:x", -0.05, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- Small 3-weapon rack to the side ----
+	# Rack base
+	var rack_base: MeshInstance3D = MeshInstance3D.new()
+	var rbm: BoxMesh = BoxMesh.new()
+	rbm.size = Vector3(1.20, 0.18, 0.40)
+	rack_base.mesh = rbm
+	rack_base.material_override = wood_mat
+	rack_base.position = Vector3(-1.10, 0.20, 0.85)
+	pivot.add_child(rack_base)
+	# Rack back vertical board
+	var rack_back: MeshInstance3D = MeshInstance3D.new()
+	var rbk: BoxMesh = BoxMesh.new()
+	rbk.size = Vector3(1.20, 1.10, 0.06)
+	rack_back.mesh = rbk
+	rack_back.material_override = wood_mat
+	rack_back.position = Vector3(-1.10, 0.85, 1.00)
+	pivot.add_child(rack_back)
+	# Rack collision
+	var rack_sb: StaticBody3D = StaticBody3D.new()
+	rack_sb.position = Vector3(-1.10, 0.55, 0.92)
+	var rack_cs: CollisionShape3D = CollisionShape3D.new()
+	var rack_bsh: BoxShape3D = BoxShape3D.new()
+	rack_bsh.size = Vector3(1.20, 1.20, 0.40)
+	rack_cs.shape = rack_bsh
+	rack_sb.add_child(rack_cs)
+	pivot.add_child(rack_sb)
+	# Sword (vertical box)
+	var sword: MeshInstance3D = MeshInstance3D.new()
+	var swm: BoxMesh = BoxMesh.new()
+	swm.size = Vector3(0.10, 1.00, 0.06)
+	sword.mesh = swm
+	sword.material_override = weapon_mat
+	sword.position = Vector3(-1.40, 0.92, 0.95)
+	pivot.add_child(sword)
+	# Spear (long thin cylinder)
+	var spear: MeshInstance3D = MeshInstance3D.new()
+	var sprm: CylinderMesh = CylinderMesh.new()
+	sprm.top_radius = 0.04
+	sprm.bottom_radius = 0.04
+	sprm.height = 1.15
+	spear.mesh = sprm
+	spear.material_override = weapon_mat
+	spear.position = Vector3(-1.10, 0.92, 0.95)
+	pivot.add_child(spear)
+	# Axe (handle + prism blade)
+	var axe_h: MeshInstance3D = MeshInstance3D.new()
+	var axm: CylinderMesh = CylinderMesh.new()
+	axm.top_radius = 0.04
+	axm.bottom_radius = 0.05
+	axm.height = 0.90
+	axe_h.mesh = axm
+	axe_h.material_override = weapon_mat
+	axe_h.position = Vector3(-0.80, 0.85, 0.95)
+	pivot.add_child(axe_h)
+	var axe_blade: MeshInstance3D = MeshInstance3D.new()
+	var abm: PrismMesh = PrismMesh.new()
+	abm.size = Vector3(0.28, 0.28, 0.08)
+	axe_blade.mesh = abm
+	axe_blade.material_override = weapon_mat
+	axe_blade.position = Vector3(-0.72, 1.20, 0.95)
+	axe_blade.rotation.z = -PI / 2.0
+	pivot.add_child(axe_blade)
+	# Subtle warm OmniLight from the dummy core + weapons
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(-0.50, 1.30, -0.10)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 1.8
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
+	# Pulses
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(core_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(core_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	var wpulse: Tween = pivot.create_tween().set_loops()
+	wpulse.tween_property(weapon_mat, "emission_energy_multiplier", 7.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	wpulse.tween_property(weapon_mat, "emission_energy_multiplier", 4.0, 1.6).set_ease(Tween.EASE_IN_OUT)
