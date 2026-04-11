@@ -32664,6 +32664,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_pilings_row(geom)
 	# Epic-8 T15: dolphins jumping
 	_build_d8_dolphins(geom)
+	# Epic-8 T16: tavern building
+	_build_d8_tavern(geom)
+	# Epic-8 T17: tavern keeper NPC
+	_build_d8_tavern_keeper_npc()
+	# Epic-8 T18: barrel stack
+	_build_d8_barrel_stack(geom)
+	# Epic-8 T19: rope coil pile
+	_build_d8_rope_coils(geom)
+	# Epic-8 T20: dock lantern posts
+	_build_d8_lantern_posts(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -33681,6 +33691,314 @@ func _build_d8_dolphins(geom: Node) -> void:
 		tw.tween_property(dolphin, "position:y", 0.20, 0.85)
 		tw.tween_property(dolphin, "rotation_degrees:x", 0.0, 0.55)
 		tw.tween_interval(2.0)
+
+
+func _build_d8_tavern(geom: Node) -> void:
+	## Epic-8 T16: harbor tavern — wooden building with sloped roof + 2
+	## glowing windows + hanging signboard.
+	var tavern: Node3D = Node3D.new()
+	tavern.name = "HarborTavern"
+	tavern.position = Vector3(D8_CENTER.x - 22.0, 0.0, 14.0)
+	geom.add_child(tavern)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.30, 0.18, 0.08)
+	dark_wood.roughness = 0.85
+	# Building body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(5.50, 3.40, 4.20)
+	body.mesh = bm
+	body.material_override = wood_mat
+	body.position = Vector3(0, 1.70, 0)
+	tavern.add_child(body)
+	# Sloped prism roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(6.0, 1.40, 4.50)
+	roof.mesh = rm
+	roof.material_override = dark_wood
+	roof.position = Vector3(0, 4.10, 0)
+	tavern.add_child(roof)
+	# 2 glowing windows
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(1.0, 0.75, 0.20)
+	window_mat.emission_energy_multiplier = 2.5
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-1.40, 1.40]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.85, 0.85, 0.06)
+		win.mesh = wm
+		win.material_override = window_mat
+		win.position = Vector3(sx, 2.20, 2.13)
+		tavern.add_child(win)
+	# Door
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(0.95, 1.85, 0.10)
+	door.mesh = dm
+	door.material_override = dark_wood
+	door.position = Vector3(0, 1.0, 2.15)
+	tavern.add_child(door)
+	# Hanging signboard
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(1.85, 0.85, 0.10)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.85, 0.55, 0.10)
+	sign_mat.emission_energy_multiplier = 1.4
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 3.40, 2.40)
+	tavern.add_child(sign)
+	# Sign chain
+	for sx in [-0.55, 0.55]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.018
+		cmm.bottom_radius = 0.018
+		cmm.height = 0.45
+		chain.mesh = cmm
+		chain.material_override = dark_wood
+		chain.position = Vector3(sx, 3.85, 2.40)
+		tavern.add_child(chain)
+	# Warm interior light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.75, 0.30)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.20, 1.20)
+	tavern.add_child(light)
+	# Tavern collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 3.40, 4.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	tavern.add_child(sb)
+
+
+func _build_d8_tavern_keeper_npc() -> void:
+	## Epic-8 T17: tavern keeper NPC — apron + held tankard with foam.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "TavernKeeperSlot"
+	slot.position = Vector3(D8_CENTER.x - 22.0, 0.0, 16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "TavernKeeper"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Barnacle")
+	if "npc_id" in npc:
+		npc.set("npc_id", "tavern_keeper_d8")
+	slot.add_child(npc)
+	# Brown apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	apron_mat.roughness = 0.85
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Tankard (small cylinder)
+	var tankard: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.10
+	tm.bottom_radius = 0.10
+	tm.height = 0.20
+	tankard.mesh = tm
+	var tankard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tankard_mat.albedo_color = Color(0.40, 0.30, 0.15)
+	tankard_mat.metallic = 0.65
+	tankard_mat.roughness = 0.30
+	tankard.material_override = tankard_mat
+	tankard.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(tankard)
+	# Foam (small white sphere on top)
+	var foam: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.10
+	fm.height = 0.10
+	foam.mesh = fm
+	var foam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	foam_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	foam_mat.emission_enabled = true
+	foam_mat.emission = Color(0.95, 0.92, 0.85)
+	foam_mat.emission_energy_multiplier = 0.45
+	foam_mat.roughness = 0.85
+	foam.material_override = foam_mat
+	foam.position = Vector3(0.40, 0.97, 0.20)
+	foam.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(foam)
+
+
+func _build_d8_barrel_stack(geom: Node) -> void:
+	## Epic-8 T18: stack of 6 wooden barrels — 3 base + 2 middle + 1 top.
+	var stack: Node3D = Node3D.new()
+	stack.name = "BarrelStack"
+	stack.position = Vector3(D8_CENTER.x - 18.0, 0.0, 14.0)
+	geom.add_child(stack)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.92
+	var hoop_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hoop_mat.albedo_color = Color(0.20, 0.18, 0.20)
+	hoop_mat.metallic = 0.85
+	hoop_mat.roughness = 0.40
+	var positions: Array = [
+		Vector3(-0.55, 0.42, 0),
+		Vector3( 0.55, 0.42, 0),
+		Vector3( 0.0,  0.42, 0.85),
+		Vector3(-0.30, 1.30, 0.40),
+		Vector3( 0.30, 1.30, 0.40),
+		Vector3( 0.0,  2.20, 0.40),
+	]
+	for p in positions:
+		var barrel: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.30
+		bm.bottom_radius = 0.30
+		bm.height = 0.85
+		barrel.mesh = bm
+		barrel.material_override = wood_mat
+		barrel.position = p
+		stack.add_child(barrel)
+		# 2 metal hoops on each barrel
+		for hy in [-0.30, 0.30]:
+			var hoop: MeshInstance3D = MeshInstance3D.new()
+			var hmm: CylinderMesh = CylinderMesh.new()
+			hmm.top_radius = 0.32
+			hmm.bottom_radius = 0.32
+			hmm.height = 0.04
+			hoop.mesh = hmm
+			hoop.material_override = hoop_mat
+			hoop.position = Vector3(p.x, p.y + hy, p.z)
+			stack.add_child(hoop)
+	# Group collision (single box)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.30, 0.30)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 2.85, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	stack.add_child(sb)
+
+
+func _build_d8_rope_coils(geom: Node) -> void:
+	## Epic-8 T19: 3 large coiled ropes on the dock — concentric torus rings.
+	var coils: Node3D = Node3D.new()
+	coils.name = "RopeCoils"
+	coils.position = Vector3(D8_CENTER.x + 4.0, 0.0, 18.0)
+	geom.add_child(coils)
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope_mat.roughness = 0.85
+	for i in 3:
+		var coil: Node3D = Node3D.new()
+		coil.position = Vector3(i * 1.40, 0, 0)
+		coils.add_child(coil)
+		# 4 concentric torus rings forming a coiled rope
+		for j in 4:
+			var ring: MeshInstance3D = MeshInstance3D.new()
+			var rm: TorusMesh = TorusMesh.new()
+			rm.inner_radius = 0.30 - j * 0.05
+			rm.outer_radius = 0.40 - j * 0.05
+			ring.mesh = rm
+			ring.material_override = rope_mat
+			ring.position = Vector3(0, 0.18 + j * 0.10, 0)
+			coil.add_child(ring)
+
+
+func _build_d8_lantern_posts(geom: Node) -> void:
+	## Epic-8 T20: row of 6 dock lantern posts — wooden pole + hanging
+	## warm yellow glass lantern.
+	var row: Node3D = Node3D.new()
+	row.name = "LanternPosts"
+	row.position = Vector3(D8_CENTER.x - 14.0, 0.0, -2.0)
+	geom.add_child(row)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(1.0, 0.85, 0.30, 0.85)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(1.0, 0.75, 0.20)
+	glass_mat.emission_energy_multiplier = 2.5
+	for i in 6:
+		var lamp: Node3D = Node3D.new()
+		lamp.position = Vector3(i * 2.20, 0, 0)
+		row.add_child(lamp)
+		# Wooden post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.08
+		pmm.bottom_radius = 0.10
+		pmm.height = 2.85
+		post.mesh = pmm
+		post.material_override = wood_mat
+		post.position = Vector3(0, 1.42, 0)
+		lamp.add_child(post)
+		# Top arm
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.05
+		am.bottom_radius = 0.05
+		am.height = 0.40
+		arm.mesh = am
+		arm.material_override = wood_mat
+		arm.position = Vector3(0.20, 2.85, 0)
+		arm.rotation_degrees = Vector3(0, 0, 90)
+		lamp.add_child(arm)
+		# Hanging glass lantern (sphere)
+		var lantern: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.18
+		lm.height = 0.32
+		lantern.mesh = lm
+		lantern.material_override = glass_mat
+		lantern.position = Vector3(0.40, 2.65, 0)
+		lamp.add_child(lantern)
+		# Light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.75, 0.30)
+		light.light_energy = 1.4
+		light.omni_range = 3.5
+		light.position = Vector3(0.40, 2.65, 0)
+		lamp.add_child(light)
+		# Subtle pulse offset
+		var tw: Tween = light.create_tween().set_loops()
+		tw.tween_interval(i * 0.18)
+		tw.tween_property(light, "light_energy", 1.85, 1.0)
+		tw.tween_property(light, "light_energy", 1.4, 1.0)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var capshape: CapsuleShape3D = CapsuleShape3D.new()
+		capshape.radius = 0.10
+		capshape.height = 2.85
+		cs.shape = capshape
+		sb.add_child(cs)
+		lamp.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
