@@ -87,6 +87,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_obsidian_merchant_stall(geom)
 	_build_d9_forge_guildhall(geom)
 	_build_d9_guildmaster_vorn_npc(town)
+	_build_d9_guildhall_banners(geom)
 	print("[D9Builder] done")
 
 
@@ -6551,5 +6552,140 @@ func _build_d9_guildmaster_vorn_npc(town: Node) -> void:
 	var med_pulse: Tween = npc.create_tween().set_loops()
 	med_pulse.tween_property(med_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	med_pulse.tween_property(med_mat, "emission_energy_multiplier", 4.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_guildhall_banners(geom: Node) -> void:
+	## Epic-9 T67: tall ceremonial banner pair flanking the forge guildhall
+	## doorway. Each banner: brass pole, brass crown finial with a glowing
+	## ember orb, long red drape with a gold guild stripe, and a slow
+	## wind sway. Frames Guildmaster Vorn and the guildhall entrance.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_GuildhallBanners"
+	pivot.position = D9_CENTER + Vector3(38, 0.0, -19)
+	geom.add_child(pivot)
+	# Shared materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var drape_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drape_mat.albedo_color = Color(0.55, 0.10, 0.08)
+	drape_mat.roughness = 0.85
+	drape_mat.emission_enabled = true
+	drape_mat.emission = Color(0.65, 0.15, 0.05)
+	drape_mat.emission_energy_multiplier = 0.40
+	var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stripe_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	stripe_mat.emission_enabled = true
+	stripe_mat.emission = Color(1.0, 0.55, 0.10)
+	stripe_mat.emission_energy_multiplier = 3.5
+	stripe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 8.0
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Build a banner at +/- offset
+	for bx in [-2.20, 2.20]:
+		var bgroup: Node3D = Node3D.new()
+		bgroup.name = "Banner_" + str(int(bx))
+		bgroup.position = Vector3(bx, 0, 0)
+		pivot.add_child(bgroup)
+		# Pole
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.08
+		pm.height = 4.50
+		pole.mesh = pm
+		pole.material_override = brass_mat
+		pole.position = Vector3(0, 2.25, 0)
+		bgroup.add_child(pole)
+		# Pole base — brass disc
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var basm: CylinderMesh = CylinderMesh.new()
+		basm.top_radius = 0.22
+		basm.bottom_radius = 0.28
+		basm.height = 0.18
+		base.mesh = basm
+		base.material_override = brass_mat
+		base.position = Vector3(0, 0.09, 0)
+		bgroup.add_child(base)
+		# Crown finial — small inverted prism + sphere ember
+		var finial: MeshInstance3D = MeshInstance3D.new()
+		var fm: PrismMesh = PrismMesh.new()
+		fm.size = Vector3(0.30, 0.40, 0.30)
+		finial.mesh = fm
+		finial.material_override = brass_mat
+		finial.position = Vector3(0, 4.60, 0)
+		bgroup.add_child(finial)
+		# Ember orb at the very top
+		var ember: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.14
+		em.height = 0.28
+		ember.mesh = em
+		ember.material_override = ember_mat
+		ember.position = Vector3(0, 5.00, 0)
+		bgroup.add_child(ember)
+		# Ember OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 5.00, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 2.0
+		lt.omni_range = 5.0
+		bgroup.add_child(lt)
+		# Cross-arm holding the drape (small horizontal bar at top)
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var arm_m: CylinderMesh = CylinderMesh.new()
+		arm_m.top_radius = 0.04
+		arm_m.bottom_radius = 0.04
+		arm_m.height = 1.10
+		arm.mesh = arm_m
+		arm.material_override = brass_mat
+		arm.position = Vector3(0, 4.20, 0)
+		arm.rotation.z = PI / 2.0
+		bgroup.add_child(arm)
+		# Long red drape hanging from the cross-arm — pivot at top so sway looks right
+		var drape_pivot: Node3D = Node3D.new()
+		drape_pivot.position = Vector3(0, 4.20, 0)
+		bgroup.add_child(drape_pivot)
+		var drape: MeshInstance3D = MeshInstance3D.new()
+		var dmesh: BoxMesh = BoxMesh.new()
+		dmesh.size = Vector3(1.05, 2.40, 0.04)
+		drape.mesh = dmesh
+		drape.material_override = drape_mat
+		drape.position = Vector3(0, -1.20, 0)
+		drape_pivot.add_child(drape)
+		# Gold guild stripe down the center of the drape
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var smm: BoxMesh = BoxMesh.new()
+		smm.size = Vector3(0.18, 2.30, 0.06)
+		stripe.mesh = smm
+		stripe.material_override = stripe_mat
+		stripe.position = Vector3(0, -1.20, -0.05)
+		drape_pivot.add_child(stripe)
+		# Guild crest — small unshaded torus on the stripe
+		var crest: MeshInstance3D = MeshInstance3D.new()
+		var ctm: TorusMesh = TorusMesh.new()
+		ctm.inner_radius = 0.10
+		ctm.outer_radius = 0.18
+		crest.mesh = ctm
+		crest.material_override = ember_mat
+		crest.position = Vector3(0, -1.40, -0.08)
+		crest.rotation.x = PI / 2.0
+		drape_pivot.add_child(crest)
+		# Drape sway tween — small rotation around Z
+		var sway: Tween = drape_pivot.create_tween().set_loops()
+		sway.tween_property(drape_pivot, "rotation:z", 0.08, 1.6).set_ease(Tween.EASE_IN_OUT)
+		sway.tween_property(drape_pivot, "rotation:z", -0.08, 1.6).set_ease(Tween.EASE_IN_OUT)
+		# Ember pulse
+		var epulse: Tween = bgroup.create_tween().set_loops()
+		epulse.tween_property(ember_mat, "emission_energy_multiplier", 10.0, 1.3).set_ease(Tween.EASE_IN_OUT)
+		epulse.tween_property(ember_mat, "emission_energy_multiplier", 6.0, 1.3).set_ease(Tween.EASE_IN_OUT)
 
 
