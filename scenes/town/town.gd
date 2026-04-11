@@ -8795,6 +8795,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_ice_fishing_hole(geom)
 	# Epic-5 T15: aurora light pillars
 	_build_d5_aurora_pillars(geom)
+	# Epic-5 T16: snowflake ritual circle
+	_build_d5_snowflake_circle(geom)
+	# Epic-5 T17: drifting frost wisps
+	_build_d5_frost_wisps(geom)
+	# Epic-5 T18: ice mage NPC
+	_build_d5_ice_mage_npc()
+	# Epic-5 T19: frozen library shelves
+	_build_d5_frozen_shelves(geom)
+	# Epic-5 T20: cold wind drift particles
+	_build_d5_cold_wind(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -9817,6 +9827,318 @@ func _build_d5_aurora_pillars(geom: Node) -> void:
 		light.omni_range = 4.0
 		light.position = Vector3(0, 1.0, 0)
 		pillar.add_child(light)
+
+
+func _build_d5_snowflake_circle(geom: Node) -> void:
+	## Epic-5 T16: snowflake ritual circle — flat ice disc with a 6-spoked
+	## snowflake pattern carved in glowing cyan, surrounded by 6 small ice
+	## standing stones.
+	var circle: Node3D = Node3D.new()
+	circle.name = "SnowflakeCircle"
+	circle.position = Vector3(D5_CENTER.x - 4.0, 0.0, 14.0)
+	geom.add_child(circle)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.45
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	# Base disc
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 3.40
+	dm.bottom_radius = 3.40
+	dm.height = 0.10
+	disc.mesh = dm
+	disc.material_override = ice_mat
+	disc.position = Vector3(0, 0.05, 0)
+	circle.add_child(disc)
+	# 6-spoke snowflake pattern (glowing cyan boxes)
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.30, 1.0, 1.0)
+	glow_mat.emission_energy_multiplier = 2.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var spoke: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.85, 0.04, 0.20)
+		spoke.mesh = sm
+		spoke.material_override = glow_mat
+		spoke.position = Vector3(0, 0.12, 0)
+		spoke.rotation = Vector3(0, ang, 0)
+		circle.add_child(spoke)
+		# Cross-arms on each spoke (smaller arms forming snowflake fractal)
+		for j in 2:
+			var arm_offset: float = 0.85 + j * 0.55
+			for s in [-1, 1]:
+				var arm: MeshInstance3D = MeshInstance3D.new()
+				var am: BoxMesh = BoxMesh.new()
+				am.size = Vector3(0.55, 0.04, 0.10)
+				arm.mesh = am
+				arm.material_override = glow_mat
+				arm.position = Vector3(cos(ang) * arm_offset, 0.12, sin(ang) * arm_offset)
+				arm.rotation = Vector3(0, ang + s * deg_to_rad(60), 0)
+				circle.add_child(arm)
+	# 6 small ice standing stones around the disc
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i + PI / 12.0
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var sm2: BoxMesh = BoxMesh.new()
+		sm2.size = Vector3(0.45, 1.85, 0.45)
+		stone.mesh = sm2
+		stone.material_override = ice_mat
+		stone.position = Vector3(cos(ang) * 3.85, 0.92, sin(ang) * 3.85)
+		circle.add_child(stone)
+		# Stone collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(cos(ang) * 3.85, 0.92, sin(ang) * 3.85)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.45, 1.85, 0.45)
+		cs.shape = cb
+		sb.add_child(cs)
+		circle.add_child(sb)
+	# Central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 0.55, 0)
+	circle.add_child(light)
+
+
+func _build_d5_frost_wisps(geom: Node) -> void:
+	## Epic-5 T17: 5 small drifting frost wisp orbs — pure cyan light spheres
+	## that bob and orbit randomly across the district.
+	var wisps: Node3D = Node3D.new()
+	wisps.name = "FrostWisps"
+	wisps.position = Vector3(D5_CENTER.x, 1.5, 0.0)
+	geom.add_child(wisps)
+	for i in 5:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, randf_range(-0.5, 1.5), 0)
+		pivot.rotation_degrees = Vector3(0, i * 72.0, 0)
+		wisps.add_child(pivot)
+		var wisp: MeshInstance3D = MeshInstance3D.new()
+		var wm: SphereMesh = SphereMesh.new()
+		wm.radius = 0.20
+		wm.height = 0.36
+		wisp.mesh = wm
+		var wmat: StandardMaterial3D = StandardMaterial3D.new()
+		wmat.albedo_color = Color(0.30, 0.95, 1.0)
+		wmat.emission_enabled = true
+		wmat.emission = Color(0.30, 1.0, 1.0)
+		wmat.emission_energy_multiplier = 3.5
+		wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		wisp.material_override = wmat
+		wisp.position = Vector3(8.0 + randf() * 4.0, 0, 0)
+		pivot.add_child(wisp)
+		# Tiny light per wisp
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(0.40, 0.95, 1.0)
+		light.light_energy = 1.2
+		light.omni_range = 2.5
+		light.position = Vector3.ZERO
+		wisp.add_child(light)
+		# Orbit + bob
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 72.0 + 360.0, 12.0 + i * 0.6)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 72.0, 0.0)
+		var tb: Tween = wisp.create_tween().set_loops()
+		tb.tween_property(wisp, "position:y", 0.85, 1.4 + randf() * 0.4)
+		tb.tween_property(wisp, "position:y", -0.20, 1.4 + randf() * 0.4)
+
+
+func _build_d5_ice_mage_npc() -> void:
+	## Epic-5 T18: ice mage NPC — pale-violet robe, floating ice shard
+	## orbs around their hands, radiates cold mist.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "IceMageSlot"
+	slot.position = Vector3(D5_CENTER.x + 8.0, 0.0, 0.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "IceMage"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Brimrose")
+	if "npc_id" in npc:
+		npc.set("npc_id", "ice_mage_d5")
+	slot.add_child(npc)
+	# Pale violet robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.10, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.55, 0.45, 0.85)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.40, 0.30, 0.85)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.75
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Pointed wizard hat
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.45, 0.65, 0.45)
+	hat.mesh = hm
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.40, 0.35, 0.75)
+	hat_mat.roughness = 0.80
+	hat.material_override = hat_mat
+	hat.position = Vector3(0, 1.65, 0)
+	npc.add_child(hat)
+	# 3 floating ice shard orbs around the mage
+	var shard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shard_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	shard_mat.emission_enabled = true
+	shard_mat.emission = Color(0.30, 0.95, 1.0)
+	shard_mat.emission_energy_multiplier = 2.5
+	shard_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 0.95, 0)
+	npc.add_child(pivot)
+	for i in 3:
+		var shard: MeshInstance3D = MeshInstance3D.new()
+		var sm: PrismMesh = PrismMesh.new()
+		sm.size = Vector3(0.10, 0.22, 0.10)
+		shard.mesh = sm
+		shard.material_override = shard_mat
+		var ang: float = (TAU / 3.0) * i
+		shard.position = Vector3(cos(ang) * 0.85, 0, sin(ang) * 0.85)
+		pivot.add_child(shard)
+	var trot: Tween = pivot.create_tween().set_loops()
+	trot.tween_property(pivot, "rotation_degrees:y", 360.0, 4.0)
+	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Mage aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.85, 1.0)
+	light.light_energy = 1.4
+	light.omni_range = 3.5
+	light.position = Vector3(0, 0.95, 0)
+	npc.add_child(light)
+
+
+func _build_d5_frozen_shelves(geom: Node) -> void:
+	## Epic-5 T19: 4 tall frozen library shelves with crystallized "books"
+	## stacked on each. The simulation's archived knowledge.
+	var shelves: Node3D = Node3D.new()
+	shelves.name = "FrozenShelves"
+	shelves.position = Vector3(D5_CENTER.x - 14.0, 0.0, -2.0)
+	geom.add_child(shelves)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.40
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var book_colors: Array = [
+		Color(0.30, 0.95, 1.0),
+		Color(0.55, 0.40, 0.95),
+		Color(0.95, 0.55, 0.30),
+		Color(0.30, 0.95, 0.55),
+	]
+	for s in 4:
+		var shelf: Node3D = Node3D.new()
+		shelf.position = Vector3(s * 2.20, 0, 0)
+		shelves.add_child(shelf)
+		# Frame
+		var frame: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(1.85, 3.20, 0.55)
+		frame.mesh = fm
+		frame.material_override = ice_mat
+		frame.position = Vector3(0, 1.60, 0)
+		shelf.add_child(frame)
+		# 4 horizontal shelf planks (thinner ice slabs)
+		for r in 4:
+			var plank: MeshInstance3D = MeshInstance3D.new()
+			var pmm: BoxMesh = BoxMesh.new()
+			pmm.size = Vector3(1.65, 0.06, 0.40)
+			plank.mesh = pmm
+			plank.material_override = ice_mat
+			plank.position = Vector3(0, 0.45 + r * 0.75, 0)
+			shelf.add_child(plank)
+			# 6 books per plank
+			for b in 6:
+				var book: MeshInstance3D = MeshInstance3D.new()
+				var bm: BoxMesh = BoxMesh.new()
+				bm.size = Vector3(0.18, 0.42, 0.16)
+				book.mesh = bm
+				var bmat: StandardMaterial3D = StandardMaterial3D.new()
+				var col: Color = book_colors[(s + r + b) % 4]
+				bmat.albedo_color = col
+				bmat.emission_enabled = true
+				bmat.emission = col
+				bmat.emission_energy_multiplier = 0.65
+				bmat.metallic = 0.30
+				bmat.roughness = 0.30
+				book.material_override = bmat
+				book.position = Vector3(-0.65 + b * 0.22, 0.69 + r * 0.75, 0)
+				shelf.add_child(book)
+		# Shelf collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.60, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.85, 3.20, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		shelf.add_child(sb)
+
+
+func _build_d5_cold_wind(geom: Node) -> void:
+	## Epic-5 T20: GPU cold wind drift — fast-moving horizontal pale streaks
+	## blowing across the district to give a sense of weather.
+	var wind: GPUParticles3D = GPUParticles3D.new()
+	wind.name = "ColdWind"
+	wind.position = Vector3(D5_CENTER.x, 2.0, 0.0)
+	wind.amount = 100
+	wind.lifetime = 4.0
+	wind.preprocess = 2.0
+	wind.explosiveness = 0.0
+	wind.randomness = 0.5
+	wind.visibility_aabb = AABB(Vector3(-40, -3, -25), Vector3(80, 8, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(2, 4, 22)
+	pm.direction = Vector3(1, 0.10, 0)
+	pm.spread = 8.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 4.5
+	pm.initial_velocity_max = 7.5
+	pm.scale_min = 0.30
+	pm.scale_max = 0.75
+	pm.color = Color(0.85, 0.95, 1.0, 0.55)
+	wind.process_material = pm
+	# Streak mesh — long flat box
+	var streak_mesh: BoxMesh = BoxMesh.new()
+	streak_mesh.size = Vector3(0.85, 0.04, 0.06)
+	wind.draw_pass_1 = streak_mesh
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.85, 0.95, 1.0, 0.65)
+	smat.emission_enabled = true
+	smat.emission = Color(0.65, 0.95, 1.0)
+	smat.emission_energy_multiplier = 1.6
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	streak_mesh.material = smat
+	# Position the emitter at the west edge so wind blows east
+	wind.position.x = D5_CENTER.x - 30.0
+	geom.add_child(wind)
 
 
 
