@@ -1243,6 +1243,16 @@ func _build_east_plaza() -> void:
 	_build_banner_flags(geom)
 	# Epic-1 T10: cyan OPEN floor decals
 	_build_open_decals(geom)
+	# Epic-1 T11: cyan park benches
+	_build_plaza_benches(geom)
+	# Epic-1 T12: holographic planters with floating leaves
+	_build_plaza_planters(geom)
+	# Epic-1 T13: vending machines along the market hall wall
+	_build_vending_machines(geom)
+	# Epic-1 T14: 2 patrolling security drones above the plaza
+	_build_security_drones(geom)
+	# Epic-1 T15: info totem pillars at plaza entrances
+	_build_info_totems(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -1899,3 +1909,239 @@ func _build_open_decals(geom: Node) -> void:
 		decal.no_depth_test = true
 		decal.fixed_size = false
 		geom.add_child(decal)
+
+
+func _build_plaza_benches(geom: Node) -> void:
+	## Epic-1 T11: 4 cyan park benches in the plaza
+	var bench_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bench_mat.albedo_color = Color(0.10, 0.18, 0.26)
+	bench_mat.emission_enabled = true
+	bench_mat.emission = Color(0.20, 0.55, 0.75)
+	bench_mat.emission_energy_multiplier = 0.55
+	bench_mat.metallic = 0.6
+	for pos in [Vector3(28, 0, 1), Vector3(36, 0, 1), Vector3(28, 0, -1.5), Vector3(36, 0, -1.5)]:
+		var bench: Node3D = Node3D.new()
+		bench.position = pos
+		geom.add_child(bench)
+		# Seat
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.4, 0.08, 0.4)
+		seat.mesh = sm
+		seat.position = Vector3(0, 0.4, 0)
+		seat.material_override = bench_mat
+		bench.add_child(seat)
+		# Backrest
+		var back: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.4, 0.5, 0.06)
+		back.mesh = bm
+		back.position = Vector3(0, 0.65, -0.17)
+		back.material_override = bench_mat
+		bench.add_child(back)
+		# Legs
+		for x: float in [-0.6, 0.6]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.06, 0.4, 0.34)
+			leg.mesh = lm
+			leg.position = Vector3(x, 0.2, 0)
+			leg.material_override = bench_mat
+			bench.add_child(leg)
+
+
+func _build_plaza_planters(geom: Node) -> void:
+	## Epic-1 T12: holographic planters — cyan rim + floating teal leaves
+	var planter_positions: Array[Vector3] = [
+		Vector3(26, 0, 6), Vector3(38, 0, 6),
+		Vector3(26, 0, -6), Vector3(38, 0, -6),
+	]
+	for pos in planter_positions:
+		var planter: Node3D = Node3D.new()
+		planter.position = pos
+		geom.add_child(planter)
+		# Cyan rim cylinder
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: CylinderMesh = CylinderMesh.new()
+		rmesh.top_radius = 0.55
+		rmesh.bottom_radius = 0.65
+		rmesh.height = 0.5
+		rim.mesh = rmesh
+		rim.position = Vector3(0, 0.25, 0)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(0.10, 0.30, 0.40)
+		rmat.emission_enabled = true
+		rmat.emission = Color(0.20, 0.70, 0.95)
+		rmat.emission_energy_multiplier = 0.7
+		rim.material_override = rmat
+		planter.add_child(rim)
+		# Floating teal leaves (3 small spheres)
+		for i: int in 3:
+			var leaf: MeshInstance3D = MeshInstance3D.new()
+			var lmesh: SphereMesh = SphereMesh.new()
+			lmesh.radius = 0.18 - i * 0.02
+			lmesh.height = lmesh.radius * 2.0
+			leaf.mesh = lmesh
+			var lpos := Vector3(randf_range(-0.3, 0.3), 0.7 + i * 0.25, randf_range(-0.3, 0.3))
+			leaf.position = lpos
+			var lmat: StandardMaterial3D = StandardMaterial3D.new()
+			lmat.albedo_color = Color(0.20, 0.65, 0.55)
+			lmat.emission_enabled = true
+			lmat.emission = Color(0.25, 0.85, 0.70)
+			lmat.emission_energy_multiplier = 1.2
+			leaf.material_override = lmat
+			planter.add_child(leaf)
+			# Floating tween
+			var tween: Tween = create_tween().set_loops()
+			tween.tween_property(leaf, "position:y", lpos.y + 0.15, 2.0 + i * 0.3).set_ease(Tween.EASE_IN_OUT)
+			tween.tween_property(leaf, "position:y", lpos.y, 2.0 + i * 0.3).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_vending_machines(geom: Node) -> void:
+	## Epic-1 T13: 3 vending machines along the south edge of the plaza
+	for i: int in 3:
+		var vm: Node3D = Node3D.new()
+		vm.position = Vector3(31 + i * 1.4, 0, 11)
+		geom.add_child(vm)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.0, 1.8, 0.6)
+		body.mesh = bm
+		body.position = Vector3(0, 0.9, 0)
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		var hue := [Color(0.85, 0.20, 0.30), Color(0.20, 0.50, 0.85), Color(0.85, 0.65, 0.20)][i]
+		body_mat.albedo_color = hue * 0.6
+		body_mat.emission_enabled = true
+		body_mat.emission = hue
+		body_mat.emission_energy_multiplier = 0.55
+		body_mat.metallic = 0.4
+		body.material_override = body_mat
+		vm.add_child(body)
+		# Display screen
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.85, 0.5, 0.05)
+		screen.mesh = sm
+		screen.position = Vector3(0, 1.4, -0.32)
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(0.05, 0.10, 0.20)
+		smat.emission_enabled = true
+		smat.emission = Color(0.30, 0.85, 1.0)
+		smat.emission_energy_multiplier = 1.6
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		screen.material_override = smat
+		vm.add_child(screen)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_box: BoxShape3D = BoxShape3D.new()
+		col_box.size = Vector3(1.0, 1.8, 0.6)
+		col_shape.shape = col_box
+		col_shape.position = Vector3(0, 0.9, 0)
+		sb.add_child(col_shape)
+		vm.add_child(sb)
+
+
+func _build_security_drones(geom: Node) -> void:
+	## Epic-1 T14: 2 small patrolling drones above the plaza
+	var drone_paths: Array = [
+		[Vector3(28, 3.5, -8), Vector3(36, 3.5, 8), Vector3(28, 3.5, 8), Vector3(36, 3.5, -8)],
+		[Vector3(36, 3.0, -2), Vector3(28, 3.0, 2), Vector3(36, 3.0, 6), Vector3(28, 3.0, -6)],
+	]
+	for path in drone_paths:
+		var drone: Node3D = Node3D.new()
+		drone.position = (path[0] as Vector3)
+		geom.add_child(drone)
+		# Body — small disc
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CylinderMesh = CylinderMesh.new()
+		bmesh.top_radius = 0.18
+		bmesh.bottom_radius = 0.18
+		bmesh.height = 0.08
+		body.mesh = bmesh
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.10, 0.18, 0.26)
+		bmat.emission_enabled = true
+		bmat.emission = Color(0.20, 0.65, 0.85)
+		bmat.emission_energy_multiplier = 1.0
+		bmat.metallic = 0.7
+		body.material_override = bmat
+		drone.add_child(body)
+		# Glowing scan eye
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emesh: SphereMesh = SphereMesh.new()
+		emesh.radius = 0.06
+		emesh.height = 0.12
+		eye.mesh = emesh
+		eye.position = Vector3(0, -0.05, 0)
+		var emat: StandardMaterial3D = StandardMaterial3D.new()
+		emat.albedo_color = Color(1.0, 0.30, 0.30)
+		emat.emission_enabled = true
+		emat.emission = Color(1.0, 0.20, 0.20)
+		emat.emission_energy_multiplier = 3.0
+		emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = emat
+		drone.add_child(eye)
+		# Loop tween through the path waypoints
+		var tween: Tween = create_tween().set_loops()
+		for waypoint in path:
+			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_info_totems(geom: Node) -> void:
+	## Epic-1 T15: 3 info totem pillars near plaza entrances
+	for pos in [Vector3(22, 0, 0), Vector3(32, 0, 12), Vector3(32, 0, -12)]:
+		var totem: Node3D = Node3D.new()
+		totem.position = pos
+		geom.add_child(totem)
+		# Tall pillar
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.15
+		pmesh.bottom_radius = 0.20
+		pmesh.height = 2.4
+		pillar.mesh = pmesh
+		pillar.position = Vector3(0, 1.2, 0)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.10, 0.16, 0.22)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.20, 0.70, 0.95)
+		pmat.emission_energy_multiplier = 0.5
+		pmat.metallic = 0.7
+		pillar.material_override = pmat
+		totem.add_child(pillar)
+		# Glowing top
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: SphereMesh = SphereMesh.new()
+		tmesh.radius = 0.22
+		tmesh.height = 0.44
+		top.mesh = tmesh
+		top.position = Vector3(0, 2.5, 0)
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.30, 0.85, 1.0)
+		tmat.emission_enabled = true
+		tmat.emission = Color(0.40, 0.95, 1.0)
+		tmat.emission_energy_multiplier = 2.5
+		tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		top.material_override = tmat
+		totem.add_child(top)
+		# Floating "i" info label
+		var label: Label3D = Label3D.new()
+		label.text = "ⓘ INFO"
+		label.position = Vector3(0, 2.95, 0)
+		label.modulate = Color(0.50, 0.95, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 18
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		totem.add_child(label)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_box: BoxShape3D = BoxShape3D.new()
+		col_box.size = Vector3(0.4, 2.7, 0.4)
+		col_shape.shape = col_box
+		col_shape.position = Vector3(0, 1.35, 0)
+		sb.add_child(col_shape)
+		totem.add_child(sb)
