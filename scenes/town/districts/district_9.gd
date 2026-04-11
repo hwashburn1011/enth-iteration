@@ -105,6 +105,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_obsidian_shard_field(geom)
 	_build_d9_forge_imp_pack(geom)
 	_build_d9_iron_sentinel_statues(geom)
+	_build_d9_drift_lava_pool(geom)
 	print("[D9Builder] done")
 
 
@@ -9569,4 +9570,187 @@ func _build_d9_iron_sentinel_statues(geom: Node) -> void:
 	var sentpulse: Tween = pivot.create_tween().set_loops()
 	sentpulse.tween_property(ember_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	sentpulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_drift_lava_pool(geom: Node) -> void:
+	## Epic-9 T85: small surface lava pool in central D9 with ancient anvil
+	## chunks and discarded tools floating/cooling on the surface. Round
+	## basalt rim, glowing lava disc, 3 anvil chunks bobbing, 1 tongs head,
+	## 1 hammer head, sparse smoke and ember motes.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_DriftLavaPool"
+	pivot.position = D9_CENTER + Vector3(28, 0, 8)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.30
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.45, 0.05)
+	lava_mat.emission_energy_multiplier = 7.0
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.45
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	# ---- Round basalt rim ring ----
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rim_m: TorusMesh = TorusMesh.new()
+	rim_m.inner_radius = 2.40
+	rim_m.outer_radius = 2.85
+	rim.mesh = rim_m
+	rim.material_override = basalt_mat
+	rim.position = Vector3(0, 0.18, 0)
+	pivot.add_child(rim)
+	# Rim collision (cylinder ring approximation)
+	var rim_sb: StaticBody3D = StaticBody3D.new()
+	rim_sb.position = Vector3(0, 0.18, 0)
+	var rim_cs: CollisionShape3D = CollisionShape3D.new()
+	var rim_cyl: CylinderShape3D = CylinderShape3D.new()
+	rim_cyl.top_radius = 2.85
+	rim_cyl.bottom_radius = 2.85
+	rim_cyl.height = 0.30
+	rim_cs.shape = rim_cyl
+	rim_sb.add_child(rim_cs)
+	pivot.add_child(rim_sb)
+	# ---- Lava surface disc ----
+	var lava_disc: MeshInstance3D = MeshInstance3D.new()
+	var ldm: CylinderMesh = CylinderMesh.new()
+	ldm.top_radius = 2.40
+	ldm.bottom_radius = 2.40
+	ldm.height = 0.10
+	lava_disc.mesh = ldm
+	lava_disc.material_override = lava_mat
+	lava_disc.position = Vector3(0, 0.18, 0)
+	pivot.add_child(lava_disc)
+	# ---- 3 anvil chunks bobbing on the surface ----
+	var chunk_data: Array = [
+		{"pos": Vector3(0.85, 0.32, 0.0), "size": Vector3(0.50, 0.30, 0.30), "tilt": 0.20},
+		{"pos": Vector3(-0.95, 0.32, 0.55), "size": Vector3(0.45, 0.28, 0.32), "tilt": -0.30},
+		{"pos": Vector3(0.20, 0.32, -1.10), "size": Vector3(0.55, 0.32, 0.28), "tilt": 0.15},
+	]
+	for cd in chunk_data:
+		var chunk: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = cd["size"]
+		chunk.mesh = cm
+		chunk.material_override = iron_mat
+		chunk.position = cd["pos"]
+		chunk.rotation.z = cd["tilt"]
+		chunk.rotation.y = randf() * TAU
+		pivot.add_child(chunk)
+		# Bob each chunk with its own period
+		var bob: Tween = pivot.create_tween().set_loops()
+		var by: float = cd["pos"].y
+		bob.tween_property(chunk, "position:y", by + 0.08, 1.4 + randf() * 0.4).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(chunk, "position:y", by - 0.04, 1.4 + randf() * 0.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- 1 floating tongs head (small brass U-shape made of 3 boxes) ----
+	var tongs_root: Node3D = Node3D.new()
+	tongs_root.position = Vector3(-1.30, 0.32, -0.80)
+	pivot.add_child(tongs_root)
+	# Tongs base
+	var t_base: MeshInstance3D = MeshInstance3D.new()
+	var tbm: BoxMesh = BoxMesh.new()
+	tbm.size = Vector3(0.32, 0.06, 0.10)
+	t_base.mesh = tbm
+	t_base.material_override = brass_mat
+	t_base.position = Vector3(0, 0, 0)
+	tongs_root.add_child(t_base)
+	# Tongs left arm
+	var t_l: MeshInstance3D = MeshInstance3D.new()
+	var tlm: BoxMesh = BoxMesh.new()
+	tlm.size = Vector3(0.06, 0.06, 0.30)
+	t_l.mesh = tlm
+	t_l.material_override = brass_mat
+	t_l.position = Vector3(-0.13, 0.0, 0.18)
+	tongs_root.add_child(t_l)
+	# Tongs right arm
+	var t_r: MeshInstance3D = MeshInstance3D.new()
+	t_r.mesh = tlm
+	t_r.material_override = brass_mat
+	t_r.position = Vector3(0.13, 0.0, 0.18)
+	tongs_root.add_child(t_r)
+	# Bob tongs
+	var tbob: Tween = pivot.create_tween().set_loops()
+	tbob.tween_property(tongs_root, "position:y", 0.40, 1.5).set_ease(Tween.EASE_IN_OUT)
+	tbob.tween_property(tongs_root, "position:y", 0.28, 1.5).set_ease(Tween.EASE_IN_OUT)
+	# ---- 1 floating hammer head (iron box) ----
+	var hammer_head: MeshInstance3D = MeshInstance3D.new()
+	var hhm: BoxMesh = BoxMesh.new()
+	hhm.size = Vector3(0.45, 0.18, 0.20)
+	hammer_head.mesh = hhm
+	hammer_head.material_override = iron_mat
+	hammer_head.position = Vector3(1.40, 0.32, 1.10)
+	hammer_head.rotation.y = 0.4
+	pivot.add_child(hammer_head)
+	var hbob: Tween = pivot.create_tween().set_loops()
+	hbob.tween_property(hammer_head, "position:y", 0.42, 1.7).set_ease(Tween.EASE_IN_OUT)
+	hbob.tween_property(hammer_head, "position:y", 0.30, 1.7).set_ease(Tween.EASE_IN_OUT)
+	# ---- Pool OmniLight (warm wash from the lava surface) ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 0.80, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 3.4
+	lt.omni_range = 9.0
+	pivot.add_child(lt)
+	# ---- Sparse smoke drift particles ----
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.position = Vector3(0, 0.50, 0)
+	smoke.amount = 16
+	smoke.lifetime = 3.5
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.direction = Vector3(0, 1, 0)
+	smat.spread = 22.0
+	smat.initial_velocity_min = 0.4
+	smat.initial_velocity_max = 0.8
+	smat.gravity = Vector3(0, 0.4, 0)
+	smat.scale_min = 0.15
+	smat.scale_max = 0.30
+	smat.color = Color(0.30, 0.25, 0.20, 0.65)
+	smoke.process_material = smat
+	var smkm: SphereMesh = SphereMesh.new()
+	smkm.radius = 0.12
+	smkm.height = 0.24
+	smoke.draw_pass_1 = smkm
+	pivot.add_child(smoke)
+	# ---- Ember motes ----
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 0.40, 0)
+	motes.amount = 18
+	motes.lifetime = 2.0
+	var emat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	emat.direction = Vector3(0, 1, 0)
+	emat.spread = 18.0
+	emat.initial_velocity_min = 0.5
+	emat.initial_velocity_max = 1.0
+	emat.gravity = Vector3(0, 0.3, 0)
+	emat.scale_min = 0.05
+	emat.scale_max = 0.10
+	emat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = emat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# Lava pulse
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(lava_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(lava_mat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 
