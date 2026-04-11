@@ -1560,6 +1560,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_lander_pod(geom)
 	# Epic-2 T65: info broker NPC at a small data table
 	_build_d2_info_broker_npc()
+	# Epic-2 T66: pile of glowing rune stones / data crystals
+	_build_d2_rune_pile(geom)
+	# Epic-2 T67: broken clock tower with frozen hands
+	_build_d2_broken_clock(geom)
+	# Epic-2 T68: 4 glowing directional arrow signs pointing to landmarks
+	_build_d2_arrow_signs(geom)
+	# Epic-2 T69: zipline cable strung between two scrap towers
+	_build_d2_zipline(geom)
+	# Epic-2 T70: mechanic NPC with wrenches
+	_build_d2_mechanic_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -13191,4 +13201,421 @@ func _build_d2_info_broker_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	broker.add_child(label)
+
+
+func _build_d2_rune_pile(geom: Node) -> void:
+	## Epic-2 T66: a pile of 8 glowing rune stones / data crystals stacked
+	## haphazardly. Each is a prism with a different color tint, pulsing
+	## emission at slightly different rates.
+	var pile: Node3D = Node3D.new()
+	pile.name = "D2RunePile"
+	pile.position = D2_CENTER + Vector3(-12, 0, -12)
+	geom.add_child(pile)
+	var palette: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(1.0, 0.55, 0.20),
+		Color(0.85, 0.40, 1.0),
+		Color(0.40, 1.0, 0.55),
+		Color(1.0, 0.95, 0.30),
+		Color(0.30, 0.85, 1.0),
+		Color(1.0, 0.30, 0.55),
+		Color(0.55, 1.0, 0.85),
+	]
+	var stone_specs: Array = [
+		Vector3(0, 0.30, 0),
+		Vector3(0.55, 0.30, 0.20),
+		Vector3(-0.45, 0.30, 0.30),
+		Vector3(-0.20, 0.30, -0.55),
+		Vector3(0.30, 0.30, -0.40),
+		Vector3(0.0, 0.85, 0.0),
+		Vector3(0.40, 0.85, -0.10),
+		Vector3(-0.20, 0.85, 0.30),
+	]
+	for i in stone_specs.size():
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var smesh: PrismMesh = PrismMesh.new()
+		smesh.size = Vector3(0.30, 0.65, 0.30)
+		stone.mesh = smesh
+		stone.position = stone_specs[i]
+		stone.rotation = Vector3(0, deg_to_rad(randf_range(0, 360)), deg_to_rad(randf_range(-25, 25)))
+		var color: Color = palette[i]
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = color
+		mat.emission_enabled = true
+		mat.emission = color
+		mat.emission_energy_multiplier = 2.0
+		mat.metallic = 0.40
+		mat.roughness = 0.20
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		stone.material_override = mat
+		pile.add_child(stone)
+		# Pulse emission
+		var pulse: Tween = create_tween().set_loops()
+		var ps: float = 1.0 + i * 0.15
+		pulse.tween_property(mat, "emission_energy_multiplier", 3.4, ps).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(mat, "emission_energy_multiplier", 1.4, ps).set_ease(Tween.EASE_IN_OUT)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "RUNE PILE"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(0.85, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pile.add_child(label)
+
+
+func _build_d2_broken_clock(geom: Node) -> void:
+	## Epic-2 T67: a tall broken clock tower with frozen hands. Stone
+	## column with a clock face on each of 4 sides at the top, frozen at
+	## different broken angles like time stopped here.
+	var tower: Node3D = Node3D.new()
+	tower.name = "D2BrokenClockTower"
+	tower.position = D2_CENTER + Vector3(20, 0, -8)
+	geom.add_child(tower)
+	# Stone column
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.16, 0.14)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.40, 6.5, 1.40)
+	col.mesh = cmesh
+	col.position = Vector3(0, 3.25, 0)
+	col.material_override = stone_mat
+	tower.add_child(col)
+	# Cracked stripe down one side
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(1.0, 0.30, 0.20)
+	crack_mat.emission_enabled = true
+	crack_mat.emission = Color(1.0, 0.40, 0.20)
+	crack_mat.emission_energy_multiplier = 1.4
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var crack: MeshInstance3D = MeshInstance3D.new()
+	var cmesh2: BoxMesh = BoxMesh.new()
+	cmesh2.size = Vector3(0.06, 5.5, 0.10)
+	crack.mesh = cmesh2
+	crack.position = Vector3(0.71, 3.0, 0)
+	crack.rotation = Vector3(0, 0, deg_to_rad(8))
+	crack.material_override = crack_mat
+	tower.add_child(crack)
+	# Crown — wider top block
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crmesh: BoxMesh = BoxMesh.new()
+	crmesh.size = Vector3(2.0, 2.0, 2.0)
+	crown.mesh = crmesh
+	crown.position = Vector3(0, 7.50, 0)
+	crown.material_override = stone_mat
+	tower.add_child(crown)
+	# 4 clock faces (one on each side of the crown)
+	var face_mat: StandardMaterial3D = StandardMaterial3D.new()
+	face_mat.albedo_color = Color(0.85, 0.85, 0.95)
+	face_mat.emission_enabled = true
+	face_mat.emission = Color(1.0, 0.95, 0.85)
+	face_mat.emission_energy_multiplier = 0.75
+	face_mat.metallic = 0.20
+	face_mat.roughness = 0.30
+	var sides: Array[Vector3] = [
+		Vector3(0, 0, 1.01),
+		Vector3(0, 0, -1.01),
+		Vector3(1.01, 0, 0),
+		Vector3(-1.01, 0, 0),
+	]
+	for i in sides.size():
+		var face: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: CylinderMesh = CylinderMesh.new()
+		fmesh.top_radius = 0.65
+		fmesh.bottom_radius = 0.65
+		fmesh.height = 0.06
+		face.mesh = fmesh
+		face.position = sides[i] + Vector3(0, 7.50, 0)
+		# Orient flat to the side
+		if i < 2:
+			face.rotation = Vector3(deg_to_rad(90), 0, 0)
+		else:
+			face.rotation = Vector3(0, 0, deg_to_rad(90))
+		face.material_override = face_mat
+		tower.add_child(face)
+		# Hour hand (broken angle)
+		var hour: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: BoxMesh = BoxMesh.new()
+		hmesh.size = Vector3(0.06, 0.45, 0.04)
+		hour.mesh = hmesh
+		hour.position = sides[i] * 1.05 + Vector3(0, 7.50, 0)
+		var hour_rot: float = deg_to_rad(45 + i * 60)
+		if i < 2:
+			hour.rotation = Vector3(deg_to_rad(90), 0, hour_rot)
+		else:
+			hour.rotation = Vector3(0, hour_rot, deg_to_rad(90))
+		var hour_mat: StandardMaterial3D = StandardMaterial3D.new()
+		hour_mat.albedo_color = Color(0.05, 0.05, 0.10)
+		hour_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		hour.material_override = hour_mat
+		tower.add_child(hour)
+		# Minute hand
+		var minute: MeshInstance3D = MeshInstance3D.new()
+		var mm: BoxMesh = BoxMesh.new()
+		mm.size = Vector3(0.04, 0.55, 0.04)
+		minute.mesh = mm
+		minute.position = sides[i] * 1.05 + Vector3(0, 7.50, 0)
+		var min_rot: float = deg_to_rad(-30 + i * 90)
+		if i < 2:
+			minute.rotation = Vector3(deg_to_rad(90), 0, min_rot)
+		else:
+			minute.rotation = Vector3(0, min_rot, deg_to_rad(90))
+		minute.material_override = hour_mat
+		tower.add_child(minute)
+	# Collision around tower
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.0, 8.5, 2.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 4.25, 0)
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d2_arrow_signs(geom: Node) -> void:
+	## Epic-2 T68: 4 glowing directional arrow signs near the entrance arch
+	## pointing toward key D2 landmarks (TRIAL PIT, MERC CAMP, ARCHIVE,
+	## CAGE FIGHT). Each is a tilted post with an angled emissive arrow.
+	var sign_root: Node3D = Node3D.new()
+	sign_root.name = "D2ArrowSigns"
+	sign_root.position = D2_CENTER + Vector3(-18, 0, -2)
+	geom.add_child(sign_root)
+	# 1 shared post
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 0.07
+	pmesh.bottom_radius = 0.10
+	pmesh.height = 3.4
+	post.mesh = pmesh
+	post.position = Vector3(0, 1.7, 0)
+	post.material_override = post_mat
+	sign_root.add_child(post)
+	# 4 arrow signs at different heights, each pointing at a different yaw
+	var sign_specs: Array = [
+		["TRIAL PIT", Color(1.0, 0.40, 0.20), 2.85, deg_to_rad(45)],
+		["MERC CAMP", Color(1.0, 0.65, 0.30), 2.40, deg_to_rad(135)],
+		["ARMS DEALER", Color(0.85, 0.40, 1.0), 1.95, deg_to_rad(225)],
+		["CAGE FIGHT", Color(0.55, 0.95, 1.0), 1.50, deg_to_rad(315)],
+	]
+	for spec in sign_specs:
+		var arrow_pivot: Node3D = Node3D.new()
+		arrow_pivot.position = Vector3(0, spec[2], 0)
+		arrow_pivot.rotation = Vector3(0, spec[3], 0)
+		sign_root.add_child(arrow_pivot)
+		# Arrow board
+		var arrow: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(0.04, 0.30, 1.40)
+		arrow.mesh = amesh
+		arrow.position = Vector3(0, 0, 0.85)
+		var color: Color = spec[1]
+		var amat: StandardMaterial3D = StandardMaterial3D.new()
+		amat.albedo_color = Color(color.r * 0.40, color.g * 0.40, color.b * 0.40)
+		amat.emission_enabled = true
+		amat.emission = color
+		amat.emission_energy_multiplier = 1.4
+		amat.metallic = 0.30
+		arrow.material_override = amat
+		arrow_pivot.add_child(arrow)
+		# Pointed tip prism
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: PrismMesh = PrismMesh.new()
+		tmesh.size = Vector3(0.30, 0.30, 0.06)
+		tip.mesh = tmesh
+		tip.position = Vector3(0, 0, 1.65)
+		tip.rotation = Vector3(0, deg_to_rad(90), deg_to_rad(90))
+		tip.material_override = amat
+		arrow_pivot.add_child(tip)
+		# Label on the arrow
+		var label: Label3D = Label3D.new()
+		label.text = spec[0]
+		label.position = Vector3(0.05, 0, 0.85)
+		label.modulate = Color(1, 1, 1)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 14
+		label.no_depth_test = true
+		arrow_pivot.add_child(label)
+	# Collision around the post
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.20
+	cap.height = 3.4
+	cs.shape = cap
+	cs.position = Vector3(0, 1.7, 0)
+	sb.add_child(cs)
+	sign_root.add_child(sb)
+
+
+func _build_d2_zipline(geom: Node) -> void:
+	## Epic-2 T69: a zipline cable strung diagonally between 2 tall scrap
+	## towers, with a small handle slider that occasionally rides down it.
+	var line_root: Node3D = Node3D.new()
+	line_root.name = "D2Zipline"
+	geom.add_child(line_root)
+	var from_tower: Vector3 = D2_CENTER + Vector3(-22, 7.5, 12)  # top of scrap tower
+	var to_tower: Vector3 = D2_CENTER + Vector3(20, 4.5, -16)   # top of watchtower
+	var dist: float = from_tower.distance_to(to_tower)
+	var mid: Vector3 = (from_tower + to_tower) * 0.5
+	# Cable — long thin cylinder
+	var cable: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: CylinderMesh = CylinderMesh.new()
+	cmesh.top_radius = 0.04
+	cmesh.bottom_radius = 0.04
+	cmesh.height = dist
+	cable.mesh = cmesh
+	cable.position = mid
+	# Orient along from->to direction
+	var dir: Vector3 = (to_tower - from_tower).normalized()
+	# Use look_at trick: rotate cylinder so its Y axis aligns with dir
+	var basis: Basis = Basis(Quaternion(Vector3(0, 1, 0), dir))
+	cable.basis = basis
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.05, 0.05, 0.08)
+	cmat.metallic = 0.85
+	cmat.roughness = 0.30
+	cable.material_override = cmat
+	line_root.add_child(cable)
+	# Handle slider — small box that rides along the cable
+	var slider: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.30, 0.20, 0.30)
+	slider.mesh = smesh
+	slider.position = from_tower
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.30, 0.35, 0.42)
+	smat.metallic = 0.85
+	smat.emission_enabled = true
+	smat.emission = Color(1.0, 0.55, 0.20)
+	smat.emission_energy_multiplier = 0.85
+	slider.material_override = smat
+	line_root.add_child(slider)
+	# Travel tween — slider rides down the cable, resets, repeats
+	var travel: Tween = create_tween().set_loops()
+	travel.tween_property(slider, "position", to_tower, 3.5).set_ease(Tween.EASE_IN)
+	travel.tween_interval(2.0)
+	travel.tween_property(slider, "position", from_tower, 0.05)
+	travel.tween_interval(1.0)
+
+
+func _build_d2_mechanic_npc() -> void:
+	## Epic-2 T70: mechanic NPC standing next to the repair workshop with
+	## an oversized wrench in one hand and a tool belt around the waist.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var mech: Node3D = Node3D.new()
+	mech.name = "D2Mechanic"
+	mech.position = D2_CENTER + Vector3(-16, 0, 4)
+	slots.add_child(mech)
+	# Body — average capsule with overall blue tint
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.30, 0.40)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.30, 0.55, 0.85)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.20
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	body.material_override = bmat
+	mech.add_child(body)
+	# Tool belt — a thin amber band around the waist
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var belt_mesh: TorusMesh = TorusMesh.new()
+	belt_mesh.inner_radius = 0.40
+	belt_mesh.outer_radius = 0.45
+	belt.mesh = belt_mesh
+	belt.position = Vector3(0, 0.55, 0)
+	var belt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	belt_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	belt_mat.metallic = 0.65
+	belt_mat.roughness = 0.30
+	belt_mat.emission_enabled = true
+	belt_mat.emission = Color(1.0, 0.75, 0.25)
+	belt_mat.emission_energy_multiplier = 0.85
+	belt.material_override = belt_mat
+	mech.add_child(belt)
+	# Helmet
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.40
+	hmesh.height = 0.55
+	helmet.mesh = hmesh
+	helmet.position = Vector3(0, 1.45, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(1.0, 0.55, 0.10)
+	hmat.metallic = 0.30
+	hmat.roughness = 0.55
+	hmat.emission_enabled = true
+	hmat.emission = Color(1.0, 0.65, 0.15)
+	hmat.emission_energy_multiplier = 0.40
+	helmet.material_override = hmat
+	mech.add_child(helmet)
+	# 2 cyan eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.30, 0.30)
+		eye.material_override = eye_mat
+		mech.add_child(eye)
+	# Oversized wrench (thin handle + chunky head)
+	var wrench_handle: MeshInstance3D = MeshInstance3D.new()
+	var wh_mesh: BoxMesh = BoxMesh.new()
+	wh_mesh.size = Vector3(0.08, 1.40, 0.08)
+	wrench_handle.mesh = wh_mesh
+	wrench_handle.position = Vector3(0.55, 0.85, 0)
+	wrench_handle.rotation = Vector3(0, 0, deg_to_rad(-30))
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.20, 0.22, 0.28)
+	wmat.metallic = 0.85
+	wmat.roughness = 0.30
+	wrench_handle.material_override = wmat
+	mech.add_child(wrench_handle)
+	var wrench_head: MeshInstance3D = MeshInstance3D.new()
+	var wh2_mesh: BoxMesh = BoxMesh.new()
+	wh2_mesh.size = Vector3(0.30, 0.30, 0.18)
+	wrench_head.mesh = wh2_mesh
+	wrench_head.position = Vector3(0.85, 1.50, 0)
+	wrench_head.rotation = Vector3(0, 0, deg_to_rad(-30))
+	wrench_head.material_override = wmat
+	mech.add_child(wrench_head)
+	# Idle wrench swing tween
+	var swing: Tween = create_tween().set_loops()
+	swing.tween_property(wrench_handle, "rotation:z", deg_to_rad(-15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	swing.tween_property(wrench_handle, "rotation:z", deg_to_rad(-30), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Mechanic"
+	label.position = Vector3(0, 2.0, 0)
+	label.modulate = Color(1.0, 0.65, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	mech.add_child(label)
+
 
