@@ -25467,6 +25467,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_lotus_pond(geom)
 	# Epic-7 T25: stone lantern row
 	_build_d7_stone_lanterns(geom)
+	# Epic-7 T26: tea house
+	_build_d7_tea_house(geom)
+	# Epic-7 T27: tea master NPC
+	_build_d7_tea_master_npc()
+	# Epic-7 T28: training posts
+	_build_d7_training_posts(geom)
+	# Epic-7 T29: martial artist NPC
+	_build_d7_martial_artist_npc()
+	# Epic-7 T30: rope bridge
+	_build_d7_rope_bridge(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -27216,6 +27226,342 @@ func _build_d7_stone_lanterns(geom: Node) -> void:
 		cs.shape = cb
 		sb.add_child(cs)
 		lantern.add_child(sb)
+
+
+func _build_d7_tea_house(geom: Node) -> void:
+	## Epic-7 T26: small wooden tea house — square wooden frame + curved
+	## upturned roof + paper sliding doors + hanging lanterns flanking entrance.
+	var house: Node3D = Node3D.new()
+	house.name = "TeaHouse"
+	house.position = Vector3(D7_CENTER.x - 24.0, 0.0, 14.0)
+	geom.add_child(house)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Walls
+	var main: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(4.20, 2.85, 3.40)
+	main.mesh = mm
+	main.material_override = wood_mat
+	main.position = Vector3(0, 1.42, 0)
+	house.add_child(main)
+	# Curved upturned roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(4.85, 1.40, 3.85)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.40, 0.20, 0.15)
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 3.55, 0)
+	house.add_child(roof)
+	# Sliding paper door (translucent panel)
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.95, 0.85, 0.55, 0.85)
+	door_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	door_mat.emission_enabled = true
+	door_mat.emission = Color(0.95, 0.65, 0.30)
+	door_mat.emission_energy_multiplier = 1.4
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(1.85, 2.40, 0.10)
+	door.mesh = dm
+	door.material_override = door_mat
+	door.position = Vector3(0, 1.20, 1.75)
+	house.add_child(door)
+	# 2 hanging red lanterns flanking the door
+	for sx in [-1.40, 1.40]:
+		var lantern: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.30
+		lm.height = 0.55
+		lantern.mesh = lm
+		var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+		lantern_mat.albedo_color = Color(0.95, 0.30, 0.30)
+		lantern_mat.emission_enabled = true
+		lantern_mat.emission = Color(0.95, 0.30, 0.30)
+		lantern_mat.emission_energy_multiplier = 2.5
+		lantern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		lantern.material_override = lantern_mat
+		lantern.position = Vector3(sx, 2.40, 1.85)
+		lantern.scale = Vector3(1.0, 1.30, 1.0)
+		house.add_child(lantern)
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.45, 0.30)
+		light.light_energy = 1.6
+		light.omni_range = 4.0
+		light.position = Vector3(sx, 2.40, 1.85)
+		house.add_child(light)
+	# Tea house collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 2.85, 3.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	house.add_child(sb)
+
+
+func _build_d7_tea_master_npc() -> void:
+	## Epic-7 T27: tea master NPC — green robe + holding a small teacup
+	## with steam rising.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "TeaMasterSlot"
+	slot.position = Vector3(D7_CENTER.x - 24.0, 0.0, 16.5)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "TeaMaster"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Steeped")
+	if "npc_id" in npc:
+		npc.set("npc_id", "tea_master_d7")
+	slot.add_child(npc)
+	# Green robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.20, 0.55, 0.20)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Teacup (small cylinder)
+	var cup: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.08
+	cm.bottom_radius = 0.06
+	cm.height = 0.10
+	cup.mesh = cm
+	var cup_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cup_mat.albedo_color = Color(0.92, 0.85, 0.65)
+	cup.material_override = cup_mat
+	cup.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(cup)
+	# Steam from cup
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 12
+	steam.lifetime = 1.4
+	steam.preprocess = 0.5
+	steam.position = Vector3(0.40, 0.92, 0.20)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 18.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.55
+	pm.scale_min = 0.06
+	pm.scale_max = 0.14
+	pm.color = Color(0.95, 0.92, 0.85, 0.55)
+	steam.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.10
+	sm_mesh.height = 0.20
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	npc.add_child(steam)
+
+
+func _build_d7_training_posts(geom: Node) -> void:
+	## Epic-7 T28: 5 wooden training posts (mok jong style) at varying
+	## heights for martial training.
+	var posts: Node3D = Node3D.new()
+	posts.name = "TrainingPosts"
+	posts.position = Vector3(D7_CENTER.x - 14.0, 0.0, -16.0)
+	geom.add_child(posts)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var heights: Array = [1.85, 2.40, 1.40, 2.20, 1.85]
+	for i in 5:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.18
+		pm.bottom_radius = 0.22
+		pm.height = heights[i]
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(i * 1.10, heights[i] * 0.5, 0)
+		posts.add_child(post)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(i * 1.10, heights[i] * 0.5, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.22
+		cap.height = heights[i]
+		cs.shape = cap
+		sb.add_child(cs)
+		posts.add_child(sb)
+		# Top cap (small darker disc)
+		var cap_disc: MeshInstance3D = MeshInstance3D.new()
+		var cdm: CylinderMesh = CylinderMesh.new()
+		cdm.top_radius = 0.22
+		cdm.bottom_radius = 0.22
+		cdm.height = 0.08
+		cap_disc.mesh = cdm
+		var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cap_mat.albedo_color = Color(0.30, 0.18, 0.08)
+		cap_disc.material_override = cap_mat
+		cap_disc.position = Vector3(i * 1.10, heights[i] + 0.04, 0)
+		posts.add_child(cap_disc)
+
+
+func _build_d7_martial_artist_npc() -> void:
+	## Epic-7 T29: martial artist NPC — white gi + black belt + striking
+	## stance with raised fist tween.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MartialArtistSlot"
+	slot.position = Vector3(D7_CENTER.x - 11.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "MartialArtist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Iron Stance")
+	if "npc_id" in npc:
+		npc.set("npc_id", "martial_d7")
+	slot.add_child(npc)
+	# White gi
+	var gi: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(0.65, 1.05, 0.40)
+	gi.mesh = gm
+	var gi_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gi_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	gi_mat.roughness = 0.85
+	gi.material_override = gi_mat
+	gi.position = Vector3(0, 0.55, 0)
+	npc.add_child(gi)
+	# Black belt
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.70, 0.10, 0.45)
+	belt.mesh = bm
+	var belt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	belt_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	belt.material_override = belt_mat
+	belt.position = Vector3(0, 0.65, 0)
+	npc.add_child(belt)
+	# Raised fist arm
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.18, 0.55, 0.18)
+	arm.mesh = am
+	arm.material_override = gi_mat
+	arm.position = Vector3(0.20, 1.55, 0.20)
+	npc.add_child(arm)
+	var fist: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.12
+	fm.height = 0.22
+	fist.mesh = fm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+	fist.material_override = skin_mat
+	fist.position = Vector3(0.20, 1.85, 0.20)
+	npc.add_child(fist)
+	# Punch tween
+	var tw: Tween = arm.create_tween().set_loops()
+	tw.tween_property(arm, "position:z", 0.40, 0.20)
+	tw.tween_property(arm, "position:z", 0.20, 0.20)
+	tw.tween_interval(0.40)
+
+
+func _build_d7_rope_bridge(geom: Node) -> void:
+	## Epic-7 T30: long rope bridge across a chasm — 4 wooden plank
+	## sections + 2 hanging ropes + 4 vertical support cables.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "RopeBridge"
+	bridge.position = Vector3(D7_CENTER.x + 22.0, 0.0, 0.0)
+	geom.add_child(bridge)
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope_mat.roughness = 0.85
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Chasm visible below
+	var chasm: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(8.50, 0.40, 4.20)
+	chasm.mesh = cm
+	var chasm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chasm_mat.albedo_color = Color(0.08, 0.05, 0.05)
+	chasm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	chasm.material_override = chasm_mat
+	chasm.position = Vector3(0, -0.18, 0)
+	bridge.add_child(chasm)
+	# 8 wooden planks across
+	for i in 8:
+		var plank: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(0.85, 0.10, 1.85)
+		plank.mesh = pmm
+		plank.material_override = wood_mat
+		plank.position = Vector3(-3.50 + i * 1.0, 1.20, 0)
+		bridge.add_child(plank)
+	# 2 long horizontal hanging ropes (sides)
+	for sz in [-1.0, 1.0]:
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rm: CylinderMesh = CylinderMesh.new()
+		rm.top_radius = 0.04
+		rm.bottom_radius = 0.04
+		rm.height = 8.50
+		rope.mesh = rm
+		rope.material_override = rope_mat
+		rope.position = Vector3(0, 1.85, sz)
+		rope.rotation_degrees = Vector3(0, 0, 90)
+		bridge.add_child(rope)
+	# 4 vertical posts at the ends
+	for sx in [-4.20, 4.20]:
+		for sz in [-1.0, 1.0]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.20, 2.20, 0.20)
+			post.mesh = pm
+			post.material_override = wood_mat
+			post.position = Vector3(sx, 1.10, sz)
+			bridge.add_child(post)
+			# Post collision
+			var sb: StaticBody3D = StaticBody3D.new()
+			sb.position = Vector3(sx, 1.10, sz)
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cb: BoxShape3D = BoxShape3D.new()
+			cb.size = Vector3(0.20, 2.20, 0.20)
+			cs.shape = cb
+			sb.add_child(cs)
+			bridge.add_child(sb)
+	# Plank deck collision (single slab)
+	var dsb: StaticBody3D = StaticBody3D.new()
+	dsb.position = Vector3(0, 1.20, 0)
+	var dcs: CollisionShape3D = CollisionShape3D.new()
+	var dcb: BoxShape3D = BoxShape3D.new()
+	dcb.size = Vector3(8.50, 0.20, 1.85)
+	dcs.shape = dcb
+	dsb.add_child(dcs)
+	bridge.add_child(dsb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
