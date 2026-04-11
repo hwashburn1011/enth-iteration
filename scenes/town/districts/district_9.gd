@@ -91,6 +91,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_guildhall_approach_path(geom)
 	_build_d9_guildhall_training_yard(geom)
 	_build_d9_apprentice_brun_npc(town)
+	_build_d9_molten_geyser(geom)
 	print("[D9Builder] done")
 
 
@@ -7272,4 +7273,169 @@ func _build_d9_apprentice_brun_npc(town: Node) -> void:
 	var bpulse: Tween = npc.create_tween().set_loops()
 	bpulse.tween_property(ember_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	bpulse.tween_property(ember_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_molten_geyser(geom: Node) -> void:
+	## Epic-9 T71: tall periodic molten geyser feature in D9's NE quadrant.
+	## Basalt cone vent with a glowing inner ring, a tall lava jet column
+	## that pulses up-and-down (eruption cycle), drifting steam plume
+	## particles, ember mote shower, and a strong base OmniLight. Adds
+	## vertical drama far from existing landmarks.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_MoltenGeyser"
+	pivot.position = D9_CENTER + Vector3(60, 0, -10)
+	geom.add_child(pivot)
+	# ---- Vent cone (basalt) ----
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.18
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.30
+	# Outer cone — wider base, narrower top
+	var cone: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 1.10
+	cm.bottom_radius = 2.40
+	cm.height = 1.40
+	cone.mesh = cm
+	cone.material_override = basalt_mat
+	cone.position = Vector3(0, 0.70, 0)
+	pivot.add_child(cone)
+	# Vent collision (so player can't walk through it)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cylsh: CylinderShape3D = CylinderShape3D.new()
+	cylsh.top_radius = 1.10
+	cylsh.bottom_radius = 2.40
+	cylsh.height = 1.40
+	cs.shape = cylsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# Inner glowing ring at the vent rim
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.45, 0.05)
+	lava_mat.emission_energy_multiplier = 8.0
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 0.85
+	rmesh.outer_radius = 1.10
+	ring.mesh = rmesh
+	ring.material_override = lava_mat
+	ring.position = Vector3(0, 1.42, 0)
+	pivot.add_child(ring)
+	# Inner lava pool plug — flat disc filling the vent
+	var plug: MeshInstance3D = MeshInstance3D.new()
+	var plugm: CylinderMesh = CylinderMesh.new()
+	plugm.top_radius = 0.95
+	plugm.bottom_radius = 0.95
+	plugm.height = 0.10
+	plug.mesh = plugm
+	plug.material_override = lava_mat
+	plug.position = Vector3(0, 1.40, 0)
+	pivot.add_child(plug)
+	# ---- Lava jet column (eruption stalk) ----
+	# Pivot we can scale on Y to simulate eruption rise/fall
+	var jet_pivot: Node3D = Node3D.new()
+	jet_pivot.position = Vector3(0, 1.45, 0)
+	pivot.add_child(jet_pivot)
+	# Tall thin cylinder for the main jet
+	var jet: MeshInstance3D = MeshInstance3D.new()
+	var jm: CylinderMesh = CylinderMesh.new()
+	jm.top_radius = 0.20
+	jm.bottom_radius = 0.55
+	jm.height = 6.50
+	jet.mesh = jm
+	jet.material_override = lava_mat
+	jet.position = Vector3(0, 3.25, 0)
+	jet_pivot.add_child(jet)
+	# Smaller inner core jet (whiter hot)
+	var hot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hot_mat.albedo_color = Color(1.0, 0.85, 0.55)
+	hot_mat.emission_enabled = true
+	hot_mat.emission = Color(1.0, 0.80, 0.50)
+	hot_mat.emission_energy_multiplier = 12.0
+	hot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var core_jet: MeshInstance3D = MeshInstance3D.new()
+	var cjm: CylinderMesh = CylinderMesh.new()
+	cjm.top_radius = 0.08
+	cjm.bottom_radius = 0.22
+	cjm.height = 6.20
+	core_jet.mesh = cjm
+	core_jet.material_override = hot_mat
+	core_jet.position = Vector3(0, 3.10, 0)
+	jet_pivot.add_child(core_jet)
+	# Crown blob at jet top
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crownm: SphereMesh = SphereMesh.new()
+	crownm.radius = 0.55
+	crownm.height = 1.10
+	crown.mesh = crownm
+	crown.material_override = lava_mat
+	crown.position = Vector3(0, 6.40, 0)
+	jet_pivot.add_child(crown)
+	# Start the jet collapsed
+	jet_pivot.scale = Vector3(0.4, 0.10, 0.4)
+	# Eruption tween — collapsed → high → collapsed in a 5s cycle
+	var erupt: Tween = pivot.create_tween().set_loops()
+	erupt.tween_property(jet_pivot, "scale", Vector3(1.0, 1.0, 1.0), 1.2).set_ease(Tween.EASE_OUT)
+	erupt.tween_property(jet_pivot, "scale", Vector3(1.0, 1.0, 1.0), 1.6)
+	erupt.tween_property(jet_pivot, "scale", Vector3(0.4, 0.10, 0.4), 1.0).set_ease(Tween.EASE_IN)
+	erupt.tween_property(jet_pivot, "scale", Vector3(0.4, 0.10, 0.4), 1.2)
+	# ---- Steam plume particles (white drift up) ----
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.position = Vector3(0, 1.80, 0)
+	steam.amount = 32
+	steam.lifetime = 4.0
+	var spmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spmat.direction = Vector3(0, 1, 0)
+	spmat.spread = 22.0
+	spmat.initial_velocity_min = 0.8
+	spmat.initial_velocity_max = 1.6
+	spmat.gravity = Vector3(0, 0.5, 0)
+	spmat.scale_min = 0.30
+	spmat.scale_max = 0.60
+	spmat.color = Color(0.90, 0.85, 0.85, 0.65)
+	steam.process_material = spmat
+	var ssmesh: SphereMesh = SphereMesh.new()
+	ssmesh.radius = 0.20
+	ssmesh.height = 0.40
+	steam.draw_pass_1 = ssmesh
+	pivot.add_child(steam)
+	# ---- Ember mote shower (bright fast embers) ----
+	var embers: GPUParticles3D = GPUParticles3D.new()
+	embers.position = Vector3(0, 2.20, 0)
+	embers.amount = 48
+	embers.lifetime = 2.5
+	var emat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	emat.direction = Vector3(0, 1, 0)
+	emat.spread = 30.0
+	emat.initial_velocity_min = 2.5
+	emat.initial_velocity_max = 4.5
+	emat.gravity = Vector3(0, -2.5, 0)
+	emat.scale_min = 0.06
+	emat.scale_max = 0.14
+	emat.color = Color(1.0, 0.55, 0.10, 1.0)
+	embers.process_material = emat
+	var esmesh: SphereMesh = SphereMesh.new()
+	esmesh.radius = 0.05
+	esmesh.height = 0.10
+	embers.draw_pass_1 = esmesh
+	pivot.add_child(embers)
+	# ---- Strong base OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.40, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 4.5
+	lt.omni_range = 14.0
+	pivot.add_child(lt)
+	# Ring + plug pulse to match eruption rhythm
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(lava_mat, "emission_energy_multiplier", 11.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(lava_mat, "emission_energy_multiplier", 6.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
