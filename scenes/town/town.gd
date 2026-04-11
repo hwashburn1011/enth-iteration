@@ -1688,6 +1688,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_sage_npc()
 	# Epic-3 T25: echo wraith enemy
 	_build_d3_echo_wraith(geom)
+	# Epic-3 T26: 4 small rune circle floor decals
+	_build_d3_rune_decals(geom)
+	# Epic-3 T27: sealed vault gates landmark
+	_build_d3_sealed_gates(geom)
+	# Epic-3 T28: 8 floating data spirits orbiting overhead
+	_build_d3_data_spirits(geom)
+	# Epic-3 T29: Oracle NPC
+	_build_d3_oracle_npc()
+	# Epic-3 T30: ambient violet mist particles
+	_build_d3_violet_mist(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -3606,6 +3616,344 @@ func _build_d3_echo_wraith(geom: Node) -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	wraith.add_child(label)
+
+
+func _build_d3_rune_decals(geom: Node) -> void:
+	## Epic-3 T26: 4 small rune circle decals on the D3 floor scattered
+	## across the district. Each is a flat torus with 8 small dots inside.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-12, 0.06, 4),
+		D3_CENTER + Vector3(8, 0.06, -4),
+		D3_CENTER + Vector3(-6, 0.06, -10),
+		D3_CENTER + Vector3(12, 0.06, 10),
+	]
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.55, 1.0)
+	rune_mat.emission_energy_multiplier = 1.6
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var decal: Node3D = Node3D.new()
+		decal.name = "D3RuneDecal_%d" % i
+		decal.position = positions[i]
+		geom.add_child(decal)
+		# Outer ring
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 0.85
+		rmesh.outer_radius = 1.0
+		ring.mesh = rmesh
+		ring.material_override = rune_mat
+		decal.add_child(ring)
+		# 8 small dots inside
+		for d in 8:
+			var angle: float = (float(d) / 8.0) * TAU
+			var dot: MeshInstance3D = MeshInstance3D.new()
+			var dm: SphereMesh = SphereMesh.new()
+			dm.radius = 0.10
+			dm.height = 0.20
+			dot.mesh = dm
+			dot.position = Vector3(cos(angle) * 0.55, 0.05, sin(angle) * 0.55)
+			dot.material_override = rune_mat
+			decal.add_child(dot)
+		# Slow rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(decal, "rotation:y", TAU * (1 if i % 2 == 0 else -1), 14.0 + i * 2)
+
+
+func _build_d3_sealed_gates(geom: Node) -> void:
+	## Epic-3 T27: sealed vault gates landmark — 2 huge stone double doors
+	## with a glowing rune seal across the middle. Looks like a quest hook
+	## but is purely decorative.
+	var gates: Node3D = Node3D.new()
+	gates.name = "D3SealedGates"
+	gates.position = D3_CENTER + Vector3(20, 0, 0)
+	geom.add_child(gates)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	# Frame around the doors
+	for sx: float in [-2.40, 2.40]:
+		var frame: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.55, 6.0, 1.20)
+		frame.mesh = fm
+		frame.position = Vector3(sx, 3.0, 0)
+		frame.material_override = stone_mat
+		gates.add_child(frame)
+		# Collision per side
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 6.0, 1.20)
+		cs.shape = cb
+		cs.position = Vector3(sx, 3.0, 0)
+		sb.add_child(cs)
+		gates.add_child(sb)
+	# Top frame
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(5.40, 0.55, 1.20)
+	top.mesh = tm
+	top.position = Vector3(0, 6.30, 0)
+	top.material_override = stone_mat
+	gates.add_child(top)
+	# 2 door slabs
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.04, 0.02, 0.08)
+	door_mat.metallic = 0.85
+	door_mat.roughness = 0.30
+	door_mat.emission_enabled = true
+	door_mat.emission = Color(0.85, 0.40, 1.0)
+	door_mat.emission_energy_multiplier = 0.30
+	for sx: float in [-1.10, 1.10]:
+		var door: MeshInstance3D = MeshInstance3D.new()
+		var dm: BoxMesh = BoxMesh.new()
+		dm.size = Vector3(2.0, 5.5, 0.30)
+		door.mesh = dm
+		door.position = Vector3(sx, 2.85, 0)
+		door.material_override = door_mat
+		gates.add_child(door)
+		# Door collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.0, 5.5, 0.30)
+		cs.shape = cb
+		cs.position = Vector3(sx, 2.85, 0)
+		sb.add_child(cs)
+		gates.add_child(sb)
+	# Glowing rune seal across the middle (a circle of 12 small emissive spheres)
+	for i in 12:
+		var angle: float = (float(i) / 12.0) * TAU
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: SphereMesh = SphereMesh.new()
+		rmesh.radius = 0.12
+		rmesh.height = 0.24
+		rune.mesh = rmesh
+		rune.position = Vector3(cos(angle) * 0.85, 2.85, 0.16)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(1.0, 0.55, 1.0)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.55, 1.0)
+		rmat.emission_energy_multiplier = 2.6
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rune.material_override = rmat
+		gates.add_child(rune)
+	# Center seal sphere — bigger
+	var seal: MeshInstance3D = MeshInstance3D.new()
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.30
+	sm.height = 0.60
+	seal.mesh = sm
+	seal.position = Vector3(0, 2.85, 0.16)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(1.0, 0.55, 1.0)
+	smat.emission_enabled = true
+	smat.emission = Color(1.0, 0.55, 1.0)
+	smat.emission_energy_multiplier = 3.4
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	seal.material_override = smat
+	gates.add_child(seal)
+	# Pulse the seal
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(seal, "scale", Vector3(1.30, 1.30, 1.30), 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(seal, "scale", Vector3(0.85, 0.85, 0.85), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "SEALED VAULT"
+	label.position = Vector3(0, 7.0, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	gates.add_child(label)
+
+
+func _build_d3_data_spirits(geom: Node) -> void:
+	## Epic-3 T28: 8 floating data spirits orbiting in a circle overhead
+	## around the great crystal — small translucent ghost figures.
+	var spirit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spirit_mat.albedo_color = Color(0.85, 0.55, 1.0, 0.55)
+	spirit_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	spirit_mat.emission_enabled = true
+	spirit_mat.emission = Color(1.0, 0.55, 1.0)
+	spirit_mat.emission_energy_multiplier = 1.8
+	spirit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Pivot for orbital rotation
+	var orbit_pivot: Node3D = Node3D.new()
+	orbit_pivot.name = "D3DataSpiritsPivot"
+	orbit_pivot.position = D3_CENTER + Vector3(0, 9, 0)
+	geom.add_child(orbit_pivot)
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var spirit: Node3D = Node3D.new()
+		spirit.name = "D3DataSpirit_%d" % i
+		spirit.position = Vector3(cos(angle) * 6.0, randf_range(-0.5, 0.5), sin(angle) * 6.0)
+		orbit_pivot.add_child(spirit)
+		# Body capsule
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: CapsuleMesh = CapsuleMesh.new()
+		bm.radius = 0.20
+		bm.height = 0.65
+		body.mesh = bm
+		body.material_override = spirit_mat
+		spirit.add_child(body)
+		# Single eye
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.08
+		em.height = 0.16
+		eye.mesh = em
+		eye.position = Vector3(0, 0.30, 0)
+		var emat: StandardMaterial3D = StandardMaterial3D.new()
+		emat.albedo_color = Color(1, 1, 1)
+		emat.emission_enabled = true
+		emat.emission = Color(1, 1, 1)
+		emat.emission_energy_multiplier = 2.6
+		emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = emat
+		spirit.add_child(eye)
+	# Rotate the entire pivot
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(orbit_pivot, "rotation:y", TAU, 16.0)
+
+
+func _build_d3_oracle_npc() -> void:
+	## Epic-3 T29: Oracle NPC sitting on a small plinth in front of the
+	## sealed gates with a glowing crystal ball floating in front of them.
+	## Hooded with no visible face, just glowing eyes inside the hood.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var oracle: Node3D = Node3D.new()
+	oracle.name = "D3Oracle"
+	oracle.position = D3_CENTER + Vector3(16, 0, 0)
+	slots.add_child(oracle)
+	# Plinth
+	var plinth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	plinth_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	plinth_mat.metallic = 0.55
+	plinth_mat.roughness = 0.45
+	var plinth: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.55
+	pm.bottom_radius = 0.65
+	pm.height = 0.55
+	plinth.mesh = pm
+	plinth.position = Vector3(0, 0.27, 0)
+	plinth.material_override = plinth_mat
+	oracle.add_child(plinth)
+	# Body — capsule sitting on plinth
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.16, 0.10, 0.24)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.0, 0)
+	body.material_override = bmat
+	oracle.add_child(body)
+	# Wide deep hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.50
+	hm.height = 0.65
+	hood.mesh = hm
+	hood.position = Vector3(0, 1.85, 0)
+	hood.material_override = bmat
+	oracle.add_child(hood)
+	# 2 small bright violet eyes inside hood shadow
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_energy_multiplier = 3.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.80, 0.30)
+		eye.material_override = eye_mat
+		oracle.add_child(eye)
+	# Floating crystal ball in front
+	var ball: MeshInstance3D = MeshInstance3D.new()
+	var bm2: SphereMesh = SphereMesh.new()
+	bm2.radius = 0.30
+	bm2.height = 0.60
+	ball.mesh = bm2
+	ball.position = Vector3(0, 1.40, 0.65)
+	var ball_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ball_mat.albedo_color = Color(0.85, 0.55, 1.0, 0.55)
+	ball_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ball_mat.emission_enabled = true
+	ball_mat.emission = Color(1.0, 0.55, 1.0)
+	ball_mat.emission_energy_multiplier = 2.4
+	ball_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ball.material_override = ball_mat
+	oracle.add_child(ball)
+	# Bob the ball
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(ball, "position:y", 1.65, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(ball, "position:y", 1.40, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Oracle"
+	label.position = Vector3(0, 2.65, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	oracle.add_child(label)
+
+
+func _build_d3_violet_mist(geom: Node) -> void:
+	## Epic-3 T30: ambient violet mist drifting low across the district —
+	## 80 large translucent violet puff particles slowly moving north.
+	var mist: GPUParticles3D = GPUParticles3D.new()
+	mist.name = "D3VioletMist"
+	mist.position = D3_CENTER + Vector3(0, 1.0, -20)
+	mist.amount = 80
+	mist.lifetime = 12.0
+	mist.preprocess = 6.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(28, 0.5, 0.5)
+	pmat.direction = Vector3(0, 0, 1)
+	pmat.spread = 6.0
+	pmat.initial_velocity_min = 0.45
+	pmat.initial_velocity_max = 0.85
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.85
+	pmat.scale_max = 1.40
+	pmat.color = Color(0.85, 0.40, 1.0, 0.20)
+	mist.process_material = pmat
+	var puff: SphereMesh = SphereMesh.new()
+	puff.radius = 0.85
+	puff.height = 1.70
+	var puff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	puff_mat.albedo_color = Color(0.85, 0.40, 1.0, 0.20)
+	puff_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	puff_mat.emission_enabled = true
+	puff_mat.emission = Color(1.0, 0.55, 1.0)
+	puff_mat.emission_energy_multiplier = 0.55
+	puff_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	puff.material = puff_mat
+	mist.draw_pass_1 = puff
+	geom.add_child(mist)
 
 
 
