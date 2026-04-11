@@ -1678,6 +1678,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_war_banners(geom)
 	# Epic-3 T20: Acolyte NPC sitting cross-legged
 	_build_d3_acolyte_npc()
+	# Epic-3 T21: mana font fountain with rising sphere
+	_build_d3_mana_font(geom)
+	# Epic-3 T22: stone mausoleum building
+	_build_d3_mausoleum(geom)
+	# Epic-3 T23: floating crystal lantern cluster
+	_build_d3_crystal_lanterns(geom)
+	# Epic-3 T24: Sage NPC with crystal staff
+	_build_d3_sage_npc()
+	# Epic-3 T25: echo wraith enemy
+	_build_d3_echo_wraith(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -3195,6 +3205,407 @@ func _build_d3_acolyte_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	acolyte.add_child(label)
+
+
+func _build_d3_mana_font(geom: Node) -> void:
+	## Epic-3 T21: a mana font — small fountain with a glowing violet
+	## sphere rising and falling on a tween. Ringed by 4 small candle
+	## flames (mocked with emissive amber spheres).
+	var font: Node3D = Node3D.new()
+	font.name = "D3ManaFont"
+	font.position = D3_CENTER + Vector3(-15, 0, 8)
+	geom.add_child(font)
+	# Stone basin
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CylinderMesh = CylinderMesh.new()
+	bmesh.top_radius = 0.85
+	bmesh.bottom_radius = 1.0
+	bmesh.height = 0.85
+	basin.mesh = bmesh
+	basin.position = Vector3(0, 0.42, 0)
+	basin.material_override = stone_mat
+	font.add_child(basin)
+	# Mana sphere — bobs vertically
+	var mana: MeshInstance3D = MeshInstance3D.new()
+	var mm: SphereMesh = SphereMesh.new()
+	mm.radius = 0.40
+	mm.height = 0.80
+	mana.mesh = mm
+	mana.position = Vector3(0, 1.20, 0)
+	var mmat: StandardMaterial3D = StandardMaterial3D.new()
+	mmat.albedo_color = Color(0.85, 0.40, 1.0)
+	mmat.emission_enabled = true
+	mmat.emission = Color(1.0, 0.55, 1.0)
+	mmat.emission_energy_multiplier = 3.0
+	mmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mana.material_override = mmat
+	font.add_child(mana)
+	# Bob the mana sphere
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(mana, "position:y", 1.85, 1.6).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(mana, "position:y", 1.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# 4 candle flames around the basin
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.75, 0.20)
+	flame_mat.emission_energy_multiplier = 2.6
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.12
+		fm.height = 0.24
+		flame.mesh = fm
+		flame.position = Vector3(cos(angle) * 1.20, 0.95, sin(angle) * 1.20)
+		flame.material_override = flame_mat
+		font.add_child(flame)
+		# Tiny flicker
+		var fl: Tween = create_tween().set_loops()
+		fl.tween_property(flame, "scale", Vector3(1.30, 1.30, 1.30), 0.4 + i * 0.08).set_ease(Tween.EASE_IN_OUT)
+		fl.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.4 + i * 0.08).set_ease(Tween.EASE_IN_OUT)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "MANA FONT"
+	label.position = Vector3(0, 2.40, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	font.add_child(label)
+	# Collision around basin
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.0, 0.85, 2.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.42, 0)
+	sb.add_child(cs)
+	font.add_child(sb)
+
+
+func _build_d3_mausoleum(geom: Node) -> void:
+	## Epic-3 T22: a stone mausoleum building — square structure with
+	## peaked roof, sealed door with rune carving, and 4 corner crests.
+	var maus: Node3D = Node3D.new()
+	maus.name = "D3Mausoleum"
+	maus.position = D3_CENTER + Vector3(15, 0, -16)
+	geom.add_child(maus)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.24)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.55, 0.30, 0.85)
+	stone_mat.emission_energy_multiplier = 0.30
+	# Main building cube
+	var building: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.40, 3.40, 3.40)
+	building.mesh = bm
+	building.position = Vector3(0, 1.70, 0)
+	building.material_override = stone_mat
+	maus.add_child(building)
+	# Peaked roof prism
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: PrismMesh = PrismMesh.new()
+	rmesh.size = Vector3(3.85, 1.40, 3.85)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 4.10, 0)
+	roof.material_override = stone_mat
+	maus.add_child(roof)
+	# Sealed door — dark recess
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(0.85, 1.85, 0.10)
+	door.mesh = dm
+	door.position = Vector3(0, 1.30, 1.71)
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.04, 0.02, 0.08)
+	dmat.metallic = 0.30
+	dmat.emission_enabled = true
+	dmat.emission = Color(0.85, 0.40, 1.0)
+	dmat.emission_energy_multiplier = 0.45
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	door.material_override = dmat
+	maus.add_child(door)
+	# Glowing rune symbol on door
+	var rune: Label3D = Label3D.new()
+	rune.text = "Φ"
+	rune.position = Vector3(0, 1.40, 1.77)
+	rune.modulate = Color(1.0, 0.55, 1.0)
+	rune.outline_modulate = Color(0, 0, 0, 0.85)
+	rune.outline_size = 5
+	rune.font_size = 36
+	rune.no_depth_test = true
+	maus.add_child(rune)
+	# 4 corner crests on the roof — small spheres
+	for ox: float in [-1.40, 1.40]:
+		for oz: float in [-1.40, 1.40]:
+			var crest: MeshInstance3D = MeshInstance3D.new()
+			var cm: SphereMesh = SphereMesh.new()
+			cm.radius = 0.20
+			cm.height = 0.40
+			crest.mesh = cm
+			crest.position = Vector3(ox, 3.50, oz)
+			var cmat: StandardMaterial3D = StandardMaterial3D.new()
+			cmat.albedo_color = Color(0.85, 0.40, 1.0)
+			cmat.emission_enabled = true
+			cmat.emission = Color(1.0, 0.55, 1.0)
+			cmat.emission_energy_multiplier = 2.4
+			cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			crest.material_override = cmat
+			maus.add_child(crest)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "MAUSOLEUM"
+	label.position = Vector3(0, 5.30, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	maus.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 3.40, 3.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.70, 0)
+	sb.add_child(cs)
+	maus.add_child(sb)
+
+
+func _build_d3_crystal_lanterns(geom: Node) -> void:
+	## Epic-3 T23: 6 floating crystal lantern cluster — small prisms
+	## suspended in the air with thin tether cables to the ground.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-8, 3.5, 12),
+		D3_CENTER + Vector3(-4, 4.0, 12),
+		D3_CENTER + Vector3(0, 3.5, 12),
+		D3_CENTER + Vector3(4, 4.0, 12),
+		D3_CENTER + Vector3(8, 3.5, 12),
+		D3_CENTER + Vector3(0, 4.5, 14),
+	]
+	var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lantern_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	lantern_mat.emission_enabled = true
+	lantern_mat.emission = Color(1.0, 0.55, 1.0)
+	lantern_mat.emission_energy_multiplier = 2.6
+	lantern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cable_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cable_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	cable_mat.metallic = 0.55
+	for i in positions.size():
+		var lantern: MeshInstance3D = MeshInstance3D.new()
+		lantern.name = "D3CrystalLantern_%d" % i
+		var lmesh: PrismMesh = PrismMesh.new()
+		lmesh.size = Vector3(0.30, 0.55, 0.30)
+		lantern.mesh = lmesh
+		lantern.position = positions[i]
+		lantern.material_override = lantern_mat
+		geom.add_child(lantern)
+		# Thin tether cable down to the ground
+		var cable: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.02
+		cm.bottom_radius = 0.02
+		cm.height = positions[i].y
+		cable.mesh = cm
+		cable.position = Vector3(positions[i].x, positions[i].y * 0.5, positions[i].z)
+		cable.material_override = cable_mat
+		geom.add_child(cable)
+		# Bob lantern
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(lantern, "position:y", origin_y + 0.30, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(lantern, "position:y", origin_y, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		# Slow rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(lantern, "rotation:y", TAU, 5.0 + i * 0.3)
+
+
+func _build_d3_sage_npc() -> void:
+	## Epic-3 T24: Sage NPC — old wise figure with a long beard, holding
+	## a tall crystal staff with a glowing orb on top. The "wisdom giver"
+	## archetype.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var sage: Node3D = Node3D.new()
+	sage.name = "D3Sage"
+	sage.position = D3_CENTER + Vector3(8, 0, -8)
+	slots.add_child(sage)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.20, 0.40)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	sage.add_child(body)
+	# Wide hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	sage.add_child(hood)
+	# Long beard — white box
+	var beard: MeshInstance3D = MeshInstance3D.new()
+	var bm2: BoxMesh = BoxMesh.new()
+	bm2.size = Vector3(0.30, 0.55, 0.10)
+	beard.mesh = bm2
+	beard.position = Vector3(0, 1.20, 0.34)
+	var bmat2: StandardMaterial3D = StandardMaterial3D.new()
+	bmat2.albedo_color = Color(0.95, 0.95, 1.0)
+	bmat2.metallic = 0.10
+	bmat2.roughness = 0.85
+	beard.material_override = bmat2
+	sage.add_child(beard)
+	# 2 small white eyes above beard
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.55, 0.32)
+		eye.material_override = eye_mat
+		sage.add_child(eye)
+	# Tall crystal staff — long cylinder
+	var staff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	staff_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	staff_mat.metallic = 0.30
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.05
+	sm.bottom_radius = 0.06
+	sm.height = 2.40
+	staff.mesh = sm
+	staff.position = Vector3(0.55, 1.20, 0)
+	staff.material_override = staff_mat
+	sage.add_child(staff)
+	# Crystal orb on top of staff
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var om: PrismMesh = PrismMesh.new()
+	om.size = Vector3(0.30, 0.55, 0.30)
+	orb.mesh = om
+	orb.position = Vector3(0.55, 2.50, 0)
+	var omat: StandardMaterial3D = StandardMaterial3D.new()
+	omat.albedo_color = Color(0.85, 0.40, 1.0)
+	omat.emission_enabled = true
+	omat.emission = Color(1.0, 0.55, 1.0)
+	omat.emission_energy_multiplier = 3.0
+	omat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	orb.material_override = omat
+	sage.add_child(orb)
+	# Pulse the orb
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(orb, "scale", Vector3(1.30, 1.30, 1.30), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(orb, "scale", Vector3(0.95, 0.95, 0.95), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Sage"
+	label.position = Vector3(0, 2.95, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sage.add_child(label)
+
+
+func _build_d3_echo_wraith(geom: Node) -> void:
+	## Epic-3 T25: an echo wraith — wider thinner enemy than the wisps,
+	## with a cloak-like trailing form, glowing white face, slow patrol.
+	var wraith: Node3D = Node3D.new()
+	wraith.name = "D3EchoWraith"
+	wraith.position = D3_CENTER + Vector3(-15, 0, -8)
+	geom.add_child(wraith)
+	# Translucent body capsule
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.10, 0.40, 0.55)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.40, 1.0)
+	bmat.emission_energy_multiplier = 1.4
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.55
+	bmesh.height = 1.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.20, 0)
+	body.material_override = bmat
+	wraith.add_child(body)
+	# Trailing skirt — wider box at the bottom
+	var skirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: PrismMesh = PrismMesh.new()
+	sm.size = Vector3(1.40, 1.20, 1.40)
+	skirt.mesh = sm
+	skirt.position = Vector3(0, 0.60, 0)
+	skirt.rotation = Vector3(deg_to_rad(180), 0, 0)
+	skirt.material_override = bmat
+	wraith.add_child(skirt)
+	# Glowing white face — single big oval
+	var face: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.30
+	fm.height = 0.55
+	face.mesh = fm
+	face.position = Vector3(0, 1.85, 0.30)
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(1, 1, 1)
+	fmat.emission_enabled = true
+	fmat.emission = Color(1, 1, 1)
+	fmat.emission_energy_multiplier = 3.4
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	face.material_override = fmat
+	wraith.add_child(face)
+	# Pulse the face
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(fmat, "emission_energy_multiplier", 4.5, 0.85).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(fmat, "emission_energy_multiplier", 2.2, 0.85).set_ease(Tween.EASE_IN_OUT)
+	# Slow drift patrol
+	var origin: Vector3 = D3_CENTER + Vector3(-15, 0, -8)
+	var drift: Tween = create_tween().set_loops()
+	drift.tween_property(wraith, "position", origin + Vector3(6, 0, 4), 8.0).set_ease(Tween.EASE_IN_OUT)
+	drift.tween_property(wraith, "position", origin + Vector3(0, 0, 8), 8.0).set_ease(Tween.EASE_IN_OUT)
+	drift.tween_property(wraith, "position", origin, 8.0).set_ease(Tween.EASE_IN_OUT)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "ECHO WRAITH"
+	label.position = Vector3(0, 2.85, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	wraith.add_child(label)
 
 
 
