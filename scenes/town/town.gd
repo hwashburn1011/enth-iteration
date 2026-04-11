@@ -8925,6 +8925,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_arctic_owl(geom)
 	# Epic-5 T80: ice rune ring of 9 stones
 	_build_d5_rune_ring(geom)
+	# Epic-5 T81: ice slide for recreation
+	_build_d5_ice_slide(geom)
+	# Epic-5 T82: skating instructor NPC
+	_build_d5_skating_instructor_npc()
+	# Epic-5 T83: ice harp sculpture
+	_build_d5_ice_harp(geom)
+	# Epic-5 T84: harpist NPC
+	_build_d5_harpist_npc()
+	# Epic-5 T85: rotating data prism array
+	_build_d5_data_prism_array(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -15456,6 +15466,341 @@ func _build_d5_rune_ring(geom: Node) -> void:
 	light.omni_range = 6.0
 	light.position = Vector3(0, 0.55, 0)
 	ring.add_child(light)
+
+
+func _build_d5_ice_slide(geom: Node) -> void:
+	## Epic-5 T81: tall ice slide — staircase up + curved slide down,
+	## marking a recreation spot for the Cache citizens.
+	var slide: Node3D = Node3D.new()
+	slide.name = "IceSlide"
+	slide.position = Vector3(D5_CENTER.x - 6.0, 0.0, 8.0)
+	geom.add_child(slide)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.78, 0.92, 1.0)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 1.0)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.roughness = 0.20
+	# Tall ice tower (climb area)
+	var tower: MeshInstance3D = MeshInstance3D.new()
+	var twm: BoxMesh = BoxMesh.new()
+	twm.size = Vector3(1.85, 3.40, 1.85)
+	tower.mesh = twm
+	tower.material_override = ice_mat
+	tower.position = Vector3(0, 1.70, 0)
+	slide.add_child(tower)
+	# 4 ice stair steps on the back of the tower
+	for i in 4:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(1.85, 0.30, 0.55)
+		step.mesh = stm
+		step.material_override = ice_mat
+		step.position = Vector3(0, 0.30 + i * 0.85, -1.20 - i * 0.55)
+		slide.add_child(step)
+	# Slide chute (5 angled segments forming a curving slide downward)
+	for i in 5:
+		var chute: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(1.10, 0.18, 1.30)
+		chute.mesh = cmm
+		chute.material_override = ice_mat
+		var t: float = i / 4.0
+		var sx: float = sin(t * PI * 0.5) * 2.40
+		chute.position = Vector3(sx, 3.20 - t * 2.85, 1.20 + t * 0.85)
+		chute.rotation_degrees = Vector3(15.0 + i * 5.0, t * 60.0, 0)
+		slide.add_child(chute)
+	# Slide side rails
+	for sx in [-0.55, 0.55]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: CylinderMesh = CylinderMesh.new()
+		rm.top_radius = 0.05
+		rm.bottom_radius = 0.05
+		rm.height = 4.20
+		rail.mesh = rm
+		rail.material_override = ice_mat
+		rail.position = Vector3(sx, 2.40, 1.85)
+		rail.rotation_degrees = Vector3(35, 0, 0)
+		slide.add_child(rail)
+	# Tower collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 3.40, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	slide.add_child(sb)
+
+
+func _build_d5_skating_instructor_npc() -> void:
+	## Epic-5 T82: skating instructor NPC near the rink — bright pink coat,
+	## holding a clipboard with a small whistle around their neck.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SkatingInstructorSlot"
+	slot.position = Vector3(D5_CENTER.x - 14.0, 0.0, -10.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "SkatingInstructor"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Glide")
+	if "npc_id" in npc:
+		npc.set("npc_id", "instructor_d5")
+	slot.add_child(npc)
+	# Pink coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.05, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.95, 0.45, 0.75)
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.95, 0.30, 0.75)
+	coat_mat.emission_energy_multiplier = 0.30
+	coat_mat.roughness = 0.65
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.55, 0)
+	npc.add_child(coat)
+	# Clipboard
+	var clipboard: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.30, 0.40, 0.04)
+	clipboard.mesh = clm
+	var board_mat: StandardMaterial3D = StandardMaterial3D.new()
+	board_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	board_mat.roughness = 0.85
+	clipboard.material_override = board_mat
+	clipboard.position = Vector3(0.40, 0.85, 0.18)
+	npc.add_child(clipboard)
+	# Paper on clipboard
+	var paper: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.27, 0.36, 0.02)
+	paper.mesh = pm
+	var paper_mat: StandardMaterial3D = StandardMaterial3D.new()
+	paper_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	paper.material_override = paper_mat
+	paper.position = Vector3(0.40, 0.85, 0.21)
+	npc.add_child(paper)
+	# Whistle (small silver cylinder hanging)
+	var whistle: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.03
+	wm.bottom_radius = 0.03
+	wm.height = 0.10
+	whistle.mesh = wm
+	var silver_mat: StandardMaterial3D = StandardMaterial3D.new()
+	silver_mat.albedo_color = Color(0.85, 0.85, 0.92)
+	silver_mat.metallic = 0.85
+	silver_mat.roughness = 0.20
+	whistle.material_override = silver_mat
+	whistle.position = Vector3(0, 0.95, 0.22)
+	whistle.rotation_degrees = Vector3(90, 0, 0)
+	npc.add_child(whistle)
+
+
+func _build_d5_ice_harp(geom: Node) -> void:
+	## Epic-5 T83: large ice harp sculpture — curved frame with 12 thin
+	## glowing string cylinders inside.
+	var harp: Node3D = Node3D.new()
+	harp.name = "IceHarp"
+	harp.position = Vector3(D5_CENTER.x + 4.0, 0.0, 14.0)
+	geom.add_child(harp)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.50, 0.55)
+	stone_mat.roughness = 0.92
+	# Stone base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 0.30, 0.85)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.15, 0)
+	harp.add_child(base)
+	# Vertical column
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var clm: CylinderMesh = CylinderMesh.new()
+	clm.top_radius = 0.10
+	clm.bottom_radius = 0.18
+	clm.height = 3.40
+	col.mesh = clm
+	col.material_override = ice_mat
+	col.position = Vector3(-0.55, 1.85, 0)
+	harp.add_child(col)
+	# Curved top neck
+	var neck: MeshInstance3D = MeshInstance3D.new()
+	var nm: PrismMesh = PrismMesh.new()
+	nm.size = Vector3(0.18, 1.85, 0.30)
+	neck.mesh = nm
+	neck.material_override = ice_mat
+	neck.position = Vector3(0.0, 3.40, 0)
+	neck.rotation_degrees = Vector3(0, 0, 65)
+	harp.add_child(neck)
+	# Soundbox at the bottom
+	var soundbox: MeshInstance3D = MeshInstance3D.new()
+	var sbm: PrismMesh = PrismMesh.new()
+	sbm.size = Vector3(1.10, 0.85, 0.55)
+	soundbox.mesh = sbm
+	soundbox.material_override = ice_mat
+	soundbox.position = Vector3(0.45, 0.80, 0)
+	soundbox.rotation_degrees = Vector3(0, 0, -25)
+	harp.add_child(soundbox)
+	# 12 strings (thin glowing cylinders)
+	var string_mat: StandardMaterial3D = StandardMaterial3D.new()
+	string_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	string_mat.emission_enabled = true
+	string_mat.emission = Color(0.30, 1.0, 1.0)
+	string_mat.emission_energy_multiplier = 2.5
+	string_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 12:
+		var s: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.012
+		sm.bottom_radius = 0.012
+		sm.height = 2.60 - i * 0.10
+		s.mesh = sm
+		s.material_override = string_mat
+		s.position = Vector3(-0.30 + i * 0.06, 1.85 + i * 0.04, 0)
+		harp.add_child(s)
+	# Light from the harp
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 1.85, 0)
+	harp.add_child(light)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 3.40, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	harp.add_child(sb)
+
+
+func _build_d5_harpist_npc() -> void:
+	## Epic-5 T84: harpist NPC seated at the ice harp.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "HarpistSlot"
+	slot.position = Vector3(D5_CENTER.x + 5.5, 0.0, 14.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Harpist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Cantata")
+	if "npc_id" in npc:
+		npc.set("npc_id", "harpist_d5")
+	slot.add_child(npc)
+	# Long elegant gown (light blue)
+	var gown: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(0.65, 1.20, 0.40)
+	gown.mesh = gm
+	var gown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gown_mat.albedo_color = Color(0.65, 0.85, 0.95)
+	gown_mat.emission_enabled = true
+	gown_mat.emission = Color(0.55, 0.85, 0.95)
+	gown_mat.emission_energy_multiplier = 0.30
+	gown_mat.roughness = 0.65
+	gown.material_override = gown_mat
+	gown.position = Vector3(0, 0.60, 0)
+	npc.add_child(gown)
+	# Hair (long black box)
+	var hair: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.40, 0.55, 0.20)
+	hair.mesh = hm
+	var hair_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hair_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	hair_mat.roughness = 0.85
+	hair.material_override = hair_mat
+	hair.position = Vector3(0, 1.45, -0.10)
+	npc.add_child(hair)
+
+
+func _build_d5_data_prism_array(geom: Node) -> void:
+	## Epic-5 T85: rotating prism array — 5 rotating triangular ice prisms
+	## refracting cyan light. A "data refraction" decorative installation.
+	var array: Node3D = Node3D.new()
+	array.name = "DataPrismArray"
+	array.position = Vector3(D5_CENTER.x + 8.0, 0.0, -22.0)
+	geom.add_child(array)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.95, 1.0)
+	ice_mat.emission_energy_multiplier = 1.4
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	stone_mat.roughness = 0.92
+	for i in 5:
+		var stand: Node3D = Node3D.new()
+		stand.position = Vector3(i * 1.85, 0, 0)
+		array.add_child(stand)
+		# Stone pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.30
+		pm.bottom_radius = 0.40
+		pm.height = 0.85
+		ped.mesh = pm
+		ped.material_override = stone_mat
+		ped.position = Vector3(0, 0.42, 0)
+		stand.add_child(ped)
+		# Triangular prism on top, rotating
+		var prism: MeshInstance3D = MeshInstance3D.new()
+		var prm: PrismMesh = PrismMesh.new()
+		prm.size = Vector3(0.55, 1.40, 0.55)
+		prism.mesh = prm
+		prism.material_override = ice_mat
+		prism.position = Vector3(0, 1.55, 0)
+		stand.add_child(prism)
+		# Continuous spin tween (each at slightly different speed)
+		var tw: Tween = prism.create_tween().set_loops()
+		tw.tween_property(prism, "rotation_degrees:y", 360.0, 4.0 + i * 0.4)
+		tw.tween_property(prism, "rotation_degrees:y", 0.0, 0.0)
+		# Per-prism light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(0.40, 0.95, 1.0)
+		light.light_energy = 1.6
+		light.omni_range = 3.0
+		light.position = Vector3(0, 1.55, 0)
+		stand.add_child(light)
+		# Pedestal collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.40
+		cyl.height = 0.85
+		cs.shape = cyl
+		sb.add_child(cs)
+		stand.add_child(sb)
 
 
 
