@@ -54,6 +54,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_courier_drones(geom)
 	_build_th_north_entry_arch(geom)
 	_build_th_south_entry_arch(geom)
+	_build_th_patrol_guard_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -6819,3 +6820,215 @@ func _build_th_south_entry_arch(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_patrol_guard_npc(town: Node) -> void:
+	## Epic-10 T38: Patrol Guard Drift — city guard NPC who walks a slow
+	## circular patrol path around the plaza using an orbit pivot tween.
+	## Iron breastplate + brass shoulder pauldrons, brass helm with
+	## crown ridge + glowing visor, halberd held in right hand. Orbit
+	## pivot rotates so the guard walks the perimeter loop.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	# An orbit pivot is the slot — the npc is offset from it so rotating
+	# the orbit pivot moves the npc around the plaza in a circle.
+	var orbit_slot: Marker3D = Marker3D.new()
+	orbit_slot.name = "THPatrolGuardOrbit"
+	orbit_slot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	slots.add_child(orbit_slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THPatrolGuardDrift"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Patrol Guard Drift")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_patrol_guard_drift")
+	# Offset the npc from the orbit center along +X so rotation makes a circle
+	npc.position = Vector3(10.50, 0, 0)
+	# Face perpendicular to the radial (so the guard walks forward along the loop)
+	npc.rotation.y = -PI / 2.0
+	orbit_slot.add_child(npc)
+	# Materials
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.45, 0.55, 0.65)
+	iron_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Iron breastplate body ----
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.05, 1.30, 0.55)
+	torso.mesh = tm
+	torso.material_override = iron_mat
+	torso.position = Vector3(0, 1.20, 0)
+	npc.add_child(torso)
+	# Brass chest seam
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var seamesh: BoxMesh = BoxMesh.new()
+	seamesh.size = Vector3(0.18, 1.20, 0.06)
+	seam.mesh = seamesh
+	seam.material_override = brass_mat
+	seam.position = Vector3(0, 1.20, -0.30)
+	npc.add_child(seam)
+	# Glowing chest core
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var ccm: SphereMesh = SphereMesh.new()
+	ccm.radius = 0.10
+	ccm.height = 0.20
+	core.mesh = ccm
+	core.material_override = data_mat
+	core.position = Vector3(0, 1.40, -0.32)
+	npc.add_child(core)
+	# Brass shoulder pauldrons
+	for sx in [-0.65, 0.65]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.25
+		pm.height = 0.45
+		paul.mesh = pm
+		paul.material_override = brass_mat
+		paul.position = Vector3(sx, 1.80, 0)
+		paul.scale = Vector3(1.0, 0.55, 1.0)
+		npc.add_child(paul)
+	# Leather waist belt + brass buckle
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var btm: BoxMesh = BoxMesh.new()
+	btm.size = Vector3(1.10, 0.18, 0.60)
+	belt.mesh = btm
+	belt.material_override = leather_mat
+	belt.position = Vector3(0, 0.65, 0)
+	npc.add_child(belt)
+	var buckle: MeshInstance3D = MeshInstance3D.new()
+	var bkm: BoxMesh = BoxMesh.new()
+	bkm.size = Vector3(0.20, 0.18, 0.06)
+	buckle.mesh = bkm
+	buckle.material_override = brass_mat
+	buckle.position = Vector3(0, 0.65, -0.32)
+	npc.add_child(buckle)
+	# ---- Brass helm ----
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hmm: BoxMesh = BoxMesh.new()
+	hmm.size = Vector3(0.65, 0.65, 0.65)
+	helm.mesh = hmm
+	helm.material_override = iron_mat
+	helm.position = Vector3(0, 2.15, 0)
+	npc.add_child(helm)
+	# Helm crown ridge prism
+	var crown_ridge: MeshInstance3D = MeshInstance3D.new()
+	var crm: PrismMesh = PrismMesh.new()
+	crm.size = Vector3(0.20, 0.20, 0.65)
+	crown_ridge.mesh = crm
+	crown_ridge.material_override = brass_mat
+	crown_ridge.position = Vector3(0, 2.55, 0)
+	npc.add_child(crown_ridge)
+	# Glowing visor slit
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.45, 0.08, 0.04)
+	visor.mesh = vm
+	visor.material_override = data_mat
+	visor.position = Vector3(0, 2.18, -0.34)
+	npc.add_child(visor)
+	# ---- Left arm at his side ----
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.20, 0.85, 0.20)
+	left_arm.mesh = lam
+	left_arm.material_override = iron_mat
+	left_arm.position = Vector3(-0.65, 1.20, 0)
+	npc.add_child(left_arm)
+	# ---- Right arm holding a halberd ----
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.20, 0.85, 0.20)
+	right_arm.mesh = ram
+	right_arm.material_override = iron_mat
+	right_arm.position = Vector3(0.65, 1.20, 0)
+	npc.add_child(right_arm)
+	# Halberd shaft (long wooden cylinder held vertically)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var shm: CylinderMesh = CylinderMesh.new()
+	shm.top_radius = 0.06
+	shm.bottom_radius = 0.07
+	shm.height = 2.65
+	shaft.mesh = shm
+	shaft.material_override = wood_mat
+	shaft.position = Vector3(0.85, 1.30, 0)
+	npc.add_child(shaft)
+	# Halberd brass binding rings
+	for hy in [0.50, 1.30, 2.10]:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.07
+		rmm.outer_radius = 0.10
+		ring.mesh = rmm
+		ring.material_override = brass_mat
+		ring.position = Vector3(0.85, hy, 0)
+		npc.add_child(ring)
+	# Halberd head — wide axe blade prism
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blm: PrismMesh = PrismMesh.new()
+	blm.size = Vector3(0.45, 0.55, 0.10)
+	blade.mesh = blm
+	blade.material_override = iron_mat
+	blade.position = Vector3(1.10, 2.40, 0)
+	blade.rotation.z = -PI / 2.0
+	npc.add_child(blade)
+	# Halberd top spike (thin prism)
+	var spike: MeshInstance3D = MeshInstance3D.new()
+	var spm: PrismMesh = PrismMesh.new()
+	spm.size = Vector3(0.10, 0.45, 0.10)
+	spike.mesh = spm
+	spike.material_override = iron_mat
+	spike.position = Vector3(0.85, 2.85, 0)
+	npc.add_child(spike)
+	# Glowing data spike tip dot
+	var spike_tip: MeshInstance3D = MeshInstance3D.new()
+	var stm: SphereMesh = SphereMesh.new()
+	stm.radius = 0.06
+	stm.height = 0.12
+	spike_tip.mesh = stm
+	spike_tip.material_override = data_mat
+	spike_tip.position = Vector3(0.85, 3.10, 0)
+	npc.add_child(spike_tip)
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.70, -0.20)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Patrol orbit tween — orbit_slot rotates around Y so the guard
+	# walks a circle around the plaza at radius 10.5 (between benches and lampposts).
+	# Slow period (~30s) for a leisurely patrol pace.
+	var patrol: Tween = npc.create_tween().set_loops()
+	patrol.tween_property(orbit_slot, "rotation:y", TAU, 32.0)
+	# Chest core + visor + spike tip pulse
+	var dpulse: Tween = npc.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
