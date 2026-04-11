@@ -1333,6 +1333,16 @@ func _build_east_plaza() -> void:
 	_build_data_shards(geom)
 	# Epic-1 T55: holographic AI statue centerpiece in the plaza
 	_build_ai_statue(geom)
+	# Epic-1 T56: covered merchant tent with fabric awning + crates
+	_build_merchant_tent(geom)
+	# Epic-1 T57: towering data archive landmark structure
+	_build_data_archive(geom)
+	# Epic-1 T58: combat dummy hit-effect VFX (sparks + recoil tweens)
+	_build_dummy_hit_vfx(geom)
+	# Epic-1 T59: 3 courier delivery drones flying patrol routes
+	_build_courier_drones(geom)
+	# Epic-1 T60: scattered ambient glow nodes pulsing on the ground
+	_build_glow_nodes(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -4327,3 +4337,385 @@ func _build_ai_statue(geom: Node) -> void:
 	cs.position = Vector3(0, 0.7, 0)
 	sb.add_child(cs)
 	statue.add_child(sb)
+
+
+func _build_merchant_tent(geom: Node) -> void:
+	## Epic-1 T56: covered merchant tent on the south edge of the plaza. 4
+	## corner posts hold a slanted fabric awning + crates underneath. Sells
+	## the data-bazaar feel and gives the player a recognizable shop landmark.
+	var tent: Node3D = Node3D.new()
+	tent.name = "EastPlazaMerchantTent"
+	tent.position = Vector3(36, 0, 14)
+	geom.add_child(tent)
+	# Materials
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	post_mat.roughness = 0.30
+	var fabric_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fabric_mat.albedo_color = Color(0.30, 0.10, 0.30)
+	fabric_mat.emission_enabled = true
+	fabric_mat.emission = Color(0.85, 0.40, 1.0)
+	fabric_mat.emission_energy_multiplier = 0.55
+	fabric_mat.metallic = 0.10
+	fabric_mat.roughness = 0.55
+	var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crate_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	crate_mat.emission_enabled = true
+	crate_mat.emission = Color(0.95, 0.65, 0.20)
+	crate_mat.emission_energy_multiplier = 0.40
+	crate_mat.metallic = 0.30
+	crate_mat.roughness = 0.55
+	# 4 corner posts
+	var post_offsets: Array[Vector3] = [
+		Vector3(-1.6, 0, -1.0),
+		Vector3(1.6, 0, -1.0),
+		Vector3(-1.6, 0, 1.0),
+		Vector3(1.6, 0, 1.0),
+	]
+	for off in post_offsets:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.07
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 2.4
+		post.mesh = pmesh
+		post.position = off + Vector3(0, 1.2, 0)
+		post.material_override = post_mat
+		tent.add_child(post)
+	# Slanted awning roof — slightly tilted box
+	var awning: MeshInstance3D = MeshInstance3D.new()
+	var amesh: BoxMesh = BoxMesh.new()
+	amesh.size = Vector3(3.6, 0.10, 2.4)
+	awning.mesh = amesh
+	awning.position = Vector3(0, 2.45, 0)
+	awning.rotation = Vector3(deg_to_rad(8), 0, 0)
+	awning.material_override = fabric_mat
+	tent.add_child(awning)
+	# Lower fringe trim under awning
+	var fringe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fringe_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	fringe_mat.emission_enabled = true
+	fringe_mat.emission = Color(0.95, 0.55, 1.0)
+	fringe_mat.emission_energy_multiplier = 1.4
+	fringe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for fz: float in [-1.20, 1.20]:
+		var fringe: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: BoxMesh = BoxMesh.new()
+		fmesh.size = Vector3(3.6, 0.04, 0.04)
+		fringe.mesh = fmesh
+		fringe.position = Vector3(0, 2.32, fz)
+		fringe.material_override = fringe_mat
+		tent.add_child(fringe)
+	# 3 stacked crates under the awning
+	var crate_specs: Array = [
+		[Vector3(-1.0, 0.30, 0), Vector3(0.6, 0.6, 0.6)],
+		[Vector3(-0.3, 0.30, -0.5), Vector3(0.7, 0.6, 0.6)],
+		[Vector3(-0.3, 0.85, -0.5), Vector3(0.5, 0.5, 0.5)],
+	]
+	for spec in crate_specs:
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = spec[1]
+		crate.mesh = cmesh
+		crate.position = spec[0]
+		crate.material_override = crate_mat
+		tent.add_child(crate)
+	# Counter table where merchant would stand
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var counter_mesh: BoxMesh = BoxMesh.new()
+	counter_mesh.size = Vector3(2.6, 0.10, 0.5)
+	counter.mesh = counter_mesh
+	counter.position = Vector3(0.8, 0.95, 0.7)
+	counter.material_override = crate_mat
+	tent.add_child(counter)
+	# Sign — "WARES"
+	var label: Label3D = Label3D.new()
+	label.text = "WARES"
+	label.position = Vector3(0, 2.75, 0)
+	label.modulate = Color(0.95, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	tent.add_child(label)
+	# Collision: one box around the whole tent footprint
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.6, 2.4, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.2, 0)
+	sb.add_child(cs)
+	tent.add_child(sb)
+
+
+func _build_data_archive(geom: Node) -> void:
+	## Epic-1 T57: tall data archive landmark — a stepped tower of stacked
+	## emissive cube "data blocks" rising 8m above the plaza. Recognizable
+	## landmark from anywhere in the district. Hints at "knowledge stored here".
+	var archive: Node3D = Node3D.new()
+	archive.name = "EastPlazaDataArchive"
+	archive.position = Vector3(44, 0, 12)
+	geom.add_child(archive)
+	# Stone base
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.14, 0.18, 0.22)
+	base_mat.metallic = 0.65
+	base_mat.roughness = 0.40
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(3.4, 0.6, 3.4)
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.30, 0)
+	base.material_override = base_mat
+	archive.add_child(base)
+	# 6 stacked emissive data blocks, each rotated 30 deg from the last
+	var block_colors: Array[Color] = [
+		Color(0.30, 0.85, 1.0),
+		Color(0.40, 0.95, 0.85),
+		Color(0.45, 0.95, 0.65),
+		Color(0.95, 0.85, 0.30),
+		Color(0.95, 0.50, 0.30),
+		Color(0.85, 0.40, 1.0),
+	]
+	for i in 6:
+		var block: MeshInstance3D = MeshInstance3D.new()
+		block.name = "DataBlock_%d" % i
+		var size: float = 2.4 - (i * 0.20)
+		var blockmesh: BoxMesh = BoxMesh.new()
+		blockmesh.size = Vector3(size, 0.95, size)
+		block.mesh = blockmesh
+		block.position = Vector3(0, 0.85 + i * 1.05, 0)
+		block.rotation = Vector3(0, deg_to_rad(15 * i), 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(block_colors[i].r * 0.30, block_colors[i].g * 0.30, block_colors[i].b * 0.30)
+		bmat.emission_enabled = true
+		bmat.emission = block_colors[i]
+		bmat.emission_energy_multiplier = 0.85
+		bmat.metallic = 0.50
+		bmat.roughness = 0.30
+		block.material_override = bmat
+		archive.add_child(block)
+		# Each block slowly rotates on its own y axis
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(block, "rotation:y", deg_to_rad(15 * i) + TAU, 14.0 + i)
+	# Crowning sphere on top
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: SphereMesh = SphereMesh.new()
+	cmesh.radius = 0.55
+	cmesh.height = 1.10
+	crown.mesh = cmesh
+	crown.position = Vector3(0, 7.50, 0)
+	var crown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crown_mat.albedo_color = Color(0.95, 0.95, 1.0)
+	crown_mat.emission_enabled = true
+	crown_mat.emission = Color(1.0, 1.0, 1.0)
+	crown_mat.emission_energy_multiplier = 2.5
+	crown_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	crown.material_override = crown_mat
+	archive.add_child(crown)
+	# Pulsing crown light
+	var crown_pulse: Tween = create_tween().set_loops()
+	crown_pulse.tween_property(crown, "scale", Vector3(1.15, 1.15, 1.15), 1.8).set_ease(Tween.EASE_IN_OUT)
+	crown_pulse.tween_property(crown, "scale", Vector3(1.0, 1.0, 1.0), 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Floor label
+	var label: Label3D = Label3D.new()
+	label.text = "ARCHIVE"
+	label.position = Vector3(0, 0.70, 1.75)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 24
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	archive.add_child(label)
+	# Collision around base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cbox: BoxShape3D = BoxShape3D.new()
+	cbox.size = Vector3(3.4, 8.0, 3.4)
+	cs.shape = cbox
+	cs.position = Vector3(0, 4.0, 0)
+	sb.add_child(cs)
+	archive.add_child(sb)
+
+
+func _build_dummy_hit_vfx(geom: Node) -> void:
+	## Epic-1 T58: ambient hit-effect VFX on the practice dummies — small
+	## yellow spark particles bursting periodically + a quick scale recoil
+	## tween, suggesting an unseen sparring partner is striking them.
+	var dummy_positions: Array[Vector3] = [
+		Vector3(34, 0, 6),
+		Vector3(36, 0, 6),
+		Vector3(38, 0, 6),
+	]
+	for i in dummy_positions.size():
+		var fx: Node3D = Node3D.new()
+		fx.name = "EastPlazaDummyHitFX_%d" % i
+		fx.position = dummy_positions[i] + Vector3(0, 1.4, 0)
+		geom.add_child(fx)
+		# Spark particles
+		var sparks: GPUParticles3D = GPUParticles3D.new()
+		sparks.amount = 18
+		sparks.lifetime = 0.6
+		sparks.one_shot = false
+		sparks.explosiveness = 0.85
+		var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		smat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		smat.emission_sphere_radius = 0.10
+		smat.direction = Vector3(0, 1, 0)
+		smat.spread = 60.0
+		smat.initial_velocity_min = 1.5
+		smat.initial_velocity_max = 3.0
+		smat.gravity = Vector3(0, -3.0, 0)
+		smat.scale_min = 0.04
+		smat.scale_max = 0.10
+		smat.color = Color(1.0, 0.85, 0.30, 1.0)
+		sparks.process_material = smat
+		var spark_mesh: SphereMesh = SphereMesh.new()
+		spark_mesh.radius = 0.05
+		spark_mesh.height = 0.10
+		var spark_mat: StandardMaterial3D = StandardMaterial3D.new()
+		spark_mat.albedo_color = Color(1.0, 0.85, 0.30)
+		spark_mat.emission_enabled = true
+		spark_mat.emission = Color(1.0, 0.95, 0.55)
+		spark_mat.emission_energy_multiplier = 2.5
+		spark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		spark_mesh.material = spark_mat
+		sparks.draw_pass_1 = spark_mesh
+		fx.add_child(sparks)
+		# Sparks fire on a delay so they don't all sync
+		await get_tree().create_timer(0.0).timeout
+		sparks.emitting = true
+
+
+func _build_courier_drones(geom: Node) -> void:
+	## Epic-1 T59: 3 small courier drones flying figure-eight patrol routes
+	## across the plaza at low altitude. Each carries a glowing package crate
+	## suspended below by a thin tether — sells "active commerce".
+	var drone_paths: Array = [
+		[Vector3(26, 4, -10), Vector3(42, 4, -10), Vector3(42, 4, 10), Vector3(26, 4, 10)],
+		[Vector3(28, 5, 0), Vector3(40, 5, 0), Vector3(40, 5, -8), Vector3(28, 5, -8)],
+		[Vector3(30, 4.5, 12), Vector3(38, 4.5, 12), Vector3(38, 4.5, -4), Vector3(30, 4.5, -4)],
+	]
+	for i in drone_paths.size():
+		var drone: Node3D = Node3D.new()
+		drone.name = "EastPlazaCourierDrone_%d" % i
+		drone.position = drone_paths[i][0]
+		geom.add_child(drone)
+		# Drone body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(0.50, 0.18, 0.50)
+		body.mesh = bmesh
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.10, 0.13, 0.18)
+		bmat.metallic = 0.85
+		bmat.roughness = 0.30
+		body.material_override = bmat
+		drone.add_child(body)
+		# 4 spinning rotors
+		var rotor_mat: StandardMaterial3D = StandardMaterial3D.new()
+		rotor_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		rotor_mat.emission_enabled = true
+		rotor_mat.emission = Color(0.55, 0.95, 1.0)
+		rotor_mat.emission_energy_multiplier = 1.4
+		rotor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var rotor_offsets: Array[Vector3] = [
+			Vector3(-0.30, 0.05, -0.30),
+			Vector3(0.30, 0.05, -0.30),
+			Vector3(-0.30, 0.05, 0.30),
+			Vector3(0.30, 0.05, 0.30),
+		]
+		for off in rotor_offsets:
+			var rotor: MeshInstance3D = MeshInstance3D.new()
+			var rmesh: CylinderMesh = CylinderMesh.new()
+			rmesh.top_radius = 0.18
+			rmesh.bottom_radius = 0.18
+			rmesh.height = 0.02
+			rotor.mesh = rmesh
+			rotor.position = off
+			rotor.material_override = rotor_mat
+			drone.add_child(rotor)
+			var spin: Tween = create_tween().set_loops()
+			spin.tween_property(rotor, "rotation:y", TAU, 0.30)
+		# Tether + package
+		var tether: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: CylinderMesh = CylinderMesh.new()
+		tmesh.top_radius = 0.02
+		tmesh.bottom_radius = 0.02
+		tmesh.height = 0.55
+		tether.mesh = tmesh
+		tether.position = Vector3(0, -0.32, 0)
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.20, 0.25, 0.30)
+		tether.material_override = tmat
+		drone.add_child(tether)
+		var pkg: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.30, 0.30, 0.30)
+		pkg.mesh = pmesh
+		pkg.position = Vector3(0, -0.74, 0)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.30, 0.20, 0.08)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.95, 0.65, 0.20)
+		pmat.emission_energy_multiplier = 0.6
+		pmat.metallic = 0.40
+		pkg.material_override = pmat
+		drone.add_child(pkg)
+		# Patrol tween — visit each waypoint then loop
+		var patrol: Tween = create_tween().set_loops()
+		var path: Array = drone_paths[i]
+		for wp in path:
+			patrol.tween_property(drone, "position", wp, 4.0).set_ease(Tween.EASE_IN_OUT)
+		patrol.tween_property(drone, "position", path[0], 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_glow_nodes(geom: Node) -> void:
+	## Epic-1 T60: 12 small ambient glow nodes scattered across the plaza
+	## ground — small disc emitters that pulse rhythmically. Adds visual
+	## interest to dead floor space and reinforces the digital theme.
+	var positions: Array[Vector3] = [
+		Vector3(25, 0.06, -6),
+		Vector3(27, 0.06, 8),
+		Vector3(29, 0.06, -3),
+		Vector3(31, 0.06, 11),
+		Vector3(33, 0.06, -10),
+		Vector3(35, 0.06, 3),
+		Vector3(37, 0.06, -6),
+		Vector3(39, 0.06, 9),
+		Vector3(41, 0.06, -2),
+		Vector3(43, 0.06, 5),
+		Vector3(28, 0.06, -14),
+		Vector3(40, 0.06, 14),
+	]
+	var colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(0.85, 0.40, 1.0),
+		Color(0.45, 0.95, 0.65),
+	]
+	for i in positions.size():
+		var node: MeshInstance3D = MeshInstance3D.new()
+		node.name = "EastPlazaGlowNode_%d" % i
+		var nmesh: CylinderMesh = CylinderMesh.new()
+		nmesh.top_radius = 0.30
+		nmesh.bottom_radius = 0.30
+		nmesh.height = 0.06
+		node.mesh = nmesh
+		node.position = positions[i]
+		var color: Color = colors[i % colors.size()]
+		var nmat: StandardMaterial3D = StandardMaterial3D.new()
+		nmat.albedo_color = Color(color.r * 0.30, color.g * 0.30, color.b * 0.30)
+		nmat.emission_enabled = true
+		nmat.emission = color
+		nmat.emission_energy_multiplier = 1.4
+		nmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		node.material_override = nmat
+		geom.add_child(node)
+		# Pulsing emission via scale
+		var pulse: Tween = create_tween().set_loops()
+		var pulse_speed: float = 0.8 + (i % 4) * 0.15
+		pulse.tween_property(node, "scale", Vector3(1.4, 1.0, 1.4), pulse_speed).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(node, "scale", Vector3(1.0, 1.0, 1.0), pulse_speed).set_ease(Tween.EASE_IN_OUT)
+
