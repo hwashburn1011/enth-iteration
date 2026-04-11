@@ -427,7 +427,9 @@ func _build_d3_awakened_guardian(geom: Node) -> void:
 		var rm: BoxMesh = BoxMesh.new()
 		rm.size = Vector3(0.20, 0.20, 0.04)
 		rune.mesh = rm
-		rune.position = Vector3(-0.40 + (i % 2) * 0.55, 1.60 + int(i / 2) * 0.55, 0.45)
+		@warning_ignore("integer_division")
+		var row: int = i / 2
+		rune.position = Vector3(-0.40 + (i % 2) * 0.55, 1.60 + row * 0.55, 0.45)
 		rune.material_override = rune_mat
 		guardian.add_child(rune)
 		# Rune flicker
@@ -1021,13 +1023,13 @@ func _build_d3_spiral_stair(geom: Node) -> void:
 		trim.material_override = tmat
 		step_root.add_child(trim)
 		# Per-step collision
-		var sb: StaticBody3D = StaticBody3D.new()
-		var cs: CollisionShape3D = CollisionShape3D.new()
+		var step_body: StaticBody3D = StaticBody3D.new()
+		var step_col: CollisionShape3D = CollisionShape3D.new()
 		var cb: BoxShape3D = BoxShape3D.new()
 		cb.size = Vector3(1.40, 0.20, 0.85)
-		cs.shape = cb
-		sb.add_child(cs)
-		step_root.add_child(sb)
+		step_col.shape = cb
+		step_body.add_child(step_col)
+		step_root.add_child(step_body)
 	# Top crown — pulsing violet sphere
 	var crown: MeshInstance3D = MeshInstance3D.new()
 	var crmesh: SphereMesh = SphereMesh.new()
@@ -3340,9 +3342,9 @@ func _build_d3_judgment_dais(geom: Node) -> void:
 	# 3 stepped platforms
 	for i in 3:
 		var step: MeshInstance3D = MeshInstance3D.new()
-		var sm: BoxMesh = BoxMesh.new()
-		sm.size = Vector3(3.40 - i * 0.55, 0.30, 3.40 - i * 0.55)
-		step.mesh = sm
+		var step_mesh: BoxMesh = BoxMesh.new()
+		step_mesh.size = Vector3(3.40 - i * 0.55, 0.30, 3.40 - i * 0.55)
+		step.mesh = step_mesh
 		step.position = Vector3(0, 0.15 + i * 0.30, 0)
 		step.material_override = stone_mat
 		dais.add_child(step)
@@ -5456,11 +5458,11 @@ func _build_d3_grand_telescope(geom: Node) -> void:
 	for i in 3:
 		var angle: float = (float(i) / 3.0) * TAU
 		var leg: MeshInstance3D = MeshInstance3D.new()
-		var lm: CylinderMesh = CylinderMesh.new()
-		lm.top_radius = 0.07
-		lm.bottom_radius = 0.10
-		lm.height = 2.40
-		leg.mesh = lm
+		var leg_mesh: CylinderMesh = CylinderMesh.new()
+		leg_mesh.top_radius = 0.07
+		leg_mesh.bottom_radius = 0.10
+		leg_mesh.height = 2.40
+		leg.mesh = leg_mesh
 		leg.position = Vector3(cos(angle) * 0.55, 1.20, sin(angle) * 0.55)
 		leg.rotation = Vector3(sin(angle) * deg_to_rad(20), 0, -cos(angle) * deg_to_rad(20))
 		leg.material_override = leg_mat

@@ -3406,16 +3406,16 @@ func _build_d5_cocoa_stand(geom: Node) -> void:
 		cocoa.position = Vector3(0.10 + i * 0.22, 1.32, 0)
 		stand.add_child(cocoa)
 	# 'HOT COCOA' sign hanging from the roof
-	var sign: MeshInstance3D = MeshInstance3D.new()
+	var cocoa_sign: MeshInstance3D = MeshInstance3D.new()
 	var snm: BoxMesh = BoxMesh.new()
 	snm.size = Vector3(1.20, 0.40, 0.06)
-	sign.mesh = snm
+	cocoa_sign.mesh = snm
 	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
 	sign_mat.albedo_color = Color(0.95, 0.85, 0.55)
 	sign_mat.roughness = 0.85
-	sign.material_override = sign_mat
-	sign.position = Vector3(0, 1.85, -0.20)
-	stand.add_child(sign)
+	cocoa_sign.material_override = sign_mat
+	cocoa_sign.position = Vector3(0, 1.85, -0.20)
+	stand.add_child(cocoa_sign)
 	var label: Label3D = Label3D.new()
 	label.text = "HOT COCOA"
 	label.modulate = Color(0.30, 0.18, 0.10)

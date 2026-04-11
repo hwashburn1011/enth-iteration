@@ -344,18 +344,27 @@ func apply_to_player(player: Node) -> void:
 	if not has_meta(&"pending_player_data"):
 		return
 	var pdata: Dictionary = get_meta(&"pending_player_data") as Dictionary
-	player.health_component.max_health = float(pdata.get("health", 100.0))
-	player.health_component.current_health = float(pdata.get("health", 100.0))
-	player.compute_component.current_compute = float(pdata.get("compute", 50.0))
+	# Restore stat allocations FIRST so the component recalculations use the
+	# saved integrity / memory / bandwidth values, then trigger stats_changed
+	# so HealthComponent and ComputeComponent recompute their max values.
+	# After T6/T7 max_health is derived from base + integrity*INTEGRITY_HP_SCALE,
+	# so writing max_health directly here would be silently overwritten.
+	var stat_pts: Dictionary = pdata.get("stat_points", {}) as Dictionary
+	for stat_name: String in stat_pts:
+		player.stats_component.level_points[stat_name] = int(stat_pts[stat_name])
+	player.stats_component.stats_changed.emit()
+	# Now restore current resource values, clamped to the freshly recalculated
+	# maxes (saved value may be lower than max — that's a wounded character).
+	var saved_hp: float = float(pdata.get("health", player.health_component.max_health))
+	player.health_component.current_health = clampf(saved_hp, 0.0, player.health_component.max_health)
+	var saved_compute: float = float(pdata.get("compute", player.compute_component.max_compute))
+	player.compute_component.current_compute = clampf(saved_compute, 0.0, player.compute_component.max_compute)
 	var pos: Dictionary = pdata.get("position", {}) as Dictionary
 	player.global_position = Vector3(
 		float(pos.get("x", 0.0)),
 		float(pos.get("y", 0.0)),
 		float(pos.get("z", 0.0))
 	)
-	var stat_pts: Dictionary = pdata.get("stat_points", {}) as Dictionary
-	for stat_name: String in stat_pts:
-		player.stats_component.level_points[stat_name] = int(stat_pts[stat_name])
 
 	# Restore level and XP
 	if player.level_component:

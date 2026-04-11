@@ -357,7 +357,7 @@ func _build_plaza_lights(geom: Node) -> void:
 		geom.add_child(light)
 
 
-func _build_data_merchant_npc(town: Node) -> void:
+func _build_data_merchant_npc(_town: Node) -> void:
 	## Place a stationary glowing orb NPC at the kiosk row. No dialogue
 	## logic yet — that's a future task. For now: visible orb with name label.
 	var merchant: Node3D = Node3D.new()
@@ -389,7 +389,7 @@ func _build_data_merchant_npc(town: Node) -> void:
 	merchant.add_child(label)
 
 
-func _build_cipher_npc(town: Node) -> void:
+func _build_cipher_npc(_town: Node) -> void:
 	## Epic-1 T2: Cipher data broker — colder violet NPC at far east edge
 	var cipher: Node3D = Node3D.new()
 	cipher.name = "EastPlazaCipher"
@@ -1101,17 +1101,17 @@ func _build_perimeter_seating(geom: Node) -> void:
 		geom.add_child(sb)
 
 
-func _build_gate_guards(town: Node) -> void:
+func _build_gate_guards(_town: Node) -> void:
 	## Epic-1 T44: 2 gate guard NPCs flanking the west arch entrance
 	for entry in [
 		[Vector3(20, 0.5, -2.5), "Gate Guard A", Color(0.30, 0.65, 0.95)],
 		[Vector3(20, 0.5, 2.5), "Gate Guard B", Color(0.30, 0.65, 0.95)],
 	]:
 		var pos: Vector3 = entry[0]
-		var name: String = entry[1]
+		var guard_name: String = entry[1]
 		var hue: Color = entry[2]
 		var guard: Node3D = Node3D.new()
-		guard.name = "EastPlazaGuard_" + name.replace(" ", "")
+		guard.name = "EastPlazaGuard_" + guard_name.replace(" ", "")
 		guard.position = pos
 		add_child(guard)
 		var body: MeshInstance3D = MeshInstance3D.new()
@@ -1156,7 +1156,7 @@ func _build_gate_guards(town: Node) -> void:
 		guard.add_child(visor)
 		# Name label
 		var label: Label3D = Label3D.new()
-		label.text = name
+		label.text = guard_name
 		label.position = Vector3(0, 1.4, 0)
 		label.modulate = Color(0.55, 0.85, 1.0)
 		label.outline_modulate = Color(0, 0, 0, 0.85)
@@ -1870,7 +1870,7 @@ func _build_crowd_seating(geom: Node) -> void:
 		tween.tween_property(spec, "position:y", bob_pos.y, 1.0 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 
 
-func _build_combat_trainer_npc(town: Node) -> void:
+func _build_combat_trainer_npc(_town: Node) -> void:
 	## Epic-1 T30: combat trainer NPC at the sparring arena edge
 	var trainer: Node3D = Node3D.new()
 	trainer.name = "EastPlazaCombatTrainer"
@@ -5583,15 +5583,15 @@ func _build_weather_dial(geom: Node) -> void:
 		["GLITCH", Color(1.0, 0.30, 0.55), 0.0, -0.30],
 	]
 	for spec in label_specs:
-		var label: Label3D = Label3D.new()
-		label.text = spec[0]
-		label.position = Vector3(spec[2], 2.0 + spec[3], 0.06)
-		label.modulate = spec[1]
-		label.outline_modulate = Color(0, 0, 0, 0.85)
-		label.outline_size = 4
-		label.font_size = 12
-		label.no_depth_test = true
-		dial.add_child(label)
+		var wedge: Label3D = Label3D.new()
+		wedge.text = spec[0]
+		wedge.position = Vector3(spec[2], 2.0 + spec[3], 0.06)
+		wedge.modulate = spec[1]
+		wedge.outline_modulate = Color(0, 0, 0, 0.85)
+		wedge.outline_size = 4
+		wedge.font_size = 12
+		wedge.no_depth_test = true
+		dial.add_child(wedge)
 	# Needle indicator on the disc
 	var needle_pivot: Node3D = Node3D.new()
 	needle_pivot.position = Vector3(0, 2.0, 0.04)

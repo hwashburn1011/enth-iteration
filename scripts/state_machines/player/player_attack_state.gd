@@ -1,13 +1,28 @@
 class_name PlayerAttackState
 extends "res://scripts/state_machines/state.gd"
 ## Handles both Data Pulse (basic) and Energy Burst (charged) attacks.
+##
+## Hit feedback note: screen shake + hitstop fire on *successful* hit-confirm
+## from _poll_hitbox_overlaps, not on swing start. This means missed swings
+## are silent and connecting attacks feel impactful — the single biggest
+## "game feel" lever per the design pillar of cozy-but-challenging combat.
 
 const DATA_PULSE_ACTIVE_START: float = 0.1
 const DATA_PULSE_ACTIVE_END: float = 0.3
 const DATA_PULSE_DURATION: float = 0.4
+const DATA_PULSE_COOLDOWN: float = 0.5
 const ENERGY_BURST_ACTIVE_START: float = 0.05
 const ENERGY_BURST_ACTIVE_END: float = 0.25
 const ENERGY_BURST_DURATION: float = 0.5
+const ENERGY_BURST_COOLDOWN: float = 1.5
+
+# Hit-confirm feedback tuning
+const HIT_SHAKE_AMP: float = 0.07
+const HIT_SHAKE_DECAY: float = 14.0
+const HIT_STOP_REAL_SECONDS: float = 0.04
+const HIT_STOP_TIME_SCALE: float = 0.05
+const BASE_DATA_PULSE_DAMAGE: float = 5.0
+const PROCESSING_DAMAGE_SCALE: float = 1.5
 
 var _timer: float = 0.0
 var _hitbox_enabled: bool = false
@@ -17,13 +32,15 @@ var _burst_damage: float = 0.0
 var _active_start: float = 0.0
 var _active_end: float = 0.0
 var _duration: float = 0.0
+var _hits_landed_this_swing: int = 0
 
 
 func enter() -> void:
-	var p = player
+	var p: CharacterBody3D = player
 	_timer = 0.0
 	_hitbox_enabled = false
 	_has_hit.clear()
+	_hits_landed_this_swing = 0
 
 	# Check attack type
 	_is_energy_burst = p.has_meta(&"attack_type") and p.get_meta(&"attack_type") == &"energy_burst"
@@ -38,9 +55,8 @@ func enter() -> void:
 		p.remove_meta(&"attack_type")
 		p.remove_meta(&"energy_burst_damage")
 		p.remove_meta(&"energy_burst_charge_multiplier")
-		# Cooldown 1.5s for energy burst
 		p.can_attack = false
-		p.attack_cooldown_timer.start(1.5)
+		p.attack_cooldown_timer.start(ENERGY_BURST_COOLDOWN)
 		if p.animation_player.has_animation(&"energy_burst"):
 			p.animation_player.play(&"energy_burst")
 		elif p.animation_player.has_animation(&"attack_primary"):
@@ -53,7 +69,7 @@ func enter() -> void:
 		# Restore default hitbox size
 		_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
 		p.can_attack = false
-		p.attack_cooldown_timer.start(0.5)
+		p.attack_cooldown_timer.start(DATA_PULSE_COOLDOWN)
 		if p.animation_player.has_animation(&"attack_primary"):
 			p.animation_player.play(&"attack_primary")
 
@@ -70,7 +86,7 @@ func enter() -> void:
 
 
 func physics_update(delta: float) -> void:
-	var p = player
+	var p: CharacterBody3D = player
 	_timer += delta
 
 	if _timer >= _active_start and _timer < _active_end:
@@ -80,7 +96,8 @@ func physics_update(delta: float) -> void:
 				p.hitbox_component.set_meta(&"base_damage", _burst_damage)
 				p.hitbox_component.set_meta(&"damage_type", &"energy")
 			else:
-				p.hitbox_component.set_meta(&"base_damage", 5.0 + p.stats_component.get_stat("processing") * 1.5)
+				var dmg: float = BASE_DATA_PULSE_DAMAGE + p.stats_component.get_stat("processing") * PROCESSING_DAMAGE_SCALE
+				p.hitbox_component.set_meta(&"base_damage", dmg)
 				p.hitbox_component.set_meta(&"damage_type", &"data")
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
@@ -88,11 +105,7 @@ func physics_update(delta: float) -> void:
 			_spawn_attack_range_indicator(p)
 			if _is_energy_burst:
 				_spawn_burst_shockwave(p)
-			else:
-				# Subtle screen shake on basic attack
-				var camera: Camera3D = p.get_viewport().get_camera_3d()
-				if camera and camera.has_method(&"shake"):
-					camera.shake(0.04, 12.0)
+			# NB: basic attack screen shake moved to _on_hit_landed — only fires on confirmed hit
 		# Poll for overlaps each frame (area_entered may not fire if already overlapping)
 		_poll_hitbox_overlaps(p)
 	elif _hitbox_enabled:
@@ -111,11 +124,14 @@ func physics_update(delta: float) -> void:
 
 
 func exit() -> void:
-	var p = player
+	var p: CharacterBody3D = player
 	_set_hitbox_active(p, false)
 	_hitbox_enabled = false
 	# Restore default hitbox size
 	_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
+	# Safety: clear any lingering time_scale dip if exit hits during hitstop
+	if Engine.time_scale != 1.0:
+		Engine.time_scale = 1.0
 
 
 func _poll_hitbox_overlaps(p: CharacterBody3D) -> void:
@@ -132,6 +148,37 @@ func _poll_hitbox_overlaps(p: CharacterBody3D) -> void:
 			continue  # Already hit this target
 		# Trigger the hurtbox's damage processing (it will register the hit)
 		area._on_area_entered(hitbox)
+		# Confirm the hurtbox actually accepted the hit (it can no-op on
+		# invulnerable targets, dead enemies, or self) before firing feedback.
+		if hitbox.has_hit(target_entity):
+			_on_hit_landed(p)
+
+
+func _on_hit_landed(p: CharacterBody3D) -> void:
+	## Fired once per *successful* hit-confirm. The Energy Burst already does
+	## its own bigger shockwave/shake/hitstop in _spawn_burst_shockwave, so we
+	## only add the basic-attack feedback here to avoid double-stacking.
+	if _is_energy_burst:
+		return
+	_hits_landed_this_swing += 1
+	# Only fire the screen shake on the first hit of a swing — multi-hit AoE
+	# attacks (later modules) shouldn't compound shake on the same frame.
+	if _hits_landed_this_swing == 1:
+		var camera: Camera3D = p.get_viewport().get_camera_3d()
+		if camera and camera.has_method(&"shake"):
+			camera.shake(HIT_SHAKE_AMP, HIT_SHAKE_DECAY)
+		_apply_hitstop(p)
+
+
+func _apply_hitstop(p: CharacterBody3D) -> void:
+	## Brief Engine.time_scale dip — uses an unscaled timer so the restore
+	## fires reliably even though the world is slowed.
+	if not p.is_inside_tree():
+		return
+	Engine.time_scale = HIT_STOP_TIME_SCALE
+	p.get_tree().create_timer(HIT_STOP_REAL_SECONDS, true, false, true).timeout.connect(func() -> void:
+		Engine.time_scale = 1.0
+	)
 
 
 func _set_hitbox_active(p: CharacterBody3D, active: bool) -> void:

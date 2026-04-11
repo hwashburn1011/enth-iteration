@@ -1,17 +1,37 @@
 class_name HealthComponent
 extends Node
 ## Tracks health, emits signals on change and death.
+##
+## max_health is derived from base_max_health + integrity * INTEGRITY_HP_SCALE
+## whenever StatsComponent emits stats_changed. This makes the integrity
+## stat actually mechanically meaningful — leveling it tanks the character
+## proportional to the scale constant.
 
 signal health_changed(new_value: float, max_value: float)
 signal died
 
-@export var max_health: float = 100.0
+const INTEGRITY_HP_SCALE: float = 8.0
+
+@export var base_max_health: float = 100.0
+## When false the integrity-based recalculation is bypassed entirely. Used
+## for enemies, which want hand-tuned per-type HP and don't share the
+## player's stat-driven progression curve.
+@export var enable_stat_scaling: bool = true
+
+var max_health: float
 var current_health: float
 var is_dead: bool = false
 
 
 func _ready() -> void:
+	max_health = base_max_health
 	current_health = max_health
+	# Listen for stat changes to recalculate max_health from integrity
+	var stats: Node = get_parent().get_node_or_null("StatsComponent") as Node
+	if stats:
+		stats.stats_changed.connect(_on_stats_changed.bind(stats))
+		# Apply current stats immediately on spawn
+		_on_stats_changed(stats)
 
 
 func take_damage(amount: float) -> void:
@@ -81,3 +101,21 @@ func get_health_percentage() -> float:
 	if max_health <= 0.0:
 		return 0.0
 	return current_health / max_health
+
+
+func _on_stats_changed(stats: Node) -> void:
+	## Recalculate max_health = base + integrity * INTEGRITY_HP_SCALE.
+	## Heals up to the new ceiling if max grew, clamps current down if it
+	## shrunk (e.g. equipment with negative integrity, debuff). Never auto
+	## revives a dead component.
+	if not enable_stat_scaling:
+		return
+	var prev_max: float = max_health
+	max_health = base_max_health + stats.get_stat("integrity") * INTEGRITY_HP_SCALE
+	if not is_dead:
+		# Grant the diff so the player feels the level-up immediately.
+		var diff: float = max_health - prev_max
+		if diff > 0.0:
+			current_health += diff
+		current_health = clampf(current_health, 0.0, max_health)
+	health_changed.emit(current_health, max_health)
