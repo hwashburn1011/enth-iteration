@@ -78,6 +78,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_sweeper_bot_npc(town)
 	_build_th_bellringer_npc(town)
 	_build_th_fountain_cherub_sprites(geom)
+	_build_th_iterations_memorial_wall(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -10801,3 +10802,267 @@ func _build_th_fountain_cherub_sprites(geom: Node) -> void:
 		var m: StandardMaterial3D = orb_mats[i2]
 		chase.tween_property(m, "emission_energy_multiplier", 11.0, 0.18).set_ease(Tween.EASE_OUT)
 		chase.tween_property(m, "emission_energy_multiplier", 5.5, 0.42).set_ease(Tween.EASE_IN)
+
+
+func _build_th_iterations_memorial_wall(geom: Node) -> void:
+	## Epic-10 T62: Heroes Memorial Wall — curved basalt-and-brass commemorative
+	## wall in the SSE mid-plaza honoring the fallen heroes of the past 9
+	## iterations. 9 small portrait niches (one per iteration), each lit by a
+	## tiny brass candle, framed by a low arc wall and an offering bowl in
+	## front. Faces toward the central beacon. Story-rich landmark.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_IterationsMemorialWall"
+	# SSE position at radius 12, angle ~-PI/3 (south-southeast)
+	var ang_pos: float = -PI / 3.0
+	var rad_pos: float = 12.0
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 0, pz_p)
+	# Face toward town center
+	pivot.rotation.y = atan2(-px_p, -pz_p)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.18, 0.20, 0.24)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.25, 0.40, 0.60)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var niche_mat: StandardMaterial3D = StandardMaterial3D.new()
+	niche_mat.albedo_color = Color(0.10, 0.12, 0.16)
+	niche_mat.metallic = 0.25
+	niche_mat.roughness = 0.65
+	niche_mat.emission_enabled = true
+	niche_mat.emission = Color(0.20, 0.50, 0.85)
+	niche_mat.emission_energy_multiplier = 0.30
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.60, 0.15)
+	flame_mat.emission_energy_multiplier = 9.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var portrait_mat: StandardMaterial3D = StandardMaterial3D.new()
+	portrait_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	portrait_mat.emission_enabled = true
+	portrait_mat.emission = Color(0.50, 0.90, 1.0)
+	portrait_mat.emission_energy_multiplier = 4.0
+	portrait_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Wall base plinth (long, curved-feel via 3 segments) ----
+	var seg_count: int = 9
+	var seg_w: float = 0.95
+	var seg_gap: float = 0.05
+	var total_w: float = seg_count * seg_w + (seg_count - 1) * seg_gap
+	var start_x: float = -total_w * 0.5 + seg_w * 0.5
+	# Long basalt floor footing
+	var foot: MeshInstance3D = MeshInstance3D.new()
+	var fmm: BoxMesh = BoxMesh.new()
+	fmm.size = Vector3(total_w + 0.6, 0.20, 1.10)
+	foot.mesh = fmm
+	foot.material_override = basalt_mat
+	foot.position = Vector3(0, 0.10, 0)
+	pivot.add_child(foot)
+	# Brass front trim along footing
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var tmm: BoxMesh = BoxMesh.new()
+	tmm.size = Vector3(total_w + 0.6, 0.04, 0.06)
+	trim.mesh = tmm
+	trim.material_override = brass_mat
+	trim.position = Vector3(0, 0.21, -0.55)
+	pivot.add_child(trim)
+	# Wall collision (single combined static body so player can't walk through)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0, 0)
+	pivot.add_child(sb)
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var cs: BoxShape3D = BoxShape3D.new()
+	cs.size = Vector3(total_w + 0.6, 1.85, 0.55)
+	col.shape = cs
+	col.position = Vector3(0, 0.92, 0.1)
+	sb.add_child(col)
+	# ---- 9 niches (one per iteration) ----
+	var iter_colors: Array[Color] = [
+		Color(0.40, 0.85, 1.0),  # I1 - cyan (data)
+		Color(0.95, 0.30, 0.30),  # I2 - red (decay)
+		Color(0.65, 0.40, 0.95),  # I3 - violet (memory)
+		Color(0.40, 0.85, 0.30),  # I4 - green (bloom)
+		Color(0.55, 0.85, 1.0),  # I5 - ice blue (frost)
+		Color(1.0, 0.30, 0.65),  # I6 - magenta (neon)
+		Color(0.95, 0.75, 0.30),  # I7 - gold (ascension)
+		Color(0.30, 0.55, 0.95),  # I8 - deep blue (tidal)
+		Color(1.0, 0.45, 0.10),  # I9 - amber (forge)
+	]
+	for n in range(seg_count):
+		var nx: float = start_x + float(n) * (seg_w + seg_gap)
+		var seg_pivot: Node3D = Node3D.new()
+		seg_pivot.position = Vector3(nx, 0, 0)
+		pivot.add_child(seg_pivot)
+		# Wall pillar segment
+		var pil: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(seg_w, 1.85, 0.45)
+		pil.mesh = pmm
+		pil.material_override = basalt_mat
+		pil.position = Vector3(0, 1.13, 0.20)
+		seg_pivot.add_child(pil)
+		# Cap stone
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(seg_w + 0.10, 0.10, 0.55)
+		cap.mesh = cmm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0, 2.10, 0.15)
+		seg_pivot.add_child(cap)
+		# Inset niche (dark plate behind portrait)
+		var nich: MeshInstance3D = MeshInstance3D.new()
+		var nmm: BoxMesh = BoxMesh.new()
+		nmm.size = Vector3(seg_w - 0.18, 0.85, 0.04)
+		nich.mesh = nmm
+		nich.material_override = niche_mat
+		nich.position = Vector3(0, 1.40, -0.025)
+		seg_pivot.add_child(nich)
+		# Portrait disc (per-iteration colored)
+		var pmat: StandardMaterial3D = portrait_mat.duplicate()
+		pmat.albedo_color = iter_colors[n]
+		pmat.emission = iter_colors[n] * 1.15
+		var port: MeshInstance3D = MeshInstance3D.new()
+		var pgm: SphereMesh = SphereMesh.new()
+		pgm.radius = 0.18
+		pgm.height = 0.36
+		port.mesh = pgm
+		port.material_override = pmat
+		port.position = Vector3(0, 1.55, -0.10)
+		seg_pivot.add_child(port)
+		# Iteration numeral plate (small brass square)
+		var num: MeshInstance3D = MeshInstance3D.new()
+		var nbm: BoxMesh = BoxMesh.new()
+		nbm.size = Vector3(0.18, 0.10, 0.03)
+		num.mesh = nbm
+		num.material_override = brass_mat
+		num.position = Vector3(0, 1.05, -0.10)
+		seg_pivot.add_child(num)
+		# Brass candle holder + flame at base of niche
+		var holder: MeshInstance3D = MeshInstance3D.new()
+		var hmm: CylinderMesh = CylinderMesh.new()
+		hmm.top_radius = 0.05
+		hmm.bottom_radius = 0.07
+		hmm.height = 0.12
+		holder.mesh = hmm
+		holder.material_override = brass_mat
+		holder.position = Vector3(0, 0.30, -0.18)
+		seg_pivot.add_child(holder)
+		# Candle wax
+		var wax: MeshInstance3D = MeshInstance3D.new()
+		var wmm: CylinderMesh = CylinderMesh.new()
+		wmm.top_radius = 0.035
+		wmm.bottom_radius = 0.04
+		wmm.height = 0.18
+		wax.mesh = wmm
+		wax.material_override = niche_mat
+		wax.position = Vector3(0, 0.45, -0.18)
+		seg_pivot.add_child(wax)
+		# Flame (sphere)
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flmm: SphereMesh = SphereMesh.new()
+		flmm.radius = 0.05
+		flmm.height = 0.10
+		flame.mesh = flmm
+		flame.material_override = flame_mat
+		flame.position = Vector3(0, 0.60, -0.18)
+		seg_pivot.add_child(flame)
+		# Tiny warm flame light
+		var fl: OmniLight3D = OmniLight3D.new()
+		fl.position = Vector3(0, 0.65, -0.18)
+		fl.light_color = Color(1.0, 0.55, 0.15)
+		fl.light_energy = 0.85
+		fl.omni_range = 1.8
+		seg_pivot.add_child(fl)
+		# Portrait pulse + flame flicker (slight phase offset per niche)
+		var phase: float = float(n) * 0.18
+		var ppulse: Tween = seg_pivot.create_tween().set_loops()
+		ppulse.tween_interval(phase)
+		ppulse.tween_property(pmat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+		ppulse.tween_property(pmat, "emission_energy_multiplier", 3.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+		var ff: Tween = seg_pivot.create_tween().set_loops()
+		ff.tween_interval(phase * 0.5)
+		ff.tween_property(flame, "scale", Vector3(1.2, 1.4, 1.2), 0.35).set_ease(Tween.EASE_IN_OUT)
+		ff.tween_property(flame, "scale", Vector3(0.9, 1.1, 0.9), 0.45).set_ease(Tween.EASE_IN_OUT)
+	# ---- Front offering bowl (brass dish on tripod) ----
+	var bowl_pivot: Node3D = Node3D.new()
+	bowl_pivot.position = Vector3(0, 0, -1.40)
+	pivot.add_child(bowl_pivot)
+	# Tripod legs
+	for k in range(3):
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lmm: CylinderMesh = CylinderMesh.new()
+		lmm.top_radius = 0.04
+		lmm.bottom_radius = 0.06
+		lmm.height = 0.85
+		leg.mesh = lmm
+		leg.material_override = brass_mat
+		var lang: float = float(k) * (TAU / 3.0)
+		leg.position = Vector3(cos(lang) * 0.18, 0.45, sin(lang) * 0.18)
+		leg.rotation.x = sin(lang) * 0.18
+		leg.rotation.z = -cos(lang) * 0.18
+		bowl_pivot.add_child(leg)
+	# Bowl
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bmm: CylinderMesh = CylinderMesh.new()
+	bmm.top_radius = 0.32
+	bmm.bottom_radius = 0.18
+	bmm.height = 0.18
+	bowl.mesh = bmm
+	bowl.material_override = brass_mat
+	bowl.position = Vector3(0, 0.95, 0)
+	bowl_pivot.add_child(bowl)
+	# Eternal flame in the bowl
+	var ef_mat: StandardMaterial3D = flame_mat.duplicate()
+	ef_mat.emission_energy_multiplier = 11.0
+	var ef: MeshInstance3D = MeshInstance3D.new()
+	var efmm: SphereMesh = SphereMesh.new()
+	efmm.radius = 0.18
+	efmm.height = 0.36
+	ef.mesh = efmm
+	ef.material_override = ef_mat
+	ef.position = Vector3(0, 1.16, 0)
+	bowl_pivot.add_child(ef)
+	# Strong warm light from offering bowl
+	var blt: OmniLight3D = OmniLight3D.new()
+	blt.position = Vector3(0, 1.20, 0)
+	blt.light_color = Color(1.0, 0.55, 0.15)
+	blt.light_energy = 2.4
+	blt.omni_range = 6.0
+	bowl_pivot.add_child(blt)
+	# Eternal flame breathing
+	var ebf: Tween = bowl_pivot.create_tween().set_loops()
+	ebf.tween_property(ef, "scale", Vector3(1.15, 1.30, 1.15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	ebf.tween_property(ef, "scale", Vector3(0.92, 1.05, 0.92), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Ember motes drifting up from the offering bowl
+	var emb: GPUParticles3D = GPUParticles3D.new()
+	var ep: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	ep.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	ep.emission_sphere_radius = 0.20
+	ep.direction = Vector3(0, 1, 0)
+	ep.spread = 18.0
+	ep.gravity = Vector3(0, 0.4, 0)
+	ep.initial_velocity_min = 0.6
+	ep.initial_velocity_max = 1.2
+	ep.scale_min = 0.04
+	ep.scale_max = 0.10
+	ep.color = Color(1.0, 0.6, 0.15, 0.9)
+	emb.process_material = ep
+	var emb_mesh: SphereMesh = SphereMesh.new()
+	emb_mesh.radius = 0.04
+	emb_mesh.height = 0.08
+	emb.draw_pass_1 = emb_mesh
+	emb.amount = 18
+	emb.lifetime = 2.4
+	emb.position = Vector3(0, 1.20, 0)
+	bowl_pivot.add_child(emb)
