@@ -78,6 +78,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_basalt_stepping_stones(geom)
 	_build_d9_ember_elemental(geom)
 	_build_d9_forge_anvil_shrine(geom)
+	_build_d9_slag_golem_patroller(geom)
 	print("[D9Builder] done")
 
 
@@ -5213,5 +5214,162 @@ func _build_d9_forge_anvil_shrine(geom: Node) -> void:
 	cs.shape = cyl
 	stb.add_child(cs)
 	pivot.add_child(stb)
+
+
+func _build_d9_slag_golem_patroller(geom: Node) -> void:
+	## Epic-9 T58: a chunky molten-rock golem patrolling the path near
+	## the forge anvil shrine. Charred basalt body with glowing lava seams,
+	## hunched silhouette, slow ground-pound walking gait via Z patrol.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_SlagGolemPatroller"
+	pivot.position = D9_CENTER + Vector3(56, 0, -10)
+	geom.add_child(pivot)
+	# Charred body material
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.10, 0.07, 0.06)
+	rock_mat.metallic = 0.20
+	rock_mat.roughness = 0.85
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(1.0, 0.32, 0.05)
+	rock_mat.emission_energy_multiplier = 0.55
+	# Lava seam material (unshaded bright orange for cracks)
+	var seam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seam_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	seam_mat.emission_enabled = true
+	seam_mat.emission = Color(1.0, 0.55, 0.10)
+	seam_mat.emission_energy_multiplier = 5.0
+	seam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Hunched torso — wide flattened sphere
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 1.05
+	tm.height = 1.65
+	torso.mesh = tm
+	torso.material_override = rock_mat
+	torso.position = Vector3(0, 1.30, 0)
+	torso.scale = Vector3(1.15, 0.85, 0.95)
+	pivot.add_child(torso)
+	# Lava seam crack across chest (vertical bar)
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.10, 0.95, 0.06)
+	seam.mesh = sm
+	seam.material_override = seam_mat
+	seam.position = Vector3(0, 1.30, -0.85)
+	pivot.add_child(seam)
+	# Head — small lumpy sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.55
+	hm.height = 0.95
+	head.mesh = hm
+	head.material_override = rock_mat
+	head.position = Vector3(0, 2.45, 0.40)
+	head.scale = Vector3(1.0, 0.85, 1.0)
+	pivot.add_child(head)
+	# Two eye slits (small unshaded amber bars)
+	for ex in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.14, 0.06, 0.04)
+		eye.mesh = em
+		eye.material_override = seam_mat
+		eye.position = Vector3(ex, 2.50, 0.85)
+		pivot.add_child(eye)
+	# Two heavy arms hanging at sides
+	for side in [-1.10, 1.10]:
+		var shoulder: MeshInstance3D = MeshInstance3D.new()
+		var shm: SphereMesh = SphereMesh.new()
+		shm.radius = 0.42
+		shm.height = 0.75
+		shoulder.mesh = shm
+		shoulder.material_override = rock_mat
+		shoulder.position = Vector3(side, 1.85, 0)
+		pivot.add_child(shoulder)
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.55, 1.30, 0.55)
+		arm.mesh = am
+		arm.material_override = rock_mat
+		arm.position = Vector3(side, 1.05, 0.10)
+		pivot.add_child(arm)
+		# Heavy boulder fist
+		var fist: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.50
+		fm.height = 0.95
+		fist.mesh = fm
+		fist.material_override = rock_mat
+		fist.position = Vector3(side, 0.30, 0.25)
+		pivot.add_child(fist)
+		# Lava seam ring on the arm (small accent)
+		var aring: MeshInstance3D = MeshInstance3D.new()
+		var arm_torus: TorusMesh = TorusMesh.new()
+		arm_torus.inner_radius = 0.30
+		arm_torus.outer_radius = 0.34
+		aring.mesh = arm_torus
+		aring.material_override = seam_mat
+		aring.position = Vector3(side, 1.55, 0.10)
+		pivot.add_child(aring)
+	# Two stumpy legs
+	for side in [-0.42, 0.42]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.55, 0.55, 0.55)
+		leg.mesh = lm
+		leg.material_override = rock_mat
+		leg.position = Vector3(side, 0.30, 0)
+		pivot.add_child(leg)
+	# Ember plume rising from the chest seam crack
+	var embers: GPUParticles3D = GPUParticles3D.new()
+	embers.amount = 30
+	embers.lifetime = 1.6
+	embers.position = Vector3(0, 1.85, -0.85)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, -0.20)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 0.55
+	pmat.initial_velocity_max = 1.20
+	pmat.gravity = Vector3(0, -0.30, 0)
+	pmat.scale_min = 0.10
+	pmat.scale_max = 0.18
+	pmat.color = Color(1.0, 0.55, 0.15, 0.95)
+	embers.process_material = pmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.18, 0.18)
+	embers.draw_pass_1 = qm
+	pivot.add_child(embers)
+	# Heavy amber light at the body
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.30, 0)
+	lt.light_color = Color(1.0, 0.45, 0.10)
+	lt.light_energy = 2.6
+	lt.omni_range = 8.0
+	pivot.add_child(lt)
+	# Slow Z-patrol with rotation flip on each end
+	var origin_z: float = pivot.position.z
+	var patrol: Tween = pivot.create_tween().set_loops()
+	patrol.tween_property(pivot, "position:z", origin_z + 6.0, 5.5).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(pivot, "rotation:y", PI, 0.5)
+	patrol.tween_property(pivot, "position:z", origin_z, 5.5).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(pivot, "rotation:y", 0.0, 0.5)
+	# Body bob — gives a heavy lumbering walk
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(torso, "position:y", 1.40, 0.8).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(torso, "position:y", 1.30, 0.8).set_ease(Tween.EASE_IN_OUT)
+	# Seam pulse breathing
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(seam_mat, "emission_energy_multiplier", 7.0, 1.2).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(seam_mat, "emission_energy_multiplier", 3.5, 1.2).set_ease(Tween.EASE_IN_OUT)
+	# Capsule collision
+	var stb2: StaticBody3D = StaticBody3D.new()
+	stb2.position = Vector3(0, 1.30, 0)
+	var cs2: CollisionShape3D = CollisionShape3D.new()
+	var caps: CapsuleShape3D = CapsuleShape3D.new()
+	caps.height = 2.60
+	caps.radius = 1.05
+	cs2.shape = caps
+	stb2.add_child(cs2)
+	pivot.add_child(stb2)
 
 
