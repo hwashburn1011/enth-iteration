@@ -76,6 +76,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_molten_cascade(geom)
 	_build_d9_forge_priestess_npc(town)
 	_build_d9_basalt_stepping_stones(geom)
+	_build_d9_ember_elemental(geom)
 	print("[D9Builder] done")
 
 
@@ -4971,5 +4972,104 @@ func _build_d9_basalt_stepping_stones(geom: Node) -> void:
 		var pulse: Tween = pivot.create_tween().set_loops()
 		pulse.tween_property(rmat, "emission_energy_multiplier", 5.0, 1.1 + float(i) * 0.12).set_ease(Tween.EASE_IN_OUT)
 		pulse.tween_property(rmat, "emission_energy_multiplier", 2.5, 1.1 + float(i) * 0.12).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_ember_elemental(geom: Node) -> void:
+	## Epic-9 T56: small ember elemental hovering near the cascade pool.
+	## Floating fire spirit body with two glowing eye dots, swirling
+	## flame particles, slow orbital drift around the priestess area.
+	## Decorative preview of D9 caster enemies.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_EmberElemental"
+	pivot.position = D9_CENTER + Vector3(46, 1.85, 14)
+	geom.add_child(pivot)
+	# Core body — bright unshaded ember sphere
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.55
+	cm.height = 1.10
+	core.mesh = cm
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.55, 0.10)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.60, 0.15)
+	cmat.emission_energy_multiplier = 6.5
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = cmat
+	pivot.add_child(core)
+	# Two glowing eye dots
+	for ex in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.07
+		em.height = 0.14
+		eye.mesh = em
+		var emat: StandardMaterial3D = StandardMaterial3D.new()
+		emat.albedo_color = Color(1.0, 0.95, 0.55)
+		emat.emission_enabled = true
+		emat.emission = Color(1.0, 0.95, 0.60)
+		emat.emission_energy_multiplier = 9.0
+		emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = emat
+		eye.position = Vector3(ex, 0.10, -0.50)
+		pivot.add_child(eye)
+	# Trailing wisp tail particles below the body
+	var wisps: GPUParticles3D = GPUParticles3D.new()
+	wisps.amount = 50
+	wisps.lifetime = 1.6
+	wisps.position = Vector3(0, -0.20, 0)
+	var wmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	wmat.direction = Vector3(0, -1, 0)
+	wmat.spread = 22.0
+	wmat.initial_velocity_min = 0.55
+	wmat.initial_velocity_max = 1.20
+	wmat.gravity = Vector3(0, -0.40, 0)
+	wmat.scale_min = 0.16
+	wmat.scale_max = 0.32
+	wmat.color = Color(1.0, 0.55, 0.15, 0.85)
+	wisps.process_material = wmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.30, 0.30)
+	wisps.draw_pass_1 = qm
+	pivot.add_child(wisps)
+	# Crown of orbiting ember motes — 4 small unshaded spheres
+	for i in 4:
+		var ang: float = (TAU / 4.0) * float(i)
+		var mote: MeshInstance3D = MeshInstance3D.new()
+		var msm: SphereMesh = SphereMesh.new()
+		msm.radius = 0.10
+		msm.height = 0.20
+		mote.mesh = msm
+		var mmat: StandardMaterial3D = StandardMaterial3D.new()
+		mmat.albedo_color = Color(1.0, 0.65, 0.20)
+		mmat.emission_enabled = true
+		mmat.emission = Color(1.0, 0.65, 0.20)
+		mmat.emission_energy_multiplier = 7.0
+		mmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mote.material_override = mmat
+		mote.position = Vector3(cos(ang) * 0.85, 0.55, sin(ang) * 0.85)
+		pivot.add_child(mote)
+	# OmniLight at the body
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 0, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.4
+	lt.omni_range = 6.5
+	pivot.add_child(lt)
+	# Slow orbital drift in a small circle around the spawn point
+	var origin: Vector3 = pivot.position
+	var orbit: Tween = pivot.create_tween().set_loops()
+	orbit.tween_property(pivot, "position", origin + Vector3(2.5, 0.40, 0), 3.0).set_ease(Tween.EASE_IN_OUT)
+	orbit.tween_property(pivot, "position", origin + Vector3(0, 0.80, 2.5), 3.0).set_ease(Tween.EASE_IN_OUT)
+	orbit.tween_property(pivot, "position", origin + Vector3(-2.5, 0.40, 0), 3.0).set_ease(Tween.EASE_IN_OUT)
+	orbit.tween_property(pivot, "position", origin + Vector3(0, 0.0, -2.5), 3.0).set_ease(Tween.EASE_IN_OUT)
+	orbit.tween_property(pivot, "position", origin, 3.0).set_ease(Tween.EASE_IN_OUT)
+	# Self-rotation so motes swirl around
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 5.0)
+	# Core breathing pulse
+	var pulse2: Tween = pivot.create_tween().set_loops()
+	pulse2.tween_property(core, "scale", Vector3(1.18, 1.18, 1.18), 0.85).set_ease(Tween.EASE_IN_OUT)
+	pulse2.tween_property(core, "scale", Vector3(0.92, 0.92, 0.92), 0.85).set_ease(Tween.EASE_IN_OUT)
 
 
