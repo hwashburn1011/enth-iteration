@@ -1383,6 +1383,16 @@ func _build_east_plaza() -> void:
 	_build_border_guard_npc()
 	# Epic-1 T80: path teaser extending east toward the next district
 	_build_eastbound_path(geom)
+	# Epic-1 T81: glowing save shrine pillar in the plaza
+	_build_save_shrine(geom)
+	# Epic-1 T82: tall bell tower with hanging bell
+	_build_bell_tower(geom)
+	# Epic-1 T83: drifting data clouds overhead
+	_build_data_clouds(geom)
+	# Epic-1 T84: 2 holo-chess players seated at a table
+	_build_chess_players(geom)
+	# Epic-1 T85: plaza directory hologram listing shops + NPCs
+	_build_plaza_directory(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -6174,4 +6184,398 @@ func _build_eastbound_path(geom: Node) -> void:
 		pulse.tween_interval(1.20 - i * 0.10 * 0.5)
 
 
+func _build_save_shrine(geom: Node) -> void:
+	## Epic-1 T81: a save shrine pillar in the plaza — green obelisk on a
+	## stone base with a slowly rotating "S" hologram. Telegraphs the
+	## save-point loop without wiring up actual save logic.
+	var shrine: Node3D = Node3D.new()
+	shrine.name = "EastPlazaSaveShrine"
+	shrine.position = Vector3(28, 0, -10)
+	geom.add_child(shrine)
+	# Stone base
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.18, 0.22, 0.28)
+	base_mat.metallic = 0.55
+	base_mat.roughness = 0.45
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(1.6, 0.40, 1.6)
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.20, 0)
+	base.material_override = base_mat
+	shrine.add_child(base)
+	# Tall green obelisk
+	var obelisk: MeshInstance3D = MeshInstance3D.new()
+	var omesh: PrismMesh = PrismMesh.new()
+	omesh.size = Vector3(0.85, 3.20, 0.85)
+	obelisk.mesh = omesh
+	obelisk.position = Vector3(0, 2.00, 0)
+	var omat: StandardMaterial3D = StandardMaterial3D.new()
+	omat.albedo_color = Color(0.10, 0.40, 0.20)
+	omat.emission_enabled = true
+	omat.emission = Color(0.30, 1.0, 0.50)
+	omat.emission_energy_multiplier = 1.6
+	omat.metallic = 0.55
+	omat.roughness = 0.20
+	obelisk.material_override = omat
+	shrine.add_child(obelisk)
+	# Floating "S" hologram on top
+	var s_holo: Label3D = Label3D.new()
+	s_holo.text = "S"
+	s_holo.position = Vector3(0, 4.40, 0)
+	s_holo.modulate = Color(0.40, 1.0, 0.55)
+	s_holo.outline_modulate = Color(0, 0, 0, 0.85)
+	s_holo.outline_size = 8
+	s_holo.font_size = 64
+	s_holo.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	shrine.add_child(s_holo)
+	# Halo ring around the base
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: TorusMesh = TorusMesh.new()
+	hmesh.inner_radius = 1.10
+	hmesh.outer_radius = 1.30
+	halo.mesh = hmesh
+	halo.position = Vector3(0, 0.45, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.30, 1.0, 0.50)
+	hmat.emission_enabled = true
+	hmat.emission = Color(0.40, 1.0, 0.55)
+	hmat.emission_energy_multiplier = 2.0
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = hmat
+	shrine.add_child(halo)
+	# Pulse halo
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(halo, "scale", Vector3(1.25, 1.0, 1.25), 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(halo, "scale", Vector3(1.0, 1.0, 1.0), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Save shrine label
+	var label: Label3D = Label3D.new()
+	label.text = "SAVE POINT"
+	label.position = Vector3(0, 0.75, 0.85)
+	label.modulate = Color(0.40, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 16
+	label.no_depth_test = true
+	shrine.add_child(label)
+	# Collision around base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.6, 4.0, 1.6)
+	cs.shape = cb
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	shrine.add_child(sb)
+
+
+func _build_bell_tower(geom: Node) -> void:
+	## Epic-1 T82: tall plaza bell tower with a hanging bell that gently
+	## swings on a tween. Adds vertical drama and a recognizable landmark.
+	var tower: Node3D = Node3D.new()
+	tower.name = "EastPlazaBellTower"
+	tower.position = Vector3(44, 0, -16)
+	geom.add_child(tower)
+	# Stone column
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.24, 0.30)
+	stone_mat.metallic = 0.50
+	stone_mat.roughness = 0.45
+	var column: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.8, 9.0, 1.8)
+	column.mesh = cmesh
+	column.position = Vector3(0, 4.5, 0)
+	column.material_override = stone_mat
+	tower.add_child(column)
+	# Top open belfry — 4 thin pillars
+	for ox: float in [-0.65, 0.65]:
+		for oz: float in [-0.65, 0.65]:
+			var pillar: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.10
+			pmesh.bottom_radius = 0.10
+			pmesh.height = 1.6
+			pillar.mesh = pmesh
+			pillar.position = Vector3(ox, 9.80, oz)
+			pillar.material_override = stone_mat
+			tower.add_child(pillar)
+	# Roof cap
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: PrismMesh = PrismMesh.new()
+	rmesh.size = Vector3(2.0, 1.40, 2.0)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 11.30, 0)
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.30, 0.10, 0.10)
+	roof_mat.emission_enabled = true
+	roof_mat.emission = Color(0.85, 0.30, 0.20)
+	roof_mat.emission_energy_multiplier = 0.55
+	roof_mat.metallic = 0.40
+	roof_mat.roughness = 0.45
+	roof.material_override = roof_mat
+	tower.add_child(roof)
+	# Bell pivot at top
+	var bell_pivot: Node3D = Node3D.new()
+	bell_pivot.position = Vector3(0, 10.40, 0)
+	tower.add_child(bell_pivot)
+	# Bell itself — large cylinder with a half-sphere on top
+	var bell: MeshInstance3D = MeshInstance3D.new()
+	var bell_mesh: CylinderMesh = CylinderMesh.new()
+	bell_mesh.top_radius = 0.30
+	bell_mesh.bottom_radius = 0.55
+	bell_mesh.height = 0.75
+	bell.mesh = bell_mesh
+	bell.position = Vector3(0, -0.55, 0)
+	var bell_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bell_mat.albedo_color = Color(0.85, 0.65, 0.30)
+	bell_mat.emission_enabled = true
+	bell_mat.emission = Color(1.0, 0.75, 0.30)
+	bell_mat.emission_energy_multiplier = 0.55
+	bell_mat.metallic = 0.85
+	bell_mat.roughness = 0.20
+	bell.material_override = bell_mat
+	bell_pivot.add_child(bell)
+	# Clapper inside the bell
+	var clapper: MeshInstance3D = MeshInstance3D.new()
+	var clap_mesh: SphereMesh = SphereMesh.new()
+	clap_mesh.radius = 0.12
+	clap_mesh.height = 0.24
+	clapper.mesh = clap_mesh
+	clapper.position = Vector3(0, -0.85, 0)
+	var clap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	clap_mat.albedo_color = Color(0.40, 0.30, 0.15)
+	clap_mat.metallic = 0.85
+	clapper.material_override = clap_mat
+	bell_pivot.add_child(clapper)
+	# Swing the bell
+	var swing: Tween = create_tween().set_loops()
+	swing.tween_property(bell_pivot, "rotation:z", deg_to_rad(15), 1.6).set_ease(Tween.EASE_IN_OUT)
+	swing.tween_property(bell_pivot, "rotation:z", deg_to_rad(-15), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Collision around column
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.8, 9.0, 1.8)
+	cs.shape = cb
+	cs.position = Vector3(0, 4.5, 0)
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_data_clouds(geom: Node) -> void:
+	## Epic-1 T83: 5 large translucent "data clouds" drifting overhead at
+	## ~12m altitude. Each is a fat rounded box with cyan emission, slowly
+	## tweening across the plaza on independent paths.
+	var cloud_specs: Array = [
+		[Vector3(24, 12, -14), Vector3(48, 12, -14), 22.0],
+		[Vector3(48, 13, -2), Vector3(24, 13, -2), 26.0],
+		[Vector3(24, 11, 8), Vector3(48, 11, 8), 24.0],
+		[Vector3(48, 14, 14), Vector3(24, 14, 14), 28.0],
+		[Vector3(24, 12, -8), Vector3(48, 12, -8), 30.0],
+	]
+	for i in cloud_specs.size():
+		var cloud: MeshInstance3D = MeshInstance3D.new()
+		cloud.name = "EastPlazaDataCloud_%d" % i
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(4.5, 1.4, 3.0)
+		cloud.mesh = cmesh
+		cloud.position = cloud_specs[i][0]
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.55, 0.85, 1.0, 0.35)
+		cmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		cmat.emission_enabled = true
+		cmat.emission = Color(0.55, 0.95, 1.0)
+		cmat.emission_energy_multiplier = 0.55
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		cloud.material_override = cmat
+		geom.add_child(cloud)
+		# Drift across the plaza
+		var drift: Tween = create_tween().set_loops()
+		drift.tween_property(cloud, "position", cloud_specs[i][1], cloud_specs[i][2]).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(cloud, "position", cloud_specs[i][0], cloud_specs[i][2]).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_chess_players(geom: Node) -> void:
+	## Epic-1 T84: 2 procedural NPCs sitting across a small chess table at
+	## the south plaza edge, with a holographic chess board and pieces
+	## floating above the table. Pure ambience.
+	var scene: Node3D = Node3D.new()
+	scene.name = "EastPlazaChessPlayers"
+	scene.position = Vector3(40, 0, -16)
+	geom.add_child(scene)
+	# Table
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.18, 0.22, 0.28)
+	table_mat.metallic = 0.55
+	table_mat.roughness = 0.45
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.0, 0.85, 1.0)
+	table.mesh = tmesh
+	table.position = Vector3(0, 0.42, 0)
+	table.material_override = table_mat
+	scene.add_child(table)
+	# Chess board on top — checkered with cyan/violet
+	var board_mat: StandardMaterial3D = StandardMaterial3D.new()
+	board_mat.albedo_color = Color(0.14, 0.18, 0.22)
+	board_mat.metallic = 0.40
+	var board: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.85, 0.04, 0.85)
+	board.mesh = bmesh
+	board.position = Vector3(0, 0.87, 0)
+	board.material_override = board_mat
+	scene.add_child(board)
+	# 4 holographic pieces — alternating cyan and violet
+	var piece_colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(0.85, 0.40, 1.0),
+	]
+	var piece_offsets: Array[Vector3] = [
+		Vector3(-0.20, 0, -0.20),
+		Vector3(0.20, 0, -0.20),
+		Vector3(-0.20, 0, 0.20),
+		Vector3(0.20, 0, 0.20),
+	]
+	for i in piece_offsets.size():
+		var piece: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.05
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 0.25
+		piece.mesh = pmesh
+		piece.position = piece_offsets[i] + Vector3(0, 1.02, 0)
+		var color: Color = piece_colors[i % 2]
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = color
+		pmat.emission_enabled = true
+		pmat.emission = color
+		pmat.emission_energy_multiplier = 1.8
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		piece.material_override = pmat
+		scene.add_child(piece)
+		# Bob slightly
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = 1.02
+		bob.tween_property(piece, "position:y", origin_y + 0.06, 1.0 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(piece, "position:y", origin_y, 1.0 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+	# 2 player capsules flanking the table
+	var player_specs: Array = [
+		[Vector3(0, 0.55, -1.0), Color(0.55, 0.95, 1.0), "Bit"],
+		[Vector3(0, 0.55, 1.0), Color(0.85, 0.40, 1.0), "Byte"],
+	]
+	for spec in player_specs:
+		var player: MeshInstance3D = MeshInstance3D.new()
+		var pcap: CapsuleMesh = CapsuleMesh.new()
+		pcap.radius = 0.32
+		pcap.height = 1.0
+		player.mesh = pcap
+		player.position = spec[0]
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		var color: Color = spec[1]
+		pmat.albedo_color = Color(color.r * 0.55, color.g * 0.55, color.b * 0.55)
+		pmat.emission_enabled = true
+		pmat.emission = color
+		pmat.emission_energy_multiplier = 0.45
+		pmat.metallic = 0.35
+		pmat.roughness = 0.55
+		player.material_override = pmat
+		scene.add_child(player)
+		# Name floating overhead
+		var label: Label3D = Label3D.new()
+		label.text = spec[2]
+		label.position = spec[0] + Vector3(0, 0.95, 0)
+		label.modulate = color
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 16
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		scene.add_child(label)
+	# Collision around table
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.4, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.7, 0)
+	sb.add_child(cs)
+	scene.add_child(sb)
+
+
+func _build_plaza_directory(geom: Node) -> void:
+	## Epic-1 T85: large vertical hologram listing 6 plaza shops/NPCs.
+	## Pillar base + a tall holographic display panel. Acts as the plaza's
+	## "table of contents" and ties together the 5 sub-zones.
+	var dir: Node3D = Node3D.new()
+	dir.name = "EastPlazaDirectory"
+	dir.position = Vector3(28, 0, -3)
+	geom.add_child(dir)
+	# Base column
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	base_mat.metallic = 0.85
+	base_mat.roughness = 0.30
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.50, 1.0, 0.50)
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.50, 0)
+	base.material_override = base_mat
+	dir.add_child(base)
+	# Tall hologram panel
+	var panel: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(1.4, 2.4, 0.06)
+	panel.mesh = pmesh
+	panel.position = Vector3(0, 2.20, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.10, 0.20, 0.30, 0.45)
+	pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.30, 0.85, 1.0)
+	pmat.emission_energy_multiplier = 0.85
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	panel.material_override = pmat
+	dir.add_child(panel)
+	# Title at the top
+	var title: Label3D = Label3D.new()
+	title.text = "PLAZA DIRECTORY"
+	title.position = Vector3(0, 3.30, 0.05)
+	title.modulate = Color(0.55, 0.95, 1.0)
+	title.outline_modulate = Color(0, 0, 0, 0.85)
+	title.outline_size = 5
+	title.font_size = 18
+	title.no_depth_test = true
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dir.add_child(title)
+	# 6 listed entries
+	var entries: Array[String] = [
+		"1. Data Merchant",
+		"2. Cipher Lab",
+		"3. Tournament",
+		"4. Sparring",
+		"5. Data Eats",
+		"6. Specimen-7",
+	]
+	for i in entries.size():
+		var line: Label3D = Label3D.new()
+		line.text = entries[i]
+		line.position = Vector3(0, 2.85 - i * 0.28, 0.05)
+		line.modulate = Color(0.85, 0.95, 1.0)
+		line.outline_modulate = Color(0, 0, 0, 0.85)
+		line.outline_size = 4
+		line.font_size = 14
+		line.no_depth_test = true
+		line.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		dir.add_child(line)
+	# Collision around base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.50, 1.0, 0.50)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.50, 0)
+	sb.add_child(cs)
+	dir.add_child(sb)
 
