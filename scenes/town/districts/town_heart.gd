@@ -88,6 +88,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_stargazer_npc(town)
 	_build_th_combat_trial_pit(geom)
 	_build_th_pit_master_npc(town)
+	_build_th_champion_trophy_hall(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -13112,3 +13113,361 @@ func _build_th_pit_master_npc(town: Node) -> void:
 	var epulse: Tween = ovl.create_tween().set_loops()
 	epulse.tween_property(scar_mat, "emission_energy_multiplier", 2.4, 1.8).set_ease(Tween.EASE_IN_OUT)
 	epulse.tween_property(scar_mat, "emission_energy_multiplier", 0.80, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_champion_trophy_hall(geom: Node) -> void:
+	## Epic-10 T72: Champion Trophy Hall — open-air ENE pavilion with 3 brass
+	## display pedestals each holding a different victory trophy (sword,
+	## shield, glowing orb), backed by a low brass-plated trophy wall with
+	## 3 holographic medals. Honors past champions of the iterations.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_ChampionTrophyHall"
+	# ENE position at radius 11.5, angle ~PI*0.18 (between E and NE)
+	var ang_pos: float = PI * 0.18
+	var rad_pos: float = 11.5
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 0, pz_p)
+	pivot.rotation.y = atan2(-px_p, -pz_p)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.46, 0.55)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.30, 0.32, 0.38)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	var glow_cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_cyan_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	glow_cyan_mat.emission_enabled = true
+	glow_cyan_mat.emission = Color(0.55, 0.95, 1.0)
+	glow_cyan_mat.emission_energy_multiplier = 5.5
+	glow_cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stone footing pad ----
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var padm: BoxMesh = BoxMesh.new()
+	padm.size = Vector3(4.20, 0.18, 1.85)
+	pad.mesh = padm
+	pad.material_override = stone_mat
+	pad.position = Vector3(0, 0.09, 0)
+	pivot.add_child(pad)
+	# Brass front edge
+	var edge: MeshInstance3D = MeshInstance3D.new()
+	var edm: BoxMesh = BoxMesh.new()
+	edm.size = Vector3(4.30, 0.05, 0.10)
+	edge.mesh = edm
+	edge.material_override = brass_mat
+	edge.position = Vector3(0, 0.20, -0.92)
+	pivot.add_child(edge)
+	# ---- Trophy wall (back) ----
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wmm: BoxMesh = BoxMesh.new()
+	wmm.size = Vector3(4.20, 2.30, 0.20)
+	wall.mesh = wmm
+	wall.material_override = stone_mat
+	wall.position = Vector3(0, 1.34, 0.85)
+	pivot.add_child(wall)
+	# Brass cap on top of wall
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cpm: BoxMesh = BoxMesh.new()
+	cpm.size = Vector3(4.30, 0.10, 0.30)
+	cap.mesh = cpm
+	cap.material_override = brass_mat
+	cap.position = Vector3(0, 2.54, 0.85)
+	pivot.add_child(cap)
+	# Brass plaque header
+	var header: MeshInstance3D = MeshInstance3D.new()
+	var hdm: BoxMesh = BoxMesh.new()
+	hdm.size = Vector3(2.40, 0.40, 0.06)
+	header.mesh = hdm
+	header.material_override = brass_mat
+	header.position = Vector3(0, 2.20, 0.74)
+	pivot.add_child(header)
+	# Wall collision (so player can't walk through)
+	var sb: StaticBody3D = StaticBody3D.new()
+	pivot.add_child(sb)
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var cs: BoxShape3D = BoxShape3D.new()
+	cs.size = Vector3(4.30, 2.40, 0.30)
+	col.shape = cs
+	col.position = Vector3(0, 1.30, 0.85)
+	sb.add_child(col)
+	# Side wing pillars (2)
+	for s in [-1.0, 1.0]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var plm: BoxMesh = BoxMesh.new()
+		plm.size = Vector3(0.30, 2.50, 0.30)
+		pillar.mesh = plm
+		pillar.material_override = stone_mat
+		pillar.position = Vector3(2.10 * s, 1.34, 0.10)
+		pivot.add_child(pillar)
+		# Brass pillar cap
+		var pc: MeshInstance3D = MeshInstance3D.new()
+		var pcm: BoxMesh = BoxMesh.new()
+		pcm.size = Vector3(0.40, 0.10, 0.40)
+		pc.mesh = pcm
+		pc.material_override = brass_mat
+		pc.position = Vector3(2.10 * s, 2.62, 0.10)
+		pivot.add_child(pc)
+		# Pillar collision
+		var pcol: CollisionShape3D = CollisionShape3D.new()
+		var pcs: BoxShape3D = BoxShape3D.new()
+		pcs.size = Vector3(0.30, 2.50, 0.30)
+		pcol.shape = pcs
+		pcol.position = Vector3(2.10 * s, 1.34, 0.10)
+		sb.add_child(pcol)
+	# ---- 3 holographic medals on the wall ----
+	var medal_colors: Array[Color] = [
+		Color(1.0, 0.78, 0.20),  # gold (1st)
+		Color(0.85, 0.85, 0.92),  # silver (2nd)
+		Color(0.85, 0.55, 0.30),  # bronze (3rd)
+	]
+	var medal_positions: Array[Vector3] = [
+		Vector3(0, 1.55, 0.74),
+		Vector3(-1.20, 1.55, 0.74),
+		Vector3(1.20, 1.55, 0.74),
+	]
+	for m in range(3):
+		var medal_mat: StandardMaterial3D = StandardMaterial3D.new()
+		medal_mat.albedo_color = medal_colors[m]
+		medal_mat.metallic = 0.95
+		medal_mat.roughness = 0.20
+		medal_mat.emission_enabled = true
+		medal_mat.emission = medal_colors[m] * 1.1
+		medal_mat.emission_energy_multiplier = 4.0
+		medal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var medal: MeshInstance3D = MeshInstance3D.new()
+		var mmm: CylinderMesh = CylinderMesh.new()
+		mmm.top_radius = 0.22
+		mmm.bottom_radius = 0.22
+		mmm.height = 0.06
+		medal.mesh = mmm
+		medal.material_override = medal_mat
+		medal.position = medal_positions[m]
+		medal.rotation.x = PI / 2.0
+		pivot.add_child(medal)
+		# Medal pulse
+		var phase: float = float(m) * 0.30
+		var mp: Tween = medal.create_tween().set_loops()
+		mp.tween_interval(phase)
+		mp.tween_property(medal_mat, "emission_energy_multiplier", 6.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+		mp.tween_property(medal_mat, "emission_energy_multiplier", 3.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- 3 brass display pedestals (each holding a different trophy) ----
+	var pedestal_x: Array[float] = [-1.20, 0.0, 1.20]
+	for p in range(3):
+		var ppivot: Node3D = Node3D.new()
+		ppivot.position = Vector3(pedestal_x[p], 0, -0.20)
+		pivot.add_child(ppivot)
+		# Pedestal stone block
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.30
+		pmm.bottom_radius = 0.36
+		pmm.height = 0.95
+		ped.mesh = pmm
+		ped.material_override = stone_mat
+		ped.position = Vector3(0, 0.475, 0)
+		ppivot.add_child(ped)
+		# Brass pedestal cap (display surface)
+		var pcap: MeshInstance3D = MeshInstance3D.new()
+		var pcpm: CylinderMesh = CylinderMesh.new()
+		pcpm.top_radius = 0.36
+		pcpm.bottom_radius = 0.38
+		pcpm.height = 0.08
+		pcap.mesh = pcpm
+		pcap.material_override = brass_mat
+		pcap.position = Vector3(0, 0.99, 0)
+		ppivot.add_child(pcap)
+		# Pedestal collision
+		var pcl: CollisionShape3D = CollisionShape3D.new()
+		var pcls: CylinderShape3D = CylinderShape3D.new()
+		pcls.radius = 0.40
+		pcls.height = 1.05
+		pcl.shape = pcls
+		pcl.position = Vector3(pedestal_x[p], 0.50, -0.20)
+		sb.add_child(pcl)
+		# Trophy itself depends on slot
+		if p == 0:
+			# ---- Champion Sword ----
+			# Hilt
+			var hilt: MeshInstance3D = MeshInstance3D.new()
+			var htm: CylinderMesh = CylinderMesh.new()
+			htm.top_radius = 0.04
+			htm.bottom_radius = 0.05
+			htm.height = 0.20
+			hilt.mesh = htm
+			hilt.material_override = brass_mat
+			hilt.position = Vector3(0, 1.13, 0)
+			ppivot.add_child(hilt)
+			# Pommel
+			var pom: MeshInstance3D = MeshInstance3D.new()
+			var pomm: SphereMesh = SphereMesh.new()
+			pomm.radius = 0.06
+			pomm.height = 0.12
+			pom.mesh = pomm
+			pom.material_override = brass_mat
+			pom.position = Vector3(0, 1.05, 0)
+			ppivot.add_child(pom)
+			# Crossguard
+			var crossm: BoxMesh = BoxMesh.new()
+			crossm.size = Vector3(0.32, 0.04, 0.06)
+			var cross: MeshInstance3D = MeshInstance3D.new()
+			cross.mesh = crossm
+			cross.material_override = brass_mat
+			cross.position = Vector3(0, 1.25, 0)
+			ppivot.add_child(cross)
+			# Blade
+			var blade: MeshInstance3D = MeshInstance3D.new()
+			var bldm: PrismMesh = PrismMesh.new()
+			bldm.size = Vector3(0.10, 0.95, 0.04)
+			blade.mesh = bldm
+			blade.material_override = iron_mat
+			blade.position = Vector3(0, 1.78, 0)
+			ppivot.add_child(blade)
+			# Cyan rune on blade
+			var rune: MeshInstance3D = MeshInstance3D.new()
+			var rmm: SphereMesh = SphereMesh.new()
+			rmm.radius = 0.05
+			rmm.height = 0.10
+			rune.mesh = rmm
+			rune.material_override = glow_cyan_mat
+			rune.position = Vector3(0, 1.85, 0)
+			ppivot.add_child(rune)
+		elif p == 1:
+			# ---- Champion Crystal Orb ----
+			# Floating orb on a brass cradle
+			var cradle: MeshInstance3D = MeshInstance3D.new()
+			var crtm: TorusMesh = TorusMesh.new()
+			crtm.inner_radius = 0.13
+			crtm.outer_radius = 0.18
+			cradle.mesh = crtm
+			cradle.material_override = brass_mat
+			cradle.position = Vector3(0, 1.10, 0)
+			cradle.rotation.x = PI / 2.0
+			ppivot.add_child(cradle)
+			# 3 brass support arms
+			for k in range(3):
+				var ang_k: float = float(k) * (TAU / 3.0)
+				var arm: MeshInstance3D = MeshInstance3D.new()
+				var amm: CylinderMesh = CylinderMesh.new()
+				amm.top_radius = 0.015
+				amm.bottom_radius = 0.020
+				amm.height = 0.30
+				arm.mesh = amm
+				arm.material_override = brass_mat
+				arm.position = Vector3(cos(ang_k) * 0.10, 1.30, sin(ang_k) * 0.10)
+				arm.rotation.x = sin(ang_k) * 0.4
+				arm.rotation.z = -cos(ang_k) * 0.4
+				ppivot.add_child(arm)
+			# Crystal orb (large glowing sphere)
+			var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+			orb_mat.albedo_color = Color(0.45, 0.85, 1.0, 0.85)
+			orb_mat.metallic = 0.55
+			orb_mat.roughness = 0.10
+			orb_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			orb_mat.emission_enabled = true
+			orb_mat.emission = Color(0.55, 0.95, 1.0)
+			orb_mat.emission_energy_multiplier = 4.5
+			var orb: MeshInstance3D = MeshInstance3D.new()
+			var omm: SphereMesh = SphereMesh.new()
+			omm.radius = 0.22
+			omm.height = 0.44
+			orb.mesh = omm
+			orb.material_override = orb_mat
+			orb.position = Vector3(0, 1.48, 0)
+			ppivot.add_child(orb)
+			# Inner core (small bright)
+			var core: MeshInstance3D = MeshInstance3D.new()
+			var cm: SphereMesh = SphereMesh.new()
+			cm.radius = 0.08
+			cm.height = 0.16
+			core.mesh = cm
+			core.material_override = glow_cyan_mat
+			core.position = Vector3(0, 1.48, 0)
+			ppivot.add_child(core)
+			# Orb spin
+			var ospin: Tween = orb.create_tween().set_loops()
+			ospin.tween_property(orb, "rotation:y", TAU, 6.0).from(0.0)
+			# Orb pulse
+			var op: Tween = orb.create_tween().set_loops()
+			op.tween_property(orb_mat, "emission_energy_multiplier", 6.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+			op.tween_property(orb_mat, "emission_energy_multiplier", 3.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+		else:
+			# ---- Champion Shield ----
+			# Shield body (round disc)
+			var shield_mat: StandardMaterial3D = StandardMaterial3D.new()
+			shield_mat.albedo_color = Color(0.32, 0.36, 0.42)
+			shield_mat.metallic = 0.85
+			shield_mat.roughness = 0.40
+			shield_mat.emission_enabled = true
+			shield_mat.emission = Color(0.45, 0.55, 0.70)
+			shield_mat.emission_energy_multiplier = 0.30
+			var shield: MeshInstance3D = MeshInstance3D.new()
+			var smm: CylinderMesh = CylinderMesh.new()
+			smm.top_radius = 0.32
+			smm.bottom_radius = 0.32
+			smm.height = 0.08
+			shield.mesh = smm
+			shield.material_override = shield_mat
+			shield.position = Vector3(0, 1.42, 0)
+			shield.rotation.x = PI / 2.0
+			ppivot.add_child(shield)
+			# Brass rim
+			var srim: MeshInstance3D = MeshInstance3D.new()
+			var srtm: TorusMesh = TorusMesh.new()
+			srtm.inner_radius = 0.30
+			srtm.outer_radius = 0.34
+			srim.mesh = srtm
+			srim.material_override = brass_mat
+			srim.position = Vector3(0, 1.42, 0)
+			srim.rotation.x = PI / 2.0
+			ppivot.add_child(srim)
+			# Brass center boss
+			var boss: MeshInstance3D = MeshInstance3D.new()
+			var bom: SphereMesh = SphereMesh.new()
+			bom.radius = 0.10
+			bom.height = 0.20
+			boss.mesh = bom
+			boss.material_override = brass_mat
+			boss.position = Vector3(0, 1.42, -0.05)
+			ppivot.add_child(boss)
+			# Cyan emblem on shield
+			var emb: MeshInstance3D = MeshInstance3D.new()
+			var emm: SphereMesh = SphereMesh.new()
+			emm.radius = 0.05
+			emm.height = 0.10
+			emb.mesh = emm
+			emb.material_override = glow_cyan_mat
+			emb.position = Vector3(0, 1.42, -0.10)
+			ppivot.add_child(emb)
+		# Spotlight on each pedestal
+		var slt: OmniLight3D = OmniLight3D.new()
+		slt.position = Vector3(pedestal_x[p], 1.95, -0.20)
+		slt.light_color = Color(1.0, 0.85, 0.55)
+		slt.light_energy = 1.40
+		slt.omni_range = 2.6
+		pivot.add_child(slt)
+		# Trophy bob (slow up/down on the trophy itself, via ppivot scale-y modulation isn't ideal — use rotation:y for spin)
+		var bob: Tween = ppivot.create_tween().set_loops()
+		bob.tween_interval(float(p) * 0.30)
+		bob.tween_property(ppivot, "position:y", 0.04, 1.6).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(ppivot, "position:y", -0.02, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# ---- Overhead aura light ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.30, 0)
+	lt.light_color = Color(0.85, 0.85, 1.0)
+	lt.light_energy = 1.85
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
