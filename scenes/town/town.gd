@@ -17250,6 +17250,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_vending_bot(geom)
 	# Epic-6 T75: cyber graffiti mural
 	_build_d6_cyber_mural(geom)
+	# Epic-6 T76: hologram billboard tower
+	_build_d6_holo_tower(geom)
+	# Epic-6 T77: drone repair shop
+	_build_d6_drone_shop(geom)
+	# Epic-6 T78: drone mechanic NPC
+	_build_d6_drone_mechanic_npc()
+	# Epic-6 T79: cyber rats creatures
+	_build_d6_cyber_rats(geom)
+	# Epic-6 T80: scrap metal pile
+	_build_d6_scrap_pile(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -23418,6 +23428,405 @@ func _build_d6_cyber_mural(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	mural.add_child(sb)
+
+
+func _build_d6_holo_tower(geom: Node) -> void:
+	## Epic-6 T76: tall hologram billboard tower with 3 stacked screens
+	## displaying alternating colored ad blocks.
+	var tower: Node3D = Node3D.new()
+	tower.name = "HoloTower"
+	tower.position = Vector3(D6_CENTER.x - 22.0, 0.0, -22.0)
+	geom.add_child(tower)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Tall central support post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.55, 9.50, 0.55)
+	post.mesh = pm
+	post.material_override = metal_mat
+	post.position = Vector3(0, 4.75, 0)
+	tower.add_child(post)
+	# 3 stacked screens at different heights
+	var screen_colors: Array = [
+		Color(0.95, 0.20, 0.85),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 3:
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.85, 1.85, 0.18)
+		screen.mesh = sm
+		var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+		screen_mat.albedo_color = screen_colors[i]
+		screen_mat.emission_enabled = true
+		screen_mat.emission = screen_colors[i]
+		screen_mat.emission_energy_multiplier = 2.5
+		screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		screen.material_override = screen_mat
+		screen.position = Vector3(0, 2.40 + i * 2.40, 0.40)
+		tower.add_child(screen)
+		# Screen pulse
+		var tw: Tween = screen.create_tween().set_loops()
+		tw.tween_interval(i * 0.30)
+		tw.tween_property(screen, "scale:y", 1.10, 0.55)
+		tw.tween_property(screen, "scale:y", 0.85, 0.55)
+		# Per-screen light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = screen_colors[i]
+		light.light_energy = 1.6
+		light.omni_range = 5.0
+		light.position = Vector3(0, 2.40 + i * 2.40, 1.20)
+		tower.add_child(light)
+	# Tower collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.55, 9.50, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d6_drone_shop(geom: Node) -> void:
+	## Epic-6 T77: drone repair shop — small workshop with 3 broken drones
+	## hanging from racks and tool boxes scattered.
+	var shop: Node3D = Node3D.new()
+	shop.name = "DroneShop"
+	shop.position = Vector3(D6_CENTER.x + 18.0, 0.0, -22.0)
+	geom.add_child(shop)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	dark_mat.metallic = 0.55
+	dark_mat.roughness = 0.45
+	# Storefront wall
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(4.20, 3.20, 0.30)
+	wall.mesh = wm
+	wall.material_override = dark_mat
+	wall.position = Vector3(0, 1.60, -1.20)
+	shop.add_child(wall)
+	for sx in [-2.0, 2.0]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.30, 3.20, 2.40)
+		side.mesh = swm
+		side.material_override = dark_mat
+		side.position = Vector3(sx, 1.60, 0)
+		shop.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(4.20, 0.18, 2.55)
+	roof.mesh = rm
+	roof.material_override = dark_mat
+	roof.position = Vector3(0, 3.30, 0)
+	shop.add_child(roof)
+	# 3 broken drones hanging from the ceiling
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.42, 0.50)
+	metal_mat.metallic = 0.85
+	for i in 3:
+		var cable: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.018
+		cmm.bottom_radius = 0.018
+		cmm.height = 1.0
+		cable.mesh = cmm
+		var cable_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cable_mat.albedo_color = Color(0.20, 0.20, 0.25)
+		cable.material_override = cable_mat
+		cable.position = Vector3(-1.20 + i * 1.20, 2.30, 0.30)
+		shop.add_child(cable)
+		# Drone body (sphere) — broken at angle
+		var drone_body: MeshInstance3D = MeshInstance3D.new()
+		var dbm: SphereMesh = SphereMesh.new()
+		dbm.radius = 0.22
+		dbm.height = 0.36
+		drone_body.mesh = dbm
+		drone_body.material_override = metal_mat
+		drone_body.position = Vector3(-1.20 + i * 1.20, 1.55, 0.30)
+		drone_body.rotation_degrees = Vector3(15, 0, 25)
+		shop.add_child(drone_body)
+	# Toolboxes (2 small boxes on the floor)
+	var tool_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tool_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	tool_mat.metallic = 0.45
+	for sx in [-0.85, 0.85]:
+		var box: MeshInstance3D = MeshInstance3D.new()
+		var bxm: BoxMesh = BoxMesh.new()
+		bxm.size = Vector3(0.55, 0.30, 0.30)
+		box.mesh = bxm
+		box.material_override = tool_mat
+		box.position = Vector3(sx, 0.15, 0.55)
+		shop.add_child(box)
+	# Sign
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.30, 1.0, 1.0)
+	sign_mat.emission_energy_multiplier = 2.5
+	sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(2.85, 0.55, 0.06)
+	sign.mesh = snm
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 2.85, 1.21)
+	shop.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "DRONE FIX"
+	label.modulate = Color(0.10, 0.05, 0.20)
+	label.outline_modulate = Color(0.30, 1.0, 1.0)
+	label.outline_size = 4
+	label.font_size = 56
+	label.pixel_size = 0.008
+	label.position = Vector3(0, 2.85, 1.26)
+	shop.add_child(label)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.5
+	light.position = Vector3(0, 2.85, 1.85)
+	shop.add_child(light)
+	# Shop collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.60, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 3.20, 2.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	shop.add_child(sb)
+
+
+func _build_d6_drone_mechanic_npc() -> void:
+	## Epic-6 T78: drone mechanic NPC — coveralls + welding mask + holding
+	## a small drone in their hand.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "DroneMechanicSlot"
+	slot.position = Vector3(D6_CENTER.x + 18.0, 0.0, -21.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "DroneMechanic"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Solder")
+	if "npc_id" in npc:
+		npc.set("npc_id", "drone_mech_d6")
+	slot.add_child(npc)
+	# Coveralls
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 1.20, 0.45)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.40, 0.42, 0.50)
+	suit_mat.metallic = 0.20
+	suit_mat.roughness = 0.65
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.60, 0)
+	npc.add_child(suit)
+	# Welding mask
+	var mask: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.42, 0.45, 0.04)
+	mask.mesh = mm
+	var mask_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mask_mat.albedo_color = Color(0.20, 0.18, 0.22)
+	mask_mat.metallic = 0.85
+	mask.material_override = mask_mat
+	mask.position = Vector3(0, 1.42, 0.21)
+	npc.add_child(mask)
+	# Visor strip
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vmm: BoxMesh = BoxMesh.new()
+	vmm.size = Vector3(0.30, 0.08, 0.04)
+	visor.mesh = vmm
+	var visor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	visor_mat.albedo_color = Color(0.30, 1.0, 0.30)
+	visor_mat.emission_enabled = true
+	visor_mat.emission = Color(0.30, 1.0, 0.30)
+	visor_mat.emission_energy_multiplier = 2.5
+	visor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = visor_mat
+	visor.position = Vector3(0, 1.45, 0.23)
+	npc.add_child(visor)
+	# Held drone (small dark sphere with cyan glow)
+	var drone: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.10
+	dm.height = 0.18
+	drone.mesh = dm
+	var drone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drone_mat.albedo_color = Color(0.40, 0.42, 0.50)
+	drone_mat.metallic = 0.85
+	drone_mat.emission_enabled = true
+	drone_mat.emission = Color(0.30, 0.95, 1.0)
+	drone_mat.emission_energy_multiplier = 0.85
+	drone.material_override = drone_mat
+	drone.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(drone)
+
+
+func _build_d6_cyber_rats(geom: Node) -> void:
+	## Epic-6 T79: 4 small cyber rats — dark furry bodies + magenta eyes
+	## + tiny LED implants on their backs, slowly drifting through the alley.
+	var rats: Node3D = Node3D.new()
+	rats.name = "CyberRats"
+	rats.position = Vector3(D6_CENTER.x + 24.0, 0.0, 4.0)
+	geom.add_child(rats)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.18, 0.15, 0.20)
+	fur_mat.roughness = 0.85
+	for i in 4:
+		var rat: Node3D = Node3D.new()
+		rat.position = Vector3(
+			randf_range(-2.5, 2.5),
+			0,
+			randf_range(-2.0, 2.0)
+		)
+		rats.add_child(rat)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.14
+		bm.height = 0.24
+		body.mesh = bm
+		body.material_override = fur_mat
+		body.position = Vector3(0, 0.18, 0)
+		body.scale = Vector3(0.85, 0.65, 1.40)
+		rat.add_child(body)
+		# LED implant (small magenta box on back)
+		var led: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.06, 0.04, 0.06)
+		led.mesh = lm
+		var led_mat: StandardMaterial3D = StandardMaterial3D.new()
+		led_mat.albedo_color = Color(0.95, 0.20, 0.85)
+		led_mat.emission_enabled = true
+		led_mat.emission = Color(0.95, 0.30, 0.95)
+		led_mat.emission_energy_multiplier = 3.0
+		led_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		led.material_override = led_mat
+		led.position = Vector3(0, 0.32, 0)
+		rat.add_child(led)
+		# Magenta eyes
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.95, 0.20, 0.85)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.95, 0.30, 0.95)
+		eye_mat.emission_energy_multiplier = 3.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex in [-0.04, 0.04]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = 0.018
+			em.height = 0.036
+			eye.mesh = em
+			eye.material_override = eye_mat
+			eye.position = Vector3(ex, 0.22, 0.20)
+			rat.add_child(eye)
+		# Tail (curved cylinder)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.018
+		tm.bottom_radius = 0.025
+		tm.height = 0.30
+		tail.mesh = tm
+		tail.material_override = fur_mat
+		tail.position = Vector3(0, 0.18, -0.22)
+		tail.rotation_degrees = Vector3(75, 0, 0)
+		rat.add_child(tail)
+		# Slow drift
+		var tw: Tween = rat.create_tween().set_loops()
+		var p: Vector3 = rat.position
+		tw.tween_property(rat, "position", p + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5)), 2.5 + randf())
+		tw.tween_property(rat, "rotation_degrees:y", 180.0, 0.4)
+		tw.tween_property(rat, "position", p, 2.5 + randf())
+		tw.tween_property(rat, "rotation_degrees:y", 0.0, 0.4)
+
+
+func _build_d6_scrap_pile(geom: Node) -> void:
+	## Epic-6 T80: pile of scrap metal — random rusted boxes and pipes
+	## stacked together with one glowing wire poking out.
+	var pile: Node3D = Node3D.new()
+	pile.name = "ScrapPile"
+	pile.position = Vector3(D6_CENTER.x + 26.0, 0.0, 14.0)
+	geom.add_child(pile)
+	var rust_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rust_mat.albedo_color = Color(0.55, 0.30, 0.18)
+	rust_mat.metallic = 0.55
+	rust_mat.roughness = 0.85
+	# 6 random scrap pieces
+	for i in 6:
+		var piece: MeshInstance3D = MeshInstance3D.new()
+		if i % 2 == 0:
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.55 + randf() * 0.30, 0.30, 0.40)
+			piece.mesh = bm
+		else:
+			var cm: CylinderMesh = CylinderMesh.new()
+			cm.top_radius = 0.10
+			cm.bottom_radius = 0.10
+			cm.height = 0.85 + randf() * 0.30
+			piece.mesh = cm
+		piece.material_override = rust_mat
+		piece.position = Vector3(
+			randf_range(-0.55, 0.55),
+			0.30 + i * 0.18,
+			randf_range(-0.30, 0.30)
+		)
+		piece.rotation_degrees = Vector3(
+			randf_range(-30, 30),
+			randf_range(0, 360),
+			randf_range(-30, 30)
+		)
+		pile.add_child(piece)
+	# Glowing wire poking out (small bright cylinder)
+	var wire: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.025
+	wm.bottom_radius = 0.025
+	wm.height = 0.55
+	wire.mesh = wm
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	wire_mat.emission_enabled = true
+	wire_mat.emission = Color(0.30, 1.0, 1.0)
+	wire_mat.emission_energy_multiplier = 3.5
+	wire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	wire.material_override = wire_mat
+	wire.position = Vector3(0.20, 1.40, 0)
+	wire.rotation_degrees = Vector3(0, 0, 30)
+	pile.add_child(wire)
+	# Subtle wire spark light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.0
+	light.omni_range = 2.5
+	light.position = Vector3(0.20, 1.40, 0)
+	pile.add_child(light)
+	# Pile collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 1.85, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	pile.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
