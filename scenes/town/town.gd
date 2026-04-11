@@ -25477,6 +25477,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_martial_artist_npc()
 	# Epic-7 T30: rope bridge
 	_build_d7_rope_bridge(geom)
+	# Epic-7 T31: ancient stone archway
+	_build_d7_stone_arch(geom)
+	# Epic-7 T32: bonsai garden
+	_build_d7_bonsai_garden(geom)
+	# Epic-7 T33: gardener NPC
+	_build_d7_d7_gardener_npc()
+	# Epic-7 T34: tall cliff stack
+	_build_d7_cliff_stack(geom)
+	# Epic-7 T35: stone stairway
+	_build_d7_stone_stairs(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -27562,6 +27572,263 @@ func _build_d7_rope_bridge(geom: Node) -> void:
 	dcs.shape = dcb
 	dsb.add_child(dcs)
 	bridge.add_child(dsb)
+
+
+func _build_d7_stone_arch(geom: Node) -> void:
+	## Epic-7 T31: ancient stone archway — 2 weathered stone pillars +
+	## curved torus arch top + decorative carving line.
+	var arch: Node3D = Node3D.new()
+	arch.name = "AncientStoneArch"
+	arch.position = Vector3(D7_CENTER.x + 14.0, 0.0, -2.0)
+	geom.add_child(arch)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# 2 weathered stone pillars
+	for sx in [-1.85, 1.85]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.85, 4.20, 0.85)
+		pillar.mesh = pm
+		pillar.material_override = stone_mat
+		pillar.position = Vector3(sx, 2.10, 0)
+		arch.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.10, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 4.20, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Curved arch top (half torus)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: TorusMesh = TorusMesh.new()
+	tm.inner_radius = 1.55
+	tm.outer_radius = 2.0
+	top.mesh = tm
+	top.material_override = stone_mat
+	top.position = Vector3(0, 4.20, 0)
+	top.rotation_degrees = Vector3(90, 0, 0)
+	top.scale = Vector3(1.0, 1.0, 0.40)
+	arch.add_child(top)
+	# Center keystone (small box)
+	var keystone: MeshInstance3D = MeshInstance3D.new()
+	var km: BoxMesh = BoxMesh.new()
+	km.size = Vector3(0.55, 0.65, 0.85)
+	keystone.mesh = km
+	var key_mat: StandardMaterial3D = StandardMaterial3D.new()
+	key_mat.albedo_color = Color(0.75, 0.55, 0.30)
+	key_mat.emission_enabled = true
+	key_mat.emission = Color(0.85, 0.55, 0.20)
+	key_mat.emission_energy_multiplier = 0.65
+	keystone.material_override = key_mat
+	keystone.position = Vector3(0, 5.50, 0)
+	arch.add_child(keystone)
+
+
+func _build_d7_bonsai_garden(geom: Node) -> void:
+	## Epic-7 T32: bonsai garden — 3 stylized small bonsai trees on stone
+	## pedestals, each with twisted trunk + small leaf canopy.
+	var garden: Node3D = Node3D.new()
+	garden.name = "BonsaiGarden"
+	garden.position = Vector3(D7_CENTER.x + 22.0, 0.0, 8.0)
+	geom.add_child(garden)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	trunk_mat.roughness = 0.92
+	var leaf_colors: Array = [
+		Color(0.30, 0.65, 0.20),
+		Color(0.95, 0.55, 0.30),
+		Color(0.55, 0.85, 0.20),
+	]
+	for i in 3:
+		var bonsai: Node3D = Node3D.new()
+		bonsai.position = Vector3(i * 1.85, 0, 0)
+		garden.add_child(bonsai)
+		# Stone pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.85, 0.85, 0.85)
+		ped.mesh = pm
+		ped.material_override = stone_mat
+		ped.position = Vector3(0, 0.42, 0)
+		bonsai.add_child(ped)
+		# Twisted trunk (3 stacked angled cylinders)
+		for j in 3:
+			var seg: MeshInstance3D = MeshInstance3D.new()
+			var cm: CylinderMesh = CylinderMesh.new()
+			cm.top_radius = 0.06 - j * 0.01
+			cm.bottom_radius = 0.10 - j * 0.01
+			cm.height = 0.30
+			seg.mesh = cm
+			seg.material_override = trunk_mat
+			seg.position = Vector3(sin(j * 1.5) * 0.06, 1.0 + j * 0.30, cos(j * 1.5) * 0.06)
+			seg.rotation_degrees = Vector3(15.0 * sin(j * 1.5), 0, 15.0 * cos(j * 1.5))
+			bonsai.add_child(seg)
+		# 3 small leaf canopy spheres
+		var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+		leaf_mat.albedo_color = leaf_colors[i]
+		leaf_mat.emission_enabled = true
+		leaf_mat.emission = leaf_colors[i]
+		leaf_mat.emission_energy_multiplier = 0.45
+		leaf_mat.roughness = 0.85
+		for j in 3:
+			var leaf: MeshInstance3D = MeshInstance3D.new()
+			var lm: SphereMesh = SphereMesh.new()
+			lm.radius = 0.30
+			lm.height = 0.55
+			leaf.mesh = lm
+			leaf.material_override = leaf_mat
+			leaf.position = Vector3(
+				randf_range(-0.30, 0.30),
+				1.85 + randf_range(0, 0.30),
+				randf_range(-0.30, 0.30)
+			)
+			leaf.scale = Vector3(1.0, 0.55, 1.0)
+			bonsai.add_child(leaf)
+		# Pedestal collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 0.85, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		bonsai.add_child(sb)
+
+
+func _build_d7_d7_gardener_npc() -> void:
+	## Epic-7 T33: D7 gardener NPC — green apron + holding small pruning shears.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7GardenerSlot"
+	slot.position = Vector3(D7_CENTER.x + 22.0, 0.0, 6.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Gardener"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tendril")
+	if "npc_id" in npc:
+		npc.set("npc_id", "gardener_d7")
+	slot.add_child(npc)
+	# Green apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	apron_mat.emission_enabled = true
+	apron_mat.emission = Color(0.20, 0.55, 0.20)
+	apron_mat.emission_energy_multiplier = 0.30
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Pruning shears (small crossed metal blades)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	for i in 2:
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.04, 0.20, 0.02)
+		blade.mesh = bm
+		blade.material_override = blade_mat
+		blade.position = Vector3(0.40, 0.85, 0.20)
+		blade.rotation_degrees = Vector3(0, 0, 25.0 if i == 0 else -25.0)
+		npc.add_child(blade)
+
+
+func _build_d7_cliff_stack(geom: Node) -> void:
+	## Epic-7 T34: tall cliff stack — 4 progressively narrower sandstone
+	## blocks stacked tall, suggesting a natural rock formation.
+	var stack: Node3D = Node3D.new()
+	stack.name = "CliffStack"
+	stack.position = Vector3(D7_CENTER.x + 28.0, 0.0, -16.0)
+	geom.add_child(stack)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(0.55, 0.35, 0.15)
+	rock_mat.emission_energy_multiplier = 0.18
+	rock_mat.roughness = 0.92
+	var sizes: Array = [
+		Vector3(2.85, 2.85, 2.85),
+		Vector3(2.20, 2.40, 2.20),
+		Vector3(1.65, 2.20, 1.65),
+		Vector3(1.10, 1.85, 1.10),
+	]
+	var ys: Array = [1.42, 4.0, 6.30, 8.30]
+	for i in 4:
+		var block: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = sizes[i]
+		block.mesh = bm
+		block.material_override = rock_mat
+		block.position = Vector3(randf_range(-0.20, 0.20), ys[i], randf_range(-0.20, 0.20))
+		block.rotation_degrees = Vector3(0, randf_range(-15, 15), 0)
+		stack.add_child(block)
+	# Stack collision (single capsule covering all)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 1.85
+	cap.height = 9.0
+	cs.shape = cap
+	sb.add_child(cs)
+	stack.add_child(sb)
+
+
+func _build_d7_stone_stairs(geom: Node) -> void:
+	## Epic-7 T35: long stone staircase climbing upward — 12 steps with
+	## stone railings on each side.
+	var stairs: Node3D = Node3D.new()
+	stairs.name = "StoneStairs"
+	stairs.position = Vector3(D7_CENTER.x - 24.0, 0.0, -16.0)
+	geom.add_child(stairs)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# 12 steps climbing up
+	for i in 12:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.85, 0.30, 0.55)
+		step.mesh = sm
+		step.material_override = stone_mat
+		step.position = Vector3(0, 0.15 + i * 0.30, i * 0.55)
+		stairs.add_child(step)
+		# Step collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.15 + i * 0.30, i * 0.55)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.85, 0.30, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		stairs.add_child(sb)
+	# 2 stone railings climbing the sides
+	for sx in [-1.55, 1.55]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.20, 0.65, 6.85)
+		rail.mesh = rm
+		rail.material_override = stone_mat
+		rail.position = Vector3(sx, 1.85, 3.20)
+		rail.rotation_degrees = Vector3(-30, 0, 0)
+		stairs.add_child(rail)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
