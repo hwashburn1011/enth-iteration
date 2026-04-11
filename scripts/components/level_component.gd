@@ -1,9 +1,25 @@
 class_name LevelComponent
 extends Node
 ## Tracks XP, levels, and unspent stat points.
+##
+## XP curve is quadratic so per-level grind grows with progression instead
+## of staying flat:
+##     xp_to_next(L) = XP_BASE * L * (L + 1) / 2
+##
+## At XP_BASE=100 that gives 100/300/600/1000/1500/.../4500 from level 1→10
+## (16500 total). MAX_LEVEL caps progression for the 9-iteration story arc.
+## On a multi-level XP drop we accumulate stat points but only emit
+## leveled_up once at the end so the player UI opens a single allocation
+## panel instead of one per level.
 
 signal leveled_up(new_level: int)
 signal xp_changed(current_xp: int, xp_to_next: int)
+
+const MAX_LEVEL: int = 30
+const XP_REWARD_GLITCH_BUG: int = 25
+const XP_REWARD_MEMORY_LEAK: int = 40
+const XP_REWARD_ROGUE_PROCESS: int = 60
+const XP_REWARD_DEFAULT: int = 20
 
 @export var xp_per_level_base: int = 100
 @export var stat_points_per_level: int = 3
@@ -15,33 +31,50 @@ var unspent_stat_points: int = 0
 
 
 func _ready() -> void:
-	xp_to_next_level = xp_per_level_base * current_level
+	xp_to_next_level = _xp_required_for_level(current_level)
 	EventBus.enemy_defeated.connect(_on_enemy_defeated)
 
 
+func _xp_required_for_level(level: int) -> int:
+	## XP required to advance from `level` to `level + 1`.
+	## Quadratic: base * level * (level + 1) / 2
+	@warning_ignore("integer_division")
+	return xp_per_level_base * level * (level + 1) / 2
+
+
 func add_xp(amount: int) -> void:
+	if current_level >= MAX_LEVEL:
+		# At cap — don't bank XP, don't re-emit.
+		current_xp = 0
+		xp_changed.emit(current_xp, 0)
+		return
 	current_xp += amount
-	while current_xp >= xp_to_next_level:
+	var levels_gained: int = 0
+	while current_level < MAX_LEVEL and current_xp >= xp_to_next_level:
 		current_xp -= xp_to_next_level
 		current_level += 1
-		xp_to_next_level = xp_per_level_base * current_level
+		levels_gained += 1
 		unspent_stat_points += stat_points_per_level
+		xp_to_next_level = _xp_required_for_level(current_level)
+	# At cap, drop any overflow XP so the bar shows 0/0 on the HUD.
+	if current_level >= MAX_LEVEL:
+		current_xp = 0
+	# Single emission per add_xp call — even on multi-level gains the UI
+	# only opens one stat allocation panel for the cumulative point pool.
+	if levels_gained > 0:
 		leveled_up.emit(current_level)
 	xp_changed.emit(current_xp, xp_to_next_level)
 
 
 func _on_enemy_defeated(enemy_type: StringName, pos: Vector3, _loot: Resource) -> void:
-	# XP rewards by enemy type
-	var xp: int = 10
+	var xp: int = XP_REWARD_DEFAULT
 	match String(enemy_type):
 		"glitch_bug":
-			xp = 10
+			xp = XP_REWARD_GLITCH_BUG
 		"memory_leak":
-			xp = 15
+			xp = XP_REWARD_MEMORY_LEAK
 		"rogue_process":
-			xp = 20
-		_:
-			xp = 10
+			xp = XP_REWARD_ROGUE_PROCESS
 	add_xp(xp)
 	# Spawn XP number at enemy position
 	if get_parent() and get_parent().is_inside_tree():
