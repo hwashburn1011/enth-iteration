@@ -72,6 +72,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_smelter_trap_pillars(geom)
 	_build_d9_molten_behemoth_midboss(geom)
 	_build_d9_sky_lava_lantern(geom)
+	_build_d9_forge_sentry_mech(geom)
 	print("[D9Builder] done")
 
 
@@ -4495,5 +4496,163 @@ func _build_d9_sky_lava_lantern(geom: Node) -> void:
 	var pulse: Tween = pivot.create_tween().set_loops()
 	pulse.tween_property(cmat, "emission_energy_multiplier", 9.0, 1.2).set_ease(Tween.EASE_IN_OUT)
 	pulse.tween_property(cmat, "emission_energy_multiplier", 5.5, 1.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_forge_sentry_mech(geom: Node) -> void:
+	## Epic-9 T52: a heavy iron guardian mech patrolling the path past
+	## the mid-boss arena. Squat humanoid silhouette with a glowing visor
+	## slit, two arms, two legs, a backpack vent, and a slow side-step
+	## patrol tween. Decorative — sets up the heavy combat units of D9.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeSentryMech"
+	pivot.position = D9_CENTER + Vector3(46, 0, -8)
+	geom.add_child(pivot)
+	# Body — chunky iron torso
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.30, 1.50, 0.95)
+	torso.mesh = tm
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.16, 0.13, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(1.0, 0.30, 0.05)
+	iron_mat.emission_energy_multiplier = 0.30
+	torso.material_override = iron_mat
+	torso.position = Vector3(0, 1.45, 0)
+	pivot.add_child(torso)
+	# Chest seam emissive line
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.10, 0.85, 0.04)
+	seam.mesh = sm
+	var seam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seam_mat.albedo_color = Color(1.0, 0.50, 0.10)
+	seam_mat.emission_enabled = true
+	seam_mat.emission = Color(1.0, 0.55, 0.10)
+	seam_mat.emission_energy_multiplier = 4.5
+	seam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	seam.material_override = seam_mat
+	seam.position = Vector3(0, 1.45, -0.50)
+	pivot.add_child(seam)
+	# Head block with visor slit
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.85, 0.60, 0.75)
+	head.mesh = hm
+	head.material_override = iron_mat
+	head.position = Vector3(0, 2.55, 0)
+	pivot.add_child(head)
+	# Visor slit (unshaded amber bar)
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.10, 0.05)
+	visor.mesh = vm
+	var vmat: StandardMaterial3D = StandardMaterial3D.new()
+	vmat.albedo_color = Color(1.0, 0.55, 0.10)
+	vmat.emission_enabled = true
+	vmat.emission = Color(1.0, 0.60, 0.15)
+	vmat.emission_energy_multiplier = 5.5
+	vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = vmat
+	visor.position = Vector3(0, 2.55, -0.40)
+	pivot.add_child(visor)
+	# Two shoulders + arms hanging at sides
+	for side in [-1.0, 1.0]:
+		var shoulder: MeshInstance3D = MeshInstance3D.new()
+		var shm: SphereMesh = SphereMesh.new()
+		shm.radius = 0.30
+		shm.height = 0.55
+		shoulder.mesh = shm
+		shoulder.material_override = iron_mat
+		shoulder.position = Vector3(side * 0.85, 1.95, 0)
+		pivot.add_child(shoulder)
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.32, 1.20, 0.32)
+		arm.mesh = am
+		arm.material_override = iron_mat
+		arm.position = Vector3(side * 0.85, 1.20, 0)
+		pivot.add_child(arm)
+		# Fist
+		var fist: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.40, 0.40, 0.40)
+		fist.mesh = fm
+		fist.material_override = iron_mat
+		fist.position = Vector3(side * 0.85, 0.50, 0.05)
+		pivot.add_child(fist)
+	# Two legs + foot plates
+	for side in [-0.32, 0.32]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.42, 0.95, 0.42)
+		leg.mesh = lm
+		leg.material_override = iron_mat
+		leg.position = Vector3(side, 0.70, 0)
+		pivot.add_child(leg)
+		var foot: MeshInstance3D = MeshInstance3D.new()
+		var fm2: BoxMesh = BoxMesh.new()
+		fm2.size = Vector3(0.55, 0.18, 0.75)
+		foot.mesh = fm2
+		foot.material_override = iron_mat
+		foot.position = Vector3(side, 0.10, 0.10)
+		pivot.add_child(foot)
+	# Backpack vent with subtle ember plume
+	var pack: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.95, 0.85, 0.30)
+	pack.mesh = pm
+	pack.material_override = iron_mat
+	pack.position = Vector3(0, 1.65, 0.55)
+	pivot.add_child(pack)
+	# Ember plume from the vent
+	var embers: GPUParticles3D = GPUParticles3D.new()
+	embers.amount = 30
+	embers.lifetime = 2.0
+	embers.position = Vector3(0, 2.20, 0.65)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0.20)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 0.55
+	pmat.initial_velocity_max = 1.20
+	pmat.gravity = Vector3(0, -0.30, 0)
+	pmat.scale_min = 0.06
+	pmat.scale_max = 0.14
+	pmat.color = Color(1.0, 0.55, 0.15, 0.95)
+	embers.process_material = pmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.14, 0.14)
+	embers.draw_pass_1 = qm
+	pivot.add_child(embers)
+	# Visor light at front of head
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.55, -0.45)
+	lt.light_color = Color(1.0, 0.50, 0.12)
+	lt.light_energy = 1.8
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
+	# Slow side-step patrol along Z axis
+	var origin_z: float = pivot.position.z
+	var patrol: Tween = pivot.create_tween().set_loops()
+	patrol.tween_property(pivot, "position:z", origin_z + 4.0, 4.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(pivot, "rotation:y", PI, 0.4)
+	patrol.tween_property(pivot, "position:z", origin_z, 4.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(pivot, "rotation:y", 0.0, 0.4)
+	# Visor pulse
+	var vpulse: Tween = pivot.create_tween().set_loops()
+	vpulse.tween_property(vmat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	vpulse.tween_property(vmat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Capsule collision so the player can't walk through
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var caps: CapsuleShape3D = CapsuleShape3D.new()
+	caps.height = 2.40
+	caps.radius = 0.75
+	cs.shape = caps
+	stb.add_child(cs)
+	pivot.add_child(stb)
 
 
