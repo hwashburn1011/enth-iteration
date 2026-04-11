@@ -25457,6 +25457,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_waterfall(geom)
 	# Epic-7 T20: scroll library shelves
 	_build_d7_scroll_shelves(geom)
+	# Epic-7 T21: stupa shrine
+	_build_d7_stupa_shrine(geom)
+	# Epic-7 T22: pilgrim NPC
+	_build_d7_pilgrim_npc()
+	# Epic-7 T23: mountain goat creatures
+	_build_d7_mountain_goats(geom)
+	# Epic-7 T24: lotus pond
+	_build_d7_lotus_pond(geom)
+	# Epic-7 T25: stone lantern row
+	_build_d7_stone_lanterns(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -26808,6 +26818,404 @@ func _build_d7_scroll_shelves(geom: Node) -> void:
 		cs.shape = cb
 		sb.add_child(cs)
 		shelf.add_child(sb)
+
+
+func _build_d7_stupa_shrine(geom: Node) -> void:
+	## Epic-7 T21: stupa shrine — square pedestal + dome + tall spire stack.
+	var stupa: Node3D = Node3D.new()
+	stupa.name = "StupaShrine"
+	stupa.position = Vector3(D7_CENTER.x + 6.0, 0.0, 4.0)
+	geom.add_child(stupa)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.85, 0.78, 0.65)
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.75, 0.55)
+	stone_mat.emission_energy_multiplier = 0.18
+	stone_mat.roughness = 0.85
+	# Square pedestal (3 tiers)
+	var ped_sizes: Array = [
+		Vector3(2.85, 0.30, 2.85),
+		Vector3(2.20, 0.30, 2.20),
+		Vector3(1.65, 0.30, 1.65),
+	]
+	for i in 3:
+		var tier: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = ped_sizes[i]
+		tier.mesh = tm
+		tier.material_override = stone_mat
+		tier.position = Vector3(0, 0.15 + i * 0.30, 0)
+		stupa.add_child(tier)
+	# Hemispheric dome
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 1.40
+	dm.height = 1.40
+	dome.mesh = dm
+	dome.material_override = stone_mat
+	dome.position = Vector3(0, 1.40, 0)
+	dome.scale = Vector3(1.0, 0.85, 1.0)
+	stupa.add_child(dome)
+	# Spire stack — 5 small flat discs decreasing in size
+	for i in 5:
+		var disc: MeshInstance3D = MeshInstance3D.new()
+		var dcm: CylinderMesh = CylinderMesh.new()
+		dcm.top_radius = 0.30 - i * 0.04
+		dcm.bottom_radius = 0.30 - i * 0.04
+		dcm.height = 0.12
+		disc.mesh = dcm
+		disc.material_override = stone_mat
+		disc.position = Vector3(0, 2.30 + i * 0.18, 0)
+		stupa.add_child(disc)
+	# Top crystal finial
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fm: PrismMesh = PrismMesh.new()
+	fm.size = Vector3(0.30, 0.85, 0.30)
+	finial.mesh = fm
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(1.0, 0.85, 0.30)
+	crystal_mat.emission_energy_multiplier = 3.0
+	crystal_mat.metallic = 0.85
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	finial.material_override = crystal_mat
+	finial.position = Vector3(0, 3.55, 0)
+	stupa.add_child(finial)
+	# Pulse the finial
+	var tw: Tween = finial.create_tween().set_loops()
+	tw.tween_property(finial, "scale", Vector3.ONE * 1.20, 1.4)
+	tw.tween_property(finial, "scale", Vector3.ONE * 0.85, 1.4)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.85, 0)
+	stupa.add_child(light)
+	# Stupa collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 1.40
+	cap.height = 3.40
+	cs.shape = cap
+	sb.add_child(cs)
+	stupa.add_child(sb)
+
+
+func _build_d7_pilgrim_npc() -> void:
+	## Epic-7 T22: pilgrim NPC — travel cloak + walking staff + carrying
+	## a small backpack.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "PilgrimSlot"
+	slot.position = Vector3(D7_CENTER.x + 4.0, 0.0, 4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Pilgrim"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Wayfarer")
+	if "npc_id" in npc:
+		npc.set("npc_id", "pilgrim_d7")
+	slot.add_child(npc)
+	# Brown travel cloak
+	var cloak: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	cloak.mesh = cm
+	var cloak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloak_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	cloak_mat.roughness = 0.85
+	cloak.material_override = cloak_mat
+	cloak.position = Vector3(0, 0.60, 0)
+	npc.add_child(cloak)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.22
+	hm.height = 0.40
+	hood.mesh = hm
+	hood.material_override = cloak_mat
+	hood.position = Vector3(0, 1.45, 0)
+	npc.add_child(hood)
+	# Backpack
+	var pack: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.45, 0.65, 0.30)
+	pack.mesh = pm
+	var pack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pack_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	pack.material_override = pack_mat
+	pack.position = Vector3(0, 0.85, -0.30)
+	npc.add_child(pack)
+	# Walking staff
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.04
+	stm.bottom_radius = 0.05
+	stm.height = 1.85
+	staff.mesh = stm
+	staff.material_override = wood_mat
+	staff.position = Vector3(0.45, 0.92, 0)
+	npc.add_child(staff)
+
+
+func _build_d7_mountain_goats(geom: Node) -> void:
+	## Epic-7 T23: 4 mountain goats — small white woolly bodies + curved
+	## horns + slow patrol.
+	var herd: Node3D = Node3D.new()
+	herd.name = "MountainGoats"
+	herd.position = Vector3(D7_CENTER.x + 16.0, 0.0, 8.0)
+	geom.add_child(herd)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.92, 0.92, 0.85)
+	fur_mat.roughness = 0.85
+	var horn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	horn_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	horn_mat.roughness = 0.65
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 1.85, 0,  0.85),
+		Vector3(-1.40, 0,  0.55),
+		Vector3( 0.85, 0, -1.40),
+	]
+	for p in positions:
+		var goat: Node3D = Node3D.new()
+		goat.position = p
+		herd.add_child(goat)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.32
+		bm.height = 0.55
+		body.mesh = bm
+		body.material_override = fur_mat
+		body.position = Vector3(0, 0.55, 0)
+		body.scale = Vector3(0.85, 0.85, 1.40)
+		goat.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		head.material_override = fur_mat
+		head.position = Vector3(0, 0.65, 0.42)
+		goat.add_child(head)
+		# Snout
+		var snout: MeshInstance3D = MeshInstance3D.new()
+		var sn: BoxMesh = BoxMesh.new()
+		sn.size = Vector3(0.12, 0.08, 0.18)
+		snout.mesh = sn
+		snout.material_override = fur_mat
+		snout.position = Vector3(0, 0.55, 0.55)
+		goat.add_child(snout)
+		# 2 curved horns
+		for sx in [-0.10, 0.10]:
+			var horn: MeshInstance3D = MeshInstance3D.new()
+			var hrm: PrismMesh = PrismMesh.new()
+			hrm.size = Vector3(0.08, 0.30, 0.08)
+			horn.mesh = hrm
+			horn.material_override = horn_mat
+			horn.position = Vector3(sx, 0.85, 0.30)
+			horn.rotation_degrees = Vector3(-25, 0, sx * 60.0)
+			goat.add_child(horn)
+		# 4 legs
+		for lx in [-0.18, 0.18]:
+			for lz in [-0.30, 0.30]:
+				var leg: MeshInstance3D = MeshInstance3D.new()
+				var lm: CylinderMesh = CylinderMesh.new()
+				lm.top_radius = 0.05
+				lm.bottom_radius = 0.05
+				lm.height = 0.45
+				leg.mesh = lm
+				leg.material_override = horn_mat
+				leg.position = Vector3(lx, 0.22, lz)
+				goat.add_child(leg)
+		# Slow patrol
+		var tw: Tween = goat.create_tween().set_loops()
+		var p2: Vector3 = p
+		tw.tween_property(goat, "position", p2 + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5)), 4.0)
+		tw.tween_property(goat, "rotation_degrees:y", 180.0, 0.4)
+		tw.tween_property(goat, "position", p2, 4.0)
+		tw.tween_property(goat, "rotation_degrees:y", 0.0, 0.4)
+		# Body collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.55, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 0.85, 1.20)
+		cs.shape = cb
+		sb.add_child(cs)
+		goat.add_child(sb)
+
+
+func _build_d7_lotus_pond(geom: Node) -> void:
+	## Epic-7 T24: round lotus pond — stone rim + cyan water + 5 lotus
+	## flowers floating on the surface.
+	var pond: Node3D = Node3D.new()
+	pond.name = "LotusPond"
+	pond.position = Vector3(D7_CENTER.x + 14.0, 0.0, 0.0)
+	geom.add_child(pond)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Stone rim (torus)
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 1.85
+	rm.outer_radius = 2.20
+	rim.mesh = rm
+	rim.material_override = stone_mat
+	rim.position = Vector3(0, 0.18, 0)
+	pond.add_child(rim)
+	# Water disc
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.95
+	wm.bottom_radius = 1.95
+	wm.height = 0.06
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.65)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.95, 1.0)
+	water_mat.emission_energy_multiplier = 0.85
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.05
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.18, 0)
+	pond.add_child(water)
+	# 5 lotus flowers (white pads + pink centers)
+	var pad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pad_mat.albedo_color = Color(0.30, 0.55, 0.20)
+	pad_mat.emission_enabled = true
+	pad_mat.emission = Color(0.20, 0.45, 0.15)
+	pad_mat.emission_energy_multiplier = 0.45
+	pad_mat.roughness = 0.85
+	var flower_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flower_mat.albedo_color = Color(0.95, 0.65, 0.85)
+	flower_mat.emission_enabled = true
+	flower_mat.emission = Color(0.95, 0.55, 0.85)
+	flower_mat.emission_energy_multiplier = 0.85
+	for i in 5:
+		var ang: float = (TAU / 5.0) * i
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.30
+		pmm.bottom_radius = 0.30
+		pmm.height = 0.04
+		pad.mesh = pmm
+		pad.material_override = pad_mat
+		pad.position = Vector3(cos(ang) * 1.10, 0.22, sin(ang) * 1.10)
+		pond.add_child(pad)
+		# Flower (small sphere on the pad)
+		var flower: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.12
+		fm.height = 0.20
+		flower.mesh = fm
+		flower.material_override = flower_mat
+		flower.position = Vector3(cos(ang) * 1.10, 0.34, sin(ang) * 1.10)
+		pond.add_child(flower)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 5.0
+	light.position = Vector3(0, 0.85, 0)
+	pond.add_child(light)
+	# Rim collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.18, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.20
+	cap.height = 0.40
+	cs.shape = cap
+	sb.add_child(cs)
+	pond.add_child(sb)
+
+
+func _build_d7_stone_lanterns(geom: Node) -> void:
+	## Epic-7 T25: 6 traditional stone lanterns in a row — 3-section
+	## stack (base + body + roof) with warm internal glow.
+	var row: Node3D = Node3D.new()
+	row.name = "StoneLanterns"
+	row.position = Vector3(D7_CENTER.x - 14.0, 0.0, -2.0)
+	geom.add_child(row)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	for i in 6:
+		var lantern: Node3D = Node3D.new()
+		lantern.position = Vector3(i * 1.85, 0, 0)
+		row.add_child(lantern)
+		# Base
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.55, 0.55)
+		base.mesh = bm
+		base.material_override = stone_mat
+		base.position = Vector3(0, 0.27, 0)
+		lantern.add_child(base)
+		# Body (smaller box)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(0.40, 0.40, 0.40)
+		body.mesh = bdm
+		body.material_override = stone_mat
+		body.position = Vector3(0, 0.75, 0)
+		lantern.add_child(body)
+		# Inside glow box
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(0.30, 0.30, 0.30)
+		glow.mesh = gm
+		var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+		glow_mat.albedo_color = Color(1.0, 0.85, 0.30)
+		glow_mat.emission_enabled = true
+		glow_mat.emission = Color(1.0, 0.75, 0.20)
+		glow_mat.emission_energy_multiplier = 3.0
+		glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow.material_override = glow_mat
+		glow.position = Vector3(0, 0.75, 0)
+		lantern.add_child(glow)
+		# Roof (sloped prism)
+		var roof: MeshInstance3D = MeshInstance3D.new()
+		var rmm: PrismMesh = PrismMesh.new()
+		rmm.size = Vector3(0.65, 0.30, 0.65)
+		roof.mesh = rmm
+		roof.material_override = stone_mat
+		roof.position = Vector3(0, 1.10, 0)
+		lantern.add_child(roof)
+		# Warm light per lantern
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.75, 0.30)
+		light.light_energy = 1.2
+		light.omni_range = 3.0
+		light.position = Vector3(0, 0.75, 0)
+		lantern.add_child(light)
+		# Lantern collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.55, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 1.40, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		lantern.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
