@@ -35,6 +35,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_vendor_npc(town)
 	_build_th_combat_trainer_npc(town)
 	_build_th_cartographer_npc(town)
+	_build_th_shrine_keeper_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -3162,3 +3163,176 @@ func _build_th_cartographer_npc(town: Node) -> void:
 	var lpulse: Tween = npc.create_tween().set_loops()
 	lpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_shrine_keeper_npc(town: Node) -> void:
+	## Epic-10 T19: Shrine Keeper Lumen — serene priest NPC at the save
+	## shrine on the N radial path. Long white robe with cyan trim, brass
+	## halo ring above the head, glowing data orb cupped in both hands at
+	## chest height with a slow forward bowing prayer tween.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THShrineKeeperLumenSlot"
+	# Stand beside the save shrine on the N radial path
+	slot.position = TOWN_CENTER + Vector3(2.20, 0, -6.5)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THShrineKeeperLumen"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Shrine Keeper Lumen")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_shrine_keeper_lumen")
+	# Face the shrine altar (-X direction toward the altar)
+	npc.rotation.y = -PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.85, 0.88, 0.92)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.10
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.65, 0.85, 1.0)
+	robe_mat.emission_energy_multiplier = 0.30
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	trim_mat.roughness = 0.65
+	trim_mat.metallic = 0.40
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.45, 0.85, 1.0)
+	trim_mat.emission_energy_multiplier = 1.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	orb_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	orb_mat.emission_enabled = true
+	orb_mat.emission = Color(0.45, 0.85, 1.0)
+	orb_mat.emission_energy_multiplier = 9.0
+	orb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Long white robe ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.85, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.95, 0)
+	npc.add_child(robe)
+	# Cyan vertical chest stripe (the data trim)
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var seamesh: BoxMesh = BoxMesh.new()
+	seamesh.size = Vector3(0.18, 1.75, 0.06)
+	seam.mesh = seamesh
+	seam.material_override = trim_mat
+	seam.position = Vector3(0, 0.95, -0.30)
+	npc.add_child(seam)
+	# Cyan horizontal trim band at the waist
+	var waist: MeshInstance3D = MeshInstance3D.new()
+	var wmm: BoxMesh = BoxMesh.new()
+	wmm.size = Vector3(0.95, 0.10, 0.55)
+	waist.mesh = wmm
+	waist.material_override = trim_mat
+	waist.position = Vector3(0, 0.85, 0)
+	npc.add_child(waist)
+	# Robe collar (white box)
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.12, 0.55)
+	collar.mesh = colm
+	collar.material_override = robe_mat
+	collar.position = Vector3(0, 1.85, 0)
+	npc.add_child(collar)
+	# ---- Brass halo ring above the head ----
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hmm: TorusMesh = TorusMesh.new()
+	hmm.inner_radius = 0.32
+	hmm.outer_radius = 0.40
+	halo.mesh = hmm
+	halo.material_override = brass_mat
+	halo.position = Vector3(0, 2.40, 0)
+	pivot_set_axis_x(halo)
+	npc.add_child(halo)
+	# Halo glowing inner ring (cyan torus inside the brass halo)
+	var inner_halo: MeshInstance3D = MeshInstance3D.new()
+	var ihm: TorusMesh = TorusMesh.new()
+	ihm.inner_radius = 0.30
+	ihm.outer_radius = 0.34
+	inner_halo.mesh = ihm
+	inner_halo.material_override = orb_mat
+	inner_halo.position = Vector3(0, 2.40, 0)
+	pivot_set_axis_x(inner_halo)
+	npc.add_child(inner_halo)
+	# ---- Cupped hands holding the data orb at chest height ----
+	# Left hand (cupping from left)
+	var left_hand: MeshInstance3D = MeshInstance3D.new()
+	var lhm: BoxMesh = BoxMesh.new()
+	lhm.size = Vector3(0.18, 0.12, 0.20)
+	left_hand.mesh = lhm
+	left_hand.material_override = robe_mat
+	left_hand.position = Vector3(-0.20, 1.30, -0.40)
+	left_hand.rotation.z = 0.30
+	npc.add_child(left_hand)
+	# Right hand (cupping from right)
+	var right_hand: MeshInstance3D = MeshInstance3D.new()
+	right_hand.mesh = lhm
+	right_hand.material_override = robe_mat
+	right_hand.position = Vector3(0.20, 1.30, -0.40)
+	right_hand.rotation.z = -0.30
+	npc.add_child(right_hand)
+	# Glowing data orb cradled between the hands
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var orm: SphereMesh = SphereMesh.new()
+	orm.radius = 0.18
+	orm.height = 0.36
+	orb.mesh = orm
+	orb.material_override = orb_mat
+	orb.position = Vector3(0, 1.45, -0.45)
+	npc.add_child(orb)
+	# Data motes drifting up from the orb
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 1.55, -0.45)
+	motes.amount = 14
+	motes.lifetime = 1.8
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 0.4
+	pmat.initial_velocity_max = 0.8
+	pmat.gravity = Vector3(0, 0.10, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.08
+	pmat.color = Color(0.45, 0.85, 1.0, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	npc.add_child(motes)
+	# ---- Strong cyan OmniLight from the orb ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, -0.50)
+	lt.light_color = Color(0.45, 0.85, 1.0)
+	lt.light_energy = 2.6
+	lt.omni_range = 6.5
+	npc.add_child(lt)
+	# ---- Slow forward bowing prayer tween ----
+	var bow: Tween = npc.create_tween().set_loops()
+	bow.tween_property(npc, "rotation:x", 0.18, 2.2).set_ease(Tween.EASE_IN_OUT)
+	bow.tween_property(npc, "rotation:x", 0.02, 2.2).set_ease(Tween.EASE_IN_OUT)
+	# Orb pulse
+	var opulse: Tween = npc.create_tween().set_loops()
+	opulse.tween_property(orb_mat, "emission_energy_multiplier", 11.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	opulse.tween_property(orb_mat, "emission_energy_multiplier", 6.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func pivot_set_axis_x(n: Node3D) -> void:
+	## Helper: rotate a torus 90 degrees around X so it lies flat (horizontal halo).
+	n.rotation.x = PI / 2.0
