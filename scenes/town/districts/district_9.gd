@@ -94,6 +94,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_molten_geyser(geom)
 	_build_d9_lava_bomb_scatter(geom)
 	_build_d9_geyser_observation_deck(geom)
+	_build_d9_vulcanologist_cinder_npc(town)
 	print("[D9Builder] done")
 
 
@@ -7781,4 +7782,153 @@ func _build_d9_geyser_observation_deck(geom: Node) -> void:
 	var dpulse: Tween = pivot.create_tween().set_loops()
 	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_vulcanologist_cinder_npc(town: Node) -> void:
+	## Epic-9 T74: Vulcanologist Cinder — observer NPC stationed at the
+	## geyser observation deck tripod. Long heat-resistant coat, leather
+	## gloves, brass goggles with glowing amber lenses, clipboard tucked
+	## under arm, and a slow note-taking head bob.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9VulcanologistCinderSlot"
+	# Stand on the deck, just behind the tripod, facing the geyser (-Z forward)
+	slot.position = Vector3(D9_CENTER.x + 60, 0.55, -1.8)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9VulcanologistCinder"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Vulcanologist Cinder")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_vulcanologist_cinder")
+	# Face the geyser (-Z direction)
+	npc.rotation.y = PI
+	slot.add_child(npc)
+	# Long heat-resistant coat — narrow tall box
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.32, 0.18, 0.10)
+	coat_mat.roughness = 0.85
+	coat_mat.metallic = 0.18
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.65, 0.20, 0.05)
+	coat_mat.emission_energy_multiplier = 0.20
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(0.95, 1.65, 0.55)
+	coat.mesh = cmesh
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.85, 0)
+	npc.add_child(coat)
+	# Brass collar trim
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.65, 0)
+	npc.add_child(collar)
+	# Coat front buttons (3 brass studs down the chest)
+	for by in [1.45, 1.20, 0.95]:
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.05
+		bm.height = 0.10
+		btn.mesh = bm
+		btn.material_override = brass_mat
+		btn.position = Vector3(0, by, -0.30)
+		npc.add_child(btn)
+	# Leather gloves — 2 small dark boxes at the wrists
+	var glove_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glove_mat.albedo_color = Color(0.18, 0.10, 0.06)
+	glove_mat.roughness = 0.85
+	glove_mat.metallic = 0.10
+	for gx in [-0.55, 0.55]:
+		var glove: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(0.18, 0.18, 0.16)
+		glove.mesh = gm
+		glove.material_override = glove_mat
+		glove.position = Vector3(gx, 1.05, -0.10)
+		npc.add_child(glove)
+	# Goggles head pivot — small Node3D for the head + goggles
+	var head_pivot: Node3D = Node3D.new()
+	head_pivot.position = Vector3(0, 1.95, 0)
+	npc.add_child(head_pivot)
+	# Goggles strap (brass band around the head)
+	var strap: MeshInstance3D = MeshInstance3D.new()
+	var stm: TorusMesh = TorusMesh.new()
+	stm.inner_radius = 0.30
+	stm.outer_radius = 0.36
+	strap.mesh = stm
+	strap.material_override = brass_mat
+	strap.position = Vector3(0, 0.05, 0)
+	strap.rotation.x = PI / 2.0
+	head_pivot.add_child(strap)
+	# Goggles lenses — two unshaded amber discs
+	var lens_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lens_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	lens_mat.emission_enabled = true
+	lens_mat.emission = Color(1.0, 0.55, 0.10)
+	lens_mat.emission_energy_multiplier = 6.0
+	lens_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for lx in [-0.13, 0.13]:
+		var lens: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.09
+		lm.bottom_radius = 0.09
+		lm.height = 0.04
+		lens.mesh = lm
+		lens.material_override = lens_mat
+		lens.position = Vector3(lx, 0.0, -0.30)
+		lens.rotation.x = PI / 2.0
+		head_pivot.add_child(lens)
+	# Clipboard tucked under his right arm — flat dark box + glowing amber stripe
+	var board_mat: StandardMaterial3D = StandardMaterial3D.new()
+	board_mat.albedo_color = Color(0.20, 0.14, 0.10)
+	board_mat.roughness = 0.85
+	board_mat.metallic = 0.20
+	var clipboard: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.50, 0.65, 0.05)
+	clipboard.mesh = clm
+	clipboard.material_override = board_mat
+	clipboard.position = Vector3(0.55, 1.10, 0.20)
+	clipboard.rotation.z = -0.20
+	npc.add_child(clipboard)
+	# Clipboard glowing notes stripe
+	var notes: MeshInstance3D = MeshInstance3D.new()
+	var nm: BoxMesh = BoxMesh.new()
+	nm.size = Vector3(0.40, 0.05, 0.04)
+	notes.mesh = nm
+	notes.material_override = lens_mat
+	notes.position = Vector3(0.55, 1.20, 0.22)
+	notes.rotation.z = -0.20
+	npc.add_child(notes)
+	# Subtle warm OmniLight aura
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.90, -0.20)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.4
+	lt.omni_range = 4.0
+	npc.add_child(lt)
+	# Note-taking head bob — slow up-down nod
+	var nod: Tween = npc.create_tween().set_loops()
+	nod.tween_property(head_pivot, "rotation:x", 0.18, 1.6).set_ease(Tween.EASE_IN_OUT)
+	nod.tween_property(head_pivot, "rotation:x", -0.05, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Lens + notes pulse
+	var lpulse: Tween = npc.create_tween().set_loops()
+	lpulse.tween_property(lens_mat, "emission_energy_multiplier", 8.0, 1.3).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(lens_mat, "emission_energy_multiplier", 5.0, 1.3).set_ease(Tween.EASE_IN_OUT)
 
