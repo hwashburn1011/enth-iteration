@@ -1373,6 +1373,16 @@ func _build_east_plaza() -> void:
 	_build_fountain_mist(geom)
 	# Epic-1 T75: tournament champion banner stretched across the pit
 	_build_champion_banner(geom)
+	# Epic-1 T76: locked east gate hinting at next district (Epic 2 hook)
+	_build_east_gate(geom)
+	# Epic-1 T77: distant skyline silhouette beyond east boundary
+	_build_skyline_silhouette(geom)
+	# Epic-1 T78: twinkling horizon city lights
+	_build_horizon_lights(geom)
+	# Epic-1 T79: border guard NPC at the east gate ("CLOSED" notice)
+	_build_border_guard_npc()
+	# Epic-1 T80: path teaser extending east toward the next district
+	_build_eastbound_path(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -5822,5 +5832,346 @@ func _build_champion_banner(geom: Node) -> void:
 	line2.font_size = 36
 	line2.no_depth_test = true
 	banner_root.add_child(line2)
+
+
+func _build_east_gate(geom: Node) -> void:
+	## Epic-1 T76: locked east gate marking the future Epic 2 district
+	## entrance. Pushes the east boundary out from x=44 to x=70 to make room
+	## for the eastbound corridor + skyline. The gate itself is a tall arch
+	## with a "DISTRICT 2 / SECTOR LOCKED" hologram blocking passage.
+	# Push the boundary wall further east
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 70.0
+	# Build the gate at x=48 (just beyond the plaza)
+	var gate: Node3D = Node3D.new()
+	gate.name = "EastPlazaEastGate"
+	gate.position = Vector3(48, 0, 0)
+	geom.add_child(gate)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.14, 0.18, 0.22)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	# 2 huge corner pillars
+	for sx: float in [-3.5, 3.5]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(1.4, 7.0, 1.4)
+		pillar.mesh = pmesh
+		pillar.position = Vector3(sx, 3.5, 0)
+		pillar.material_override = stone_mat
+		gate.add_child(pillar)
+		# Cyan accent stripes
+		var accent: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(0.05, 5.5, 1.5)
+		accent.mesh = amesh
+		accent.position = Vector3(sx + (-0.71 if sx < 0 else 0.71), 3.5, 0)
+		var amat: StandardMaterial3D = StandardMaterial3D.new()
+		amat.albedo_color = Color(0.30, 0.85, 1.0)
+		amat.emission_enabled = true
+		amat.emission = Color(0.55, 0.95, 1.0)
+		amat.emission_energy_multiplier = 1.6
+		amat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		accent.material_override = amat
+		gate.add_child(accent)
+		# Collision on pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.4, 7.0, 1.4)
+		cs.shape = cb
+		cs.position = Vector3(sx, 3.5, 0)
+		sb.add_child(cs)
+		gate.add_child(sb)
+	# Crossbar lintel on top
+	var lintel: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: BoxMesh = BoxMesh.new()
+	lmesh.size = Vector3(8.5, 1.20, 1.40)
+	lintel.mesh = lmesh
+	lintel.position = Vector3(0, 7.60, 0)
+	lintel.material_override = stone_mat
+	gate.add_child(lintel)
+	# Forcefield in the gate opening — pulsing translucent cyan field
+	var field: MeshInstance3D = MeshInstance3D.new()
+	field.name = "GateForceField"
+	var fmesh: BoxMesh = BoxMesh.new()
+	fmesh.size = Vector3(5.6, 6.2, 0.10)
+	field.mesh = fmesh
+	field.position = Vector3(0, 3.20, 0)
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(1.0, 0.30, 0.30, 0.40)
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.emission_enabled = true
+	fmat.emission = Color(1.0, 0.40, 0.40)
+	fmat.emission_energy_multiplier = 1.4
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	field.material_override = fmat
+	gate.add_child(field)
+	# Forcefield collision (blocks player)
+	var fsb: StaticBody3D = StaticBody3D.new()
+	var fcs: CollisionShape3D = CollisionShape3D.new()
+	var fcb: BoxShape3D = BoxShape3D.new()
+	fcb.size = Vector3(5.6, 6.2, 0.5)
+	fcs.shape = fcb
+	fcs.position = Vector3(0, 3.20, 0)
+	fsb.add_child(fcs)
+	gate.add_child(fsb)
+	# Pulse the forcefield
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(fmat, "albedo_color", Color(1.0, 0.30, 0.30, 0.55), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(fmat, "albedo_color", Color(1.0, 0.30, 0.30, 0.25), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Big "LOCKED" sign on lintel
+	var label: Label3D = Label3D.new()
+	label.text = "DISTRICT 2\nSECTOR LOCKED"
+	label.position = Vector3(0, 7.60, 0.71)
+	label.modulate = Color(1.0, 0.40, 0.40)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 26
+	label.no_depth_test = true
+	gate.add_child(label)
+
+
+func _build_skyline_silhouette(geom: Node) -> void:
+	## Epic-1 T77: distant skyline silhouette visible beyond the east gate.
+	## A row of 12 dark towers with cyan tops at varying heights, placed far
+	## east (x=58 to x=68) so the player sees the future district from afar.
+	var skyline_root: Node3D = Node3D.new()
+	skyline_root.name = "EastPlazaSkylineSilhouette"
+	skyline_root.position = Vector3(63, 0, 0)
+	geom.add_child(skyline_root)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.04, 0.06, 0.10)
+	dark_mat.metallic = 0.20
+	dark_mat.roughness = 0.85
+	var top_mat: StandardMaterial3D = StandardMaterial3D.new()
+	top_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	top_mat.emission_enabled = true
+	top_mat.emission = Color(0.55, 0.95, 1.0)
+	top_mat.emission_energy_multiplier = 2.4
+	top_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Tower height pattern (varied)
+	var heights: Array[float] = [8.0, 12.0, 6.0, 14.0, 9.0, 11.0, 7.0, 15.0, 10.0, 13.0, 8.5, 12.5]
+	for i in heights.size():
+		var h: float = heights[i]
+		var tower: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(1.6, h, 1.6)
+		tower.mesh = tmesh
+		# Spread along z
+		var z: float = -16 + (float(i) / heights.size()) * 32
+		tower.position = Vector3(0, h * 0.5, z)
+		tower.material_override = dark_mat
+		skyline_root.add_child(tower)
+		# Glowing top cap
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var top_mesh: BoxMesh = BoxMesh.new()
+		top_mesh.size = Vector3(1.6, 0.20, 1.6)
+		top.mesh = top_mesh
+		top.position = Vector3(0, h + 0.10, z)
+		top.material_override = top_mat
+		skyline_root.add_child(top)
+		# Antenna spike
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var smesh: CylinderMesh = CylinderMesh.new()
+		smesh.top_radius = 0.04
+		smesh.bottom_radius = 0.10
+		smesh.height = 1.5
+		spike.mesh = smesh
+		spike.position = Vector3(0, h + 0.95, z)
+		spike.material_override = dark_mat
+		skyline_root.add_child(spike)
+		# Blinking spike tip
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tip_mesh: SphereMesh = SphereMesh.new()
+		tip_mesh.radius = 0.10
+		tip_mesh.height = 0.20
+		tip.mesh = tip_mesh
+		tip.position = Vector3(0, h + 1.75, z)
+		var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+		tip_mat.albedo_color = Color(1.0, 0.30, 0.30)
+		tip_mat.emission_enabled = true
+		tip_mat.emission = Color(1.0, 0.40, 0.40)
+		tip_mat.emission_energy_multiplier = 2.5
+		tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		tip.material_override = tip_mat
+		skyline_root.add_child(tip)
+		# Blink the tip
+		var blink: Tween = create_tween().set_loops()
+		var blink_speed: float = 0.6 + (i % 4) * 0.2
+		blink.tween_property(tip, "scale", Vector3(0.3, 0.3, 0.3), blink_speed).set_ease(Tween.EASE_IN_OUT)
+		blink.tween_property(tip, "scale", Vector3(1.4, 1.4, 1.4), blink_speed).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_horizon_lights(geom: Node) -> void:
+	## Epic-1 T78: 30 small twinkling cyan/violet pinpoint lights scattered
+	## across the distant skyline area to suggest a populated district.
+	var lights_root: Node3D = Node3D.new()
+	lights_root.name = "EastPlazaHorizonLights"
+	lights_root.position = Vector3(63, 0, 0)
+	geom.add_child(lights_root)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 42
+	var palette: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(0.85, 0.40, 1.0),
+		Color(0.95, 0.65, 0.20),
+	]
+	for i in 30:
+		var light: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: SphereMesh = SphereMesh.new()
+		lmesh.radius = 0.10
+		lmesh.height = 0.20
+		light.mesh = lmesh
+		light.position = Vector3(
+			rng.randf_range(-1.5, 1.5),
+			rng.randf_range(2.0, 14.0),
+			rng.randf_range(-18.0, 18.0)
+		)
+		var color: Color = palette[i % palette.size()]
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = color
+		lmat.emission_enabled = true
+		lmat.emission = color
+		lmat.emission_energy_multiplier = 2.6
+		lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		light.material_override = lmat
+		lights_root.add_child(light)
+		# Twinkle
+		var twinkle: Tween = create_tween().set_loops()
+		var twk_speed: float = rng.randf_range(0.8, 1.6)
+		twinkle.tween_property(light, "scale", Vector3(0.4, 0.4, 0.4), twk_speed).set_ease(Tween.EASE_IN_OUT)
+		twinkle.tween_property(light, "scale", Vector3(1.2, 1.2, 1.2), twk_speed).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_border_guard_npc() -> void:
+	## Epic-1 T79: border guard procedural NPC stationed in front of the
+	## east gate. Cyan body, "BORDER GUARD" name, faces the gate with eyes
+	## pointed eastward. Pure decoration — no interaction wired yet.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var guard: Node3D = Node3D.new()
+	guard.name = "BorderGuard"
+	guard.position = Vector3(46, 0, 0)
+	slots.add_child(guard)
+	# Body capsule — military gray-blue
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.20
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.30, 0.40)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.30, 0.55, 0.85)
+	bmat.emission_energy_multiplier = 0.45
+	bmat.metallic = 0.55
+	bmat.roughness = 0.45
+	body.material_override = bmat
+	guard.add_child(body)
+	# Helmet — flat dark cylinder on top
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: CylinderMesh = CylinderMesh.new()
+	hmesh.top_radius = 0.45
+	hmesh.bottom_radius = 0.45
+	hmesh.height = 0.18
+	helmet.mesh = hmesh
+	helmet.position = Vector3(0, 1.40, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.10, 0.13, 0.16)
+	hmat.metallic = 0.85
+	hmat.roughness = 0.30
+	helmet.material_override = hmat
+	guard.add_child(helmet)
+	# 2 cyan visor eyes facing east (+x direction)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ez: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emesh: SphereMesh = SphereMesh.new()
+		emesh.radius = 0.06
+		emesh.height = 0.12
+		eye.mesh = emesh
+		eye.position = Vector3(0.36, 1.18, ez)
+		eye.material_override = eye_mat
+		guard.add_child(eye)
+	# Spear/staff weapon
+	var spear: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.04
+	smesh.bottom_radius = 0.04
+	smesh.height = 2.4
+	spear.mesh = smesh
+	spear.position = Vector3(0.45, 1.20, 0)
+	var spear_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spear_mat.albedo_color = Color(0.85, 0.85, 0.95)
+	spear_mat.metallic = 0.85
+	spear_mat.roughness = 0.20
+	spear.material_override = spear_mat
+	guard.add_child(spear)
+	# Spear tip glowing cyan
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tip_mesh: PrismMesh = PrismMesh.new()
+	tip_mesh.size = Vector3(0.18, 0.40, 0.18)
+	tip.mesh = tip_mesh
+	tip.position = Vector3(0.45, 2.40, 0)
+	var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tip_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	tip_mat.emission_enabled = true
+	tip_mat.emission = Color(0.55, 0.95, 1.0)
+	tip_mat.emission_energy_multiplier = 2.0
+	tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tip.material_override = tip_mat
+	guard.add_child(tip)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Border Guard"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(0.55, 0.85, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	guard.add_child(label)
+
+
+func _build_eastbound_path(geom: Node) -> void:
+	## Epic-1 T80: emissive path stretching east from the plaza arch through
+	## the east gate, continuing into the distance to telegraph "this is the
+	## road to District 2". Made of 12 cyan lit tiles spaced 1m apart.
+	var path_root: Node3D = Node3D.new()
+	path_root.name = "EastPlazaEastboundPath"
+	geom.add_child(path_root)
+	var tile_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tile_mat.albedo_color = Color(0.20, 0.50, 0.70)
+	tile_mat.emission_enabled = true
+	tile_mat.emission = Color(0.55, 0.95, 1.0)
+	tile_mat.emission_energy_multiplier = 1.4
+	tile_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Tiles from x=44 to x=68
+	for i in 12:
+		var x: float = 45.0 + i * 2.0
+		var tile: MeshInstance3D = MeshInstance3D.new()
+		tile.name = "EastPath_%d" % i
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(1.5, 0.05, 2.0)
+		tile.mesh = tmesh
+		tile.position = Vector3(x, 0.05, 0)
+		tile.material_override = tile_mat
+		path_root.add_child(tile)
+		# Walking-light pulse: scale glow
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_interval(i * 0.10)
+		pulse.tween_property(tile, "scale", Vector3(1.0, 2.5, 1.0), 0.25).set_ease(Tween.EASE_OUT)
+		pulse.tween_property(tile, "scale", Vector3(1.0, 1.0, 1.0), 0.25).set_ease(Tween.EASE_IN)
+		pulse.tween_interval(1.20 - i * 0.10 * 0.5)
+
 
 
