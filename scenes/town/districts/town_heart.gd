@@ -70,6 +70,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_road_junctions(geom)
 	_build_th_ground_runes(geom)
 	_build_th_road_benches(geom)
+	_build_th_road_planters(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -9282,3 +9283,145 @@ func _build_th_road_benches(geom: Node) -> void:
 	var gpulse: Tween = pivot.create_tween().set_loops()
 	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 6.0, 2.2).set_ease(Tween.EASE_IN_OUT)
 	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 2.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_road_planters(geom: Node) -> void:
+	## Epic-10 T54: 12 small data plant pots along the approach roads
+	## (3 per road, between the lampposts on alternating sides). Each
+	## pot: small basalt cylinder pot, brass rim, soil disc, central
+	## green leaf cluster + tiny cyan crystal bud.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_RoadPlanters"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.45
+	var soil_mat: StandardMaterial3D = StandardMaterial3D.new()
+	soil_mat.albedo_color = Color(0.18, 0.13, 0.10)
+	soil_mat.roughness = 0.92
+	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.55, 1.0, 0.65)
+	leaf_mat.emission_enabled = true
+	leaf_mat.emission = Color(0.55, 1.0, 0.65)
+	leaf_mat.emission_energy_multiplier = 5.0
+	leaf_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.45, 0.85, 1.0)
+	crystal_mat.emission_energy_multiplier = 6.5
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Each road has 3 planters spaced along its length, alternating sides
+	# Roads run from radius 17.5 to 45.5, so spaced at 24, 32, 40 from town center
+	# Side offset matches the lamppost +/-2.5 outer side
+	var road_axes: Array = [
+		# E road: along +X, side offset along Z
+		{"axis": Vector3(1, 0, 0), "side": Vector3(0, 0, 1)},
+		# N road: along -Z, side offset along X
+		{"axis": Vector3(0, 0, -1), "side": Vector3(1, 0, 0)},
+		# W road: along -X, side offset along Z
+		{"axis": Vector3(-1, 0, 0), "side": Vector3(0, 0, 1)},
+		# S road: along +Z, side offset along X
+		{"axis": Vector3(0, 0, 1), "side": Vector3(1, 0, 0)},
+	]
+	var distances: Array = [24.0, 32.0, 40.0]
+	# Side multipliers — alternate left/right per planter so they don't all line up on one side
+	var side_mults: Array = [-3.40, 3.40, -3.40]
+	for road in road_axes:
+		var axis: Vector3 = road["axis"]
+		var side: Vector3 = road["side"]
+		for i in distances.size():
+			var dist: float = distances[i]
+			var smul: float = side_mults[i]
+			var pp: Vector3 = axis * dist + side * smul
+			var pgroup: Node3D = Node3D.new()
+			pgroup.position = pp
+			pivot.add_child(pgroup)
+			# ---- Stepped basalt pot (cylinder with tapered bottom) ----
+			var pot: MeshInstance3D = MeshInstance3D.new()
+			var pmm: CylinderMesh = CylinderMesh.new()
+			pmm.top_radius = 0.45
+			pmm.bottom_radius = 0.38
+			pmm.height = 0.55
+			pot.mesh = pmm
+			pot.material_override = stone_mat
+			pot.position = Vector3(0, 0.27, 0)
+			pgroup.add_child(pot)
+			# Pot collision
+			var pot_sb: StaticBody3D = StaticBody3D.new()
+			pot_sb.position = Vector3(0, 0.27, 0)
+			var pot_cs: CollisionShape3D = CollisionShape3D.new()
+			var pot_cyl: CylinderShape3D = CylinderShape3D.new()
+			pot_cyl.top_radius = 0.45
+			pot_cyl.bottom_radius = 0.42
+			pot_cyl.height = 0.55
+			pot_cs.shape = pot_cyl
+			pot_sb.add_child(pot_cs)
+			pgroup.add_child(pot_sb)
+			# Brass rim torus
+			var rim: MeshInstance3D = MeshInstance3D.new()
+			var rmm: TorusMesh = TorusMesh.new()
+			rmm.inner_radius = 0.40
+			rmm.outer_radius = 0.50
+			rim.mesh = rmm
+			rim.material_override = brass_mat
+			rim.position = Vector3(0, 0.56, 0)
+			pgroup.add_child(rim)
+			# Soil disc
+			var soil: MeshInstance3D = MeshInstance3D.new()
+			var sm: CylinderMesh = CylinderMesh.new()
+			sm.top_radius = 0.40
+			sm.bottom_radius = 0.40
+			sm.height = 0.06
+			soil.mesh = sm
+			soil.material_override = soil_mat
+			soil.position = Vector3(0, 0.55, 0)
+			pgroup.add_child(soil)
+			# ---- 3 leaf prisms radiating outward from the soil center ----
+			for j in 3:
+				var lang: float = float(j) / 3.0 * TAU
+				var leaf: MeshInstance3D = MeshInstance3D.new()
+				var lmesh: PrismMesh = PrismMesh.new()
+				lmesh.size = Vector3(0.28, 0.10, 0.18)
+				leaf.mesh = lmesh
+				leaf.material_override = leaf_mat
+				leaf.position = Vector3(cos(lang) * 0.18, 0.85, sin(lang) * 0.18)
+				leaf.rotation.y = lang
+				leaf.rotation.z = -PI / 2.5
+				pgroup.add_child(leaf)
+			# ---- Tiny cyan crystal bud at the top ----
+			var bud: MeshInstance3D = MeshInstance3D.new()
+			var bm: SphereMesh = SphereMesh.new()
+			bm.radius = 0.08
+			bm.height = 0.16
+			bud.mesh = bm
+			bud.material_override = crystal_mat
+			bud.position = Vector3(0, 1.05, 0)
+			pgroup.add_child(bud)
+			# Subtle per-pot cyan OmniLight
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(0, 0.85, 0)
+			lt.light_color = Color(0.55, 0.95, 1.0)
+			lt.light_energy = 0.65
+			lt.omni_range = 2.5
+			pgroup.add_child(lt)
+	# Shared leaf + crystal pulses
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 6.5, 2.4).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 3.5, 2.4).set_ease(Tween.EASE_IN_OUT)
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(crystal_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(crystal_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
