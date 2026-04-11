@@ -68,6 +68,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_open_pavilion(geom)
 	_build_th_hex_gazebo(geom)
 	_build_th_road_junctions(geom)
+	_build_th_ground_runes(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -9086,3 +9087,89 @@ func _build_th_road_junctions(geom: Node) -> void:
 	var bpulse: Tween = pivot.create_tween().set_loops()
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 9.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 6.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_ground_runes(geom: Node) -> void:
+	## Epic-10 T52: 16 small glowing rune accent decals inlaid in the
+	## plaza floor between the central beacon ring (radius 5) and the
+	## bench ring (radius 11.5). 8 outer at radius 9 (1 per radial) +
+	## 8 inner at radius 6.5 (offset 22.5 degrees). Each decal is a
+	## small flat torus + 4 satellite dots in alternating amber/cyan.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_GroundRunes"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.45, 0.85, 1.0)
+	cyan_mat.emission_energy_multiplier = 5.5
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 5.5
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Outer ring — 8 decals at radius 9, one per cardinal/ordinal direction
+	for i in 8:
+		var ang: float = float(i) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		# Alternate cyan and amber per slot for variety
+		var mat: StandardMaterial3D = cyan_mat if i % 2 == 0 else amber_mat
+		# Decal torus (flat ring on the ground)
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.45
+		rmm.outer_radius = 0.60
+		ring.mesh = rmm
+		ring.material_override = mat
+		ring.position = Vector3(dx * 9.00, 0.18, dz * 9.00)
+		pivot.add_child(ring)
+		# 4 satellite dots around the ring
+		for j in 4:
+			var sang: float = float(j) / 4.0 * TAU
+			var dot: MeshInstance3D = MeshInstance3D.new()
+			var dmm: SphereMesh = SphereMesh.new()
+			dmm.radius = 0.10
+			dmm.height = 0.05
+			dot.mesh = dmm
+			dot.material_override = mat
+			dot.position = Vector3(dx * 9.00 + cos(sang) * 0.65, 0.18, dz * 9.00 + sin(sang) * 0.65)
+			dot.scale = Vector3(1.0, 0.30, 1.0)
+			pivot.add_child(dot)
+	# Inner ring — 8 decals at radius 6.5, offset by 22.5 degrees
+	for i in 8:
+		var ang: float = (float(i) + 0.5) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		# Alternate the OPPOSITE color so the inner ring is offset from the outer
+		var mat: StandardMaterial3D = amber_mat if i % 2 == 0 else cyan_mat
+		# Smaller decal torus
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.30
+		rmm.outer_radius = 0.42
+		ring.mesh = rmm
+		ring.material_override = mat
+		ring.position = Vector3(dx * 6.50, 0.18, dz * 6.50)
+		pivot.add_child(ring)
+		# Center dot
+		var center: MeshInstance3D = MeshInstance3D.new()
+		var ccm: SphereMesh = SphereMesh.new()
+		ccm.radius = 0.08
+		ccm.height = 0.04
+		center.mesh = ccm
+		center.material_override = mat
+		center.position = Vector3(dx * 6.50, 0.20, dz * 6.50)
+		center.scale = Vector3(1.0, 0.30, 1.0)
+		pivot.add_child(center)
+	# Shared pulses for each color
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(cyan_mat, "emission_energy_multiplier", 7.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(cyan_mat, "emission_energy_multiplier", 4.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	var apulse: Tween = pivot.create_tween().set_loops()
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 7.5, 2.4).set_ease(Tween.EASE_IN_OUT)
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
