@@ -8885,6 +8885,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_pine_grove(geom)
 	# Epic-5 T60: snowman
 	_build_d5_snowman(geom)
+	# Epic-5 T61: caribou herd
+	_build_d5_caribou_herd(geom)
+	# Epic-5 T62: caribou herder NPC
+	_build_d5_caribou_herder_npc()
+	# Epic-5 T63: ice rail line
+	_build_d5_ice_rails(geom)
+	# Epic-5 T64: cable car station
+	_build_d5_cable_car_station(geom)
+	# Epic-5 T65: snow sculpture
+	_build_d5_snow_sculpture(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -13737,6 +13747,392 @@ func _build_d5_snowman(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	snowman.add_child(sb)
+
+
+func _build_d5_caribou_herd(geom: Node) -> void:
+	## Epic-5 T61: 4 caribou with branching antlers grazing in a small group.
+	var herd: Node3D = Node3D.new()
+	herd.name = "CaribouHerd"
+	herd.position = Vector3(D5_CENTER.x - 18.0, 0.0, 8.0)
+	geom.add_child(herd)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.50, 0.35, 0.20)
+	fur_mat.roughness = 0.85
+	var antler_mat: StandardMaterial3D = StandardMaterial3D.new()
+	antler_mat.albedo_color = Color(0.85, 0.75, 0.55)
+	antler_mat.roughness = 0.65
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 2.4, 0,  1.2),
+		Vector3(-2.0, 0,  0.6),
+		Vector3( 0.8, 0, -2.0),
+	]
+	for p in positions:
+		var caribou: Node3D = Node3D.new()
+		caribou.position = p
+		herd.add_child(caribou)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.40
+		bm.height = 0.65
+		body.mesh = bm
+		body.material_override = fur_mat
+		body.position = Vector3(0, 0.85, 0)
+		body.scale = Vector3(1.0, 0.85, 1.55)
+		caribou.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.20
+		hm.height = 0.36
+		head.mesh = hm
+		head.material_override = fur_mat
+		head.position = Vector3(0, 1.20, 0.55)
+		caribou.add_child(head)
+		# Snout
+		var snout: MeshInstance3D = MeshInstance3D.new()
+		var sm2: BoxMesh = BoxMesh.new()
+		sm2.size = Vector3(0.14, 0.10, 0.20)
+		snout.mesh = sm2
+		snout.material_override = fur_mat
+		snout.position = Vector3(0, 1.10, 0.75)
+		caribou.add_child(snout)
+		# 2 large branching antlers (multiple prism branches)
+		for sx in [-0.18, 0.18]:
+			# Main antler stem
+			var stem: MeshInstance3D = MeshInstance3D.new()
+			var stm: PrismMesh = PrismMesh.new()
+			stm.size = Vector3(0.06, 0.65, 0.06)
+			stem.mesh = stm
+			stem.material_override = antler_mat
+			stem.position = Vector3(sx, 1.55, 0.50)
+			stem.rotation_degrees = Vector3(-15, 0, sx * 35.0)
+			caribou.add_child(stem)
+			# 3 smaller branches off the main stem
+			for j in 3:
+				var branch: MeshInstance3D = MeshInstance3D.new()
+				var bbm: PrismMesh = PrismMesh.new()
+				bbm.size = Vector3(0.04, 0.30, 0.04)
+				branch.mesh = bbm
+				branch.material_override = antler_mat
+				branch.position = Vector3(sx + sx * 0.5 * j, 1.55 + j * 0.18, 0.50)
+				branch.rotation_degrees = Vector3(-25, 0, sx * 70.0)
+				caribou.add_child(branch)
+		# 4 long legs
+		for lx in [-0.22, 0.22]:
+			for lz in [-0.32, 0.32]:
+				var leg: MeshInstance3D = MeshInstance3D.new()
+				var lm: CylinderMesh = CylinderMesh.new()
+				lm.top_radius = 0.06
+				lm.bottom_radius = 0.06
+				lm.height = 0.85
+				leg.mesh = lm
+				leg.material_override = fur_mat
+				leg.position = Vector3(lx, 0.42, lz)
+				caribou.add_child(leg)
+		# Grazing head bob
+		var tw: Tween = head.create_tween().set_loops()
+		tw.tween_property(head, "position:y", 0.85, 1.0 + randf() * 0.4)
+		tw.tween_property(head, "position:y", 1.20, 1.0 + randf() * 0.4)
+		# Body collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.95, 1.40, 1.40)
+		cs.shape = cb
+		sb.add_child(cs)
+		caribou.add_child(sb)
+
+
+func _build_d5_caribou_herder_npc() -> void:
+	## Epic-5 T62: caribou herder NPC with a long staff and traditional
+	## fur-trimmed coat.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CaribouHerderSlot"
+	slot.position = Vector3(D5_CENTER.x - 14.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CaribouHerder"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tundratread")
+	if "npc_id" in npc:
+		npc.set("npc_id", "herder_d5")
+	slot.add_child(npc)
+	# Brown coat with fur trim
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.75, 1.10, 0.55)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	coat_mat.roughness = 0.85
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.55, 0)
+	npc.add_child(coat)
+	# Fur collar
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var clm: CylinderMesh = CylinderMesh.new()
+	clm.top_radius = 0.30
+	clm.bottom_radius = 0.30
+	clm.height = 0.18
+	collar.mesh = clm
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.95, 0.95, 0.90)
+	fur_mat.roughness = 0.95
+	collar.material_override = fur_mat
+	collar.position = Vector3(0, 1.10, 0)
+	npc.add_child(collar)
+	# Tall walking staff with antler-tip
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.04
+	stm.bottom_radius = 0.05
+	stm.height = 1.95
+	staff.mesh = stm
+	staff.material_override = wood_mat
+	staff.position = Vector3(0.45, 0.97, 0)
+	npc.add_child(staff)
+	# Antler tip
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tm: PrismMesh = PrismMesh.new()
+	tm.size = Vector3(0.10, 0.30, 0.10)
+	tip.mesh = tm
+	var antler_mat: StandardMaterial3D = StandardMaterial3D.new()
+	antler_mat.albedo_color = Color(0.85, 0.75, 0.55)
+	antler_mat.roughness = 0.65
+	tip.material_override = antler_mat
+	tip.position = Vector3(0.45, 2.05, 0)
+	npc.add_child(tip)
+
+
+func _build_d5_ice_rails(geom: Node) -> void:
+	## Epic-5 T63: 12m ice rail track running west-east through the lower
+	## south of D5 — 2 long parallel ice rails + 6 wooden cross-ties.
+	var rails: Node3D = Node3D.new()
+	rails.name = "IceRails"
+	rails.position = Vector3(D5_CENTER.x, 0.0, 18.0)
+	geom.add_child(rails)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.75, 0.90, 1.0)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.65
+	ice_mat.roughness = 0.20
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# 2 parallel rails
+	for sz in [-0.55, 0.55]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(14.0, 0.18, 0.18)
+		rail.mesh = rm
+		rail.material_override = ice_mat
+		rail.position = Vector3(0, 0.18, sz)
+		rails.add_child(rail)
+	# 9 wooden cross-ties
+	for i in 9:
+		var tie: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.40, 0.10, 1.65)
+		tie.mesh = tm
+		tie.material_override = wood_mat
+		tie.position = Vector3(-6.0 + i * 1.5, 0.05, 0)
+		rails.add_child(tie)
+
+
+func _build_d5_cable_car_station(geom: Node) -> void:
+	## Epic-5 T64: cable car station — tall ice tower + horizontal cable +
+	## hanging gondola cabin with cyan windows + a station platform.
+	var station: Node3D = Node3D.new()
+	station.name = "CableCarStation"
+	station.position = Vector3(D5_CENTER.x + 26.0, 0.0, 4.0)
+	geom.add_child(station)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.78, 0.92, 1.0)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 1.0)
+	ice_mat.emission_energy_multiplier = 0.30
+	ice_mat.roughness = 0.45
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Tall tower
+	var tower: MeshInstance3D = MeshInstance3D.new()
+	var twm: BoxMesh = BoxMesh.new()
+	twm.size = Vector3(1.85, 7.50, 1.85)
+	tower.mesh = twm
+	tower.material_override = ice_mat
+	tower.position = Vector3(0, 3.75, 0)
+	station.add_child(tower)
+	# Top cable arm (horizontal cylinder)
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var arm_m: CylinderMesh = CylinderMesh.new()
+	arm_m.top_radius = 0.10
+	arm_m.bottom_radius = 0.10
+	arm_m.height = 4.20
+	arm.mesh = arm_m
+	arm.material_override = metal_mat
+	arm.position = Vector3(2.10, 7.20, 0)
+	arm.rotation_degrees = Vector3(0, 0, 90)
+	station.add_child(arm)
+	# Cable hanging down to gondola
+	var cable: MeshInstance3D = MeshInstance3D.new()
+	var ccm: CylinderMesh = CylinderMesh.new()
+	ccm.top_radius = 0.025
+	ccm.bottom_radius = 0.025
+	ccm.height = 2.20
+	cable.mesh = ccm
+	var cable_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cable_mat.albedo_color = Color(0.20, 0.22, 0.25)
+	cable_mat.metallic = 0.85
+	cable_mat.roughness = 0.30
+	cable.material_override = cable_mat
+	cable.position = Vector3(4.20, 6.10, 0)
+	station.add_child(cable)
+	# Gondola cabin
+	var cabin: Node3D = Node3D.new()
+	cabin.position = Vector3(4.20, 4.65, 0)
+	station.add_child(cabin)
+	var cabin_body: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(1.40, 1.65, 1.10)
+	cabin_body.mesh = cbm
+	var cabin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cabin_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	cabin_mat.metallic = 0.30
+	cabin_mat.roughness = 0.45
+	cabin_body.material_override = cabin_mat
+	cabin.add_child(cabin_body)
+	# 2 cyan windows on cabin
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.85)
+	window_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(0.40, 1.0, 1.0)
+	window_mat.emission_energy_multiplier = 2.5
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-0.40, 0.40]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.30, 0.45, 0.04)
+		win.mesh = wm
+		win.material_override = window_mat
+		win.position = Vector3(sx, 0.20, 0.58)
+		cabin.add_child(win)
+	# Cabin roof (sloped prism)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rfm: PrismMesh = PrismMesh.new()
+	rfm.size = Vector3(1.55, 0.30, 1.20)
+	roof.mesh = rfm
+	roof.material_override = metal_mat
+	roof.position = Vector3(0, 0.95, 0)
+	cabin.add_child(roof)
+	# Subtle cabin sway
+	var tw: Tween = cabin.create_tween().set_loops()
+	tw.tween_property(cabin, "rotation_degrees:z", 4.0, 2.5)
+	tw.tween_property(cabin, "rotation_degrees:z", -4.0, 2.5)
+	# Station platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(2.85, 0.30, 2.85)
+	platform.mesh = plm
+	platform.material_override = ice_mat
+	platform.position = Vector3(0, 0.15, 0)
+	station.add_child(platform)
+	# Platform collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.15, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 0.30, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	station.add_child(sb)
+	# Tower collision
+	var tsb: StaticBody3D = StaticBody3D.new()
+	tsb.position = Vector3(0, 3.75, 0)
+	var tcs: CollisionShape3D = CollisionShape3D.new()
+	var tcb: BoxShape3D = BoxShape3D.new()
+	tcb.size = Vector3(1.85, 7.50, 1.85)
+	tcs.shape = tcb
+	tsb.add_child(tcs)
+	station.add_child(tsb)
+
+
+func _build_d5_snow_sculpture(geom: Node) -> void:
+	## Epic-5 T65: large snow sculpture — abstract spiral made of stacked
+	## snow segments + a glowing rune embedded at its core. Public art.
+	var sculpture: Node3D = Node3D.new()
+	sculpture.name = "SnowSculpture"
+	sculpture.position = Vector3(D5_CENTER.x + 4.0, 0.0, 14.0)
+	geom.add_child(sculpture)
+	var snow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	snow_mat.albedo_color = Color(0.95, 0.97, 1.0)
+	snow_mat.emission_enabled = true
+	snow_mat.emission = Color(0.85, 0.92, 1.0)
+	snow_mat.emission_energy_multiplier = 0.30
+	snow_mat.roughness = 0.55
+	# Spiral via 12 stacked sphere segments offset around a vertical axis
+	for i in 12:
+		var t: float = i / 11.0
+		var ang: float = t * TAU * 2.0
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.40 - t * 0.15
+		sm.height = 0.65 - t * 0.18
+		seg.mesh = sm
+		seg.material_override = snow_mat
+		seg.position = Vector3(cos(ang) * 0.85, 0.55 + i * 0.45, sin(ang) * 0.85)
+		sculpture.add_child(seg)
+	# Top crown rune (glowing cyan crystal)
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.30, 1.0, 1.0)
+	rune_mat.emission_energy_multiplier = 3.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var cm: PrismMesh = PrismMesh.new()
+	cm.size = Vector3(0.55, 0.95, 0.55)
+	crown.mesh = cm
+	crown.material_override = rune_mat
+	crown.position = Vector3(0, 6.40, 0)
+	sculpture.add_child(crown)
+	# Crown spin
+	var ts: Tween = crown.create_tween().set_loops()
+	ts.tween_property(crown, "rotation_degrees:y", 360.0, 7.0)
+	ts.tween_property(crown, "rotation_degrees:y", 0.0, 0.0)
+	# Light at the crown
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 5.0
+	light.position = Vector3(0, 6.40, 0)
+	sculpture.add_child(light)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.10
+	cap.height = 6.0
+	cs.shape = cap
+	sb.add_child(cs)
+	sculpture.add_child(sb)
 
 
 
