@@ -32901,6 +32901,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_spark_waterfall(geom)
 	# Epic-9 T30: parked cart yard
 	_build_d9_cart_yard(geom)
+	# Epic-9 T31: massive crucible
+	_build_d9_massive_crucible(geom)
+	# Epic-9 T32: crucible operator NPC
+	_build_d9_crucible_operator_npc()
+	# Epic-9 T33: floating forge spirits
+	_build_d9_forge_spirits(geom)
+	# Epic-9 T34: hot iron rod rack
+	_build_d9_iron_rod_rack(geom)
+	# Epic-9 T35: slag heap
+	_build_d9_slag_heap(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -43141,6 +43151,372 @@ func _build_d9_cart_yard(geom: Node) -> void:
 		cs.shape = bs
 		stb.add_child(cs)
 		slot_root.add_child(stb)
+
+
+func _build_d9_massive_crucible(geom: Node) -> void:
+	## Epic-9 T31: massive industrial crucible mounted on a heavy iron swing
+	## frame, full of molten metal with a slow tilt animation.
+	var crucible: Node3D = Node3D.new()
+	crucible.name = "D9MassiveCrucible"
+	crucible.position = Vector3(D9_CENTER.x - 22, 0, 6)
+	geom.add_child(crucible)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.30, 0.28, 0.30)
+	iron.metallic = 0.92
+	iron.roughness = 0.40
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.55, 0.18)
+	lava_mat.emission_energy_multiplier = 4.5
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Heavy iron base (wide low cylinder)
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bcm: CylinderMesh = CylinderMesh.new()
+	bcm.top_radius = 1.85
+	bcm.bottom_radius = 2.20
+	bcm.height = 0.55
+	base.mesh = bcm
+	base.material_override = iron
+	base.position = Vector3(0, 0.27, 0)
+	crucible.add_child(base)
+	# Two upright support posts
+	for sx in [-1.85, 1.85]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.20
+		pcm.bottom_radius = 0.25
+		pcm.height = 4.20
+		post.mesh = pcm
+		post.material_override = iron
+		post.position = Vector3(sx, 2.65, 0)
+		crucible.add_child(post)
+		# Per-post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.30
+		cap.height = 4.20
+		cs.shape = cap
+		sb.add_child(cs)
+		crucible.add_child(sb)
+	# Pivot axle (horizontal cross-bar at the top of the posts)
+	var axle: MeshInstance3D = MeshInstance3D.new()
+	var acm: CylinderMesh = CylinderMesh.new()
+	acm.top_radius = 0.18
+	acm.bottom_radius = 0.18
+	acm.height = 4.30
+	axle.mesh = acm
+	axle.material_override = iron
+	axle.position = Vector3(0, 4.50, 0)
+	axle.rotation_degrees = Vector3(0, 0, 90)
+	crucible.add_child(axle)
+	# Crucible body — pivot for tilt animation
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 4.50, 0)
+	crucible.add_child(pivot)
+	# Pot body (deep wide cylinder)
+	var pot: MeshInstance3D = MeshInstance3D.new()
+	var pcm2: CylinderMesh = CylinderMesh.new()
+	pcm2.top_radius = 1.40
+	pcm2.bottom_radius = 0.95
+	pcm2.height = 1.85
+	pot.mesh = pcm2
+	pot.material_override = iron
+	pot.position = Vector3(0, -0.85, 0)
+	pivot.add_child(pot)
+	# Reinforcing rim band at the top
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rim_t: TorusMesh = TorusMesh.new()
+	rim_t.inner_radius = 1.40
+	rim_t.outer_radius = 1.55
+	rim.mesh = rim_t
+	rim.material_override = iron
+	rim.position = Vector3(0, 0.05, 0)
+	pivot.add_child(rim)
+	# Molten content disc inside
+	var lava: MeshInstance3D = MeshInstance3D.new()
+	var lcm: CylinderMesh = CylinderMesh.new()
+	lcm.top_radius = 1.30
+	lcm.bottom_radius = 1.30
+	lcm.height = 0.10
+	lava.mesh = lcm
+	lava.material_override = lava_mat
+	lava.position = Vector3(0, -0.05, 0)
+	pivot.add_child(lava)
+	var pulse: Tween = lava.create_tween().set_loops()
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 6.0, 1.4)
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 3.0, 1.4)
+	# Tilt tween (slow oscillation)
+	var tilt: Tween = pivot.create_tween().set_loops()
+	tilt.tween_property(pivot, "rotation_degrees:z", 8.0, 3.0)
+	tilt.tween_property(pivot, "rotation_degrees:z", -8.0, 3.0)
+	# Strong omni light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 4.5
+	lt.omni_range = 12.0
+	lt.position = Vector3(0, 4.50, 0)
+	crucible.add_child(lt)
+
+
+func _build_d9_crucible_operator_npc() -> void:
+	## Epic-9 T32: crucible operator NPC — leather hood, heat-resistant gloves
+	## and a long control lever to tilt the crucible.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9CrucibleOperatorSlot"
+	slot.position = Vector3(D9_CENTER.x - 25, 0, 6)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9CrucibleOperator"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Crucible-Hand Smedge")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_crucible_operator")
+	slot.add_child(npc)
+	# Heavy heat-resistant coat (dark grey)
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.32, 0.30, 0.32)
+	coat_mat.roughness = 0.85
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(1.05, 1.30, 0.65)
+	coat.mesh = cb
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.05, 0)
+	npc.add_child(coat)
+	# Hood (sphere top)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.40
+	hsm.height = 0.70
+	hood.mesh = hsm
+	hood.material_override = coat_mat
+	hood.position = Vector3(0, 1.95, -0.10)
+	npc.add_child(hood)
+	# Visor slit (orange emissive — heat-tinted glass)
+	var visor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	visor_mat.albedo_color = Color(1.0, 0.55, 0.18)
+	visor_mat.emission_enabled = true
+	visor_mat.emission = Color(1.0, 0.55, 0.18)
+	visor_mat.emission_energy_multiplier = 1.8
+	visor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vb: BoxMesh = BoxMesh.new()
+	vb.size = Vector3(0.45, 0.08, 0.04)
+	visor.mesh = vb
+	visor.material_override = visor_mat
+	visor.position = Vector3(0, 1.95, 0.30)
+	npc.add_child(visor)
+	# Heavy gloves (oversized box hands)
+	var glove_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glove_mat.albedo_color = Color(0.28, 0.18, 0.10)
+	for sx in [-0.55, 0.55]:
+		var glove: MeshInstance3D = MeshInstance3D.new()
+		var gb: BoxMesh = BoxMesh.new()
+		gb.size = Vector3(0.30, 0.30, 0.30)
+		glove.mesh = gb
+		glove.material_override = glove_mat
+		glove.position = Vector3(sx, 0.85, 0.08)
+		npc.add_child(glove)
+	# Long control lever held with both hands (long iron pole going up at angle)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.55, 0.55, 0.58)
+	iron_mat.metallic = 0.92
+	iron_mat.roughness = 0.30
+	var lever: MeshInstance3D = MeshInstance3D.new()
+	var lcm: CylinderMesh = CylinderMesh.new()
+	lcm.top_radius = 0.05
+	lcm.bottom_radius = 0.06
+	lcm.height = 2.40
+	lever.mesh = lcm
+	lever.material_override = iron_mat
+	lever.position = Vector3(0, 1.50, 0.50)
+	lever.rotation_degrees = Vector3(45, 0, 0)
+	npc.add_child(lever)
+	# Brass grip on the lever
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	var grip: MeshInstance3D = MeshInstance3D.new()
+	var gcm: CylinderMesh = CylinderMesh.new()
+	gcm.top_radius = 0.08
+	gcm.bottom_radius = 0.08
+	gcm.height = 0.30
+	grip.mesh = gcm
+	grip.material_override = brass
+	grip.position = Vector3(0, 0.85, -0.15)
+	grip.rotation_degrees = Vector3(45, 0, 0)
+	npc.add_child(grip)
+
+
+func _build_d9_forge_spirits(geom: Node) -> void:
+	## Epic-9 T33: 8 floating ember spirits drifting around the forge area —
+	## small glowing orange spheres on slow orbiting paths.
+	var spirits: Node3D = Node3D.new()
+	spirits.name = "D9ForgeSpirits"
+	spirits.position = Vector3(D9_CENTER.x, 4, 0)
+	geom.add_child(spirits)
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.18)
+	ember_mat.emission_energy_multiplier = 4.5
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in range(8):
+		var pivot: Node3D = Node3D.new()
+		pivot.rotation_degrees = Vector3(0, float(i) * 45.0, 0)
+		spirits.add_child(pivot)
+		var spirit: Node3D = Node3D.new()
+		spirit.position = Vector3(8.0 + float(i % 3) * 1.5, float(i % 4) * 1.0, 0)
+		pivot.add_child(spirit)
+		# Ember core
+		var core: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.18
+		sm.height = 0.36
+		core.mesh = sm
+		core.material_override = ember_mat
+		spirit.add_child(core)
+		# Pulse the ember
+		var pulse: Tween = core.create_tween().set_loops()
+		var phase: float = float(i) * 0.18
+		pulse.tween_property(core, "scale", Vector3(1.30, 1.30, 1.30), 0.8 + phase)
+		pulse.tween_property(core, "scale", Vector3(0.85, 0.85, 0.85), 0.8 + phase)
+		# Orbit tween
+		var orbit: Tween = pivot.create_tween().set_loops()
+		var orbit_phase: float = float(i) * 0.35
+		orbit.tween_property(pivot, "rotation_degrees:y", float(i) * 45.0 + 360.0, 22.0 + orbit_phase).from(float(i) * 45.0)
+		# Vertical bob on the spirit itself
+		var bob: Tween = spirit.create_tween().set_loops()
+		var base_y: float = float(i % 4) * 1.0
+		bob.tween_property(spirit, "position:y", base_y + 0.55, 1.4 + phase)
+		bob.tween_property(spirit, "position:y", base_y, 1.4 + phase)
+
+
+func _build_d9_iron_rod_rack(geom: Node) -> void:
+	## Epic-9 T34: vertical wooden rack holding 6 glowing-hot iron rods
+	## sticking up out of slots, freshly pulled from the forge.
+	var rack: Node3D = Node3D.new()
+	rack.name = "D9IronRodRack"
+	rack.position = Vector3(D9_CENTER.x + 4, 0, 6)
+	geom.add_child(rack)
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	# Wooden base block (low long box)
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(2.20, 0.32, 0.55)
+	base.mesh = bb
+	base.material_override = wood
+	base.position = Vector3(0, 0.16, 0)
+	rack.add_child(base)
+	# Rod material (glowing emissive iron)
+	var rod_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rod_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	rod_mat.emission_enabled = true
+	rod_mat.emission = Color(1.0, 0.55, 0.18)
+	rod_mat.emission_energy_multiplier = 3.5
+	rod_mat.metallic = 0.55
+	rod_mat.roughness = 0.55
+	rod_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 6 rods sticking up (slightly angled)
+	for i in range(6):
+		var rod: MeshInstance3D = MeshInstance3D.new()
+		var rcm: CylinderMesh = CylinderMesh.new()
+		rcm.top_radius = 0.05
+		rcm.bottom_radius = 0.06
+		rcm.height = 1.40
+		rod.mesh = rcm
+		rod.material_override = rod_mat
+		rod.position = Vector3(-0.85 + float(i) * 0.34, 1.05, 0)
+		rod.rotation_degrees = Vector3(randf_range(-4, 4), 0, randf_range(-4, 4))
+		rack.add_child(rod)
+		# Per-rod ember pulse
+		var pulse: Tween = rod.create_tween().set_loops()
+		var phase: float = float(i) * 0.12
+		pulse.tween_property(rod_mat, "emission_energy_multiplier", 5.0, 0.8 + phase)
+		pulse.tween_property(rod_mat, "emission_energy_multiplier", 2.0, 0.8 + phase)
+	# Strong orange light from the rack
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 2.8
+	lt.omni_range = 6.0
+	lt.position = Vector3(0, 1.40, 0)
+	rack.add_child(lt)
+	# Rack collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.20, 1.85, 0.55)
+	cs.shape = bs
+	stb.add_child(cs)
+	rack.add_child(stb)
+
+
+func _build_d9_slag_heap(geom: Node) -> void:
+	## Epic-9 T35: large pile of cooled black slag — irregular dark chunks
+	## stacked into a small mound with one or two faintly glowing remnants.
+	var heap: Node3D = Node3D.new()
+	heap.name = "D9SlagHeap"
+	heap.position = Vector3(D9_CENTER.x + 22, 0, 14)
+	geom.add_child(heap)
+	var slag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	slag_mat.albedo_color = Color(0.08, 0.06, 0.08)
+	slag_mat.metallic = 0.30
+	slag_mat.roughness = 0.55
+	# 14 randomized chunk spheres
+	for i in range(14):
+		var chunk: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.28 + randf() * 0.18
+		sm.height = 0.55 + randf() * 0.25
+		chunk.mesh = sm
+		chunk.material_override = slag_mat
+		var ang: float = randf() * TAU
+		var rad: float = randf() * 0.85
+		chunk.position = Vector3(
+			cos(ang) * rad,
+			0.18 + float(i) * 0.10,
+			sin(ang) * rad
+		)
+		chunk.scale = Vector3(1.0, 0.65, 1.0)
+		heap.add_child(chunk)
+	# 2 faintly glowing leftover ember chunks
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(0.55, 0.20, 0.05)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.40, 0.10)
+	ember_mat.emission_energy_multiplier = 1.4
+	for k in range(2):
+		var ember: MeshInstance3D = MeshInstance3D.new()
+		var esm: SphereMesh = SphereMesh.new()
+		esm.radius = 0.18
+		esm.height = 0.36
+		ember.mesh = esm
+		ember.material_override = ember_mat
+		ember.position = Vector3(-0.35 + float(k) * 0.65, 1.45, 0)
+		heap.add_child(ember)
+	# Heap collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 1.40
+	cyl.height = 1.50
+	cs.shape = cyl
+	stb.add_child(cs)
+	heap.add_child(stb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
