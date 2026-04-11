@@ -1844,6 +1844,8 @@ func _build_district_3(geom: Node) -> void:
 	_build_district_5(geom)
 	# === EPIC 6: Neon Bazaar — The All-Night Market ===
 	_build_district_6(geom)
+	# === EPIC 7: Ascension Spires — The High Sandstone Monastery ===
+	_build_district_7(geom)
 
 
 func _build_district_4(geom: Node) -> void:
@@ -25409,6 +25411,298 @@ func _build_d6_neon_empress(geom: Node) -> void:
 	pcs.shape = pcb
 	psb.add_child(pcs)
 	emp.add_child(psb)
+
+
+const D7_CENTER := Vector3(470, 0, 0)
+
+
+func _build_district_7(geom: Node) -> void:
+	## Epic 7 entry point — Ascension Spires, the high sandstone monastery.
+	# Epic-7 T1: extend boundary + D7 sandstone ground
+	_extend_boundary_for_d7(geom)
+	_build_d7_ground(geom)
+	# Epic-7 T2: temple gate (red torii-style arch)
+	_build_d7_temple_gate(geom)
+	# Epic-7 T3: GREAT SANDSTONE SPIRE landmark
+	_build_d7_great_spire(geom)
+	# Epic-7 T4: monk elder NPC
+	_build_d7_monk_elder_npc()
+
+
+func _extend_boundary_for_d7(geom: Node) -> void:
+	## Epic-7 T1a: push the east boundary wall from x=430 out to x=530.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 530.0
+
+
+func _build_d7_ground(geom: Node) -> void:
+	## Epic-7 T1b: D7 sandstone ground — warm tan plane with scattered
+	## small rock and pebble decorations suggesting a dry highland.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(80, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.mesh = plane
+	var sand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sand_mat.albedo_color = Color(0.75, 0.55, 0.30)
+	sand_mat.emission_enabled = true
+	sand_mat.emission = Color(0.65, 0.45, 0.20)
+	sand_mat.emission_energy_multiplier = 0.18
+	sand_mat.roughness = 0.92
+	ground.material_override = sand_mat
+	ground.position = Vector3(D7_CENTER.x, 0.01, 0)
+	ground.name = "D7SandstoneGround"
+	geom.add_child(ground)
+	# Sprinkle 50 small rocks for surface variation
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.55, 0.40, 0.25)
+	rock_mat.roughness = 0.95
+	for i in 50:
+		var rock: MeshInstance3D = MeshInstance3D.new()
+		var rm: SphereMesh = SphereMesh.new()
+		rm.radius = 0.20 + randf() * 0.30
+		rm.height = 0.20 + randf() * 0.18
+		rock.mesh = rm
+		rock.material_override = rock_mat
+		rock.position = Vector3(
+			D7_CENTER.x + randf_range(-32, 32),
+			0.10,
+			randf_range(-18, 18)
+		)
+		rock.scale = Vector3(1.0, 0.45, 1.0)
+		rock.rotation_degrees = Vector3(0, randf_range(0, 360), 0)
+		geom.add_child(rock)
+
+
+func _build_d7_temple_gate(geom: Node) -> void:
+	## Epic-7 T2: red torii-style temple gate — 2 wooden vertical posts
+	## connected by 2 horizontal crossbars with upturned ends.
+	var gate: Node3D = Node3D.new()
+	gate.name = "D7TempleGate"
+	gate.position = Vector3(D7_CENTER.x - 32.0, 0.0, 0.0)
+	geom.add_child(gate)
+	var red_mat: StandardMaterial3D = StandardMaterial3D.new()
+	red_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	red_mat.emission_enabled = true
+	red_mat.emission = Color(0.85, 0.25, 0.20)
+	red_mat.emission_energy_multiplier = 0.45
+	red_mat.roughness = 0.65
+	# 2 vertical posts
+	for sx in [-2.40, 2.40]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.30
+		pm.bottom_radius = 0.40
+		pm.height = 5.50
+		post.mesh = pm
+		post.material_override = red_mat
+		post.position = Vector3(sx, 2.75, 0)
+		gate.add_child(post)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.75, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.40
+		cap.height = 5.50
+		cs.shape = cap
+		sb.add_child(cs)
+		gate.add_child(sb)
+	# Lower crossbar (rectangular)
+	var lower: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(5.50, 0.30, 0.40)
+	lower.mesh = lm
+	lower.material_override = red_mat
+	lower.position = Vector3(0, 4.40, 0)
+	gate.add_child(lower)
+	# Upper crossbar (longer with upturned ends)
+	var upper: MeshInstance3D = MeshInstance3D.new()
+	var um: BoxMesh = BoxMesh.new()
+	um.size = Vector3(6.50, 0.55, 0.55)
+	upper.mesh = um
+	upper.material_override = red_mat
+	upper.position = Vector3(0, 5.40, 0)
+	gate.add_child(upper)
+	# Upturned end caps (small angled boxes)
+	for sx in [-3.30, 3.30]:
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(0.85, 0.30, 0.55)
+		cap.mesh = cm
+		cap.material_override = red_mat
+		cap.position = Vector3(sx, 5.55, 0)
+		cap.rotation_degrees = Vector3(0, 0, -15.0 if sx > 0 else 15.0)
+		gate.add_child(cap)
+	# Center plaque
+	var plaque_mat: StandardMaterial3D = StandardMaterial3D.new()
+	plaque_mat.albedo_color = Color(0.95, 0.85, 0.45)
+	plaque_mat.emission_enabled = true
+	plaque_mat.emission = Color(0.95, 0.75, 0.30)
+	plaque_mat.emission_energy_multiplier = 0.85
+	var plaque: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(1.40, 0.55, 0.10)
+	plaque.mesh = pmm
+	plaque.material_override = plaque_mat
+	plaque.position = Vector3(0, 4.85, 0.30)
+	gate.add_child(plaque)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 2.5
+	light.omni_range = 8.0
+	light.position = Vector3(0, 4.20, 0)
+	gate.add_child(light)
+
+
+func _build_d7_great_spire(geom: Node) -> void:
+	## Epic-7 T3: GREAT SANDSTONE SPIRE landmark — towering rock formation
+	## stack of 4 cylinder tiers with a glowing amber crystal at the peak.
+	var spire: Node3D = Node3D.new()
+	spire.name = "GreatSandstoneSpire"
+	spire.position = Vector3(D7_CENTER.x, 0.0, 0.0)
+	geom.add_child(spire)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(0.55, 0.35, 0.15)
+	rock_mat.emission_energy_multiplier = 0.18
+	rock_mat.roughness = 0.92
+	var darker_rock: StandardMaterial3D = StandardMaterial3D.new()
+	darker_rock.albedo_color = Color(0.55, 0.38, 0.18)
+	darker_rock.roughness = 0.92
+	# 4 tapered tiers
+	var tier_data: Array = [
+		{"top": 1.85, "bot": 2.40, "h": 3.40, "y": 1.70},
+		{"top": 1.40, "bot": 1.85, "h": 2.85, "y": 4.85},
+		{"top": 0.95, "bot": 1.40, "h": 2.40, "y": 7.50},
+		{"top": 0.55, "bot": 0.95, "h": 1.85, "y": 9.85},
+	]
+	for tier in tier_data:
+		var t: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = tier["top"]
+		tm.bottom_radius = tier["bot"]
+		tm.height = tier["h"]
+		t.mesh = tm
+		t.material_override = rock_mat
+		t.position = Vector3(0, tier["y"], 0)
+		spire.add_child(t)
+	# Top amber crystal
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var crm: PrismMesh = PrismMesh.new()
+	crm.size = Vector3(0.85, 1.85, 0.85)
+	crystal.mesh = crm
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.95, 0.65, 0.20)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.95, 0.55, 0.10)
+	crystal_mat.emission_energy_multiplier = 3.5
+	crystal_mat.metallic = 0.30
+	crystal_mat.roughness = 0.10
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	crystal.material_override = crystal_mat
+	crystal.position = Vector3(0, 11.85, 0)
+	spire.add_child(crystal)
+	# Crystal pulse
+	var tw: Tween = crystal.create_tween().set_loops()
+	tw.tween_property(crystal, "scale", Vector3.ONE * 1.20, 1.4)
+	tw.tween_property(crystal, "scale", Vector3.ONE * 0.85, 1.4)
+	# 4 darker rock outcroppings around the base for visual texture
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i + PI / 4.0
+		var outcrop: MeshInstance3D = MeshInstance3D.new()
+		var om: SphereMesh = SphereMesh.new()
+		om.radius = 0.85
+		om.height = 1.40
+		outcrop.mesh = om
+		outcrop.material_override = darker_rock
+		outcrop.position = Vector3(cos(ang) * 2.85, 0.55, sin(ang) * 2.85)
+		outcrop.scale = Vector3(1.0, 0.55, 1.0)
+		spire.add_child(outcrop)
+	# Massive aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 4.5
+	light.omni_range = 18.0
+	light.position = Vector3(0, 11.85, 0)
+	spire.add_child(light)
+	# Spire collision (single capsule covering all tiers)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 5.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.40
+	cap.height = 11.0
+	cs.shape = cap
+	sb.add_child(cs)
+	spire.add_child(sb)
+
+
+func _build_d7_monk_elder_npc() -> void:
+	## Epic-7 T4: monk elder NPC — orange robe + bald head + held wooden
+	## prayer beads.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MonkElderSlot"
+	slot.position = Vector3(D7_CENTER.x - 28.0, 0.0, 4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "MonkElder"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sutta")
+	if "npc_id" in npc:
+		npc.set("npc_id", "monk_elder_d7")
+	slot.add_child(npc)
+	# Orange robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.45, 0.15)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Bald head dome (small sphere)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.20
+	dm.height = 0.36
+	dome.mesh = dm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	skin_mat.roughness = 0.65
+	dome.material_override = skin_mat
+	dome.position = Vector3(0, 1.50, 0)
+	npc.add_child(dome)
+	# Prayer beads (small torus around hand)
+	var beads: MeshInstance3D = MeshInstance3D.new()
+	var bm: TorusMesh = TorusMesh.new()
+	bm.inner_radius = 0.10
+	bm.outer_radius = 0.14
+	beads.mesh = bm
+	var bead_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bead_mat.albedo_color = Color(0.55, 0.30, 0.10)
+	bead_mat.emission_enabled = true
+	bead_mat.emission = Color(0.85, 0.55, 0.20)
+	bead_mat.emission_energy_multiplier = 0.45
+	bead_mat.metallic = 0.55
+	bead_mat.roughness = 0.30
+	beads.material_override = bead_mat
+	beads.position = Vector3(0.40, 0.85, 0.20)
+	beads.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(beads)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
