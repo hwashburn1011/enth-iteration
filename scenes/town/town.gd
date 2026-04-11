@@ -17180,6 +17180,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_rave_dancers(geom)
 	# Epic-6 T40: ground steam vents
 	_build_d6_steam_vents(geom)
+	# Epic-6 T41: pawn shop facade
+	_build_d6_pawn_shop(geom)
+	# Epic-6 T42: pawn broker NPC
+	_build_d6_pawn_broker_npc()
+	# Epic-6 T43: elevated bullet train tracks
+	_build_d6_train_tracks(geom)
+	# Epic-6 T44: alley trash piles
+	_build_d6_trash_piles(geom)
+	# Epic-6 T45: floating ad balloons
+	_build_d6_ad_balloons(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -20463,6 +20473,370 @@ func _build_d6_steam_vents(geom: Node) -> void:
 		sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		sm_mesh.material = sm_mat
 		vent.add_child(steam)
+
+
+func _build_d6_pawn_shop(geom: Node) -> void:
+	## Epic-6 T41: pawn shop facade — barred windows, "PAWN" sign, and a
+	## display case of mismatched cyber gear in the front.
+	var shop: Node3D = Node3D.new()
+	shop.name = "PawnShop"
+	shop.position = Vector3(D6_CENTER.x + 30.0, 0.0, 8.0)
+	geom.add_child(shop)
+	var brick_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brick_mat.albedo_color = Color(0.40, 0.20, 0.15)
+	brick_mat.roughness = 0.85
+	# Facade wall
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(4.85, 3.40, 0.40)
+	wall.mesh = wm
+	wall.material_override = brick_mat
+	wall.position = Vector3(0, 1.70, -1.20)
+	shop.add_child(wall)
+	# Side walls
+	for sx in [-2.30, 2.30]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.40, 3.40, 2.85)
+		side.mesh = swm
+		side.material_override = brick_mat
+		side.position = Vector3(sx, 1.70, 0)
+		shop.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(4.85, 0.20, 3.10)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.20, 0.10, 0.08)
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 3.50, 0)
+	shop.add_child(roof)
+	# Barred window (dark interior + 4 vertical bars)
+	var window_dark: MeshInstance3D = MeshInstance3D.new()
+	var wdm: BoxMesh = BoxMesh.new()
+	wdm.size = Vector3(2.85, 1.40, 0.10)
+	window_dark.mesh = wdm
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	window_dark.material_override = dark_mat
+	window_dark.position = Vector3(0, 1.85, -0.95)
+	shop.add_child(window_dark)
+	var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bar_mat.albedo_color = Color(0.30, 0.32, 0.38)
+	bar_mat.metallic = 0.85
+	bar_mat.roughness = 0.30
+	for i in 4:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bbm: CylinderMesh = CylinderMesh.new()
+		bbm.top_radius = 0.04
+		bbm.bottom_radius = 0.04
+		bbm.height = 1.40
+		bar.mesh = bbm
+		bar.material_override = bar_mat
+		bar.position = Vector3(-1.10 + i * 0.73, 1.85, -0.85)
+		shop.add_child(bar)
+	# "PAWN" yellow sign
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(2.85, 0.85, 0.10)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.95, 0.85, 0.20)
+	sign_mat.emission_energy_multiplier = 2.0
+	sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 3.10, -0.93)
+	shop.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "PAWN"
+	label.modulate = Color(0.10, 0.05, 0.05)
+	label.outline_modulate = Color(0.95, 0.85, 0.20)
+	label.outline_size = 6
+	label.font_size = 96
+	label.pixel_size = 0.012
+	label.position = Vector3(0, 3.10, -0.85)
+	shop.add_child(label)
+	# 3 small cyber gear items in the window (different colored cubes)
+	var gear_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 3:
+		var gear: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(0.30, 0.30, 0.30)
+		gear.mesh = gm
+		var gear_mat: StandardMaterial3D = StandardMaterial3D.new()
+		gear_mat.albedo_color = gear_colors[i]
+		gear_mat.emission_enabled = true
+		gear_mat.emission = gear_colors[i]
+		gear_mat.emission_energy_multiplier = 1.4
+		gear.material_override = gear_mat
+		gear.position = Vector3(-0.85 + i * 0.85, 1.85, -1.0)
+		shop.add_child(gear)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 1.6
+	light.omni_range = 4.5
+	light.position = Vector3(0, 2.85, 1.20)
+	shop.add_child(light)
+	# Shop collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.85, 3.40, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	shop.add_child(sb)
+
+
+func _build_d6_pawn_broker_npc() -> void:
+	## Epic-6 T42: pawn broker NPC — small green visor + leather vest, with
+	## a small abacus held in front.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "PawnBrokerSlot"
+	slot.position = Vector3(D6_CENTER.x + 30.0, 0.0, 9.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "PawnBroker"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tally")
+	if "npc_id" in npc:
+		npc.set("npc_id", "pawn_d6")
+	slot.add_child(npc)
+	# Leather vest
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.85, 0.40)
+	vest.mesh = vm
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	vest_mat.metallic = 0.30
+	vest_mat.roughness = 0.55
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 0.65, 0)
+	npc.add_child(vest)
+	# Green accountant visor
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vmm: CylinderMesh = CylinderMesh.new()
+	vmm.top_radius = 0.22
+	vmm.bottom_radius = 0.22
+	vmm.height = 0.06
+	visor.mesh = vmm
+	var visor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	visor_mat.albedo_color = Color(0.30, 0.95, 0.30)
+	visor_mat.emission_enabled = true
+	visor_mat.emission = Color(0.30, 0.95, 0.30)
+	visor_mat.emission_energy_multiplier = 0.85
+	visor.material_override = visor_mat
+	visor.position = Vector3(0, 1.50, 0)
+	npc.add_child(visor)
+	# Visor brim (shorter cylinder)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var bmm: CylinderMesh = CylinderMesh.new()
+	bmm.top_radius = 0.30
+	bmm.bottom_radius = 0.30
+	bmm.height = 0.04
+	brim.mesh = bmm
+	brim.material_override = visor_mat
+	brim.position = Vector3(0, 1.45, 0.10)
+	npc.add_child(brim)
+	# Abacus (box with 9 colored beads)
+	var abacus: MeshInstance3D = MeshInstance3D.new()
+	var amm: BoxMesh = BoxMesh.new()
+	amm.size = Vector3(0.40, 0.20, 0.06)
+	abacus.mesh = amm
+	var abacus_mat: StandardMaterial3D = StandardMaterial3D.new()
+	abacus_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	abacus.material_override = abacus_mat
+	abacus.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(abacus)
+	for i in 9:
+		var bead: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.018
+		bm.height = 0.036
+		bead.mesh = bm
+		var bead_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bead_mat.albedo_color = Color(1.0, 0.85, 0.30)
+		bead_mat.emission_enabled = true
+		bead_mat.emission = Color(1.0, 0.85, 0.30)
+		bead_mat.emission_energy_multiplier = 1.4
+		bead.material_override = bead_mat
+		bead.position = Vector3(0.40 + (i % 3) * 0.04 - 0.04, 0.85 + (i / 3) * 0.04 - 0.04, 0.23)
+		npc.add_child(bead)
+
+
+func _build_d6_train_tracks(geom: Node) -> void:
+	## Epic-6 T43: elevated bullet train tracks running across the bazaar
+	## sky overhead — 2 tall support pillars + horizontal track slab + 2
+	## glowing rails on top.
+	var tracks: Node3D = Node3D.new()
+	tracks.name = "ElevatedTrainTracks"
+	tracks.position = Vector3(D6_CENTER.x, 0.0, -8.0)
+	geom.add_child(tracks)
+	var concrete_mat: StandardMaterial3D = StandardMaterial3D.new()
+	concrete_mat.albedo_color = Color(0.40, 0.42, 0.45)
+	concrete_mat.roughness = 0.92
+	# Support pillars
+	for sx in [-18.0, -6.0, 6.0, 18.0]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(1.10, 8.50, 1.10)
+		pillar.mesh = pm
+		pillar.material_override = concrete_mat
+		pillar.position = Vector3(sx, 4.25, 0)
+		tracks.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 4.25, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.10, 8.50, 1.10)
+		cs.shape = cb
+		sb.add_child(cs)
+		tracks.add_child(sb)
+	# Horizontal track deck slab
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(46.0, 0.55, 3.40)
+	deck.mesh = dm
+	deck.material_override = concrete_mat
+	deck.position = Vector3(0, 8.80, 0)
+	tracks.add_child(deck)
+	# 2 glowing magenta rails on top
+	var rail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rail_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	rail_mat.emission_enabled = true
+	rail_mat.emission = Color(0.95, 0.20, 0.85)
+	rail_mat.emission_energy_multiplier = 3.0
+	rail_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sz in [-1.0, 1.0]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(46.0, 0.10, 0.18)
+		rail.mesh = rm
+		rail.material_override = rail_mat
+		rail.position = Vector3(0, 9.15, sz)
+		tracks.add_child(rail)
+
+
+func _build_d6_trash_piles(geom: Node) -> void:
+	## Epic-6 T44: 4 piles of trash bags + scattered debris in alley areas.
+	var trash: Node3D = Node3D.new()
+	trash.name = "TrashPiles"
+	trash.position = Vector3(D6_CENTER.x + 26.0, 0.0, 0.0)
+	geom.add_child(trash)
+	var bag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bag_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	bag_mat.roughness = 0.85
+	for i in 4:
+		var pile: Node3D = Node3D.new()
+		pile.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0,
+			randf_range(-2.5, 2.5)
+		)
+		trash.add_child(pile)
+		# 4 stacked bags per pile
+		for j in 4:
+			var bag: MeshInstance3D = MeshInstance3D.new()
+			var bm: SphereMesh = SphereMesh.new()
+			bm.radius = 0.30
+			bm.height = 0.55
+			bag.mesh = bm
+			bag.material_override = bag_mat
+			bag.position = Vector3(
+				randf_range(-0.20, 0.20),
+				0.20 + j * 0.30,
+				randf_range(-0.20, 0.20)
+			)
+			pile.add_child(bag)
+		# Pile collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.55, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 1.10, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		pile.add_child(sb)
+
+
+func _build_d6_ad_balloons(geom: Node) -> void:
+	## Epic-6 T45: 4 floating ad balloons in the upper sky tethered by
+	## thin cables to the ground. Each is a colored sphere with a brand label.
+	var balloons: Node3D = Node3D.new()
+	balloons.name = "AdBalloons"
+	balloons.position = Vector3(D6_CENTER.x, 0.0, 0.0)
+	geom.add_child(balloons)
+	var cable_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cable_mat.albedo_color = Color(0.30, 0.32, 0.35)
+	cable_mat.roughness = 0.85
+	var balloon_data: Array = [
+		{"x": -16.0, "y": 8.0, "color": Color(0.95, 0.20, 0.30), "text": "BUY"},
+		{"x": -6.0,  "y": 9.5, "color": Color(0.30, 0.95, 0.55), "text": "EAT"},
+		{"x": 6.0,   "y": 8.5, "color": Color(0.95, 0.85, 0.20), "text": "WIN"},
+		{"x": 16.0,  "y": 9.0, "color": Color(0.30, 0.65, 0.95), "text": "DRINK"},
+	]
+	for bd in balloon_data:
+		var balloon: Node3D = Node3D.new()
+		balloon.position = Vector3(bd["x"], 0, randf_range(-12, 12))
+		balloons.add_child(balloon)
+		# Balloon sphere
+		var ball: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 1.10
+		bm.height = 2.0
+		ball.mesh = bm
+		var ball_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ball_mat.albedo_color = bd["color"]
+		ball_mat.emission_enabled = true
+		ball_mat.emission = bd["color"]
+		ball_mat.emission_energy_multiplier = 0.85
+		ball_mat.metallic = 0.30
+		ball_mat.roughness = 0.20
+		ball.material_override = ball_mat
+		ball.position = Vector3(0, bd["y"], 0)
+		balloon.add_child(ball)
+		# Tether cable (thin cylinder going to the ground)
+		var cable: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.025
+		cm.bottom_radius = 0.025
+		cm.height = bd["y"] - 1.10
+		cable.mesh = cm
+		cable.material_override = cable_mat
+		cable.position = Vector3(0, (bd["y"] - 1.10) * 0.5, 0)
+		balloon.add_child(cable)
+		# Brand label
+		var label: Label3D = Label3D.new()
+		label.text = bd["text"]
+		label.modulate = Color(0.95, 0.95, 1.0)
+		label.outline_modulate = Color(0.05, 0.10, 0.20)
+		label.outline_size = 8
+		label.font_size = 84
+		label.pixel_size = 0.014
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.position = Vector3(0, bd["y"], 0)
+		balloon.add_child(label)
+		# Slow bob
+		var tw: Tween = ball.create_tween().set_loops()
+		tw.tween_property(ball, "position:y", bd["y"] + 0.45, 2.0 + randf())
+		tw.tween_property(ball, "position:y", bd["y"], 2.0 + randf())
 
 
 const D3_CENTER := Vector3(150, 0, 0)
