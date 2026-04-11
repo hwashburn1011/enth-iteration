@@ -51,6 +51,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_food_cart(geom)
 	_build_th_food_cart_chef_npc(town)
 	_build_th_busker_npc(town)
+	_build_th_courier_drones(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -6272,3 +6273,162 @@ func _build_th_busker_npc(town: Node) -> void:
 	var dpulse: Tween = npc.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_courier_drones(geom: Node) -> void:
+	## Epic-10 T35: 4 small floating brass courier drones orbiting the
+	## plaza at altitude, each carrying a tiny glowing data parcel. Each
+	## drone: brass spherical body with 4 brass propeller blades on top,
+	## glowing cyan eye dot, glowing amber tail thruster, dangling parcel
+	## box. Each drone follows a circular orbit pivot at varied radius
+	## and altitude, with its own slow yaw spin and parcel bob.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_CourierDrones"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var thruster_mat: StandardMaterial3D = StandardMaterial3D.new()
+	thruster_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	thruster_mat.emission_enabled = true
+	thruster_mat.emission = Color(1.0, 0.55, 0.10)
+	thruster_mat.emission_energy_multiplier = 7.5
+	thruster_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 drones — each on its own orbit pivot at varied radius/altitude
+	var drone_data: Array = [
+		{"radius": 7.0, "altitude": 9.0, "period": 14.0, "phase": 0.0},
+		{"radius": 9.5, "altitude": 11.0, "period": 18.0, "phase": PI / 2.0},
+		{"radius": 6.5, "altitude": 8.0, "period": 16.0, "phase": PI},
+		{"radius": 8.5, "altitude": 10.0, "period": 20.0, "phase": 3.0 * PI / 2.0},
+	]
+	for i in drone_data.size():
+		var dd: Dictionary = drone_data[i]
+		# Orbit pivot — rotates around Y to make the drone fly in a circle
+		var orbit_pivot: Node3D = Node3D.new()
+		orbit_pivot.name = "DroneOrbit_" + str(i)
+		orbit_pivot.position = Vector3(0, 0, 0)
+		# Set the initial phase rotation
+		orbit_pivot.rotation.y = dd["phase"]
+		pivot.add_child(orbit_pivot)
+		# Drone group — offset from the orbit pivot so it traces a circle
+		var dgroup: Node3D = Node3D.new()
+		dgroup.name = "Drone_" + str(i)
+		dgroup.position = Vector3(dd["radius"], dd["altitude"], 0)
+		# Face the orbit direction (perpendicular to the radial vector)
+		dgroup.rotation.y = -PI / 2.0
+		orbit_pivot.add_child(dgroup)
+		# ---- Brass spherical body ----
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.25
+		bm.height = 0.45
+		body.mesh = bm
+		body.material_override = brass_mat
+		body.position = Vector3(0, 0, 0)
+		dgroup.add_child(body)
+		# ---- 4 brass propeller blades on top ----
+		var prop_pivot: Node3D = Node3D.new()
+		prop_pivot.position = Vector3(0, 0.30, 0)
+		dgroup.add_child(prop_pivot)
+		for p in 4:
+			var pang: float = float(p) / 4.0 * TAU
+			var blade: MeshInstance3D = MeshInstance3D.new()
+			var blm: BoxMesh = BoxMesh.new()
+			blm.size = Vector3(0.45, 0.04, 0.10)
+			blade.mesh = blm
+			blade.material_override = brass_mat
+			blade.position = Vector3(cos(pang) * 0.20, 0, sin(pang) * 0.20)
+			blade.rotation.y = pang
+			prop_pivot.add_child(blade)
+		# Prop hub (small brass cap)
+		var hub: MeshInstance3D = MeshInstance3D.new()
+		var hbm: SphereMesh = SphereMesh.new()
+		hbm.radius = 0.06
+		hbm.height = 0.12
+		hub.mesh = hbm
+		hub.material_override = brass_mat
+		hub.position = Vector3(0, 0.04, 0)
+		prop_pivot.add_child(hub)
+		# ---- Glowing cyan eye dot on the front of the body ----
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.material_override = data_mat
+		eye.position = Vector3(0, 0.05, -0.22)
+		dgroup.add_child(eye)
+		# ---- Glowing amber tail thruster on the back ----
+		var thruster: MeshInstance3D = MeshInstance3D.new()
+		var thm: SphereMesh = SphereMesh.new()
+		thm.radius = 0.08
+		thm.height = 0.16
+		thruster.mesh = thm
+		thruster.material_override = thruster_mat
+		thruster.position = Vector3(0, 0, 0.30)
+		dgroup.add_child(thruster)
+		# ---- Dangling parcel box ----
+		# Brass tether (small thin cylinder)
+		var tether: MeshInstance3D = MeshInstance3D.new()
+		var ttm: CylinderMesh = CylinderMesh.new()
+		ttm.top_radius = 0.018
+		ttm.bottom_radius = 0.018
+		ttm.height = 0.30
+		tether.mesh = ttm
+		tether.material_override = brass_mat
+		tether.position = Vector3(0, -0.30, 0)
+		dgroup.add_child(tether)
+		# Parcel box
+		var parcel: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(0.22, 0.20, 0.22)
+		parcel.mesh = pmm
+		parcel.material_override = brass_mat
+		parcel.position = Vector3(0, -0.55, 0)
+		dgroup.add_child(parcel)
+		# Glowing data wrap on the parcel (small unshaded cyan stripe)
+		var wrap: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.24, 0.04, 0.24)
+		wrap.mesh = wm
+		wrap.material_override = data_mat
+		wrap.position = Vector3(0, -0.55, 0)
+		dgroup.add_child(wrap)
+		# ---- Per-drone OmniLight (warm wash) ----
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 0, 0)
+		lt.light_color = Color(1.0, 0.65, 0.20)
+		lt.light_energy = 1.4
+		lt.omni_range = 4.5
+		dgroup.add_child(lt)
+		# ---- Tweens ----
+		# Slow propeller spin
+		var prop_spin: Tween = pivot.create_tween().set_loops()
+		prop_spin.tween_property(prop_pivot, "rotation:y", TAU, 1.5)
+		# Orbit rotation around the plaza
+		var orbit: Tween = pivot.create_tween().set_loops()
+		orbit.tween_property(orbit_pivot, "rotation:y", dd["phase"] + TAU, dd["period"])
+		# Per-drone Y bob (parcel sway feel)
+		var bob_period: float = 1.6 + float(i) * 0.20
+		var bob: Tween = pivot.create_tween().set_loops()
+		bob.tween_property(dgroup, "position:y", dd["altitude"] + 0.30, bob_period).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(dgroup, "position:y", dd["altitude"] - 0.30, bob_period).set_ease(Tween.EASE_IN_OUT)
+	# Shared data + thruster pulse
+	var dpulse2: Tween = pivot.create_tween().set_loops()
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	var tpulse: Tween = pivot.create_tween().set_loops()
+	tpulse.tween_property(thruster_mat, "emission_energy_multiplier", 9.5, 0.9).set_ease(Tween.EASE_IN_OUT)
+	tpulse.tween_property(thruster_mat, "emission_energy_multiplier", 6.0, 0.9).set_ease(Tween.EASE_IN_OUT)
