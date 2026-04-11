@@ -1293,6 +1293,16 @@ func _build_east_plaza() -> void:
 	_build_score_board(geom)
 	# Epic-1 T35: cyan chalk technique lines painted on the spar zone floor
 	_build_chalk_lines(geom)
+	# Epic-1 T36: quest bulletin board with floating mock quest entries
+	_build_quest_board(geom)
+	# Epic-1 T37: data recycling bins (trash bins) at plaza corners
+	_build_data_bins(geom)
+	# Epic-1 T38: animated street lamps with on/off cycle
+	_build_animated_lamps(geom)
+	# Epic-1 T39: stairs ramp connecting plaza to loading dock
+	_build_dock_ramp(geom)
+	# Epic-1 T40: plaza sub-zone number markers (floating "1/5" etc)
+	_build_zone_numbers(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -2127,6 +2137,227 @@ func _build_security_drones(geom: Node) -> void:
 		var tween: Tween = create_tween().set_loops()
 		for waypoint in path:
 			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_quest_board(geom: Node) -> void:
+	## Epic-1 T36: quest bulletin board at (24, 0, -8) with 3 mock quest entries
+	var board: Node3D = Node3D.new()
+	board.name = "EastPlazaQuestBoard"
+	board.position = Vector3(24, 0, -8)
+	geom.add_child(board)
+	# Backboard panel
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(1.6, 1.8, 0.10)
+	back.mesh = bmesh
+	back.position = Vector3(0, 1.4, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.18, 0.10, 0.04)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.65, 0.40, 0.10)
+	bmat.emission_energy_multiplier = 0.5
+	bmat.metallic = 0.4
+	back.material_override = bmat
+	board.add_child(back)
+	# 3 mock quest "papers" (small glowing rectangles)
+	var quest_titles: Array[String] = [
+		"Bug Hunt: 5 Glitches",
+		"Cipher's Errand",
+		"Collect 10 Data Shards",
+	]
+	for i in quest_titles.size():
+		var paper: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(1.3, 0.35, 0.02)
+		paper.mesh = pmesh
+		paper.position = Vector3(0, 2.0 - i * 0.45, -0.06)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.95, 0.85, 0.55)
+		pmat.emission_enabled = true
+		pmat.emission = Color(1.0, 0.85, 0.45)
+		pmat.emission_energy_multiplier = 0.7
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		paper.material_override = pmat
+		board.add_child(paper)
+		# Title label
+		var label: Label3D = Label3D.new()
+		label.text = quest_titles[i]
+		label.position = Vector3(0, 2.0 - i * 0.45, -0.075)
+		label.modulate = Color(0.20, 0.10, 0.02)
+		label.outline_modulate = Color(1.0, 0.85, 0.45, 0.4)
+		label.outline_size = 3
+		label.font_size = 16
+		label.no_depth_test = true
+		board.add_child(label)
+	# Wood post supports
+	for x: float in [-0.7, 0.7]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.06
+		pmesh.bottom_radius = 0.08
+		pmesh.height = 2.6
+		post.mesh = pmesh
+		post.position = Vector3(x, 1.3, 0.05)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.18, 0.10, 0.04)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.65, 0.40, 0.10)
+		pmat.emission_energy_multiplier = 0.4
+		post.material_override = pmat
+		board.add_child(post)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var col_shape: CollisionShape3D = CollisionShape3D.new()
+	var col_box: BoxShape3D = BoxShape3D.new()
+	col_box.size = Vector3(1.7, 2.6, 0.3)
+	col_shape.shape = col_box
+	col_shape.position = Vector3(0, 1.3, 0)
+	sb.add_child(col_shape)
+	board.add_child(sb)
+
+
+func _build_data_bins(geom: Node) -> void:
+	## Epic-1 T37: 4 data recycling bins at plaza corners
+	for entry in [
+		[Vector3(24, 0, 12), Color(0.30, 0.85, 0.50)],   # green RECYCLE
+		[Vector3(40, 0, 12), Color(1.0, 0.55, 0.20)],    # orange WASTE
+		[Vector3(24, 0, -12), Color(0.85, 0.30, 0.55)],  # pink BUGS
+		[Vector3(40, 0, -12), Color(0.30, 0.65, 0.95)],  # blue DATA
+	]:
+		var pos: Vector3 = entry[0]
+		var hue: Color = entry[1]
+		var bin: Node3D = Node3D.new()
+		bin.position = pos
+		geom.add_child(bin)
+		# Bin body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CylinderMesh = CylinderMesh.new()
+		bmesh.top_radius = 0.32
+		bmesh.bottom_radius = 0.28
+		bmesh.height = 0.8
+		body.mesh = bmesh
+		body.position = Vector3(0, 0.4, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.10, 0.18, 0.26)
+		bmat.emission_enabled = true
+		bmat.emission = hue
+		bmat.emission_energy_multiplier = 0.6
+		bmat.metallic = 0.55
+		body.material_override = bmat
+		bin.add_child(body)
+		# Lid
+		var lid: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: CylinderMesh = CylinderMesh.new()
+		lmesh.top_radius = 0.34
+		lmesh.bottom_radius = 0.34
+		lmesh.height = 0.06
+		lid.mesh = lmesh
+		lid.position = Vector3(0, 0.83, 0)
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = hue * 0.6
+		lmat.emission_enabled = true
+		lmat.emission = hue
+		lmat.emission_energy_multiplier = 1.2
+		lid.material_override = lmat
+		bin.add_child(lid)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_capsule: CapsuleShape3D = CapsuleShape3D.new()
+		col_capsule.radius = 0.34
+		col_capsule.height = 0.86
+		col_shape.shape = col_capsule
+		col_shape.position = Vector3(0, 0.43, 0)
+		sb.add_child(col_shape)
+		bin.add_child(sb)
+
+
+func _build_animated_lamps(geom: Node) -> void:
+	## Epic-1 T38: 4 animated street lamps with sequential on/off cycle
+	## arranged along the plaza north edge
+	for i: int in 4:
+		var lamp_root: Node3D = Node3D.new()
+		lamp_root.position = Vector3(26 + i * 4, 0, -10)
+		geom.add_child(lamp_root)
+		# Tall post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.06
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 3.0
+		post.mesh = pmesh
+		post.position = Vector3(0, 1.5, 0)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.10, 0.18, 0.26)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.20, 0.55, 0.75)
+		pmat.emission_energy_multiplier = 0.5
+		pmat.metallic = 0.7
+		post.material_override = pmat
+		lamp_root.add_child(post)
+		# Lamp head sphere
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: SphereMesh = SphereMesh.new()
+		hmesh.radius = 0.22
+		hmesh.height = 0.44
+		head.mesh = hmesh
+		head.position = Vector3(0, 3.1, 0)
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = Color(1.0, 0.85, 0.40)
+		hmat.emission_enabled = true
+		hmat.emission = Color(1.0, 0.80, 0.30)
+		hmat.emission_energy_multiplier = 2.5
+		hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		head.material_override = hmat
+		lamp_root.add_child(head)
+		# Sequential pulse — each lamp dims in turn
+		var tween: Tween = create_tween().set_loops()
+		tween.tween_interval(i * 0.4)
+		tween.tween_property(hmat, "emission_energy_multiplier", 0.5, 0.5).set_ease(Tween.EASE_OUT)
+		tween.tween_property(hmat, "emission_energy_multiplier", 2.5, 0.5).set_ease(Tween.EASE_IN)
+		tween.tween_interval((4 - i) * 0.4)
+
+
+func _build_dock_ramp(geom: Node) -> void:
+	## Epic-1 T39: angled ramp slab connecting the loading dock platform
+	## to the plaza floor
+	var ramp: MeshInstance3D = MeshInstance3D.new()
+	ramp.name = "EastPlazaDockRamp"
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(1.8, 0.1, 2.0)
+	ramp.mesh = rmesh
+	ramp.position = Vector3(40, 0.15, 3)
+	ramp.rotation_degrees = Vector3(8, 0, 0)
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.12, 0.18, 0.26)
+	rmat.emission_enabled = true
+	rmat.emission = Color(0.20, 0.55, 0.75)
+	rmat.emission_energy_multiplier = 0.45
+	rmat.metallic = 0.6
+	ramp.material_override = rmat
+	geom.add_child(ramp)
+
+
+func _build_zone_numbers(geom: Node) -> void:
+	## Epic-1 T40: floating zone-number labels above each sub-zone
+	var zone_data: Array = [
+		[Vector3(32, 4.8, -1), "1 — MARKET"],
+		[Vector3(40, 4.8, -14), "2 — SPAR"],
+		[Vector3(40, 4.8, 14), "3 — ARENA"],
+		[Vector3(42, 4.8, 0), "4 — DOCK"],
+		[Vector3(29, 4.8, -8), "5 — VENDORS"],
+	]
+	for entry in zone_data:
+		var label: Label3D = Label3D.new()
+		label.text = entry[1]
+		label.position = entry[0]
+		label.modulate = Color(1.0, 0.65, 0.20)
+		label.outline_modulate = Color(0, 0.05, 0.10, 0.95)
+		label.outline_size = 7
+		label.font_size = 24
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.no_depth_test = true
+		geom.add_child(label)
 
 
 func _build_weapon_rack(geom: Node) -> void:
