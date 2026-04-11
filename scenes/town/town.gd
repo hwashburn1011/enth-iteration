@@ -1520,6 +1520,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_hover_platform(geom)
 	# Epic-2 T45: arms dealer NPC with weapon display
 	_build_d2_arms_dealer_npc()
+	# Epic-2 T46: cracked road path tiles through the district
+	_build_d2_cracked_road(geom)
+	# Epic-2 T47: med tent / first aid station
+	_build_d2_med_tent(geom)
+	# Epic-2 T48: rusted satellite dish dish landmark
+	_build_d2_satellite_dish(geom)
+	# Epic-2 T49: caged fight arena with chain link walls
+	_build_d2_cage_arena(geom)
+	# Epic-2 T50: second mini-boss — Corrupted Titan
+	_build_d2_corrupted_titan(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -11447,4 +11457,439 @@ func _build_d2_arms_dealer_npc() -> void:
 	dealer.add_child(label)
 
 
+func _build_d2_cracked_road(geom: Node) -> void:
+	## Epic-2 T46: 14 cracked broken stone road tiles forming a winding path
+	## from the entrance gate (x=72) east to the trial pit area. Each tile
+	## has a slight random offset/rotation to look weathered.
+	var road: Node3D = Node3D.new()
+	road.name = "D2CrackedRoad"
+	geom.add_child(road)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.16, 0.12)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(1.0, 0.55, 0.20)
+	stone_mat.emission_energy_multiplier = 0.35
+	for i in 14:
+		var tile: MeshInstance3D = MeshInstance3D.new()
+		tile.name = "RoadTile_%d" % i
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(2.0 + randf_range(-0.20, 0.20), 0.10, 2.0 + randf_range(-0.20, 0.20))
+		tile.mesh = tmesh
+		# S-curve from entrance toward trial pit
+		var t: float = float(i) / 14.0
+		var x: float = 72.0 + i * 2.4
+		var z: float = sin(t * 4.0) * 1.6
+		tile.position = Vector3(x, 0.05, z)
+		tile.rotation = Vector3(0, deg_to_rad(randf_range(-12, 12)), 0)
+		tile.material_override = stone_mat
+		road.add_child(tile)
+		# Random emissive crack across the tile
+		if i % 3 == 0:
+			var crack: MeshInstance3D = MeshInstance3D.new()
+			var cmesh: BoxMesh = BoxMesh.new()
+			cmesh.size = Vector3(1.6, 0.04, 0.06)
+			crack.mesh = cmesh
+			crack.position = tile.position + Vector3(0, 0.06, 0)
+			crack.rotation = Vector3(0, deg_to_rad(randf_range(-45, 45)), 0)
+			var cmat: StandardMaterial3D = StandardMaterial3D.new()
+			cmat.albedo_color = Color(1.0, 0.40, 0.20)
+			cmat.emission_enabled = true
+			cmat.emission = Color(1.0, 0.55, 0.20)
+			cmat.emission_energy_multiplier = 1.6
+			cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			crack.material_override = cmat
+			road.add_child(crack)
+
+
+func _build_d2_med_tent(geom: Node) -> void:
+	## Epic-2 T47: a small first-aid med tent. White cloth canopy on 4 poles
+	## with a glowing red cross on top + a small wooden cot inside.
+	var tent: Node3D = Node3D.new()
+	tent.name = "D2MedTent"
+	tent.position = D2_CENTER + Vector3(-8, 0, 14)
+	geom.add_child(tent)
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.18, 0.16, 0.14)
+	post_mat.metallic = 0.30
+	for ox: float in [-1.2, 1.2]:
+		for oz: float in [-1.0, 1.0]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.06
+			pmesh.bottom_radius = 0.08
+			pmesh.height = 2.4
+			post.mesh = pmesh
+			post.position = Vector3(ox, 1.20, oz)
+			post.material_override = post_mat
+			tent.add_child(post)
+	# White canopy roof — slightly angled prism
+	var canopy_mat: StandardMaterial3D = StandardMaterial3D.new()
+	canopy_mat.albedo_color = Color(0.85, 0.85, 0.92)
+	canopy_mat.emission_enabled = true
+	canopy_mat.emission = Color(0.95, 0.95, 1.0)
+	canopy_mat.emission_energy_multiplier = 0.30
+	canopy_mat.metallic = 0.10
+	canopy_mat.roughness = 0.65
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: PrismMesh = PrismMesh.new()
+	rmesh.size = Vector3(2.8, 0.85, 2.4)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 2.85, 0)
+	roof.material_override = canopy_mat
+	tent.add_child(roof)
+	# Red cross on top of roof
+	var cross_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cross_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	cross_mat.emission_enabled = true
+	cross_mat.emission = Color(1.0, 0.30, 0.30)
+	cross_mat.emission_energy_multiplier = 1.8
+	cross_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Vertical bar
+	var v_bar: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.20, 0.85, 0.10)
+	v_bar.mesh = vm
+	v_bar.position = Vector3(0, 3.55, 0)
+	v_bar.material_override = cross_mat
+	tent.add_child(v_bar)
+	# Horizontal bar
+	var h_bar: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.65, 0.20, 0.10)
+	h_bar.mesh = hm
+	h_bar.position = Vector3(0, 3.55, 0)
+	h_bar.material_override = cross_mat
+	tent.add_child(h_bar)
+	# Cot inside (a low box with a pillow)
+	var cot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cot_mat.albedo_color = Color(0.55, 0.50, 0.40)
+	cot_mat.metallic = 0.10
+	cot_mat.roughness = 0.75
+	var cot: MeshInstance3D = MeshInstance3D.new()
+	var cot_mesh: BoxMesh = BoxMesh.new()
+	cot_mesh.size = Vector3(1.85, 0.18, 0.65)
+	cot.mesh = cot_mesh
+	cot.position = Vector3(0, 0.30, 0)
+	cot.material_override = cot_mat
+	tent.add_child(cot)
+	# Pillow (smaller box)
+	var pillow: MeshInstance3D = MeshInstance3D.new()
+	var pmesh2: BoxMesh = BoxMesh.new()
+	pmesh2.size = Vector3(0.40, 0.10, 0.30)
+	pillow.mesh = pmesh2
+	pillow.position = Vector3(-0.65, 0.45, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.85, 0.85, 0.85)
+	pillow.material_override = pmat
+	tent.add_child(pillow)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "MED TENT"
+	label.position = Vector3(0, 4.20, 0)
+	label.modulate = Color(1.0, 0.30, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	tent.add_child(label)
+	# Collision around the tent
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.8, 2.4, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.20, 0)
+	sb.add_child(cs)
+	tent.add_child(sb)
+
+
+func _build_d2_satellite_dish(geom: Node) -> void:
+	## Epic-2 T48: a tall rusted satellite dish on a tilted base, slowly
+	## rotating to scan the sky. The dish itself is a wide flat disc with
+	## a focal element on a short stalk.
+	var sat: Node3D = Node3D.new()
+	sat.name = "D2SatelliteDish"
+	sat.position = D2_CENTER + Vector3(22, 0, 0)
+	geom.add_child(sat)
+	var rust_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rust_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	rust_mat.metallic = 0.55
+	rust_mat.roughness = 0.65
+	# Tilted base mast
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var mmesh: CylinderMesh = CylinderMesh.new()
+	mmesh.top_radius = 0.18
+	mmesh.bottom_radius = 0.30
+	mmesh.height = 4.0
+	mast.mesh = mmesh
+	mast.position = Vector3(0, 2.0, 0)
+	mast.rotation = Vector3(deg_to_rad(-12), 0, 0)
+	mast.material_override = rust_mat
+	sat.add_child(mast)
+	# Pivot for the dish (rotates)
+	var dish_pivot: Node3D = Node3D.new()
+	dish_pivot.position = Vector3(0, 4.0, 0.40)
+	sat.add_child(dish_pivot)
+	# Dish — wide flat curved disc (use a flat cylinder)
+	var dish: MeshInstance3D = MeshInstance3D.new()
+	var dmesh: CylinderMesh = CylinderMesh.new()
+	dmesh.top_radius = 1.40
+	dmesh.bottom_radius = 1.40
+	dmesh.height = 0.10
+	dish.mesh = dmesh
+	dish.rotation = Vector3(deg_to_rad(75), 0, 0)
+	dish.material_override = rust_mat
+	dish_pivot.add_child(dish)
+	# Focal element on a stalk
+	var stalk: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.04
+	smesh.bottom_radius = 0.04
+	smesh.height = 1.0
+	stalk.mesh = smesh
+	stalk.position = Vector3(0, 0.50, 0.10)
+	stalk.rotation = Vector3(deg_to_rad(15), 0, 0)
+	stalk.material_override = rust_mat
+	dish_pivot.add_child(stalk)
+	var focal: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: SphereMesh = SphereMesh.new()
+	fmesh.radius = 0.18
+	fmesh.height = 0.36
+	focal.mesh = fmesh
+	focal.position = Vector3(0, 1.0, 0.20)
+	var focal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	focal_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	focal_mat.emission_enabled = true
+	focal_mat.emission = Color(0.55, 0.95, 1.0)
+	focal_mat.emission_energy_multiplier = 2.4
+	focal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	focal.material_override = focal_mat
+	dish_pivot.add_child(focal)
+	# Slow rotation scanning the sky
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(dish_pivot, "rotation:y", deg_to_rad(80), 6.0).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_property(dish_pivot, "rotation:y", deg_to_rad(-80), 6.0).set_ease(Tween.EASE_IN_OUT)
+	# Collision around mast
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.45
+	cap.height = 4.0
+	cs.shape = cap
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	sat.add_child(sb)
+
+
+func _build_d2_cage_arena(geom: Node) -> void:
+	## Epic-2 T49: a small caged fight arena with chain-link walls + a
+	## center floor pad. 8 vertical bars + 8 horizontal cross-bars on each
+	## of the 4 sides, leaving an entrance gap on the south side.
+	var arena: Node3D = Node3D.new()
+	arena.name = "D2CageArena"
+	arena.position = D2_CENTER + Vector3(8, 0, -3)
+	geom.add_child(arena)
+	# Floor pad — 5x5 dark disc
+	var pad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pad_mat.albedo_color = Color(0.16, 0.10, 0.08)
+	pad_mat.metallic = 0.40
+	pad_mat.roughness = 0.55
+	pad_mat.emission_enabled = true
+	pad_mat.emission = Color(1.0, 0.40, 0.20)
+	pad_mat.emission_energy_multiplier = 0.40
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pad_mesh: CylinderMesh = CylinderMesh.new()
+	pad_mesh.top_radius = 2.5
+	pad_mesh.bottom_radius = 2.5
+	pad_mesh.height = 0.08
+	pad.mesh = pad_mesh
+	pad.position = Vector3(0, 0.05, 0)
+	pad.material_override = pad_mat
+	arena.add_child(pad)
+	# Cage bars — 4 sides, 6 verticals each side
+	var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bar_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	bar_mat.metallic = 0.85
+	bar_mat.roughness = 0.30
+	# 4 walls (north, east, west — south has entrance)
+	var wall_specs: Array = [
+		[Vector3(0, 0, -3.0), Vector3(0, 0, 0)],  # North wall
+		[Vector3(3.0, 0, 0), Vector3(0, deg_to_rad(90), 0)],  # East wall
+		[Vector3(-3.0, 0, 0), Vector3(0, deg_to_rad(90), 0)],  # West wall
+	]
+	for spec in wall_specs:
+		var wall: Node3D = Node3D.new()
+		wall.position = spec[0]
+		wall.rotation = spec[1]
+		arena.add_child(wall)
+		# 6 vertical bars
+		for v in 6:
+			var vbar: MeshInstance3D = MeshInstance3D.new()
+			var vbm: CylinderMesh = CylinderMesh.new()
+			vbm.top_radius = 0.05
+			vbm.bottom_radius = 0.05
+			vbm.height = 2.4
+			vbar.mesh = vbm
+			vbar.position = Vector3(-2.5 + v * 1.0, 1.20, 0)
+			vbar.material_override = bar_mat
+			wall.add_child(vbar)
+		# 4 horizontal cross-bars
+		for h in 4:
+			var hbar: MeshInstance3D = MeshInstance3D.new()
+			var hbm: BoxMesh = BoxMesh.new()
+			hbm.size = Vector3(5.0, 0.05, 0.05)
+			hbar.mesh = hbm
+			hbar.position = Vector3(0, 0.30 + h * 0.65, 0)
+			hbar.material_override = bar_mat
+			wall.add_child(hbar)
+	# Top corner posts (4 thick posts framing the cage)
+	for ox: float in [-3.0, 3.0]:
+		for oz: float in [-3.0, 3.0]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.10
+			pmesh.bottom_radius = 0.12
+			pmesh.height = 2.6
+			post.mesh = pmesh
+			post.position = Vector3(ox, 1.30, oz)
+			post.material_override = bar_mat
+			arena.add_child(post)
+			# Collision per post
+			var sb: StaticBody3D = StaticBody3D.new()
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.25
+			cap.height = 2.6
+			cs.shape = cap
+			cs.position = Vector3(ox, 1.30, oz)
+			sb.add_child(cs)
+			arena.add_child(sb)
+	# CAGE FIGHT label above
+	var label: Label3D = Label3D.new()
+	label.text = "CAGE FIGHT"
+	label.position = Vector3(0, 3.0, 0)
+	label.modulate = Color(1.0, 0.40, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	arena.add_child(label)
+
+
+func _build_d2_corrupted_titan(geom: Node) -> void:
+	## Epic-2 T50: a 2nd mini-boss visual called "Corrupted Titan" — taller
+	## than the glitch beast. Humanoid silhouette with hulking shoulders,
+	## glitching geometry segments around the body, 2 huge red eyes, slow
+	## intimidating pacing tween.
+	var titan: Node3D = Node3D.new()
+	titan.name = "D2CorruptedTitan"
+	titan.position = D2_CENTER + Vector3(20, 0, -16)
+	geom.add_child(titan)
+	# Body torso — wide block
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.10, 0.05, 0.10)
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.85, 0.20, 0.40)
+	body_mat.emission_energy_multiplier = 0.85
+	body_mat.metallic = 0.55
+	body_mat.roughness = 0.45
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(2.0, 2.4, 1.40)
+	torso.mesh = tmesh
+	torso.position = Vector3(0, 2.20, 0)
+	torso.material_override = body_mat
+	titan.add_child(torso)
+	# Hulking shoulder pads (2 wide blocks on top of torso)
+	for sx: float in [-1.20, 1.20]:
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.85, 0.55, 1.40)
+		pad.mesh = pmesh
+		pad.position = Vector3(sx, 3.20, 0)
+		pad.material_override = body_mat
+		titan.add_child(pad)
+	# Head — smaller block
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(1.0, 0.95, 1.0)
+	head.mesh = hmesh
+	head.position = Vector3(0, 4.0, 0)
+	head.material_override = body_mat
+	titan.add_child(head)
+	# 2 huge red eyes on the head
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.30, 0.30)
+	eye_mat.emission_energy_multiplier = 3.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.25, 0.25]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.18
+		em.height = 0.36
+		eye.mesh = em
+		eye.position = Vector3(ex, 4.0, 0.55)
+		eye.material_override = eye_mat
+		titan.add_child(eye)
+	# 2 huge legs (wide pillars)
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.10, 0.05, 0.08)
+	leg_mat.metallic = 0.40
+	leg_mat.roughness = 0.55
+	leg_mat.emission_enabled = true
+	leg_mat.emission = Color(0.85, 0.20, 0.40)
+	leg_mat.emission_energy_multiplier = 0.40
+	for sx: float in [-0.55, 0.55]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.65, 1.0, 0.55)
+		leg.mesh = lm
+		leg.position = Vector3(sx, 0.50, 0)
+		leg.material_override = leg_mat
+		titan.add_child(leg)
+	# Glitching geometry segments — 6 random small boxes orbiting torso
+	var glitch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glitch_mat.albedo_color = Color(0.85, 0.20, 0.40, 0.65)
+	glitch_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glitch_mat.emission_enabled = true
+	glitch_mat.emission = Color(1.0, 0.30, 0.55)
+	glitch_mat.emission_energy_multiplier = 2.0
+	glitch_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var glitch: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(0.30, 0.30, 0.30)
+		glitch.mesh = gm
+		var angle: float = (float(i) / 6.0) * TAU
+		glitch.position = Vector3(cos(angle) * 1.50, 2.20 + (i - 3) * 0.30, sin(angle) * 1.50)
+		glitch.material_override = glitch_mat
+		titan.add_child(glitch)
+		# Flicker visibility
+		var fl: Tween = create_tween().set_loops()
+		fl.tween_interval(0.5 + i * 0.1)
+		fl.tween_property(glitch, "visible", false, 0.0)
+		fl.tween_interval(0.10)
+		fl.tween_property(glitch, "visible", true, 0.0)
+		fl.tween_interval(0.4)
+	# Slow pacing tween
+	var origin: Vector3 = D2_CENTER + Vector3(20, 0, -16)
+	var pace: Tween = create_tween().set_loops()
+	pace.tween_property(titan, "rotation:y", deg_to_rad(180), 0.6)
+	pace.tween_property(titan, "position", origin + Vector3(-6, 0, 0), 10.0)
+	pace.tween_property(titan, "rotation:y", 0.0, 0.6)
+	pace.tween_property(titan, "position", origin, 10.0)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "CORRUPTED TITAN"
+	label.position = Vector3(0, 5.20, 0)
+	label.modulate = Color(1.0, 0.30, 0.40)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 24
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	titan.add_child(label)
 
