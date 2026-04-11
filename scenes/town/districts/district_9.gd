@@ -88,6 +88,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_guildhall(geom)
 	_build_d9_guildmaster_vorn_npc(town)
 	_build_d9_guildhall_banners(geom)
+	_build_d9_guildhall_approach_path(geom)
 	print("[D9Builder] done")
 
 
@@ -6687,5 +6688,144 @@ func _build_d9_guildhall_banners(geom: Node) -> void:
 		var epulse: Tween = bgroup.create_tween().set_loops()
 		epulse.tween_property(ember_mat, "emission_energy_multiplier", 10.0, 1.3).set_ease(Tween.EASE_IN_OUT)
 		epulse.tween_property(ember_mat, "emission_energy_multiplier", 6.0, 1.3).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_guildhall_approach_path(geom: Node) -> void:
+	## Epic-9 T68: basalt slab walkway connecting the cascade pool area to
+	## the guildhall doors. 8 large basalt tiles with glowing magma seams
+	## between them, plus 4 small ember braziers along the sides. Establishes
+	## wayfinding and ties the new building to the rest of the cascade zone.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_GuildhallApproachPath"
+	# Path runs from the obsidian merchant stall (~46, -8) toward the
+	# guildhall doors (~38, -19), so anchor partway along the line
+	pivot.position = D9_CENTER + Vector3(42, 0.02, -13)
+	geom.add_child(pivot)
+	# Basalt slab material
+	var slab_mat: StandardMaterial3D = StandardMaterial3D.new()
+	slab_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	slab_mat.metallic = 0.18
+	slab_mat.roughness = 0.85
+	slab_mat.emission_enabled = true
+	slab_mat.emission = Color(0.35, 0.12, 0.04)
+	slab_mat.emission_energy_multiplier = 0.18
+	# Magma seam material — bright unshaded amber
+	var seam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seam_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	seam_mat.emission_enabled = true
+	seam_mat.emission = Color(1.0, 0.55, 0.10)
+	seam_mat.emission_energy_multiplier = 4.5
+	seam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 8 slabs laid along a diagonal toward the guildhall (-X, -Z direction)
+	# Each step: -1.0 X, -1.5 Z
+	for i in 8:
+		var sx: float = float(i) * -1.0
+		var sz: float = float(i) * -1.5
+		# Slab
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.40, 0.18, 1.60)
+		slab.mesh = sm
+		slab.material_override = slab_mat
+		slab.position = Vector3(sx, 0.09, sz)
+		# Slight Y rotation to align with diagonal direction
+		slab.rotation.y = atan2(-1.0, -1.5)
+		pivot.add_child(slab)
+		# Glowing seam line embedded in the slab
+		var seam: MeshInstance3D = MeshInstance3D.new()
+		var seamesh: BoxMesh = BoxMesh.new()
+		seamesh.size = Vector3(2.20, 0.05, 0.10)
+		seam.mesh = seamesh
+		seam.material_override = seam_mat
+		seam.position = Vector3(sx, 0.20, sz)
+		seam.rotation.y = atan2(-1.0, -1.5)
+		pivot.add_child(seam)
+	# 4 small ember braziers along the path sides (alternating L/R)
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var brazier_positions: Array = [
+		Vector3(0.5, 0, -0.0),
+		Vector3(-2.5, 0, -3.0),
+		Vector3(-4.5, 0, -6.0),
+		Vector3(-6.5, 0, -9.0),
+	]
+	var side_offsets: Array = [Vector3(1.4, 0, -0.9), Vector3(-1.4, 0, 0.9), Vector3(1.4, 0, -0.9), Vector3(-1.4, 0, 0.9)]
+	for i in 4:
+		var bp: Vector3 = brazier_positions[i] + side_offsets[i]
+		# Brazier post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.10
+		pm.bottom_radius = 0.14
+		pm.height = 0.85
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = bp + Vector3(0, 0.42, 0)
+		pivot.add_child(post)
+		# Brazier bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bowm: SphereMesh = SphereMesh.new()
+		bowm.radius = 0.20
+		bowm.height = 0.35
+		bowl.mesh = bowm
+		bowl.material_override = brass_mat
+		bowl.position = bp + Vector3(0, 0.92, 0)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		pivot.add_child(bowl)
+		# Flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.16
+		flm.height = 0.32
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = bp + Vector3(0, 1.10, 0)
+		pivot.add_child(flame)
+		# OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = bp + Vector3(0, 1.10, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.8
+		lt.omni_range = 5.0
+		pivot.add_child(lt)
+		# Ember motes rising from each brazier
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = bp + Vector3(0, 1.20, 0)
+		motes.amount = 12
+		motes.lifetime = 1.8
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 12.0
+		pmat.initial_velocity_min = 0.4
+		pmat.initial_velocity_max = 0.8
+		pmat.gravity = Vector3(0, 0.3, 0)
+		pmat.scale_min = 0.04
+		pmat.scale_max = 0.08
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.03
+		psmesh.height = 0.06
+		motes.draw_pass_1 = psmesh
+		pivot.add_child(motes)
+	# Seam pulse — slowly breathe magma color along the whole path
+	var seam_pulse: Tween = pivot.create_tween().set_loops()
+	seam_pulse.tween_property(seam_mat, "emission_energy_multiplier", 6.0, 2.2).set_ease(Tween.EASE_IN_OUT)
+	seam_pulse.tween_property(seam_mat, "emission_energy_multiplier", 3.5, 2.2).set_ease(Tween.EASE_IN_OUT)
+	# Brazier flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 
 
