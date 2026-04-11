@@ -32794,6 +32794,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_whale_watch_tower(geom)
 	# Epic-8 T80: tied barrels at dock edge
 	_build_d8_tied_barrels(geom)
+	# Epic-8 T81: mermaid fountain
+	_build_d8_mermaid_fountain(geom)
+	# Epic-8 T82: cartographer NPC
+	_build_d8_cartographer_npc()
+	# Epic-8 T83: floating market raft
+	_build_d8_market_raft(geom)
+	# Epic-8 T84: fish smokehouse
+	_build_d8_smokehouse(geom)
+	# Epic-8 T85: wind chimes
+	_build_d8_wind_chimes(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -38469,6 +38479,494 @@ func _build_d8_tied_barrels(geom: Node) -> void:
 	rope.position = Vector3(2.20, 0.85, 0)
 	rope.rotation_degrees = Vector3(0, 0, 90)
 	dock_barrels.add_child(rope)
+
+
+func _build_d8_mermaid_fountain(geom: Node) -> void:
+	## Epic-8 T81: bronze mermaid statue on a stone basin — decorative
+	## fountain with a particle water spray and a soft cyan light.
+	var fountain: Node3D = Node3D.new()
+	fountain.name = "D8MermaidFountain"
+	fountain.position = Vector3(D8_CENTER.x + 45, 0, 6)
+	geom.add_child(fountain)
+	# Stone basin (wide flat cylinder)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.62, 0.60, 0.58)
+	stone_mat.roughness = 0.85
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 2.4
+	bm.bottom_radius = 2.6
+	bm.height = 0.55
+	basin.mesh = bm
+	basin.material_override = stone_mat
+	basin.position = Vector3(0, 0.28, 0)
+	fountain.add_child(basin)
+	# Inner water disc (cyan emissive)
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.30, 0.65, 0.85, 0.75)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.35, 0.75, 0.95)
+	water_mat.emission_energy_multiplier = 0.45
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 2.20
+	wm.bottom_radius = 2.20
+	wm.height = 0.10
+	water.mesh = wm
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.55, 0)
+	fountain.add_child(water)
+	# Bronze mermaid statue (stylized)
+	var bronze: StandardMaterial3D = StandardMaterial3D.new()
+	bronze.albedo_color = Color(0.55, 0.40, 0.20)
+	bronze.metallic = 0.85
+	bronze.roughness = 0.35
+	var mermaid: Node3D = Node3D.new()
+	mermaid.position = Vector3(0, 0.60, 0)
+	fountain.add_child(mermaid)
+	# Tail (curved prism — wide at base)
+	var tail: MeshInstance3D = MeshInstance3D.new()
+	var tcm: CylinderMesh = CylinderMesh.new()
+	tcm.top_radius = 0.20
+	tcm.bottom_radius = 0.45
+	tcm.height = 1.30
+	tail.mesh = tcm
+	tail.material_override = bronze
+	tail.position = Vector3(0, 0.65, 0)
+	tail.rotation_degrees = Vector3(-12, 0, 0)
+	mermaid.add_child(tail)
+	# Tail fin (flat horizontal prism)
+	var fin: MeshInstance3D = MeshInstance3D.new()
+	var fpm: PrismMesh = PrismMesh.new()
+	fpm.size = Vector3(0.85, 0.45, 0.10)
+	fin.mesh = fpm
+	fin.material_override = bronze
+	fin.position = Vector3(0, 1.50, -0.15)
+	fin.rotation_degrees = Vector3(-90, 0, 0)
+	mermaid.add_child(fin)
+	# Torso
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tsm: SphereMesh = SphereMesh.new()
+	tsm.radius = 0.35
+	tsm.height = 0.85
+	torso.mesh = tsm
+	torso.material_override = bronze
+	torso.position = Vector3(0, 1.55, 0.10)
+	mermaid.add_child(torso)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.22
+	hsm.height = 0.44
+	head.mesh = hsm
+	head.material_override = bronze
+	head.position = Vector3(0, 2.10, 0.10)
+	mermaid.add_child(head)
+	# Arms raised (two thin cylinders)
+	for sx in [-0.35, 0.35]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.07
+		am.bottom_radius = 0.08
+		am.height = 0.95
+		arm.mesh = am
+		arm.material_override = bronze
+		arm.position = Vector3(sx, 2.10, 0.05)
+		arm.rotation_degrees = Vector3(0, 0, 35 if sx < 0 else -35)
+		mermaid.add_child(arm)
+	# Conch shell at top (small spiral)
+	var conch: MeshInstance3D = MeshInstance3D.new()
+	var ccm: SphereMesh = SphereMesh.new()
+	ccm.radius = 0.14
+	ccm.height = 0.28
+	conch.mesh = ccm
+	conch.material_override = bronze
+	conch.position = Vector3(0, 2.55, 0)
+	mermaid.add_child(conch)
+	# Particle water spray from conch
+	var spray: GPUParticles3D = GPUParticles3D.new()
+	spray.position = Vector3(0, 2.65, 0)
+	spray.amount = 60
+	spray.lifetime = 1.6
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 25.0
+	pm.initial_velocity_min = 1.5
+	pm.initial_velocity_max = 2.6
+	pm.gravity = Vector3(0, -3.5, 0)
+	pm.scale_min = 0.06
+	pm.scale_max = 0.12
+	pm.color = Color(0.55, 0.85, 0.95, 0.8)
+	spray.process_material = pm
+	var sphere_drop: SphereMesh = SphereMesh.new()
+	sphere_drop.radius = 0.05
+	sphere_drop.height = 0.10
+	spray.draw_pass_1 = sphere_drop
+	mermaid.add_child(spray)
+	# Soft cyan light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(0.55, 0.85, 0.95)
+	lt.light_energy = 1.8
+	lt.omni_range = 6.0
+	lt.position = Vector3(0, 1.5, 0)
+	fountain.add_child(lt)
+	# Basin collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 2.5
+	cyl.height = 0.6
+	cs.shape = cyl
+	sb.add_child(cs)
+	fountain.add_child(sb)
+
+
+func _build_d8_cartographer_npc() -> void:
+	## Epic-8 T82: cartographer NPC — hunched figure with rolled maps slung
+	## across the back, holding a quill and a half-unrolled chart.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D8CartographerSlot"
+	slot.position = Vector3(D8_CENTER.x + 42, 0, 8)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D8Cartographer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Charteress Vellum")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d8_cartographer")
+	slot.add_child(npc)
+	# Hooded brown coat
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.42, 0.28, 0.16)
+	coat_mat.roughness = 0.85
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.85, 1.20, 0.55)
+	coat.mesh = cb
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.95, 0)
+	coat.rotation_degrees = Vector3(8, 0, 0)
+	npc.add_child(coat)
+	# Hood (sphere top)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.32
+	hsm.height = 0.55
+	hood.mesh = hsm
+	hood.material_override = coat_mat
+	hood.position = Vector3(0, 1.85, -0.05)
+	npc.add_child(hood)
+	# Map tube on back (long cylinder slung across)
+	var leather: StandardMaterial3D = StandardMaterial3D.new()
+	leather.albedo_color = Color(0.30, 0.18, 0.10)
+	leather.roughness = 0.65
+	var tube: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.10
+	tm.bottom_radius = 0.10
+	tm.height = 1.10
+	tube.mesh = tm
+	tube.material_override = leather
+	tube.position = Vector3(0.20, 1.20, -0.32)
+	tube.rotation_degrees = Vector3(0, 0, 65)
+	npc.add_child(tube)
+	# Half-unrolled chart held in front
+	var paper: StandardMaterial3D = StandardMaterial3D.new()
+	paper.albedo_color = Color(0.92, 0.85, 0.62)
+	paper.emission_enabled = true
+	paper.emission = Color(0.85, 0.78, 0.55)
+	paper.emission_energy_multiplier = 0.30
+	var chart: MeshInstance3D = MeshInstance3D.new()
+	var chb: BoxMesh = BoxMesh.new()
+	chb.size = Vector3(0.65, 0.45, 0.04)
+	chart.mesh = chb
+	chart.material_override = paper
+	chart.position = Vector3(0, 1.05, 0.42)
+	chart.rotation_degrees = Vector3(-25, 0, 0)
+	npc.add_child(chart)
+	# Quill (thin white feather cylinder at angle)
+	var feather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	feather_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	var quill: MeshInstance3D = MeshInstance3D.new()
+	var qm: CylinderMesh = CylinderMesh.new()
+	qm.top_radius = 0.015
+	qm.bottom_radius = 0.025
+	qm.height = 0.40
+	quill.mesh = qm
+	quill.material_override = feather_mat
+	quill.position = Vector3(0.30, 1.25, 0.50)
+	quill.rotation_degrees = Vector3(60, 0, -25)
+	npc.add_child(quill)
+
+
+func _build_d8_market_raft(geom: Node) -> void:
+	## Epic-8 T83: small floating market raft — square wooden raft with a
+	## striped awning and 6 colorful goods crates on top, bobbing offshore.
+	var raft: Node3D = Node3D.new()
+	raft.name = "D8MarketRaft"
+	raft.position = Vector3(D8_CENTER.x + 18, 0.30, 16)
+	geom.add_child(raft)
+	# Raft base (wide flat box)
+	var deck_mat: StandardMaterial3D = StandardMaterial3D.new()
+	deck_mat.albedo_color = Color(0.55, 0.38, 0.20)
+	deck_mat.roughness = 0.85
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var db: BoxMesh = BoxMesh.new()
+	db.size = Vector3(3.6, 0.20, 3.0)
+	deck.mesh = db
+	deck.material_override = deck_mat
+	deck.position = Vector3(0, 0.10, 0)
+	raft.add_child(deck)
+	# 4 corner posts holding the awning
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	for sx in [-1.6, 1.6]:
+		for sz in [-1.2, 1.2]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pcm: CylinderMesh = CylinderMesh.new()
+			pcm.top_radius = 0.05
+			pcm.bottom_radius = 0.06
+			pcm.height = 1.85
+			post.mesh = pcm
+			post.material_override = post_mat
+			post.position = Vector3(sx, 1.10, sz)
+			raft.add_child(post)
+	# Striped awning (4 alternating colored strips)
+	var stripe_colors: Array[Color] = [
+		Color(0.85, 0.20, 0.20),
+		Color(0.92, 0.92, 0.88),
+		Color(0.85, 0.20, 0.20),
+		Color(0.92, 0.92, 0.88),
+	]
+	for i in range(4):
+		var strip: MeshInstance3D = MeshInstance3D.new()
+		var sb: BoxMesh = BoxMesh.new()
+		sb.size = Vector3(3.6, 0.05, 0.70)
+		strip.mesh = sb
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = stripe_colors[i]
+		smat.roughness = 0.7
+		smat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		strip.material_override = smat
+		strip.position = Vector3(0, 2.05, -1.05 + i * 0.70)
+		raft.add_child(strip)
+	# 6 goods crates (small colorful boxes on the deck)
+	var crate_hues: Array[Color] = [
+		Color(0.85, 0.55, 0.20),
+		Color(0.30, 0.65, 0.30),
+		Color(0.55, 0.30, 0.65),
+		Color(0.20, 0.55, 0.85),
+		Color(0.85, 0.85, 0.30),
+		Color(0.85, 0.30, 0.55),
+	]
+	var crate_pos: Array[Vector3] = [
+		Vector3(-1.0, 0.42, -0.8),
+		Vector3(0.0, 0.42, -0.8),
+		Vector3(1.0, 0.42, -0.8),
+		Vector3(-1.0, 0.42, 0.8),
+		Vector3(0.0, 0.42, 0.8),
+		Vector3(1.0, 0.42, 0.8),
+	]
+	for i in range(6):
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var ccb: BoxMesh = BoxMesh.new()
+		ccb.size = Vector3(0.55, 0.45, 0.55)
+		crate.mesh = ccb
+		var ccmat: StandardMaterial3D = StandardMaterial3D.new()
+		ccmat.albedo_color = crate_hues[i]
+		ccmat.roughness = 0.65
+		crate.material_override = ccmat
+		crate.position = crate_pos[i]
+		raft.add_child(crate)
+	# Bob + sway tweens
+	var tw: Tween = raft.create_tween().set_loops()
+	tw.tween_property(raft, "position:y", 0.55, 2.4).from(0.25)
+	tw.tween_property(raft, "position:y", 0.25, 2.4)
+	var sway: Tween = raft.create_tween().set_loops()
+	sway.tween_property(raft, "rotation_degrees:z", 2.5, 1.9)
+	sway.tween_property(raft, "rotation_degrees:z", -2.5, 1.9)
+	# Raft collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(3.6, 0.30, 3.0)
+	cs.shape = bs
+	stb.add_child(cs)
+	raft.add_child(stb)
+
+
+func _build_d8_smokehouse(geom: Node) -> void:
+	## Epic-8 T84: small fish smokehouse — wooden shed with a stone chimney
+	## emitting a slow particle smoke trail.
+	var shed: Node3D = Node3D.new()
+	shed.name = "D8Smokehouse"
+	shed.position = Vector3(D8_CENTER.x + 28, 0, 12)
+	geom.add_child(shed)
+	# Walls
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.40, 0.25, 0.12)
+	wall_mat.roughness = 0.85
+	var walls: MeshInstance3D = MeshInstance3D.new()
+	var wb: BoxMesh = BoxMesh.new()
+	wb.size = Vector3(2.6, 2.4, 2.6)
+	walls.mesh = wb
+	walls.material_override = wall_mat
+	walls.position = Vector3(0, 1.20, 0)
+	shed.add_child(walls)
+	# Sloped roof
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	roof_mat.roughness = 0.75
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var pm: PrismMesh = PrismMesh.new()
+	pm.size = Vector3(2.8, 1.0, 2.8)
+	roof.mesh = pm
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 2.85, 0)
+	shed.add_child(roof)
+	# Door (small dark)
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.18, 0.10, 0.05)
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var ddb: BoxMesh = BoxMesh.new()
+	ddb.size = Vector3(0.65, 1.4, 0.05)
+	door.mesh = ddb
+	door.material_override = door_mat
+	door.position = Vector3(0, 0.75, 1.32)
+	shed.add_child(door)
+	# Stone chimney
+	var stone: StandardMaterial3D = StandardMaterial3D.new()
+	stone.albedo_color = Color(0.55, 0.52, 0.50)
+	stone.roughness = 0.85
+	var chimney: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.55, 1.6, 0.55)
+	chimney.mesh = cb
+	chimney.material_override = stone
+	chimney.position = Vector3(0.85, 3.30, -0.55)
+	shed.add_child(chimney)
+	# Smoke particles from chimney top
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.position = Vector3(0.85, 4.10, -0.55)
+	smoke.amount = 30
+	smoke.lifetime = 3.5
+	var spm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spm.direction = Vector3(0, 1, 0)
+	spm.spread = 18.0
+	spm.initial_velocity_min = 0.45
+	spm.initial_velocity_max = 0.85
+	spm.gravity = Vector3(0.15, 0.4, 0)
+	spm.scale_min = 0.30
+	spm.scale_max = 0.75
+	spm.color = Color(0.65, 0.62, 0.58, 0.55)
+	smoke.process_material = spm
+	var smoke_mesh: SphereMesh = SphereMesh.new()
+	smoke_mesh.radius = 0.20
+	smoke_mesh.height = 0.40
+	smoke.draw_pass_1 = smoke_mesh
+	shed.add_child(smoke)
+	# Warm glow inside the door cracks
+	var glow: OmniLight3D = OmniLight3D.new()
+	glow.light_color = Color(1.0, 0.55, 0.20)
+	glow.light_energy = 1.4
+	glow.omni_range = 4.0
+	glow.position = Vector3(0, 0.9, 1.30)
+	shed.add_child(glow)
+	# Building collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cbs: BoxShape3D = BoxShape3D.new()
+	cbs.size = Vector3(2.6, 2.4, 2.6)
+	cs.shape = cbs
+	stb.add_child(cs)
+	shed.add_child(stb)
+
+
+func _build_d8_wind_chimes(geom: Node) -> void:
+	## Epic-8 T85: tall post with hanging wind chimes — 6 brass tubes of
+	## varying lengths suspended from a horizontal cross-bar, gentle sway.
+	var chime: Node3D = Node3D.new()
+	chime.name = "D8WindChimes"
+	chime.position = Vector3(D8_CENTER.x + 35, 0, 4)
+	geom.add_child(chime)
+	# Vertical post
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	post_mat.roughness = 0.85
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.10
+	pcm.bottom_radius = 0.14
+	pcm.height = 3.8
+	post.mesh = pcm
+	post.material_override = post_mat
+	post.position = Vector3(0, 1.90, 0)
+	chime.add_child(post)
+	# Cross-bar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(1.4, 0.08, 0.08)
+	bar.mesh = bb
+	bar.material_override = post_mat
+	bar.position = Vector3(0, 3.70, 0)
+	chime.add_child(bar)
+	# Brass tubes hanging (6 different lengths)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	var tube_lengths: Array[float] = [0.95, 0.85, 0.75, 0.65, 0.55, 0.45]
+	for i in range(6):
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(-0.55 + i * 0.22, 3.65, 0)
+		chime.add_child(pivot)
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tcm: CylinderMesh = CylinderMesh.new()
+		tcm.top_radius = 0.05
+		tcm.bottom_radius = 0.05
+		tcm.height = tube_lengths[i]
+		tube.mesh = tcm
+		tube.material_override = brass
+		tube.position = Vector3(0, -tube_lengths[i] * 0.5, 0)
+		pivot.add_child(tube)
+		# Per-tube sway tween (offset phase)
+		var tw: Tween = pivot.create_tween().set_loops()
+		var phase: float = float(i) * 0.15
+		tw.tween_property(pivot, "rotation_degrees:x", 6.0, 1.2 + phase)
+		tw.tween_property(pivot, "rotation_degrees:x", -6.0, 1.2 + phase)
+	# Top cap (decorative copper sphere)
+	var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.75, 0.45, 0.18)
+	cap_mat.metallic = 0.85
+	cap_mat.roughness = 0.30
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var csm: SphereMesh = SphereMesh.new()
+	csm.radius = 0.16
+	csm.height = 0.32
+	cap.mesh = csm
+	cap.material_override = cap_mat
+	cap.position = Vector3(0, 3.92, 0)
+	chime.add_child(cap)
+	# Post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.90, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+	cap_shape.radius = 0.16
+	cap_shape.height = 3.8
+	cs.shape = cap_shape
+	sb.add_child(cs)
+	chime.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
