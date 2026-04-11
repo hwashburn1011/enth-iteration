@@ -1905,6 +1905,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_miller_npc()
 	# Epic-4 T30: bread oven with smoke
 	_build_d4_bread_oven(geom)
+	# Epic-4 T31: octagonal gazebo
+	_build_d4_gazebo(geom)
+	# Epic-4 T32: hanging flower wreaths
+	_build_d4_flower_wreaths(geom)
+	# Epic-4 T33: stone bird bath
+	_build_d4_bird_bath(geom)
+	# Epic-4 T34: Storyteller NPC
+	_build_d4_storyteller_npc()
+	# Epic-4 T35: sleeping cat on cushion
+	_build_d4_sleeping_cat(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -3713,6 +3723,240 @@ func _build_d4_bread_oven(geom: Node) -> void:
 	cs.position = Vector3(0, 0.92, 0)
 	sb.add_child(cs)
 	oven.add_child(sb)
+
+
+func _build_d4_gazebo(geom: Node) -> void:
+	## Epic-4 T31: 6-column octagonal gazebo with roof.
+	var gaz: Node3D = Node3D.new()
+	gaz.name = "D4Gazebo"
+	gaz.position = D4_CENTER + Vector3(0, 0, -14)
+	geom.add_child(gaz)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	for i in 6:
+		var angle: float = (float(i) / 6.0) * TAU
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.10
+		cm.bottom_radius = 0.14
+		cm.height = 2.40
+		col.mesh = cm
+		col.position = Vector3(cos(angle) * 1.85, 1.20, sin(angle) * 1.85)
+		col.material_override = wood_mat
+		gaz.add_child(col)
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 2.40
+		cs.shape = cap
+		cs.position = Vector3(cos(angle) * 1.85, 1.20, sin(angle) * 1.85)
+		sb.add_child(cs)
+		gaz.add_child(sb)
+	# Roof — flat tapered cylinder
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 1.85
+	rm.bottom_radius = 2.40
+	rm.height = 0.85
+	roof.mesh = rm
+	roof.position = Vector3(0, 2.85, 0)
+	roof.material_override = wood_mat
+	gaz.add_child(roof)
+
+
+func _build_d4_flower_wreaths(geom: Node) -> void:
+	## Epic-4 T32: 4 pink flower wreaths hanging on the gazebo columns.
+	var wreath_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wreath_mat.albedo_color = Color(1.0, 0.55, 0.85)
+	wreath_mat.emission_enabled = true
+	wreath_mat.emission = Color(1.0, 0.65, 0.85)
+	wreath_mat.emission_energy_multiplier = 1.4
+	wreath_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var wreath: MeshInstance3D = MeshInstance3D.new()
+		wreath.name = "D4Wreath_%d" % i
+		var wm: TorusMesh = TorusMesh.new()
+		wm.inner_radius = 0.30
+		wm.outer_radius = 0.45
+		wreath.mesh = wm
+		wreath.position = D4_CENTER + Vector3(cos(angle) * 1.85, 1.85, sin(angle) * 1.85) + Vector3(0, 0, -14)
+		wreath.rotation = Vector3(deg_to_rad(90), 0, 0)
+		wreath.material_override = wreath_mat
+		geom.add_child(wreath)
+
+
+func _build_d4_bird_bath(geom: Node) -> void:
+	## Epic-4 T33: stone bird bath with rim, water, and 2 small birds.
+	var bath: Node3D = Node3D.new()
+	bath.name = "D4BirdBath"
+	bath.position = D4_CENTER + Vector3(8, 0, 16)
+	geom.add_child(bath)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	# Stem column
+	var stem: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.18
+	sm.bottom_radius = 0.30
+	sm.height = 1.0
+	stem.mesh = sm
+	stem.position = Vector3(0, 0.50, 0)
+	stem.material_override = stone_mat
+	bath.add_child(stem)
+	# Bowl
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.55
+	bm.bottom_radius = 0.30
+	bm.height = 0.20
+	bowl.mesh = bm
+	bowl.position = Vector3(0, 1.10, 0)
+	bowl.material_override = stone_mat
+	bath.add_child(bowl)
+	# Water
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.50
+	wm.bottom_radius = 0.50
+	wm.height = 0.06
+	water.mesh = wm
+	water.position = Vector3(0, 1.20, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.85, 1.0, 0.85)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.55, 0.95, 1.0)
+	wmat.emission_energy_multiplier = 1.4
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	bath.add_child(water)
+	# 2 small birds on the rim
+	var bird_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bird_mat.albedo_color = Color(0.85, 0.85, 0.95)
+	for sx: float in [-0.40, 0.40]:
+		var bird: MeshInstance3D = MeshInstance3D.new()
+		var bird_mesh: SphereMesh = SphereMesh.new()
+		bird_mesh.radius = 0.10
+		bird_mesh.height = 0.20
+		bird.mesh = bird_mesh
+		bird.position = Vector3(sx, 1.30, 0)
+		bird.material_override = bird_mat
+		bath.add_child(bird)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.55
+	cap.height = 1.20
+	cs.shape = cap
+	cs.position = Vector3(0, 0.60, 0)
+	sb.add_child(cs)
+	bath.add_child(sb)
+
+
+func _build_d4_storyteller_npc() -> void:
+	## Epic-4 T34: Storyteller NPC standing inside the gazebo.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var teller: Node3D = Node3D.new()
+	teller.name = "D4Storyteller"
+	teller.position = D4_CENTER + Vector3(0, 0, -14)
+	slots.add_child(teller)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.30, 0.20)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.55, 0.30)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	teller.add_child(body)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.65, 0.45)
+	head.material_override = hmat
+	teller.add_child(head)
+	var label: Label3D = Label3D.new()
+	label.text = "Storyteller"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.85, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	teller.add_child(label)
+
+
+func _build_d4_sleeping_cat(geom: Node) -> void:
+	## Epic-4 T35: a small yellow cat curled up sleeping on a pink cushion.
+	var cat: Node3D = Node3D.new()
+	cat.name = "D4SleepingCat"
+	cat.position = D4_CENTER + Vector3(-3, 0, 12)
+	geom.add_child(cat)
+	# Cushion
+	var cush: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.55
+	cm.bottom_radius = 0.55
+	cm.height = 0.18
+	cush.mesh = cm
+	cush.position = Vector3(0, 0.10, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.85, 0.55, 0.85)
+	cush.material_override = cmat
+	cat.add_child(cush)
+	# Cat body — curled flattened sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.30
+	bm.height = 0.40
+	body.mesh = bm
+	body.position = Vector3(0, 0.30, 0)
+	body.scale = Vector3(1.4, 0.85, 1.0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.95, 0.85, 0.30)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.85, 0.30)
+	bmat.emission_energy_multiplier = 0.30
+	body.material_override = bmat
+	cat.add_child(body)
+	# 2 ear prisms
+	for sx: float in [-0.10, 0.10]:
+		var ear: MeshInstance3D = MeshInstance3D.new()
+		var em: PrismMesh = PrismMesh.new()
+		em.size = Vector3(0.08, 0.10, 0.08)
+		ear.mesh = em
+		ear.position = Vector3(sx, 0.50, 0.30)
+		ear.material_override = bmat
+		cat.add_child(ear)
+	# Closed eyes — black bars
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.08, 0.08]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.06, 0.02, 0.04)
+		eye.mesh = em
+		eye.position = Vector3(ex, 0.40, 0.32)
+		eye.material_override = eye_mat
+		cat.add_child(eye)
+	# Slow breathing scale tween
+	var breath: Tween = create_tween().set_loops()
+	breath.tween_property(body, "scale", Vector3(1.45, 0.90, 1.05), 1.4).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(body, "scale", Vector3(1.4, 0.85, 1.0), 1.4).set_ease(Tween.EASE_IN_OUT)
 
 
 
