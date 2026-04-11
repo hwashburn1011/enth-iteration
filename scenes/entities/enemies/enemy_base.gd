@@ -33,6 +33,12 @@ var _aggro_indicator: Label3D = null
 var variant_tier: int = 0  ## 0=normal, 1=elite, 2=champion
 var _elite_aura: GPUParticles3D = null
 
+## Per-iteration HP multiplier added on top of the per-enemy base.
+## Iteration 1 = 1.0x, iteration 9 = 1 + 8 * 0.25 = 3.0x. Keeps the
+## central compaction conceit mechanically meaningful: each loop the
+## player completes hands them tougher dungeon enemies on the next run.
+const ITERATION_HP_MULT_PER_LOOP: float = 0.25
+
 
 func _ready() -> void:
 	add_to_group(&"enemies")
@@ -58,6 +64,32 @@ func _ready() -> void:
 		detection_area.body_entered.connect(_on_detection_body_entered)
 	if not detection_area.body_exited.is_connected(_on_detection_body_exited):
 		detection_area.body_exited.connect(_on_detection_body_exited)
+	# Defer the iteration scaling so it runs AFTER the subclass _ready
+	# overrides health_component.max_health to its hand-tuned value.
+	# Without the defer the multiplication happens against the EnemyBase
+	# default and then the subclass overwrites it to a flat constant.
+	call_deferred(&"_apply_iteration_scaling")
+
+
+func _apply_iteration_scaling() -> void:
+	if not has_node("/root/IterationManager"):
+		return
+	var im: Node = get_node("/root/IterationManager")
+	var iter: int = 1
+	if im.has_method(&"get_current_iteration"):
+		iter = int(im.get_current_iteration())
+	elif "current_iteration" in im:
+		iter = int(im.current_iteration)
+	if iter <= 1:
+		return
+	var mult: float = 1.0 + float(iter - 1) * ITERATION_HP_MULT_PER_LOOP
+	# Write to base_max_health (canonical) and mirror to max_health so
+	# the value sticks even if some future stats_changed call recalculates
+	# from the base. Pattern matches T7's enemy stat scaling audit.
+	if &"base_max_health" in health_component:
+		health_component.base_max_health *= mult
+	health_component.max_health *= mult
+	health_component.current_health = health_component.max_health
 
 
 func _on_detection_body_entered(body: Node3D) -> void:
