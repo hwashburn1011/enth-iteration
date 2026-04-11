@@ -69,6 +69,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_hex_gazebo(geom)
 	_build_th_road_junctions(geom)
 	_build_th_ground_runes(geom)
+	_build_th_road_benches(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -9173,3 +9174,111 @@ func _build_th_ground_runes(geom: Node) -> void:
 	var apulse: Tween = pivot.create_tween().set_loops()
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 7.5, 2.4).set_ease(Tween.EASE_IN_OUT)
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_road_benches(geom: Node) -> void:
+	## Epic-10 T53: 8 small wooden benches placed along the 4 approach
+	## roads (2 per road, at the road midpoint, one on each side just
+	## outside the lampposts). Provides traveler rest spots along each
+	## arterial corridor.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_RoadBenches"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	wood_mat.metallic = 0.10
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.45
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.45, 0.85, 1.0)
+	glow_mat.emission_energy_multiplier = 4.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Bench placements: each road has 2 benches at its midpoint,
+	# one on each side just outside the lampposts (~3.4 from road centerline)
+	# Roads start at +/-17.5 and span 28m, midpoint is at radius 31.5 from center
+	var bench_data: Array = [
+		# E road (along +X), midpoint x=31.5, benches at +/-3.4 z
+		{"pos": Vector3(31.5, 0, -3.40), "rot": 0.0},
+		{"pos": Vector3(31.5, 0, 3.40), "rot": PI},
+		# N road (along -Z), midpoint z=-31.5
+		{"pos": Vector3(-3.40, 0, -31.5), "rot": -PI / 2.0},
+		{"pos": Vector3(3.40, 0, -31.5), "rot": PI / 2.0},
+		# W road (along -X), midpoint x=-31.5
+		{"pos": Vector3(-31.5, 0, -3.40), "rot": 0.0},
+		{"pos": Vector3(-31.5, 0, 3.40), "rot": PI},
+		# S road (along +Z), midpoint z=31.5
+		{"pos": Vector3(-3.40, 0, 31.5), "rot": -PI / 2.0},
+		{"pos": Vector3(3.40, 0, 31.5), "rot": PI / 2.0},
+	]
+	for bd in bench_data:
+		var bgroup: Node3D = Node3D.new()
+		bgroup.position = bd["pos"]
+		bgroup.rotation.y = bd["rot"]
+		pivot.add_child(bgroup)
+		# 2 short wood legs
+		for lx in [-0.85, 0.85]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.20, 0.45, 0.40)
+			leg.mesh = lm
+			leg.material_override = wood_mat
+			leg.position = Vector3(lx, 0.22, 0)
+			bgroup.add_child(leg)
+		# Long wood seat slab
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.10, 0.14, 0.55)
+		seat.mesh = sm
+		seat.material_override = wood_mat
+		seat.position = Vector3(0, 0.55, 0)
+		bgroup.add_child(seat)
+		# Bench collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.30, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(2.10, 0.65, 0.55)
+		cs.shape = bsh
+		sb.add_child(cs)
+		bgroup.add_child(sb)
+		# Brass back rail
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(2.00, 0.06, 0.06)
+		rail.mesh = rm
+		rail.material_override = brass_mat
+		rail.position = Vector3(0, 1.00, 0.25)
+		bgroup.add_child(rail)
+		# Back rail support posts
+		for rsx in [-0.85, 0.85]:
+			var rsp: MeshInstance3D = MeshInstance3D.new()
+			var rspm: CylinderMesh = CylinderMesh.new()
+			rspm.top_radius = 0.04
+			rspm.bottom_radius = 0.05
+			rspm.height = 0.45
+			rsp.mesh = rspm
+			rsp.material_override = brass_mat
+			rsp.position = Vector3(rsx, 0.80, 0.25)
+			bgroup.add_child(rsp)
+		# Glowing under-seat cyan strip
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(2.00, 0.05, 0.06)
+		glow.mesh = gm
+		glow.material_override = glow_mat
+		glow.position = Vector3(0, 0.40, -0.25)
+		bgroup.add_child(glow)
+	# Shared cyan glow pulse
+	var gpulse: Tween = pivot.create_tween().set_loops()
+	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 6.0, 2.2).set_ease(Tween.EASE_IN_OUT)
+	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 2.2).set_ease(Tween.EASE_IN_OUT)
