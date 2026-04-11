@@ -1738,6 +1738,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_mana_crystals(geom)
 	# Epic-3 T50: MEMORY ECHO 2nd mini-boss
 	_build_d3_memory_echo(geom)
+	# Epic-3 T51: ancient pool with floating fish
+	_build_d3_ancient_pool(geom)
+	# Epic-3 T52: tall hanging pendulum
+	_build_d3_pendulum(geom)
+	# Epic-3 T53: 3 prophecy stones
+	_build_d3_prophecy_stones(geom)
+	# Epic-3 T54: Apprentice child NPC
+	_build_d3_apprentice_npc()
+	# Epic-3 T55: ambient page rain particles
+	_build_d3_page_rain(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -5241,6 +5251,342 @@ func _build_d3_memory_echo(geom: Node) -> void:
 	label.font_size = 22
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	echo.add_child(label)
+
+
+func _build_d3_ancient_pool(geom: Node) -> void:
+	## Epic-3 T51: ancient stone pool with 4 floating "data fish" — small
+	## elongated emissive shapes drifting in circles above the surface.
+	var pool: Node3D = Node3D.new()
+	pool.name = "D3AncientPool"
+	pool.position = D3_CENTER + Vector3(15, 0, -8)
+	geom.add_child(pool)
+	# Stone basin — wider than memory pool
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 1.85
+	rmesh.outer_radius = 2.20
+	rim.mesh = rmesh
+	rim.position = Vector3(0, 0.20, 0)
+	rim.material_override = stone_mat
+	pool.add_child(rim)
+	# Water surface — translucent cyan disc
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: CylinderMesh = CylinderMesh.new()
+	wmesh.top_radius = 1.85
+	wmesh.bottom_radius = 1.85
+	wmesh.height = 0.06
+	water.mesh = wmesh
+	water.position = Vector3(0, 0.20, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.85, 1.0, 0.55)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.55, 0.95, 1.0)
+	wmat.emission_energy_multiplier = 1.4
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	pool.add_child(water)
+	# 4 data fish — small elongated boxes circling
+	var fish_pivot: Node3D = Node3D.new()
+	fish_pivot.position = Vector3(0, 0.55, 0)
+	pool.add_child(fish_pivot)
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var fish: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.30, 0.10, 0.55)
+		fish.mesh = fm
+		fish.position = Vector3(cos(angle) * 1.20, 0, sin(angle) * 1.20)
+		fish.rotation = Vector3(0, -angle - PI * 0.5, 0)
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(0.55, 0.95, 1.0)
+		fmat.emission_enabled = true
+		fmat.emission = Color(0.55, 0.95, 1.0)
+		fmat.emission_energy_multiplier = 2.4
+		fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fish.material_override = fmat
+		fish_pivot.add_child(fish)
+	# Rotate the fish pivot
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(fish_pivot, "rotation:y", TAU, 6.0)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "ANCIENT POOL"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pool.add_child(label)
+	# Collision around basin
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.0, 0.85, 4.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.42, 0)
+	sb.add_child(cs)
+	pool.add_child(sb)
+
+
+func _build_d3_pendulum(geom: Node) -> void:
+	## Epic-3 T52: tall hanging pendulum — stone arch frame with a long
+	## thin chain holding a heavy weighted ball that swings back and forth.
+	var pend: Node3D = Node3D.new()
+	pend.name = "D3Pendulum"
+	pend.position = D3_CENTER + Vector3(8, 0, -16)
+	geom.add_child(pend)
+	# Arch frame — 2 thin legs + crossbar
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for sx: float in [-1.20, 1.20]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.10
+		lm.bottom_radius = 0.14
+		lm.height = 5.0
+		leg.mesh = lm
+		leg.position = Vector3(sx, 2.50, 0)
+		leg.material_override = stone_mat
+		pend.add_child(leg)
+		# Collision per leg
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 5.0
+		cs.shape = cap
+		cs.position = Vector3(sx, 2.50, 0)
+		sb.add_child(cs)
+		pend.add_child(sb)
+	# Crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.85, 0.30, 0.30)
+	bar.mesh = bm
+	bar.position = Vector3(0, 5.0, 0)
+	bar.material_override = stone_mat
+	pend.add_child(bar)
+	# Pendulum pivot at the top
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 5.0, 0)
+	pend.add_child(pivot)
+	# Long chain
+	var chain_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chain_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	chain_mat.metallic = 0.85
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.04
+	cm.bottom_radius = 0.04
+	cm.height = 3.40
+	chain.mesh = cm
+	chain.position = Vector3(0, -1.70, 0)
+	chain.material_override = chain_mat
+	pivot.add_child(chain)
+	# Heavy weighted ball
+	var ball: MeshInstance3D = MeshInstance3D.new()
+	var bm2: SphereMesh = SphereMesh.new()
+	bm2.radius = 0.40
+	bm2.height = 0.80
+	ball.mesh = bm2
+	ball.position = Vector3(0, -3.55, 0)
+	var ball_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ball_mat.albedo_color = Color(0.20, 0.16, 0.26)
+	ball_mat.metallic = 0.85
+	ball_mat.roughness = 0.30
+	ball_mat.emission_enabled = true
+	ball_mat.emission = Color(0.85, 0.40, 1.0)
+	ball_mat.emission_energy_multiplier = 0.55
+	ball.material_override = ball_mat
+	pivot.add_child(ball)
+	# Swing tween
+	var swing: Tween = create_tween().set_loops()
+	swing.tween_property(pivot, "rotation:x", deg_to_rad(20), 1.6).set_ease(Tween.EASE_IN_OUT)
+	swing.tween_property(pivot, "rotation:x", deg_to_rad(-20), 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_prophecy_stones(geom: Node) -> void:
+	## Epic-3 T53: 3 prophecy stones forming a small triangle — each stone
+	## is a flat slab with text engraved + glowing emission.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-12, 0, 8),
+		D3_CENTER + Vector3(-10, 0, 11),
+		D3_CENTER + Vector3(-14, 0, 11),
+	]
+	var texts: Array[String] = ["PAST", "PRESENT", "FUTURE"]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.20, 0.40)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.55
+	for i in positions.size():
+		var stone: Node3D = Node3D.new()
+		stone.name = "D3ProphecyStone_%d" % i
+		stone.position = positions[i]
+		stone.rotation = Vector3(0, deg_to_rad(i * 120), 0)
+		geom.add_child(stone)
+		# Slab body
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.0, 1.85, 0.30)
+		slab.mesh = sm
+		slab.position = Vector3(0, 0.92, 0)
+		slab.material_override = stone_mat
+		stone.add_child(slab)
+		# Engraved text
+		var label: Label3D = Label3D.new()
+		label.text = texts[i]
+		label.position = Vector3(0, 0.92, 0.16)
+		label.modulate = Color(1.0, 0.95, 0.30)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 16
+		label.no_depth_test = true
+		stone.add_child(label)
+		# Per-stone collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.0, 1.85, 0.30)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.92, 0)
+		sb.add_child(cs)
+		stone.add_child(sb)
+
+
+func _build_d3_apprentice_npc() -> void:
+	## Epic-3 T54: an apprentice child NPC — smaller body, eager bouncing
+	## animation, and a small floating practice rune sphere they're trying
+	## to learn to control.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var app: Node3D = Node3D.new()
+	app.name = "D3Apprentice"
+	app.position = D3_CENTER + Vector3(-3, 0, 12)
+	slots.add_child(app)
+	# Smaller body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.20, 0.40)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.30
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.50, 0)
+	body.material_override = bmat
+	app.add_child(body)
+	# Small head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.28
+	hm.height = 0.50
+	head.mesh = hm
+	head.position = Vector3(0, 1.10, 0)
+	head.material_override = bmat
+	app.add_child(head)
+	# 2 large eager eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.08
+		em.height = 0.16
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.10, 0.22)
+		eye.material_override = eye_mat
+		app.add_child(eye)
+	# Floating practice rune in front
+	var rune: MeshInstance3D = MeshInstance3D.new()
+	var rm: SphereMesh = SphereMesh.new()
+	rm.radius = 0.18
+	rm.height = 0.36
+	rune.mesh = rm
+	rune.position = Vector3(0, 0.85, 0.65)
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.85, 0.40, 1.0)
+	rmat.emission_enabled = true
+	rmat.emission = Color(1.0, 0.55, 1.0)
+	rmat.emission_energy_multiplier = 2.6
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rune.material_override = rmat
+	app.add_child(rune)
+	# Bounce body in place
+	var bounce: Tween = create_tween().set_loops()
+	bounce.tween_property(body, "position:y", 0.65, 0.5).set_ease(Tween.EASE_OUT)
+	bounce.tween_property(body, "position:y", 0.50, 0.4).set_ease(Tween.EASE_IN)
+	bounce.tween_interval(0.8)
+	# Wobble the rune
+	var wobble: Tween = create_tween().set_loops()
+	wobble.tween_property(rune, "position:x", 0.20, 0.5).set_ease(Tween.EASE_IN_OUT)
+	wobble.tween_property(rune, "position:x", -0.20, 0.5).set_ease(Tween.EASE_IN_OUT)
+	wobble.tween_property(rune, "position:x", 0.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Apprentice"
+	label.position = Vector3(0, 1.65, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	app.add_child(label)
+
+
+func _build_d3_page_rain(geom: Node) -> void:
+	## Epic-3 T55: ambient floating page rain — 80 small translucent
+	## amber page particles drifting down across the entire district like
+	## paper leaves.
+	var rain: GPUParticles3D = GPUParticles3D.new()
+	rain.name = "D3PageRain"
+	rain.position = D3_CENTER + Vector3(0, 14, 0)
+	rain.amount = 80
+	rain.lifetime = 8.0
+	rain.preprocess = 4.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(28, 0.5, 18)
+	pmat.direction = Vector3(0, -1, 0)
+	pmat.spread = 12.0
+	pmat.initial_velocity_min = 0.45
+	pmat.initial_velocity_max = 0.85
+	pmat.gravity = Vector3(0, -0.55, 0)
+	pmat.scale_min = 0.20
+	pmat.scale_max = 0.40
+	pmat.color = Color(1.0, 0.85, 0.55, 0.55)
+	rain.process_material = pmat
+	var page: BoxMesh = BoxMesh.new()
+	page.size = Vector3(0.30, 0.04, 0.40)
+	var page_mat: StandardMaterial3D = StandardMaterial3D.new()
+	page_mat.albedo_color = Color(1.0, 0.85, 0.55, 0.55)
+	page_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	page_mat.emission_enabled = true
+	page_mat.emission = Color(1.0, 0.85, 0.55)
+	page_mat.emission_energy_multiplier = 0.85
+	page_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	page.material = page_mat
+	rain.draw_pass_1 = page
+	geom.add_child(rain)
 
 
 
