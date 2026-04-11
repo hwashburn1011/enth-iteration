@@ -144,6 +144,7 @@ func exit() -> void:
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false
 	_set_telegraph(enemy, false)
+	enemy.attack_cooldown_remaining = attack_cooldown
 
 
 func _set_telegraph(enemy: CharacterBody3D, active: bool) -> void:

@@ -23,6 +23,11 @@ func enter() -> void:
 func physics_update(delta: float) -> void:
 	var enemy = player
 
+	# Tick the post-attack cooldown so the next swing has actual breathing
+	# room. EnemyAttackState.exit() seeds this with attack_cooldown.
+	if enemy.attack_cooldown_remaining > 0.0:
+		enemy.attack_cooldown_remaining = maxf(0.0, enemy.attack_cooldown_remaining - delta)
+
 	if enemy.target_player == null:
 		_leash_timer += delta
 		if _leash_timer >= enemy.leash_time:
@@ -32,9 +37,9 @@ func physics_update(delta: float) -> void:
 		_leash_timer = 0.0
 		enemy.navigation_agent.target_position = enemy.target_player.global_position
 
-		# Check attack range
+		# Check attack range AND that we're past our post-attack cooldown
 		var dist: float = enemy.global_position.distance_to(enemy.target_player.global_position)
-		if dist <= enemy.attack_range:
+		if dist <= enemy.attack_range and enemy.attack_cooldown_remaining <= 0.0:
 			state_machine.transition_to(state_machine.get_node("EnemyAttackState") as Node)
 			return
 

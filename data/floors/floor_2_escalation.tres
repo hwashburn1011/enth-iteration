@@ -11,4 +11,4 @@
 script = ExtResource("1_fd")
 floor_name = "Data Sector Alpha"
 floor_number = 2
-room_sequence = [ExtResource("2_arena"), ExtResource("3_corridor"), ExtResource("4_pillars"), ExtResource("5_ambush"), ExtResource("6_elevated")]
+room_sequence = [ExtResource("2_arena"), ExtResource("3_corridor"), ExtResource("4_pillars"), ExtResource("5_ambush"), ExtResource("4_pillars"), ExtResource("6_elevated")]

@@ -18,7 +18,10 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 		3:  # Corridor Ambush — 2 Rogue Processes
 			spawner.enemy_types = ["rogue_process"]
 			spawner.spawn_count = 2
-		4:  # Elevated — Elite encounter
+		4:  # Pillars (encore) — mixed swarm before the floor finale
+			spawner.enemy_types = ["glitch_bug", "rogue_process", "memory_leak"]
+			spawner.spawn_count = 5
+		5:  # Elevated — Elite encounter (floor finale)
 			spawner.enemy_types = ["rogue_process", "memory_leak"]
 			spawner.spawn_count = 2
 			# Post-spawn: buff the first enemy as elite
