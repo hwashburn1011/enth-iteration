@@ -1840,6 +1840,8 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_arcane_overseer_landmark(geom)
 	# === EPIC 4: Bloom Cluster — The Sandbox Greenhouse ===
 	_build_district_4(geom)
+	# === EPIC 5: Frozen Cache — The Cryogenic Archive ===
+	_build_district_5(geom)
 
 
 func _build_district_4(geom: Node) -> void:
@@ -8757,6 +8759,327 @@ func _build_d4_bloom_elder(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	elder.add_child(sb)
+
+
+const D5_CENTER := Vector3(290, 0, 0)
+
+
+func _build_district_5(geom: Node) -> void:
+	## Epic 5 entry point — Frozen Cache, the cryogenic data archive.
+	# Epic-5 T1: extend boundary + D5 snow ground
+	_extend_boundary_for_d5(geom)
+	_build_d5_ground(geom)
+	# Epic-5 T2: frost-crystal entrance arch
+	_build_d5_entrance_arch(geom)
+	# Epic-5 T3: GREAT FROZEN MONOLITH landmark
+	_build_d5_great_monolith(geom)
+	# Epic-5 T4: cryo-keeper NPC
+	_build_d5_cryo_keeper_npc()
+
+
+func _extend_boundary_for_d5(geom: Node) -> void:
+	## Epic-5 T1a: push the east boundary wall from x=260 out to x=330.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 330.0
+
+
+func _build_d5_ground(geom: Node) -> void:
+	## Epic-5 T1b: D5 snowy ground plane — pale blue-white with a subtle
+	## cyan grid shader baked into the material as emission.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(70, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.mesh = plane
+	var snow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	snow_mat.albedo_color = Color(0.85, 0.92, 0.98)
+	snow_mat.emission_enabled = true
+	snow_mat.emission = Color(0.55, 0.75, 0.95)
+	snow_mat.emission_energy_multiplier = 0.18
+	snow_mat.roughness = 0.65
+	snow_mat.metallic = 0.10
+	ground.material_override = snow_mat
+	ground.position = Vector3(D5_CENTER.x, 0.01, 0)
+	ground.name = "D5SnowGround"
+	geom.add_child(ground)
+	# Sprinkle 60 small snowdrift bumps for visual texture
+	var drift_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drift_mat.albedo_color = Color(0.95, 0.97, 1.0)
+	drift_mat.emission_enabled = true
+	drift_mat.emission = Color(0.75, 0.90, 1.0)
+	drift_mat.emission_energy_multiplier = 0.20
+	drift_mat.roughness = 0.55
+	for i in 60:
+		var drift: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.45 + randf() * 0.40
+		dm.height = 0.30 + randf() * 0.20
+		drift.mesh = dm
+		drift.material_override = drift_mat
+		drift.position = Vector3(
+			D5_CENTER.x + randf_range(-32, 32),
+			0.05,
+			randf_range(-18, 18)
+		)
+		drift.scale = Vector3(1.0, 0.30, 1.0)
+		geom.add_child(drift)
+
+
+func _build_d5_entrance_arch(geom: Node) -> void:
+	## Epic-5 T2: frost-crystal entrance arch — twin tall ice spires curving
+	## together at the top, with hanging icicles and a soft blue light.
+	var arch: Node3D = Node3D.new()
+	arch.name = "D5FrostArch"
+	arch.position = Vector3(D5_CENTER.x - 32.0, 0.0, 0.0)
+	geom.add_child(arch)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.55, 0.80, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.75, 0.95)
+	ice_mat.emission_energy_multiplier = 0.85
+	ice_mat.metallic = 0.65
+	ice_mat.roughness = 0.10
+	# 2 ice spires (curved cones via tapered cylinders)
+	for sx in [-2.40, 2.40]:
+		var spire: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.20
+		sm.bottom_radius = 0.85
+		sm.height = 5.40
+		spire.mesh = sm
+		spire.material_override = ice_mat
+		spire.position = Vector3(sx, 2.70, 0)
+		# Slight inward lean
+		spire.rotation_degrees = Vector3(0, 0, -10.0 if sx > 0 else 10.0)
+		arch.add_child(spire)
+		# Spire collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.70, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.85
+		cap.height = 5.40
+		cs.shape = cap
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Top crossing crystal beam (horizontal prism with ice glow)
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var cm: PrismMesh = PrismMesh.new()
+	cm.size = Vector3(5.20, 0.65, 0.85)
+	crown.mesh = cm
+	crown.material_override = ice_mat
+	crown.position = Vector3(0, 5.50, 0)
+	arch.add_child(crown)
+	# 8 hanging icicles
+	for i in 8:
+		var ic: MeshInstance3D = MeshInstance3D.new()
+		var im: PrismMesh = PrismMesh.new()
+		im.size = Vector3(0.18, 0.55 + randf() * 0.40, 0.18)
+		ic.mesh = im
+		ic.material_override = ice_mat
+		ic.position = Vector3(-2.30 + i * 0.66, 4.85, 0)
+		ic.rotation_degrees = Vector3(180, 0, 0)
+		arch.add_child(ic)
+	# Cyan light under the arch
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.75, 1.0)
+	light.light_energy = 2.6
+	light.omni_range = 9.0
+	light.position = Vector3(0, 4.20, 0)
+	arch.add_child(light)
+	# Subtle cold pulse
+	var tw: Tween = light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", 3.2, 1.6)
+	tw.tween_property(light, "light_energy", 2.6, 1.6)
+
+
+func _build_d5_great_monolith(geom: Node) -> void:
+	## Epic-5 T3: GREAT FROZEN MONOLITH — towering ice obelisk with embedded
+	## flickering data core, hovering rune fragments, and aura beam.
+	var mono: Node3D = Node3D.new()
+	mono.name = "GreatFrozenMonolith"
+	mono.position = Vector3(D5_CENTER.x, 0.0, 0.0)
+	geom.add_child(mono)
+	# Pedestal stone
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.65, 0.75)
+	stone_mat.roughness = 0.85
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(4.20, 0.55, 4.20)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.27, 0)
+	mono.add_child(ped)
+	# Main monolith — tall translucent ice slab
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.55, 0.80, 0.95, 0.78)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.80, 0.95)
+	ice_mat.emission_energy_multiplier = 1.4
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var slm: BoxMesh = BoxMesh.new()
+	slm.size = Vector3(2.40, 8.50, 1.10)
+	slab.mesh = slm
+	slab.material_override = ice_mat
+	slab.position = Vector3(0, 4.80, 0)
+	mono.add_child(slab)
+	# Embedded data core (small bright cyan sphere inside the slab)
+	var core_mat: StandardMaterial3D = StandardMaterial3D.new()
+	core_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	core_mat.emission_enabled = true
+	core_mat.emission = Color(0.30, 1.0, 1.0)
+	core_mat.emission_energy_multiplier = 4.5
+	core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cmm: SphereMesh = SphereMesh.new()
+	cmm.radius = 0.45
+	cmm.height = 0.80
+	core.mesh = cmm
+	core.material_override = core_mat
+	core.position = Vector3(0, 4.80, 0)
+	mono.add_child(core)
+	# Pulse the core (data heartbeat)
+	var tw: Tween = core.create_tween().set_loops()
+	tw.tween_property(core, "scale", Vector3.ONE * 1.20, 0.8)
+	tw.tween_property(core, "scale", Vector3.ONE * 0.85, 0.8)
+	# 6 hovering rune fragments orbiting the slab
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.55, 0.85, 0.95)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.40, 0.85, 1.0)
+	rune_mat.emission_energy_multiplier = 1.8
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 4.80, 0)
+	mono.add_child(pivot)
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.30, 0.45, 0.06)
+		rune.mesh = rm
+		rune.material_override = rune_mat
+		rune.position = Vector3(cos(ang) * 2.40, sin(i) * 0.50, sin(ang) * 2.40)
+		rune.rotation = Vector3(0, ang + PI * 0.5, 0)
+		pivot.add_child(rune)
+	var trot: Tween = pivot.create_tween().set_loops()
+	trot.tween_property(pivot, "rotation_degrees:y", 360.0, 12.0)
+	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Top beam of cold light
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 0.10
+	beam_m.bottom_radius = 0.55
+	beam_m.height = 14.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(0.55, 0.85, 1.0, 0.45)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(0.40, 0.85, 1.0)
+	beam_mat.emission_energy_multiplier = 1.4
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(0, 16.0, 0)
+	mono.add_child(beam)
+	# Cold central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.45, 0.85, 1.0)
+	light.light_energy = 4.5
+	light.omni_range = 18.0
+	light.position = Vector3(0, 4.80, 0)
+	mono.add_child(light)
+	# Slab collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.80, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 8.50, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	mono.add_child(sb)
+
+
+func _build_d5_cryo_keeper_npc() -> void:
+	## Epic-5 T4: cryo-keeper NPC — pale-robed archivist who guards the
+	## frozen archive entrance.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CryoKeeperSlot"
+	slot.position = Vector3(D5_CENTER.x - 28.0, 0.0, 3.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CryoKeeper"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Frostward")
+	if "npc_id" in npc:
+		npc.set("npc_id", "cryo_keeper_d5")
+	slot.add_child(npc)
+	# Pale-blue hooded robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.00, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.65, 0.85, 0.95)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.45, 0.75, 0.95)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.75
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Hood (sphere)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.20
+	hm.height = 0.36
+	hood.mesh = hm
+	hood.material_override = robe_mat
+	hood.position = Vector3(0, 1.42, 0)
+	npc.add_child(hood)
+	# Frost staff (vertical cylinder + glowing cyan crystal top)
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.05
+	stm.bottom_radius = 0.06
+	stm.height = 1.85
+	staff.mesh = stm
+	var staff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	staff_mat.albedo_color = Color(0.30, 0.40, 0.50)
+	staff_mat.metallic = 0.55
+	staff_mat.roughness = 0.45
+	staff.material_override = staff_mat
+	staff.position = Vector3(0.45, 0.92, 0)
+	npc.add_child(staff)
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var cmm: SphereMesh = SphereMesh.new()
+	cmm.radius = 0.14
+	cmm.height = 0.24
+	crystal.mesh = cmm
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.40, 0.95, 1.0)
+	crystal_mat.emission_energy_multiplier = 2.5
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	crystal.material_override = crystal_mat
+	crystal.position = Vector3(0.45, 1.92, 0)
+	npc.add_child(crystal)
+	# Crystal pulse
+	var tw: Tween = crystal.create_tween().set_loops()
+	tw.tween_property(crystal, "scale", Vector3.ONE * 1.20, 1.0)
+	tw.tween_property(crystal, "scale", Vector3.ONE * 0.85, 1.0)
 
 
 
