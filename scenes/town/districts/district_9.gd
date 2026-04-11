@@ -79,6 +79,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_ember_elemental(geom)
 	_build_d9_forge_anvil_shrine(geom)
 	_build_d9_slag_golem_patroller(geom)
+	_build_d9_forge_cart_caravan(geom)
 	print("[D9Builder] done")
 
 
@@ -5371,5 +5372,137 @@ func _build_d9_slag_golem_patroller(geom: Node) -> void:
 	cs2.shape = caps
 	stb2.add_child(cs2)
 	pivot.add_child(stb2)
+
+
+func _build_d9_forge_cart_caravan(geom: Node) -> void:
+	## Epic-9 T59: 3 ore-laden minecarts moving in a line along a track
+	## past the forge anvil shrine. Iron rails + wood ties on the ground,
+	## carts loaded with glowing ore chunks, slow tween convoy along X.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeCartCaravan"
+	pivot.position = D9_CENTER + Vector3(45, 0, 22)
+	geom.add_child(pivot)
+	# === TRACK: 2 parallel iron rails + wood ties ===
+	var rail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rail_mat.albedo_color = Color(0.18, 0.16, 0.14)
+	rail_mat.metallic = 0.85
+	rail_mat.roughness = 0.30
+	var tie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tie_mat.albedo_color = Color(0.22, 0.14, 0.08)
+	tie_mat.roughness = 0.85
+	# Rails — 2 long thin boxes
+	for rz in [-0.55, 0.55]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(28.0, 0.10, 0.10)
+		rail.mesh = rm
+		rail.material_override = rail_mat
+		rail.position = Vector3(0, 0.10, rz)
+		pivot.add_child(rail)
+	# Wood ties spaced along the track
+	for i in 14:
+		var tie: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.45, 0.12, 1.40)
+		tie.mesh = tm
+		tie.material_override = tie_mat
+		tie.position = Vector3(-13.0 + float(i) * 2.0, 0.06, 0)
+		pivot.add_child(tie)
+	# === CARTS: 3 minecarts loaded with glowing ore ===
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.16, 0.13)
+	iron_mat.metallic = 0.80
+	iron_mat.roughness = 0.40
+	var ore_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ore_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ore_mat.emission_enabled = true
+	ore_mat.emission = Color(1.0, 0.55, 0.10)
+	ore_mat.emission_energy_multiplier = 5.0
+	ore_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Build carts (offsets along X for the convoy spacing)
+	for i in 3:
+		var cart: Node3D = Node3D.new()
+		cart.name = "ForgeCart_%d" % i
+		cart.position = Vector3(-8.0 + float(i) * 4.0, 0.0, 0)
+		pivot.add_child(cart)
+		# Cart body box (open top)
+		var bin: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(2.10, 0.85, 1.40)
+		bin.mesh = bm
+		bin.material_override = iron_mat
+		bin.position = Vector3(0, 0.65, 0)
+		cart.add_child(bin)
+		# 4 wheels (small cylinders rotated to roll)
+		for sx in [-0.85, 0.85]:
+			for sz in [-0.55, 0.55]:
+				var wheel: MeshInstance3D = MeshInstance3D.new()
+				var wm: CylinderMesh = CylinderMesh.new()
+				wm.top_radius = 0.18
+				wm.bottom_radius = 0.18
+				wm.height = 0.10
+				wheel.mesh = wm
+				wheel.material_override = iron_mat
+				wheel.position = Vector3(sx, 0.18, sz)
+				wheel.rotation.z = PI / 2.0
+				cart.add_child(wheel)
+		# Ore chunks piled inside (3 unshaded ember spheres)
+		for j in 3:
+			var ore: MeshInstance3D = MeshInstance3D.new()
+			var om: SphereMesh = SphereMesh.new()
+			om.radius = 0.30 + float(j) * 0.04
+			om.height = 0.55 + float(j) * 0.06
+			ore.mesh = om
+			ore.material_override = ore_mat
+			ore.position = Vector3(-0.55 + float(j) * 0.55, 1.18, 0)
+			cart.add_child(ore)
+		# Per-cart amber glow
+		var clt: OmniLight3D = OmniLight3D.new()
+		clt.position = Vector3(0, 1.10, 0)
+		clt.light_color = Color(1.0, 0.50, 0.12)
+		clt.light_energy = 2.4
+		clt.omni_range = 4.5
+		cart.add_child(clt)
+		# Slow caravan motion: cart moves +X 16m and resets, staggered offsets
+		var origin_x: float = cart.position.x
+		var convoy: Tween = pivot.create_tween().set_loops()
+		convoy.tween_property(cart, "position:x", origin_x + 16.0, 22.0)
+		convoy.tween_property(cart, "position:x", origin_x, 0.001)
+	# Track-side warning lamp post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.06
+	pm.bottom_radius = 0.10
+	pm.height = 2.40
+	post.mesh = pm
+	post.material_override = iron_mat
+	post.position = Vector3(11.0, 1.20, 1.50)
+	pivot.add_child(post)
+	# Lamp head — unshaded amber sphere
+	var lamp: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.22
+	lm.height = 0.44
+	lamp.mesh = lm
+	var lamp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lamp_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	lamp_mat.emission_enabled = true
+	lamp_mat.emission = Color(1.0, 0.55, 0.10)
+	lamp_mat.emission_energy_multiplier = 6.0
+	lamp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lamp.material_override = lamp_mat
+	lamp.position = Vector3(11.0, 2.45, 1.50)
+	pivot.add_child(lamp)
+	# Lamp light
+	var llt: OmniLight3D = OmniLight3D.new()
+	llt.position = Vector3(11.0, 2.45, 1.50)
+	llt.light_color = Color(1.0, 0.55, 0.15)
+	llt.light_energy = 2.8
+	llt.omni_range = 6.0
+	pivot.add_child(llt)
+	# Lamp blink
+	var blink: Tween = pivot.create_tween().set_loops()
+	blink.tween_property(lamp_mat, "emission_energy_multiplier", 8.5, 0.9).set_ease(Tween.EASE_IN_OUT)
+	blink.tween_property(lamp_mat, "emission_energy_multiplier", 4.0, 0.9).set_ease(Tween.EASE_IN_OUT)
 
 
