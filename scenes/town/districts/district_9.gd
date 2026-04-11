@@ -110,6 +110,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_slag_heap_pit(geom)
 	_build_d9_slagmaster_borg_npc(town)
 	_build_d9_sky_cinder_fall(geom)
+	_build_d9_forge_heart_acolyte_npc(town)
 	print("[D9Builder] done")
 
 
@@ -10376,4 +10377,176 @@ func _build_d9_sky_cinder_fall(geom: Node) -> void:
 	amesh.height = 0.20
 	ash.draw_pass_1 = amesh
 	pivot.add_child(ash)
+
+
+func _build_d9_forge_heart_acolyte_npc(town: Node) -> void:
+	## Epic-9 T90: Forge Heart Acolyte — kneeling worshipper at the central
+	## forge heart. Long red-orange ceremonial robe, tall conical hood,
+	## brass forge-hammer offering held in front, sash with 3 brass tokens
+	## at the waist, and a slow forward-bow tween that sells the prayer.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ForgeHeartAcolyteSlot"
+	# Stand near the forge heart at D9 center, just south of it
+	slot.position = Vector3(D9_CENTER.x + 4, 0, 6)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ForgeHeartAcolyte"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Forge Heart Acolyte")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_forge_heart_acolyte")
+	# Face the forge heart (-Z direction)
+	npc.rotation.y = PI
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.55, 0.18, 0.10)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.10
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.85, 0.30, 0.05)
+	robe_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Long red-orange ceremonial robe (tall narrow box) ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.75, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.90, 0)
+	npc.add_child(robe)
+	# Brass robe collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.75, 0)
+	npc.add_child(collar)
+	# Brass vertical front stripe (chest seam)
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.16, 1.55, 0.06)
+	seam.mesh = sm
+	seam.material_override = brass_mat
+	seam.position = Vector3(0, 0.92, -0.30)
+	npc.add_child(seam)
+	# Glowing chest core dot
+	var chest_core: MeshInstance3D = MeshInstance3D.new()
+	var ccm: SphereMesh = SphereMesh.new()
+	ccm.radius = 0.07
+	ccm.height = 0.14
+	chest_core.mesh = ccm
+	chest_core.material_override = amber_mat
+	chest_core.position = Vector3(0, 1.30, -0.32)
+	npc.add_child(chest_core)
+	# ---- Tall conical hood — prism cap ----
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmm: PrismMesh = PrismMesh.new()
+	hmm.size = Vector3(0.65, 1.05, 0.65)
+	hood.mesh = hmm
+	hood.material_override = robe_mat
+	hood.position = Vector3(0, 2.30, 0)
+	npc.add_child(hood)
+	# Hood brass base trim
+	var hood_trim: MeshInstance3D = MeshInstance3D.new()
+	var htm: BoxMesh = BoxMesh.new()
+	htm.size = Vector3(0.75, 0.08, 0.75)
+	hood_trim.mesh = htm
+	hood_trim.material_override = brass_mat
+	hood_trim.position = Vector3(0, 1.85, 0)
+	npc.add_child(hood_trim)
+	# Hood glowing tip ember
+	var hood_tip: MeshInstance3D = MeshInstance3D.new()
+	var htipm: SphereMesh = SphereMesh.new()
+	htipm.radius = 0.08
+	htipm.height = 0.16
+	hood_tip.mesh = htipm
+	hood_tip.material_override = amber_mat
+	hood_tip.position = Vector3(0, 2.80, 0)
+	npc.add_child(hood_tip)
+	# ---- Brass forge-hammer offering held in front of the body ----
+	# Hammer pivot — anchor at his cupped hands
+	var hammer_pivot: Node3D = Node3D.new()
+	hammer_pivot.position = Vector3(0, 1.05, -0.45)
+	npc.add_child(hammer_pivot)
+	# Hammer handle (brass cylinder)
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.04
+	hcm.bottom_radius = 0.05
+	hcm.height = 0.50
+	handle.mesh = hcm
+	handle.material_override = brass_mat
+	handle.position = Vector3(0, 0, 0)
+	handle.rotation.x = PI / 2.0
+	hammer_pivot.add_child(handle)
+	# Hammer head (brass box)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var headm: BoxMesh = BoxMesh.new()
+	headm.size = Vector3(0.20, 0.18, 0.30)
+	head.mesh = headm
+	head.material_override = brass_mat
+	head.position = Vector3(0, 0, -0.30)
+	hammer_pivot.add_child(head)
+	# Glowing hammer core stripe — unshaded amber
+	var hcore: MeshInstance3D = MeshInstance3D.new()
+	var hcormesh: BoxMesh = BoxMesh.new()
+	hcormesh.size = Vector3(0.06, 0.20, 0.06)
+	hcore.mesh = hcormesh
+	hcore.material_override = amber_mat
+	hcore.position = Vector3(0, 0, -0.30)
+	hammer_pivot.add_child(hcore)
+	# ---- Sash with 3 brass tokens at the waist ----
+	# Sash band
+	var sash: MeshInstance3D = MeshInstance3D.new()
+	var sashm: BoxMesh = BoxMesh.new()
+	sashm.size = Vector3(0.95, 0.12, 0.58)
+	sash.mesh = sashm
+	sash.material_override = brass_mat
+	sash.position = Vector3(0, 0.95, 0)
+	npc.add_child(sash)
+	# 3 small brass token spheres hanging from the sash front
+	for tx in [-0.25, 0.0, 0.25]:
+		var token: MeshInstance3D = MeshInstance3D.new()
+		var tkm: SphereMesh = SphereMesh.new()
+		tkm.radius = 0.06
+		tkm.height = 0.12
+		token.mesh = tkm
+		token.material_override = brass_mat
+		token.position = Vector3(tx, 0.78, -0.32)
+		npc.add_child(token)
+	# Warm OmniLight aura
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, -0.30)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 1.8
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Slow forward-bow tween — body rocks forward to sell the prayer ----
+	var bow: Tween = npc.create_tween().set_loops()
+	bow.tween_property(npc, "rotation:x", 0.22, 2.0).set_ease(Tween.EASE_IN_OUT)
+	bow.tween_property(npc, "rotation:x", 0.05, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Hood-tip + chest core + hammer core pulse (shared amber material)
+	var apulse: Tween = npc.create_tween().set_loops()
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 
