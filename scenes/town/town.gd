@@ -1668,6 +1668,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_vault_keeper_npc()
 	# Epic-3 T15: small memory pool
 	_build_d3_memory_pool(geom)
+	# Epic-3 T16: 4 floating bookshelves with violet glow
+	_build_d3_floating_bookshelves(geom)
+	# Epic-3 T17: semicircle of stone benches around the great crystal
+	_build_d3_stone_benches(geom)
+	# Epic-3 T18: ritual circle ground pattern
+	_build_d3_ritual_circle(geom)
+	# Epic-3 T19: ancient war banners hanging from poles
+	_build_d3_war_banners(geom)
+	# Epic-3 T20: Acolyte NPC sitting cross-legged
+	_build_d3_acolyte_npc()
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -2861,6 +2871,330 @@ func _build_d3_memory_pool(geom: Node) -> void:
 	label.font_size = 16
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	pool.add_child(label)
+
+
+func _build_d3_floating_bookshelves(geom: Node) -> void:
+	## Epic-3 T16: 4 floating bookshelves drifting at different altitudes,
+	## each holding 5 colored book spines glowing inside.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-18, 3.5, 4),
+		D3_CENTER + Vector3(-18, 4.5, -2),
+		D3_CENTER + Vector3(18, 3.5, 4),
+		D3_CENTER + Vector3(18, 4.5, -2),
+	]
+	var shelf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shelf_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	shelf_mat.metallic = 0.20
+	shelf_mat.roughness = 0.65
+	shelf_mat.emission_enabled = true
+	shelf_mat.emission = Color(0.85, 0.40, 1.0)
+	shelf_mat.emission_energy_multiplier = 0.45
+	for i in positions.size():
+		var shelf: Node3D = Node3D.new()
+		shelf.name = "D3FloatingShelf_%d" % i
+		shelf.position = positions[i]
+		geom.add_child(shelf)
+		# Shelf box
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.85, 0.85, 0.45)
+		body.mesh = bm
+		body.material_override = shelf_mat
+		shelf.add_child(body)
+		# 5 colored book spines
+		var book_colors: Array[Color] = [
+			Color(0.55, 0.30, 0.30),
+			Color(0.30, 0.55, 0.30),
+			Color(0.30, 0.30, 0.55),
+			Color(0.55, 0.55, 0.30),
+			Color(0.55, 0.30, 0.55),
+		]
+		for b in 5:
+			var book: MeshInstance3D = MeshInstance3D.new()
+			var bkm: BoxMesh = BoxMesh.new()
+			bkm.size = Vector3(0.30, 0.65, 0.04)
+			book.mesh = bkm
+			book.position = Vector3(-0.65 + b * 0.32, 0, 0.20)
+			var bkmat: StandardMaterial3D = StandardMaterial3D.new()
+			bkmat.albedo_color = book_colors[b]
+			bkmat.emission_enabled = true
+			bkmat.emission = book_colors[b]
+			bkmat.emission_energy_multiplier = 1.4
+			bkmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			book.material_override = bkmat
+			shelf.add_child(book)
+		# Bob tween
+		var origin_y: float = positions[i].y
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(shelf, "position:y", origin_y + 0.40, 1.8 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(shelf, "position:y", origin_y, 1.8 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		# Slow rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(shelf, "rotation:y", TAU, 18.0 + i * 2)
+
+
+func _build_d3_stone_benches(geom: Node) -> void:
+	## Epic-3 T17: 5 stone benches arranged in a semicircle facing the
+	## great crystal — meditation seating for the vault scholars.
+	var bench_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bench_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	bench_mat.metallic = 0.40
+	bench_mat.roughness = 0.55
+	bench_mat.emission_enabled = true
+	bench_mat.emission = Color(0.55, 0.30, 0.85)
+	bench_mat.emission_energy_multiplier = 0.30
+	for i in 5:
+		var t: float = float(i) / 4.0
+		var angle: float = (-PI * 0.5) + t * PI + PI  # facing the crystal
+		var radius: float = 6.5
+		var bench: Node3D = Node3D.new()
+		bench.name = "D3Bench_%d" % i
+		bench.position = D3_CENTER + Vector3(cos(angle) * radius, 0, sin(angle) * radius)
+		bench.rotation = Vector3(0, -angle, 0)
+		geom.add_child(bench)
+		# Top slab
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.85, 0.20, 0.55)
+		slab.mesh = sm
+		slab.position = Vector3(0, 0.55, 0)
+		slab.material_override = bench_mat
+		bench.add_child(slab)
+		# 2 stubby legs
+		for sx: float in [-0.65, 0.65]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.30, 0.45, 0.45)
+			leg.mesh = lm
+			leg.position = Vector3(sx, 0.22, 0)
+			leg.material_override = bench_mat
+			bench.add_child(leg)
+		# Per-bench collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.85, 0.65, 0.55)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.32, 0)
+		sb.add_child(cs)
+		bench.add_child(sb)
+
+
+func _build_d3_ritual_circle(geom: Node) -> void:
+	## Epic-3 T18: a 5m violet ritual circle on the ground in front of the
+	## great crystal — concentric torus rings + 8 small rune dots in a
+	## ring + a center pulsing star.
+	var ring_root: Node3D = Node3D.new()
+	ring_root.name = "D3RitualCircle"
+	ring_root.position = D3_CENTER + Vector3(0, 0.06, 0)
+	geom.add_child(ring_root)
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.55, 1.0)
+	ring_mat.emission_energy_multiplier = 1.8
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 2 concentric rings
+	for r in 2:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 4.0 + r * 0.40
+		rmesh.outer_radius = 4.20 + r * 0.40
+		ring.mesh = rmesh
+		ring.material_override = ring_mat
+		ring_root.add_child(ring)
+		# Slow rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(ring, "rotation:y", TAU * (1 if r % 2 == 0 else -1), 22.0 + r * 4)
+	# 8 small rune dots in a ring inside
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.18
+		dm.height = 0.36
+		dot.mesh = dm
+		dot.position = Vector3(cos(angle) * 3.40, 0.10, sin(angle) * 3.40)
+		dot.material_override = ring_mat
+		ring_root.add_child(dot)
+	# Center 4-prong pulsing star
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var prong: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.20, 0.04, 1.40)
+		prong.mesh = pm
+		prong.position = Vector3(0, 0.10, 0)
+		prong.rotation = Vector3(0, -angle, 0)
+		prong.material_override = ring_mat
+		ring_root.add_child(prong)
+	# Pulse the entire circle scale
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(ring_root, "scale", Vector3(1.06, 1.0, 1.06), 2.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(ring_root, "scale", Vector3(0.96, 1.0, 0.96), 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_war_banners(geom: Node) -> void:
+	## Epic-3 T19: 4 ancient war banners hanging from tall stone poles —
+	## long violet cloth panels with rune symbols. Tells "ancient battles
+	## happened here, the vault commemorates fallen mages".
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-22, 0, -8),
+		D3_CENTER + Vector3(-22, 0, 8),
+		D3_CENTER + Vector3(22, 0, -8),
+		D3_CENTER + Vector3(22, 0, 8),
+	]
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	pole_mat.metallic = 0.55
+	pole_mat.roughness = 0.45
+	var banner_mat: StandardMaterial3D = StandardMaterial3D.new()
+	banner_mat.albedo_color = Color(0.20, 0.10, 0.30)
+	banner_mat.emission_enabled = true
+	banner_mat.emission = Color(0.85, 0.40, 1.0)
+	banner_mat.emission_energy_multiplier = 0.95
+	banner_mat.metallic = 0.10
+	banner_mat.roughness = 0.55
+	for i in positions.size():
+		var banner_root: Node3D = Node3D.new()
+		banner_root.name = "D3WarBanner_%d" % i
+		banner_root.position = positions[i]
+		geom.add_child(banner_root)
+		# Tall pole
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.10
+		pmesh.bottom_radius = 0.14
+		pmesh.height = 6.5
+		pole.mesh = pmesh
+		pole.position = Vector3(0, 3.25, 0)
+		pole.material_override = pole_mat
+		banner_root.add_child(pole)
+		# Hanging banner cloth
+		var banner: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.40, 3.0, 0.06)
+		banner.mesh = bm
+		banner.position = Vector3(0.85, 4.85, 0)
+		banner.material_override = banner_mat
+		banner_root.add_child(banner)
+		# Rune symbol on banner
+		var rune: Label3D = Label3D.new()
+		var symbols: Array[String] = ["Ψ", "Ω", "Φ", "Δ"]
+		rune.text = symbols[i]
+		rune.position = Vector3(0.85, 4.85, 0.05)
+		rune.modulate = Color(1, 1, 1)
+		rune.outline_modulate = Color(0, 0, 0, 0.85)
+		rune.outline_size = 5
+		rune.font_size = 38
+		rune.no_depth_test = true
+		banner_root.add_child(rune)
+		# Top pole crown
+		var crown: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.18
+		cm.height = 0.36
+		crown.mesh = cm
+		crown.position = Vector3(0, 6.65, 0)
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.85, 0.40, 1.0)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 1.0)
+		cmat.emission_energy_multiplier = 2.4
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crown.material_override = cmat
+		banner_root.add_child(crown)
+		# Collision on pole
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 6.5
+		cs.shape = cap
+		cs.position = Vector3(0, 3.25, 0)
+		sb.add_child(cs)
+		banner_root.add_child(sb)
+
+
+func _build_d3_acolyte_npc() -> void:
+	## Epic-3 T20: Acolyte NPC sitting cross-legged on one of the stone
+	## benches, meditating with hands clasped in front and eyes closed.
+	## Has a small floating prayer symbol over their head.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var acolyte: Node3D = Node3D.new()
+	acolyte.name = "D3Acolyte"
+	acolyte.position = D3_CENTER + Vector3(0, 0.65, 6.5)
+	acolyte.rotation = Vector3(0, deg_to_rad(180), 0)
+	slots.add_child(acolyte)
+	# Robed body — short capsule (sitting)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.20, 0.40)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.45, 0)
+	body.material_override = bmat
+	acolyte.add_child(body)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.40
+	hmesh.height = 0.50
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.0, 0)
+	hood.material_override = bmat
+	acolyte.add_child(hood)
+	# Closed eyes — 2 thin black bars (eyes shut, meditating)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.08, 0.02, 0.04)
+		eye.mesh = em
+		eye.position = Vector3(ex, 0.95, 0.32)
+		eye.material_override = eye_mat
+		acolyte.add_child(eye)
+	# Floating prayer rune above head — small pulsing prism
+	var rune: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: PrismMesh = PrismMesh.new()
+	rmesh.size = Vector3(0.20, 0.30, 0.20)
+	rune.mesh = rmesh
+	rune.position = Vector3(0, 1.85, 0)
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.85, 0.40, 1.0)
+	rmat.emission_enabled = true
+	rmat.emission = Color(1.0, 0.55, 1.0)
+	rmat.emission_energy_multiplier = 2.6
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rune.material_override = rmat
+	acolyte.add_child(rune)
+	# Rune slow rotation + bob
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(rune, "rotation:y", TAU, 4.0)
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(rune, "position:y", 2.10, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(rune, "position:y", 1.85, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Acolyte"
+	label.position = Vector3(0, 2.40, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	acolyte.add_child(label)
 
 
 
