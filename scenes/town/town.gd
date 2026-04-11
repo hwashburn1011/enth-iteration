@@ -25567,6 +25567,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_weapon_display(geom)
 	# Epic-7 T75: tea garden benches
 	_build_d7_tea_garden_benches(geom)
+	# Epic-7 T76: rope swing
+	_build_d7_d7_rope_swing(geom)
+	# Epic-7 T77: child apprentice NPC
+	_build_d7_child_apprentice_npc()
+	# Epic-7 T78: stone pagoda
+	_build_d7_stone_pagoda(geom)
+	# Epic-7 T79: pagoda monk NPC
+	_build_d7_pagoda_monk_npc()
+	# Epic-7 T80: falling leaves particles
+	_build_d7_falling_leaves(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -30823,6 +30833,321 @@ func _build_d7_tea_garden_benches(geom: Node) -> void:
 		cs.shape = cb
 		sb.add_child(cs)
 		bench.add_child(sb)
+
+
+func _build_d7_d7_rope_swing(geom: Node) -> void:
+	## Epic-7 T76: rope swing under a tree branch — tall trunk + horizontal
+	## branch + 2 ropes + plank seat with sway tween.
+	var swing: Node3D = Node3D.new()
+	swing.name = "D7RopeSwing"
+	swing.position = Vector3(D7_CENTER.x - 18.0, 0.0, 18.0)
+	geom.add_child(swing)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	trunk_mat.roughness = 0.92
+	# Trunk
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var trm: CylinderMesh = CylinderMesh.new()
+	trm.top_radius = 0.18
+	trm.bottom_radius = 0.30
+	trm.height = 4.0
+	trunk.mesh = trm
+	trunk.material_override = trunk_mat
+	trunk.position = Vector3(-1.5, 2.0, 0)
+	swing.add_child(trunk)
+	# Horizontal branch
+	var branch: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.10
+	brm.bottom_radius = 0.12
+	brm.height = 2.4
+	branch.mesh = brm
+	branch.material_override = trunk_mat
+	branch.position = Vector3(0, 3.5, 0)
+	branch.rotation_degrees = Vector3(0, 0, 90)
+	swing.add_child(branch)
+	# Pivot for swing motion
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 3.5, 0)
+	swing.add_child(pivot)
+	# 2 ropes
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope_mat.roughness = 0.85
+	for sx in [-0.40, 0.40]:
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rrm: CylinderMesh = CylinderMesh.new()
+		rrm.top_radius = 0.025
+		rrm.bottom_radius = 0.025
+		rrm.height = 2.4
+		rope.mesh = rrm
+		rope.material_override = rope_mat
+		rope.position = Vector3(sx, -1.20, 0)
+		pivot.add_child(rope)
+	# Plank seat
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(1.10, 0.08, 0.35)
+	seat.mesh = sm
+	var seat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seat_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	seat_mat.roughness = 0.85
+	seat.material_override = seat_mat
+	seat.position = Vector3(0, -2.40, 0)
+	pivot.add_child(seat)
+	# Swing tween
+	var tw: Tween = pivot.create_tween().set_loops()
+	tw.tween_property(pivot, "rotation_degrees:x", 12.0, 1.4)
+	tw.tween_property(pivot, "rotation_degrees:x", -12.0, 1.4)
+	# Trunk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(-1.5, 2.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.30
+	cap.height = 4.0
+	cs.shape = cap
+	sb.add_child(cs)
+	swing.add_child(sb)
+
+
+func _build_d7_child_apprentice_npc() -> void:
+	## Epic-7 T77: small child apprentice NPC — saffron robe + small wood
+	## practice sword.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ChildApprenticeSlot"
+	slot.position = Vector3(D7_CENTER.x - 18.0, 0.0, 17.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ChildApprentice"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Pebble")
+	if "npc_id" in npc:
+		npc.set("npc_id", "child_apprentice_d7")
+	npc.scale = Vector3(0.65, 0.65, 0.65)
+	slot.add_child(npc)
+	# Small saffron robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.55, 0.95, 0.40)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.65, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.55, 0.10)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Bald head
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.20
+	dm.height = 0.36
+	dome.mesh = dm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	skin_mat.roughness = 0.65
+	dome.material_override = skin_mat
+	dome.position = Vector3(0, 1.40, 0)
+	npc.add_child(dome)
+	# Small wooden practice sword
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var sword: MeshInstance3D = MeshInstance3D.new()
+	var swm: BoxMesh = BoxMesh.new()
+	swm.size = Vector3(0.06, 0.85, 0.06)
+	sword.mesh = swm
+	sword.material_override = wood_mat
+	sword.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(sword)
+
+
+func _build_d7_stone_pagoda(geom: Node) -> void:
+	## Epic-7 T78: tall multi-tier stone pagoda — 4 stacked roofs of
+	## decreasing size on a square stone column.
+	var pagoda: Node3D = Node3D.new()
+	pagoda.name = "StonePagoda"
+	pagoda.position = Vector3(D7_CENTER.x + 0.0, 0.0, 22.0)
+	geom.add_child(pagoda)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.40, 0.20, 0.15)
+	roof_mat.roughness = 0.85
+	# Square base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.85, 0.55, 2.85)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.27, 0)
+	pagoda.add_child(base)
+	# 4 stacked tiers (each smaller, with a roof on top)
+	var tier_sizes: Array = [
+		{"col": Vector3(2.20, 1.85, 2.20), "roof": Vector3(2.85, 0.40, 2.85), "y": 1.40, "ry": 2.40},
+		{"col": Vector3(1.85, 1.65, 1.85), "roof": Vector3(2.40, 0.40, 2.40), "y": 3.20, "ry": 4.20},
+		{"col": Vector3(1.50, 1.40, 1.50), "roof": Vector3(2.0, 0.40, 2.0),   "y": 4.85, "ry": 5.85},
+		{"col": Vector3(1.10, 1.10, 1.10), "roof": Vector3(1.55, 0.40, 1.55), "y": 6.40, "ry": 7.10},
+	]
+	for tier in tier_sizes:
+		# Stone column
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = tier["col"]
+		col.mesh = cmm
+		col.material_override = stone_mat
+		col.position = Vector3(0, tier["y"], 0)
+		pagoda.add_child(col)
+		# Sloped roof box
+		var roof: MeshInstance3D = MeshInstance3D.new()
+		var rmm: PrismMesh = PrismMesh.new()
+		rmm.size = tier["roof"]
+		roof.mesh = rmm
+		roof.material_override = roof_mat
+		roof.position = Vector3(0, tier["ry"], 0)
+		pagoda.add_child(roof)
+	# Top finial (tall thin spike)
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var ftm: PrismMesh = PrismMesh.new()
+	ftm.size = Vector3(0.30, 1.40, 0.30)
+	finial.mesh = ftm
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	bronze_mat.emission_enabled = true
+	bronze_mat.emission = Color(0.95, 0.65, 0.10)
+	bronze_mat.emission_energy_multiplier = 1.4
+	bronze_mat.metallic = 0.85
+	finial.material_override = bronze_mat
+	finial.position = Vector3(0, 8.0, 0)
+	pagoda.add_child(finial)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 3.0
+	light.omni_range = 9.0
+	light.position = Vector3(0, 4.20, 0)
+	pagoda.add_child(light)
+	# Pagoda collision (large box)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 7.50, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	pagoda.add_child(sb)
+
+
+func _build_d7_pagoda_monk_npc() -> void:
+	## Epic-7 T79: pagoda guardian monk NPC — yellow robe + held bell.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "PagodaMonkSlot"
+	slot.position = Vector3(D7_CENTER.x + 2.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "PagodaMonk"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Stillpeak")
+	if "npc_id" in npc:
+		npc.set("npc_id", "pagoda_monk_d7")
+	slot.add_child(npc)
+	# Yellow robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.85, 0.20)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Bald head
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.20
+	dm.height = 0.36
+	dome.mesh = dm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	dome.material_override = skin_mat
+	dome.position = Vector3(0, 1.50, 0)
+	npc.add_child(dome)
+	# Small held brass bell
+	var bell: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.10
+	bm.height = 0.18
+	bell.mesh = bm
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.95, 0.75, 0.20)
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(0.95, 0.65, 0.10)
+	brass_mat.emission_energy_multiplier = 0.85
+	brass_mat.metallic = 0.95
+	bell.material_override = brass_mat
+	bell.position = Vector3(0.40, 0.85, 0.20)
+	bell.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(bell)
+
+
+func _build_d7_falling_leaves(geom: Node) -> void:
+	## Epic-7 T80: ambient falling autumn leaves — GPU particles drifting
+	## down across the entire D7 area in warm orange/yellow colors.
+	var leaves: GPUParticles3D = GPUParticles3D.new()
+	leaves.name = "FallingLeaves"
+	leaves.position = Vector3(D7_CENTER.x, 12.0, 0.0)
+	leaves.amount = 80
+	leaves.lifetime = 8.0
+	leaves.preprocess = 4.0
+	leaves.explosiveness = 0.0
+	leaves.randomness = 0.6
+	leaves.visibility_aabb = AABB(Vector3(-40, -14, -25), Vector3(80, 28, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(35, 0.5, 22)
+	pm.direction = Vector3(0.20, -1, 0.10)
+	pm.spread = 30.0
+	pm.gravity = Vector3(0.10, -0.50, 0.05)
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.angular_velocity_min = -90.0
+	pm.angular_velocity_max = 90.0
+	pm.scale_min = 0.10
+	pm.scale_max = 0.18
+	pm.color = Color(0.95, 0.55, 0.20, 0.85)
+	leaves.process_material = pm
+	# Leaf mesh
+	var leaf_mesh: BoxMesh = BoxMesh.new()
+	leaf_mesh.size = Vector3(0.18, 0.02, 0.10)
+	leaves.draw_pass_1 = leaf_mesh
+	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	leaf_mat.emission_enabled = true
+	leaf_mat.emission = Color(0.95, 0.45, 0.10)
+	leaf_mat.emission_energy_multiplier = 1.4
+	leaf_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	leaf_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	leaf_mesh.material = leaf_mat
+	geom.add_child(leaves)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
