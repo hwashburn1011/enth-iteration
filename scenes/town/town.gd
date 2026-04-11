@@ -1758,6 +1758,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_starlight_projector(geom)
 	# Epic-3 T60: floating data dragon enemy
 	_build_d3_data_dragon(geom)
+	# Epic-3 T61: healing fountain
+	_build_d3_healing_fountain(geom)
+	# Epic-3 T62: 3 study desks with scrolls
+	_build_d3_study_desks(geom)
+	# Epic-3 T63: hanging mage robes on a rack
+	_build_d3_mage_robes(geom)
+	# Epic-3 T64: Fortune Teller NPC
+	_build_d3_fortune_teller_npc()
+	# Epic-3 T65: 6 floating tarot cards
+	_build_d3_tarot_cards(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -5962,6 +5972,414 @@ func _build_d3_data_dragon(geom: Node) -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	dragon.add_child(label)
+
+
+func _build_d3_healing_fountain(geom: Node) -> void:
+	## Epic-3 T61: a healing fountain — stone basin with rising green
+	## emissive water column + 4 small healing pulse particles flowing
+	## outward at the rim.
+	var font: Node3D = Node3D.new()
+	font.name = "D3HealingFountain"
+	font.position = D3_CENTER + Vector3(20, 0, -8)
+	geom.add_child(font)
+	# Stone basin
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.20
+	bm.bottom_radius = 1.40
+	bm.height = 0.85
+	basin.mesh = bm
+	basin.position = Vector3(0, 0.42, 0)
+	basin.material_override = stone_mat
+	font.add_child(basin)
+	# Inner glowing green water disc
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.0
+	wm.bottom_radius = 1.0
+	wm.height = 0.06
+	water.mesh = wm
+	water.position = Vector3(0, 0.85, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.40, 1.0, 0.55, 0.85)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.45, 1.0, 0.55)
+	wmat.emission_energy_multiplier = 1.8
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	font.add_child(water)
+	# Rising water column — small cylinder + GPU particles
+	var column: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.18
+	cm.bottom_radius = 0.18
+	cm.height = 1.40
+	column.mesh = cm
+	column.position = Vector3(0, 1.55, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.45, 1.0, 0.55, 0.65)
+	cmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cmat.emission_enabled = true
+	cmat.emission = Color(0.55, 1.0, 0.55)
+	cmat.emission_energy_multiplier = 2.0
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	column.material_override = cmat
+	font.add_child(column)
+	# Rising particles
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 30
+	sparks.lifetime = 1.85
+	sparks.position = Vector3(0, 1.0, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.20
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 8.0
+	pmat.initial_velocity_min = 1.4
+	pmat.initial_velocity_max = 2.0
+	pmat.gravity = Vector3(0, 0.0, 0)
+	pmat.scale_min = 0.10
+	pmat.scale_max = 0.18
+	pmat.color = Color(0.55, 1.0, 0.55, 1.0)
+	sparks.process_material = pmat
+	var sm2: SphereMesh = SphereMesh.new()
+	sm2.radius = 0.10
+	sm2.height = 0.20
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.55, 1.0, 0.55)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(0.55, 1.0, 0.55)
+	sm_mat.emission_energy_multiplier = 2.6
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm2.material = sm_mat
+	sparks.draw_pass_1 = sm2
+	font.add_child(sparks)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "HEALING FOUNT"
+	label.position = Vector3(0, 2.85, 0)
+	label.modulate = Color(0.55, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	font.add_child(label)
+	# Collision around basin
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 0.85, 2.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.42, 0)
+	sb.add_child(cs)
+	font.add_child(sb)
+
+
+func _build_d3_study_desks(geom: Node) -> void:
+	## Epic-3 T62: 3 study desks in a row — wooden tables with stacked
+	## books + small inkpot + an open scroll on each.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-18, 0, 8),
+		D3_CENTER + Vector3(-18, 0, 11),
+		D3_CENTER + Vector3(-18, 0, 14),
+	]
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.metallic = 0.10
+	wood_mat.roughness = 0.65
+	for i in positions.size():
+		var desk: Node3D = Node3D.new()
+		desk.name = "D3StudyDesk_%d" % i
+		desk.position = positions[i]
+		geom.add_child(desk)
+		# Table
+		var table: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(1.40, 0.85, 1.0)
+		table.mesh = tm
+		table.position = Vector3(0, 0.42, 0)
+		table.material_override = wood_mat
+		desk.add_child(table)
+		# Stack of books
+		for b in 3:
+			var book: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.55, 0.10, 0.40)
+			book.mesh = bm
+			book.position = Vector3(-0.40, 0.95 + b * 0.10, 0)
+			var bmat: StandardMaterial3D = StandardMaterial3D.new()
+			bmat.albedo_color = [Color(0.55, 0.30, 0.30), Color(0.30, 0.55, 0.30), Color(0.30, 0.30, 0.55)][b]
+			book.material_override = bmat
+			desk.add_child(book)
+		# Small inkpot
+		var ink: MeshInstance3D = MeshInstance3D.new()
+		var im: CylinderMesh = CylinderMesh.new()
+		im.top_radius = 0.06
+		im.bottom_radius = 0.08
+		im.height = 0.18
+		ink.mesh = im
+		ink.position = Vector3(0.40, 0.94, 0)
+		var imat: StandardMaterial3D = StandardMaterial3D.new()
+		imat.albedo_color = Color(0.10, 0.10, 0.13)
+		imat.metallic = 0.85
+		ink.material_override = imat
+		desk.add_child(ink)
+		# Open glowing scroll
+		var scroll: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.55, 0.04, 0.40)
+		scroll.mesh = sm
+		scroll.position = Vector3(0, 0.87, 0)
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(0.95, 0.85, 0.55)
+		smat.emission_enabled = true
+		smat.emission = Color(1.0, 0.85, 0.55)
+		smat.emission_energy_multiplier = 0.85
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		scroll.material_override = smat
+		desk.add_child(scroll)
+		# Per-desk collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.40, 0.85, 1.0)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.42, 0)
+		sb.add_child(cs)
+		desk.add_child(sb)
+
+
+func _build_d3_mage_robes(geom: Node) -> void:
+	## Epic-3 T63: a coat rack with 3 hanging mage robes in different
+	## colors — boxes with conical hat tops.
+	var rack: Node3D = Node3D.new()
+	rack.name = "D3MageRobes"
+	rack.position = D3_CENTER + Vector3(-15, 0, -3)
+	geom.add_child(rack)
+	# Wooden post
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	post_mat.metallic = 0.10
+	post_mat.roughness = 0.65
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 0.07
+	pmesh.bottom_radius = 0.10
+	pmesh.height = 2.40
+	post.mesh = pmesh
+	post.position = Vector3(0, 1.20, 0)
+	post.material_override = post_mat
+	rack.add_child(post)
+	# Top crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.0, 0.06, 0.06)
+	bar.mesh = bm
+	bar.position = Vector3(0, 2.20, 0)
+	bar.material_override = post_mat
+	rack.add_child(bar)
+	# 3 hanging robes
+	var robe_colors: Array[Color] = [
+		Color(0.55, 0.30, 0.85),
+		Color(0.30, 0.55, 0.85),
+		Color(0.85, 0.30, 0.55),
+	]
+	for i in 3:
+		var hx: float = -0.65 + i * 0.65
+		# Robe body — narrow box
+		var robe: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.55, 1.40, 0.18)
+		robe.mesh = rm
+		robe.position = Vector3(hx, 1.40, 0)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = robe_colors[i]
+		rmat.emission_enabled = true
+		rmat.emission = robe_colors[i]
+		rmat.emission_energy_multiplier = 0.55
+		rmat.metallic = 0.20
+		rmat.roughness = 0.55
+		robe.material_override = rmat
+		rack.add_child(robe)
+		# Conical hat on top
+		var hat: MeshInstance3D = MeshInstance3D.new()
+		var hm: PrismMesh = PrismMesh.new()
+		hm.size = Vector3(0.40, 0.55, 0.40)
+		hat.mesh = hm
+		hat.position = Vector3(hx, 2.40, 0)
+		hat.material_override = rmat
+		rack.add_child(hat)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "ROBES"
+	label.position = Vector3(0, 3.0, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 14
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	rack.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 2.40, 0.30)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.20, 0)
+	sb.add_child(cs)
+	rack.add_child(sb)
+
+
+func _build_d3_fortune_teller_npc() -> void:
+	## Epic-3 T64: Fortune Teller NPC sitting at a small round table with
+	## a glowing crystal ball in front. Has a scarf wrapped around the head.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var teller: Node3D = Node3D.new()
+	teller.name = "D3FortuneTeller"
+	teller.position = D3_CENTER + Vector3(-12, 0, -8)
+	slots.add_child(teller)
+	# Round table
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	table_mat.metallic = 0.10
+	table_mat.roughness = 0.65
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.55
+	tm.bottom_radius = 0.55
+	tm.height = 0.85
+	table.mesh = tm
+	table.position = Vector3(0, 0.42, 0.85)
+	table.material_override = table_mat
+	teller.add_child(table)
+	# Crystal ball on the table
+	var ball: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.20
+	bm.height = 0.40
+	ball.mesh = bm
+	ball.position = Vector3(0, 1.0, 0.85)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.55, 1.0, 0.55)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.55, 1.0)
+	bmat.emission_energy_multiplier = 2.6
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ball.material_override = bmat
+	teller.add_child(ball)
+	# Body — short capsule (sitting)
+	var bbmat: StandardMaterial3D = StandardMaterial3D.new()
+	bbmat.albedo_color = Color(0.30, 0.10, 0.30)
+	bbmat.metallic = 0.20
+	bbmat.roughness = 0.65
+	bbmat.emission_enabled = true
+	bbmat.emission = Color(1.0, 0.30, 0.65)
+	bbmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.45, 0)
+	body.material_override = bbmat
+	teller.add_child(body)
+	# Wrapped scarf head — sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.0, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.30, 0.65)
+	hmat.metallic = 0.20
+	hmat.roughness = 0.65
+	hmat.emission_enabled = true
+	hmat.emission = Color(1.0, 0.40, 0.65)
+	hmat.emission_energy_multiplier = 0.55
+	head.material_override = hmat
+	teller.add_child(head)
+	# 2 small white eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.0, 0.32)
+		eye.material_override = eye_mat
+		teller.add_child(eye)
+	# Pulse the ball
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(ball, "scale", Vector3(1.30, 1.30, 1.30), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(ball, "scale", Vector3(0.85, 0.85, 0.85), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Fortune Teller"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(1.0, 0.55, 0.85)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	teller.add_child(label)
+
+
+func _build_d3_tarot_cards(geom: Node) -> void:
+	## Epic-3 T65: 6 floating tarot cards near the fortune teller — small
+	## rectangles in different colors with floating animation.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-13, 1.5, -6),
+		D3_CENTER + Vector3(-12, 1.8, -6),
+		D3_CENTER + Vector3(-11, 1.5, -6),
+		D3_CENTER + Vector3(-13, 2.4, -7),
+		D3_CENTER + Vector3(-12, 2.7, -7),
+		D3_CENTER + Vector3(-11, 2.4, -7),
+	]
+	var card_colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(1.0, 0.55, 0.20),
+		Color(0.45, 1.0, 0.55),
+		Color(0.85, 0.40, 1.0),
+		Color(1.0, 0.95, 0.30),
+		Color(1.0, 0.30, 0.55),
+	]
+	for i in positions.size():
+		var card: MeshInstance3D = MeshInstance3D.new()
+		card.name = "D3TarotCard_%d" % i
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.30, 0.55, 0.04)
+		card.mesh = cmesh
+		card.position = positions[i]
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = card_colors[i]
+		cmat.emission_enabled = true
+		cmat.emission = card_colors[i]
+		cmat.emission_energy_multiplier = 1.6
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		card.material_override = cmat
+		geom.add_child(card)
+		# Bob and slow rotation
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(card, "position:y", origin_y + 0.30, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(card, "position:y", origin_y, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(card, "rotation:y", TAU, 5.0 + i * 0.5)
 
 
 
