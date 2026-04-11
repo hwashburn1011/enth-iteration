@@ -1808,6 +1808,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_lone_bell(geom)
 	# Epic-3 T85: DREAM EATER 3rd mini-boss
 	_build_d3_dream_eater(geom)
+	# Epic-3 T86: lectern with floating script
+	_build_d3_lectern(geom)
+	# Epic-3 T87: reflecting pool
+	_build_d3_reflecting_pool(geom)
+	# Epic-3 T88: cluster of mage staves
+	_build_d3_staff_cluster(geom)
+	# Epic-3 T89: Elder Mage NPC
+	_build_d3_elder_mage_npc()
+	# Epic-3 T90: 6 perimeter violet flame braziers
+	_build_d3_perimeter_braziers(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -7791,6 +7801,340 @@ func _build_d3_dream_eater(geom: Node) -> void:
 	label.font_size = 22
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	eater.add_child(label)
+
+
+func _build_d3_lectern(geom: Node) -> void:
+	## Epic-3 T86: a lectern with a floating script — angled stand with
+	## a glowing scroll hovering above the reading surface.
+	var lect: Node3D = Node3D.new()
+	lect.name = "D3Lectern"
+	lect.position = D3_CENTER + Vector3(8, 0, -3)
+	geom.add_child(lect)
+	# Stand column
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.metallic = 0.10
+	wood_mat.roughness = 0.65
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.40, 1.20, 0.40)
+	stand.mesh = sm
+	stand.position = Vector3(0, 0.60, 0)
+	stand.material_override = wood_mat
+	lect.add_child(stand)
+	# Angled top desk
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.85, 0.10, 0.55)
+	top.mesh = tm
+	top.position = Vector3(0, 1.30, 0)
+	top.rotation = Vector3(deg_to_rad(-15), 0, 0)
+	top.material_override = wood_mat
+	lect.add_child(top)
+	# Floating script above the desk
+	var script: MeshInstance3D = MeshInstance3D.new()
+	var scrm: BoxMesh = BoxMesh.new()
+	scrm.size = Vector3(0.65, 0.04, 0.40)
+	script.mesh = scrm
+	script.position = Vector3(0, 1.65, 0)
+	script.rotation = Vector3(deg_to_rad(-15), 0, 0)
+	var scrmat: StandardMaterial3D = StandardMaterial3D.new()
+	scrmat.albedo_color = Color(1.0, 0.85, 0.55)
+	scrmat.emission_enabled = true
+	scrmat.emission = Color(1.0, 0.85, 0.55)
+	scrmat.emission_energy_multiplier = 1.4
+	scrmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	script.material_override = scrmat
+	lect.add_child(script)
+	# Bob the script
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(script, "position:y", 1.85, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(script, "position:y", 1.65, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.40, 0.55)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	lect.add_child(sb)
+
+
+func _build_d3_reflecting_pool(geom: Node) -> void:
+	## Epic-3 T87: a long rectangular reflecting pool — slim emissive
+	## cyan basin reflecting the sky.
+	var pool: Node3D = Node3D.new()
+	pool.name = "D3ReflectingPool"
+	pool.position = D3_CENTER + Vector3(-15, 0, 0)
+	geom.add_child(pool)
+	# Stone rim — 4 boxes forming a rectangle frame
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var rim_specs: Array = [
+		[Vector3(0, 0.10, -1.40), Vector3(3.40, 0.20, 0.30)],
+		[Vector3(0, 0.10, 1.40), Vector3(3.40, 0.20, 0.30)],
+		[Vector3(-1.55, 0.10, 0), Vector3(0.30, 0.20, 2.50)],
+		[Vector3(1.55, 0.10, 0), Vector3(0.30, 0.20, 2.50)],
+	]
+	for spec in rim_specs:
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = spec[1]
+		rim.mesh = rm
+		rim.position = spec[0]
+		rim.material_override = stone_mat
+		pool.add_child(rim)
+	# Inner water surface
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(2.85, 0.06, 2.40)
+	water.mesh = wm
+	water.position = Vector3(0, 0.10, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.85, 1.0, 0.85)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.55, 0.95, 1.0)
+	wmat.emission_energy_multiplier = 1.4
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	pool.add_child(water)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "REFLECTING POOL"
+	label.position = Vector3(0, 1.40, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 14
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pool.add_child(label)
+
+
+func _build_d3_staff_cluster(geom: Node) -> void:
+	## Epic-3 T88: 5 mage staves leaning against each other in a cluster —
+	## tall thin cylinders with colored gem tops.
+	var cluster: Node3D = Node3D.new()
+	cluster.name = "D3StaffCluster"
+	cluster.position = D3_CENTER + Vector3(-18, 0, 14)
+	geom.add_child(cluster)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.metallic = 0.10
+	wood_mat.roughness = 0.65
+	var gem_colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(1.0, 0.55, 0.20),
+		Color(0.45, 1.0, 0.55),
+		Color(0.85, 0.40, 1.0),
+		Color(1.0, 0.95, 0.30),
+	]
+	for i in 5:
+		var angle: float = (float(i) / 5.0) * TAU
+		var staff: MeshInstance3D = MeshInstance3D.new()
+		var smesh: CylinderMesh = CylinderMesh.new()
+		smesh.top_radius = 0.05
+		smesh.bottom_radius = 0.06
+		smesh.height = 1.85
+		staff.mesh = smesh
+		staff.position = Vector3(cos(angle) * 0.30, 0.92, sin(angle) * 0.30)
+		staff.rotation = Vector3(sin(angle) * deg_to_rad(20), 0, -cos(angle) * deg_to_rad(20))
+		staff.material_override = wood_mat
+		cluster.add_child(staff)
+		# Gem tip on top
+		var gem: MeshInstance3D = MeshInstance3D.new()
+		var gm: SphereMesh = SphereMesh.new()
+		gm.radius = 0.10
+		gm.height = 0.20
+		gem.mesh = gm
+		gem.position = Vector3(cos(angle) * 0.55, 1.85, sin(angle) * 0.55)
+		var gmat: StandardMaterial3D = StandardMaterial3D.new()
+		gmat.albedo_color = gem_colors[i]
+		gmat.emission_enabled = true
+		gmat.emission = gem_colors[i]
+		gmat.emission_energy_multiplier = 2.6
+		gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		gem.material_override = gmat
+		cluster.add_child(gem)
+
+
+func _build_d3_elder_mage_npc() -> void:
+	## Epic-3 T89: Elder Mage NPC standing on the floating crown landmark
+	## platform — long beard, tall hat, multi-colored robe.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var elder: Node3D = Node3D.new()
+	elder.name = "D3ElderMage"
+	elder.position = D3_CENTER + Vector3(-15, 2.0, 14)
+	slots.add_child(elder)
+	# Multi-color robe body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.40, 0.20, 0.55)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.40, 1.0)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	elder.add_child(body)
+	# Tall pointed hat
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.55, 1.20, 0.55)
+	hat.mesh = hm
+	hat.position = Vector3(0, 2.10, 0)
+	hat.material_override = bmat
+	elder.add_child(hat)
+	# Long white beard
+	var beard: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.30, 0.85, 0.10)
+	beard.mesh = bm
+	beard.position = Vector3(0, 1.20, 0.34)
+	var bmat2: StandardMaterial3D = StandardMaterial3D.new()
+	bmat2.albedo_color = Color(0.95, 0.95, 1.0)
+	bmat2.metallic = 0.10
+	bmat2.roughness = 0.85
+	beard.material_override = bmat2
+	elder.add_child(beard)
+	# 2 wise white eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.55, 0.34)
+		eye.material_override = eye_mat
+		elder.add_child(eye)
+	# Long curved staff held in front
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.06
+	sm.bottom_radius = 0.08
+	sm.height = 2.40
+	staff.mesh = sm
+	staff.position = Vector3(0.45, 1.20, 0)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.30, 0.18, 0.10)
+	smat.metallic = 0.30
+	staff.material_override = smat
+	elder.add_child(staff)
+	# Big glowing crystal at the top of the staff
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var cm: PrismMesh = PrismMesh.new()
+	cm.size = Vector3(0.30, 0.55, 0.30)
+	crystal.mesh = cm
+	crystal.position = Vector3(0.45, 2.65, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.95, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.95, 0.30)
+	cmat.emission_energy_multiplier = 3.0
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	crystal.material_override = cmat
+	elder.add_child(crystal)
+	# Pulse the crystal
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(crystal, "scale", Vector3(1.30, 1.30, 1.30), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(crystal, "scale", Vector3(0.85, 0.85, 0.85), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Elder Mage"
+	label.position = Vector3(0, 3.25, 0)
+	label.modulate = Color(1.0, 0.95, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	elder.add_child(label)
+
+
+func _build_d3_perimeter_braziers(geom: Node) -> void:
+	## Epic-3 T90: 6 large violet flame braziers around the perimeter of
+	## D3 — taller than the inner braziers, real lighting.
+	for i in 6:
+		var angle: float = (float(i) / 6.0) * TAU
+		var brazier: Node3D = Node3D.new()
+		brazier.name = "D3PerimeterBrazier_%d" % i
+		brazier.position = D3_CENTER + Vector3(cos(angle) * 22.0, 0, sin(angle) * 16.0)
+		geom.add_child(brazier)
+		# Tall column stem
+		var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+		stone_mat.metallic = 0.55
+		stone_mat.roughness = 0.45
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var smesh: CylinderMesh = CylinderMesh.new()
+		smesh.top_radius = 0.20
+		smesh.bottom_radius = 0.30
+		smesh.height = 2.40
+		stem.mesh = smesh
+		stem.position = Vector3(0, 1.20, 0)
+		stem.material_override = stone_mat
+		brazier.add_child(stem)
+		# Bowl on top
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CylinderMesh = CylinderMesh.new()
+		bmesh.top_radius = 0.55
+		bmesh.bottom_radius = 0.20
+		bmesh.height = 0.30
+		bowl.mesh = bmesh
+		bowl.position = Vector3(0, 2.55, 0)
+		bowl.material_override = stone_mat
+		brazier.add_child(bowl)
+		# Big violet flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: SphereMesh = SphereMesh.new()
+		fmesh.radius = 0.30
+		fmesh.height = 0.60
+		flame.mesh = fmesh
+		flame.position = Vector3(0, 2.95, 0)
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(1.0, 0.55, 1.0)
+		fmat.emission_enabled = true
+		fmat.emission = Color(1.0, 0.55, 1.0)
+		fmat.emission_energy_multiplier = 3.0
+		fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		flame.material_override = fmat
+		brazier.add_child(flame)
+		# Pulse flame
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(flame, "scale", Vector3(1.30, 1.30, 1.30), 0.5 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.5 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		# OmniLight
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = Vector3(0, 3.0, 0)
+		light.light_color = Color(1.0, 0.55, 1.0)
+		light.light_energy = 1.8
+		light.omni_range = 8.0
+		brazier.add_child(light)
+		# Collision around stem
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.40
+		cap.height = 2.40
+		cs.shape = cap
+		cs.position = Vector3(0, 1.20, 0)
+		sb.add_child(cs)
+		brazier.add_child(sb)
 
 
 
