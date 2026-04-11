@@ -32704,6 +32704,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_dock_workers(geom)
 	# Epic-8 T35: tide gauge
 	_build_d8_tide_gauge(geom)
+	# Epic-8 T36: floating treasure chest
+	_build_d8_treasure_chest(geom)
+	# Epic-8 T37: treasure hunter NPC
+	_build_d8_treasure_hunter_npc()
+	# Epic-8 T38: ship in a bottle display
+	_build_d8_bottle_display(geom)
+	# Epic-8 T39: bottle artisan NPC
+	_build_d8_bottle_artisan_npc()
+	# Epic-8 T40: warning mines
+	_build_d8_mines(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -34907,6 +34917,364 @@ func _build_d8_tide_gauge(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	gauge.add_child(sb)
+
+
+func _build_d8_treasure_chest(geom: Node) -> void:
+	## Epic-8 T36: half-sunken treasure chest with glowing gold spilling out.
+	var chest: Node3D = Node3D.new()
+	chest.name = "TreasureChest"
+	chest.position = Vector3(D8_CENTER.x + 18.0, 0.30, 8.0)
+	geom.add_child(chest)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	wood_mat.roughness = 0.92
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 2.5
+	gold_mat.metallic = 0.95
+	gold_mat.roughness = 0.10
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.18, 0.20)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	# Chest base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 0.65, 0.85)
+	base.mesh = bm
+	base.material_override = wood_mat
+	base.position = Vector3(0, 0.32, 0)
+	chest.add_child(base)
+	# Curved lid (open at angle)
+	var lid: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(1.40, 0.55, 0.85)
+	lid.mesh = lm
+	lid.material_override = wood_mat
+	lid.position = Vector3(0, 0.85, -0.30)
+	lid.rotation_degrees = Vector3(-35, 0, 0)
+	chest.add_child(lid)
+	# Iron bands (3 horizontal hoops)
+	for hy in [-0.10, 0.10, 0.30]:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(1.42, 0.06, 0.87)
+		band.mesh = bdm
+		band.material_override = iron_mat
+		band.position = Vector3(0, 0.32 + hy, 0)
+		chest.add_child(band)
+	# Gold coins spilling out
+	for i in 5:
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.10
+		cmm.bottom_radius = 0.10
+		cmm.height = 0.04
+		coin.mesh = cmm
+		coin.material_override = gold_mat
+		coin.position = Vector3(
+			randf_range(-0.40, 0.40),
+			0.65 + randf_range(0, 0.10),
+			randf_range(0.20, 0.55)
+		)
+		coin.rotation_degrees = Vector3(randf_range(-30, 30), randf_range(0, 360), 90)
+		chest.add_child(coin)
+	# Bobbing tween
+	var tw: Tween = chest.create_tween().set_loops()
+	tw.tween_property(chest, "position:y", 0.45, 1.6)
+	tw.tween_property(chest, "position:y", 0.30, 1.6)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 2.5
+	light.omni_range = 5.5
+	light.position = Vector3(0, 1.20, 0)
+	chest.add_child(light)
+	# Chest collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 1.10, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	chest.add_child(sb)
+
+
+func _build_d8_treasure_hunter_npc() -> void:
+	## Epic-8 T37: treasure hunter NPC — pirate-style coat + tricorn hat +
+	## eye patch + held gold coin.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "TreasureHunterSlot"
+	slot.position = Vector3(D8_CENTER.x + 16.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "TreasureHunter"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Doubloon")
+	if "npc_id" in npc:
+		npc.set("npc_id", "treasure_hunter_d8")
+	slot.add_child(npc)
+	# Long pirate coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.75, 1.20, 0.50)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.55, 0.20, 0.20)
+	coat_mat.metallic = 0.30
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Tricorn hat (3-pointed brim + dome)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	hat_mat.metallic = 0.30
+	hat_mat.roughness = 0.55
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var brim: MeshInstance3D = MeshInstance3D.new()
+		var brm: BoxMesh = BoxMesh.new()
+		brm.size = Vector3(0.40, 0.04, 0.18)
+		brim.mesh = brm
+		brim.material_override = hat_mat
+		brim.position = Vector3(cos(ang) * 0.18, 1.45, sin(ang) * 0.18)
+		brim.rotation = Vector3(0, -ang + PI * 0.5, 0)
+		npc.add_child(brim)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 0.20
+	dmm.height = 0.30
+	dome.mesh = dmm
+	dome.material_override = hat_mat
+	dome.position = Vector3(0, 1.55, 0)
+	dome.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(dome)
+	# Eye patch (small dark box)
+	var patch: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.10, 0.10, 0.04)
+	patch.mesh = pmm
+	patch.material_override = hat_mat
+	patch.position = Vector3(0.10, 1.30, 0.21)
+	npc.add_child(patch)
+	# Held gold coin
+	var coin: MeshInstance3D = MeshInstance3D.new()
+	var cn_m: CylinderMesh = CylinderMesh.new()
+	cn_m.top_radius = 0.12
+	cn_m.bottom_radius = 0.12
+	cn_m.height = 0.04
+	coin.mesh = cn_m
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 2.0
+	gold_mat.metallic = 0.95
+	gold_mat.roughness = 0.10
+	coin.material_override = gold_mat
+	coin.position = Vector3(0.40, 0.85, 0.20)
+	coin.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(coin)
+
+
+func _build_d8_bottle_display(geom: Node) -> void:
+	## Epic-8 T38: ship in a bottle display — wooden table with 3 sealed
+	## glass bottles each containing a tiny boat.
+	var disp: Node3D = Node3D.new()
+	disp.name = "BottleDisplay"
+	disp.position = Vector3(D8_CENTER.x + 26.0, 0.0, 8.0)
+	geom.add_child(disp)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.45)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.65, 0.85, 1.0)
+	glass_mat.emission_energy_multiplier = 0.85
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.05
+	# Wooden display table
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(2.40, 0.85, 0.85)
+	table.mesh = tm
+	table.material_override = wood_mat
+	table.position = Vector3(0, 0.42, 0)
+	disp.add_child(table)
+	# 3 glass bottles
+	for i in 3:
+		var bottle: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.18
+		bm.bottom_radius = 0.18
+		bm.height = 0.55
+		bottle.mesh = bm
+		bottle.material_override = glass_mat
+		bottle.position = Vector3(-0.85 + i * 0.85, 1.10, 0)
+		bottle.rotation_degrees = Vector3(0, 0, 90)
+		disp.add_child(bottle)
+		# Tiny boat inside
+		var boat: MeshInstance3D = MeshInstance3D.new()
+		var bom: BoxMesh = BoxMesh.new()
+		bom.size = Vector3(0.20, 0.08, 0.08)
+		boat.mesh = bom
+		var boat_mat: StandardMaterial3D = StandardMaterial3D.new()
+		boat_mat.albedo_color = Color(0.45, 0.28, 0.12)
+		boat.material_override = boat_mat
+		boat.position = Vector3(-0.85 + i * 0.85, 1.10, 0)
+		disp.add_child(boat)
+		# Tiny mast
+		var mast: MeshInstance3D = MeshInstance3D.new()
+		var mmm: CylinderMesh = CylinderMesh.new()
+		mmm.top_radius = 0.012
+		mmm.bottom_radius = 0.012
+		mmm.height = 0.18
+		mast.mesh = mmm
+		mast.material_override = boat_mat
+		mast.position = Vector3(-0.85 + i * 0.85, 1.20, 0)
+		disp.add_child(mast)
+	# Table collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 0.85, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	disp.add_child(sb)
+
+
+func _build_d8_bottle_artisan_npc() -> void:
+	## Epic-8 T39: ship in a bottle artisan NPC — small magnifying glass +
+	## brown vest.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BottleArtisanSlot"
+	slot.position = Vector3(D8_CENTER.x + 26.0, 0.0, 6.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "BottleArtisan"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tinkerwave")
+	if "npc_id" in npc:
+		npc.set("npc_id", "bottle_artisan_d8")
+	slot.add_child(npc)
+	# Brown vest
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.85, 0.40)
+	vest.mesh = vm
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	vest_mat.metallic = 0.30
+	vest_mat.roughness = 0.55
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 0.65, 0)
+	npc.add_child(vest)
+	# Magnifying glass (small torus + tiny handle)
+	var glass: MeshInstance3D = MeshInstance3D.new()
+	var gtm: TorusMesh = TorusMesh.new()
+	gtm.inner_radius = 0.10
+	gtm.outer_radius = 0.14
+	glass.mesh = gtm
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(0.85, 0.65, 0.20)
+	brass_mat.emission_energy_multiplier = 0.65
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	glass.material_override = brass_mat
+	glass.position = Vector3(0.40, 0.85, 0.20)
+	glass.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(glass)
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.018
+	hmm.bottom_radius = 0.018
+	hmm.height = 0.18
+	handle.mesh = hmm
+	handle.material_override = brass_mat
+	handle.position = Vector3(0.55, 0.85, 0.20)
+	handle.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(handle)
+
+
+func _build_d8_mines(geom: Node) -> void:
+	## Epic-8 T40: 3 floating warning sea mines — round dark spheres with
+	## metal spikes + small red glowing fuse.
+	var mines: Node3D = Node3D.new()
+	mines.name = "SeaMines"
+	mines.position = Vector3(D8_CENTER.x + 18.0, 1.20, 14.0)
+	geom.add_child(mines)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.20, 0.20, 0.25)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.40
+	for i in 3:
+		var mine: Node3D = Node3D.new()
+		mine.position = Vector3(i * 2.40, 0, 0)
+		mines.add_child(mine)
+		# Round body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.40
+		bm.height = 0.65
+		body.mesh = bm
+		body.material_override = dark_mat
+		mine.add_child(body)
+		# 8 spikes radiating
+		for j in 8:
+			var ang: float = (TAU / 8.0) * j
+			var spike: MeshInstance3D = MeshInstance3D.new()
+			var sm: PrismMesh = PrismMesh.new()
+			sm.size = Vector3(0.06, 0.30, 0.06)
+			spike.mesh = sm
+			spike.material_override = dark_mat
+			spike.position = Vector3(cos(ang) * 0.45, 0, sin(ang) * 0.45)
+			spike.rotation = Vector3(0, ang, deg_to_rad(90 if cos(ang) >= 0 else -90))
+			mine.add_child(spike)
+		# Small red fuse light
+		var fuse: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.06
+		fm.height = 0.10
+		fuse.mesh = fm
+		var fuse_mat: StandardMaterial3D = StandardMaterial3D.new()
+		fuse_mat.albedo_color = Color(0.95, 0.20, 0.20)
+		fuse_mat.emission_enabled = true
+		fuse_mat.emission = Color(0.95, 0.20, 0.20)
+		fuse_mat.emission_energy_multiplier = 4.0
+		fuse_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fuse.material_override = fuse_mat
+		fuse.position = Vector3(0, 0.45, 0)
+		mine.add_child(fuse)
+		# Fuse blink
+		var tw: Tween = fuse.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(fuse, "scale", Vector3.ONE * 1.40, 0.30)
+		tw.tween_property(fuse, "scale", Vector3.ONE * 0.55, 0.30)
+		# Bob tween
+		var twb: Tween = mine.create_tween().set_loops()
+		twb.tween_property(mine, "position:y", 0.18, 1.6)
+		twb.tween_property(mine, "position:y", 0.0, 1.6)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
