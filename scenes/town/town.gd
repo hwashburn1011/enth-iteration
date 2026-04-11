@@ -25537,6 +25537,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_tomb_guardian(geom)
 	# Epic-7 T60: floating dust motes
 	_build_d7_dust_motes(geom)
+	# Epic-7 T61: dragon statue
+	_build_d7_dragon_statue(geom)
+	# Epic-7 T62: dragon priest NPC
+	_build_d7_dragon_priest_npc()
+	# Epic-7 T63: ceremonial fire pit
+	_build_d7_ceremonial_fire(geom)
+	# Epic-7 T64: divination bones table
+	_build_d7_divination_table(geom)
+	# Epic-7 T65: oracle NPC
+	_build_d7_d7_oracle_npc()
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -29665,6 +29675,388 @@ func _build_d7_dust_motes(geom: Node) -> void:
 	mote_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mote_mesh.material = mote_mat
 	geom.add_child(motes)
+
+
+func _build_d7_dragon_statue(geom: Node) -> void:
+	## Epic-7 T61: stone dragon statue — long curved body sphere chain +
+	## angular head + back ridge spikes + glowing eyes.
+	var dragon: Node3D = Node3D.new()
+	dragon.name = "DragonStatue"
+	dragon.position = Vector3(D7_CENTER.x - 22.0, 0.0, -22.0)
+	geom.add_child(dragon)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Stone pedestal slab
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(4.85, 0.30, 1.85)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.15, 0)
+	dragon.add_child(ped)
+	# Body sphere chain (5 spheres curving)
+	for i in 5:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.55 - i * 0.06
+		sm.height = 0.95 - i * 0.10
+		seg.mesh = sm
+		seg.material_override = stone_mat
+		seg.position = Vector3(-1.85 + i * 0.95, 0.85 + sin(i * 0.85) * 0.30, 0)
+		dragon.add_child(seg)
+	# Head (angular box at the front)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.65, 0.55, 0.95)
+	head.mesh = hm
+	head.material_override = stone_mat
+	head.position = Vector3(2.85, 1.10, 0)
+	dragon.add_child(head)
+	# 2 horns (small angled prisms)
+	for sx in [-0.18, 0.18]:
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var hrm: PrismMesh = PrismMesh.new()
+		hrm.size = Vector3(0.10, 0.40, 0.10)
+		horn.mesh = hrm
+		horn.material_override = stone_mat
+		horn.position = Vector3(2.85 + sx, 1.55, 0)
+		horn.rotation_degrees = Vector3(-25, 0, 0)
+		dragon.add_child(horn)
+	# Glowing amber eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.65, 0.20)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(2.85 + sx, 1.20, 0.45)
+		dragon.add_child(eye)
+	# 5 back spikes along the body
+	for i in 5:
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.12, 0.30, 0.12)
+		spike.mesh = spm
+		spike.material_override = stone_mat
+		spike.position = Vector3(-1.85 + i * 0.95, 1.40 + sin(i * 0.85) * 0.30, 0)
+		dragon.add_child(spike)
+	# Pedestal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.85, 1.85, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	dragon.add_child(sb)
+
+
+func _build_d7_dragon_priest_npc() -> void:
+	## Epic-7 T62: dragon priest NPC — red and gold robe + horned crown.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "DragonPriestSlot"
+	slot.position = Vector3(D7_CENTER.x - 24.0, 0.0, -22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "DragonPriest"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Wyrmkeeper")
+	if "npc_id" in npc:
+		npc.set("npc_id", "dragon_priest_d7")
+	slot.add_child(npc)
+	# Red robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.85, 0.20, 0.20)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.65
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Gold trim line down center
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.06, 1.10, 0.04)
+	trim.mesh = tm
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 0.85
+	gold_mat.metallic = 0.95
+	trim.material_override = gold_mat
+	trim.position = Vector3(0, 0.60, 0.24)
+	npc.add_child(trim)
+	# Horned crown (2 prism horns on a band)
+	var band: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.22
+	bm.bottom_radius = 0.22
+	bm.height = 0.10
+	band.mesh = bm
+	var band_mat: StandardMaterial3D = StandardMaterial3D.new()
+	band_mat.albedo_color = Color(0.20, 0.18, 0.10)
+	band_mat.metallic = 0.55
+	band.material_override = band_mat
+	band.position = Vector3(0, 1.50, 0)
+	npc.add_child(band)
+	for sx in [-0.18, 0.18]:
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var hm: PrismMesh = PrismMesh.new()
+		hm.size = Vector3(0.10, 0.30, 0.10)
+		horn.mesh = hm
+		horn.material_override = gold_mat
+		horn.position = Vector3(sx, 1.65, 0)
+		horn.rotation_degrees = Vector3(-15, 0, 0)
+		npc.add_child(horn)
+
+
+func _build_d7_ceremonial_fire(geom: Node) -> void:
+	## Epic-7 T63: large ceremonial fire pit — circular stone ring + tall
+	## crackling flame + smoke + warm bright light.
+	var fire: Node3D = Node3D.new()
+	fire.name = "CeremonialFire"
+	fire.position = Vector3(D7_CENTER.x - 18.0, 0.0, -22.0)
+	geom.add_child(fire)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.40, 0.35, 0.25)
+	stone_mat.roughness = 0.92
+	# Stone ring (8 stones)
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.30
+		sm.height = 0.40
+		stone.mesh = sm
+		stone.material_override = stone_mat
+		stone.position = Vector3(cos(ang) * 1.40, 0.18, sin(ang) * 1.40)
+		stone.scale = Vector3(1.0, 0.55, 1.0)
+		fire.add_child(stone)
+	# Crossed logs
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.roughness = 0.92
+	for i in 4:
+		var log_n: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.12
+		lm.bottom_radius = 0.12
+		lm.height = 1.85
+		log_n.mesh = lm
+		log_n.material_override = wood_mat
+		log_n.position = Vector3(0, 0.30, 0)
+		log_n.rotation = Vector3(deg_to_rad(85), deg_to_rad(45 * i), 0)
+		fire.add_child(log_n)
+	# Tall crackling flame stack (4 spheres)
+	var fire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fire_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	fire_mat.emission_enabled = true
+	fire_mat.emission = Color(1.0, 0.45, 0.05)
+	fire_mat.emission_energy_multiplier = 4.0
+	fire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.40 - i * 0.06
+		fm.height = 0.55 - i * 0.10
+		flame.mesh = fm
+		flame.material_override = fire_mat
+		flame.position = Vector3(0, 0.85 + i * 0.45, 0)
+		fire.add_child(flame)
+		# Flicker
+		var tw: Tween = flame.create_tween().set_loops()
+		tw.tween_interval(i * 0.10)
+		tw.tween_property(flame, "scale", Vector3(1.20, 1.30, 1.20), 0.20)
+		tw.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.20)
+	# GPU smoke
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.amount = 30
+	smoke.lifetime = 3.5
+	smoke.preprocess = 1.5
+	smoke.position = Vector3(0, 2.40, 0)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 22.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 0.55
+	pm.initial_velocity_max = 1.10
+	pm.scale_min = 0.20
+	pm.scale_max = 0.45
+	pm.color = Color(0.55, 0.45, 0.30, 0.65)
+	smoke.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.20
+	sm_mesh.height = 0.40
+	smoke.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.55, 0.45, 0.30, 0.55)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	fire.add_child(smoke)
+	# Bright warm light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.20)
+	light.light_energy = 4.0
+	light.omni_range = 9.0
+	light.position = Vector3(0, 1.30, 0)
+	fire.add_child(light)
+	# Light pulse
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 5.0, 0.30)
+	twl.tween_property(light, "light_energy", 3.5, 0.30)
+
+
+func _build_d7_divination_table(geom: Node) -> void:
+	## Epic-7 T64: low wooden table with 6 small "bone" sticks scattered
+	## on top — divination spot.
+	var table: Node3D = Node3D.new()
+	table.name = "DivinationTable"
+	table.position = Vector3(D7_CENTER.x - 14.0, 0.0, -22.0)
+	geom.add_child(table)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Tabletop
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.40, 0.10, 1.10)
+	top.mesh = tm
+	top.material_override = wood_mat
+	top.position = Vector3(0, 0.65, 0)
+	table.add_child(top)
+	# 4 legs
+	for sx in [-0.55, 0.55]:
+		for sz in [-0.40, 0.40]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.10, 0.65, 0.10)
+			leg.mesh = lm
+			leg.material_override = wood_mat
+			leg.position = Vector3(sx, 0.32, sz)
+			table.add_child(leg)
+	# 6 bone sticks
+	var bone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bone_mat.albedo_color = Color(0.95, 0.92, 0.82)
+	bone_mat.emission_enabled = true
+	bone_mat.emission = Color(0.95, 0.92, 0.82)
+	bone_mat.emission_energy_multiplier = 0.45
+	bone_mat.roughness = 0.65
+	for i in 6:
+		var bone: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.025
+		bm.bottom_radius = 0.025
+		bm.height = 0.30
+		bone.mesh = bm
+		bone.material_override = bone_mat
+		bone.position = Vector3(
+			randf_range(-0.45, 0.45),
+			0.74,
+			randf_range(-0.30, 0.30)
+		)
+		bone.rotation_degrees = Vector3(0, randf_range(0, 360), 90)
+		table.add_child(bone)
+	# Table collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 0.85, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	table.add_child(sb)
+
+
+func _build_d7_d7_oracle_npc() -> void:
+	## Epic-7 T65: D7 oracle NPC at the divination table — purple robe +
+	## third eye gem on forehead + held crystal ball.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7OracleSlot"
+	slot.position = Vector3(D7_CENTER.x - 13.0, 0.0, -22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Oracle"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Foresight")
+	if "npc_id" in npc:
+		npc.set("npc_id", "oracle_d7")
+	slot.add_child(npc)
+	# Purple robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.45, 0.20, 0.65)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.55, 0.30, 0.95)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Third eye gem on forehead
+	var gem: MeshInstance3D = MeshInstance3D.new()
+	var gm: PrismMesh = PrismMesh.new()
+	gm.size = Vector3(0.10, 0.18, 0.06)
+	gem.mesh = gm
+	var gem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gem_mat.albedo_color = Color(0.95, 0.30, 0.85)
+	gem_mat.emission_enabled = true
+	gem_mat.emission = Color(0.95, 0.30, 0.85)
+	gem_mat.emission_energy_multiplier = 4.0
+	gem_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	gem.material_override = gem_mat
+	gem.position = Vector3(0, 1.50, 0.21)
+	npc.add_child(gem)
+	# Crystal ball held in hand
+	var ball: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.12
+	bm.height = 0.22
+	ball.mesh = bm
+	var ball_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ball_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.65)
+	ball_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ball_mat.emission_enabled = true
+	ball_mat.emission = Color(0.55, 0.85, 1.0)
+	ball_mat.emission_energy_multiplier = 2.5
+	ball_mat.metallic = 0.55
+	ball_mat.roughness = 0.05
+	ball.material_override = ball_mat
+	ball.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(ball)
+	# Pulse the ball
+	var tw: Tween = ball.create_tween().set_loops()
+	tw.tween_property(ball, "scale", Vector3.ONE * 1.20, 1.4)
+	tw.tween_property(ball, "scale", Vector3.ONE * 0.85, 1.4)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
