@@ -32921,6 +32921,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_forge_sage_npc()
 	# Epic-9 T40: brimstone fumaroles
 	_build_d9_brimstone_fumaroles(geom)
+	# Epic-9 T41: training arena ring
+	_build_d9_training_arena(geom)
+	# Epic-9 T42: iron training dummy
+	_build_d9_iron_dummy(geom)
+	# Epic-9 T43: battle smith trainer NPC
+	_build_d9_battle_smith_npc()
+	# Epic-9 T44: practice weapon stand
+	_build_d9_practice_weapon_stand(geom)
+	# Epic-9 T45: cooling rack with blades
+	_build_d9_cooling_rack(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -43889,6 +43899,419 @@ func _build_d9_brimstone_fumaroles(geom: Node) -> void:
 		sm.height = 0.40
 		gas.draw_pass_1 = sm
 		fum.add_child(gas)
+
+
+func _build_d9_training_arena(geom: Node) -> void:
+	## Epic-9 T41: combat training arena — circular sand pit ringed by 8
+	## stone bollards with iron chain links between them.
+	var arena: Node3D = Node3D.new()
+	arena.name = "D9TrainingArena"
+	arena.position = Vector3(D9_CENTER.x + 2, 0.05, -16)
+	geom.add_child(arena)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	var sand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sand_mat.albedo_color = Color(0.55, 0.42, 0.25)
+	sand_mat.roughness = 0.85
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.18, 0.20)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	# Sand floor (wide flat cylinder)
+	var floor: MeshInstance3D = MeshInstance3D.new()
+	var fcm: CylinderMesh = CylinderMesh.new()
+	fcm.top_radius = 4.50
+	fcm.bottom_radius = 4.50
+	fcm.height = 0.10
+	floor.mesh = fcm
+	floor.material_override = sand_mat
+	floor.position = Vector3(0, 0.05, 0)
+	arena.add_child(floor)
+	# 8 bollards in a ring
+	for i in range(8):
+		var ang: float = float(i) * (TAU / 8.0)
+		var radius: float = 4.85
+		var bollard: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.30
+		pcm.bottom_radius = 0.36
+		pcm.height = 1.20
+		bollard.mesh = pcm
+		bollard.material_override = stone_mat
+		bollard.position = Vector3(cos(ang) * radius, 0.60, sin(ang) * radius)
+		arena.add_child(bollard)
+		# Per-bollard collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(cos(ang) * radius, 0.60, sin(ang) * radius)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.36
+		cap.height = 1.20
+		cs.shape = cap
+		sb.add_child(cs)
+		arena.add_child(sb)
+	# Iron chain torus links between adjacent bollards
+	for i in range(8):
+		var ang_a: float = float(i) * (TAU / 8.0)
+		var ang_b: float = float(i + 1) * (TAU / 8.0)
+		var mid: Vector3 = Vector3(
+			(cos(ang_a) + cos(ang_b)) * 0.5 * 4.85,
+			0.95,
+			(sin(ang_a) + sin(ang_b)) * 0.5 * 4.85
+		)
+		var link: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 0.18
+		tm.outer_radius = 0.26
+		link.mesh = tm
+		link.material_override = iron_mat
+		link.position = mid
+		link.rotation_degrees = Vector3(90, -rad_to_deg((ang_a + ang_b) * 0.5), 0)
+		arena.add_child(link)
+
+
+func _build_d9_iron_dummy(geom: Node) -> void:
+	## Epic-9 T42: iron training dummy — stone pedestal with a tall iron
+	## post and a humanoid torso, slightly dented and battered.
+	var dummy: Node3D = Node3D.new()
+	dummy.name = "D9IronDummy"
+	dummy.position = Vector3(D9_CENTER.x + 2, 0, -16)
+	geom.add_child(dummy)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.45, 0.45, 0.50)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.50
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.55
+	pcm.bottom_radius = 0.65
+	pcm.height = 0.45
+	ped.mesh = pcm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.22, 0)
+	dummy.add_child(ped)
+	# Vertical iron post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var post_cm: CylinderMesh = CylinderMesh.new()
+	post_cm.top_radius = 0.12
+	post_cm.bottom_radius = 0.15
+	post_cm.height = 1.85
+	post.mesh = post_cm
+	post.material_override = iron_mat
+	post.position = Vector3(0, 1.40, 0)
+	dummy.add_child(post)
+	# Iron torso (chest box)
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(0.85, 0.95, 0.55)
+	torso.mesh = tb
+	torso.material_override = iron_mat
+	torso.position = Vector3(0, 2.00, 0)
+	dummy.add_child(torso)
+	# Iron head (sphere)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.28
+	hsm.height = 0.55
+	head.mesh = hsm
+	head.material_override = iron_mat
+	head.position = Vector3(0, 2.75, 0)
+	dummy.add_child(head)
+	# Battle scars (3 small dark scratch boxes on the torso)
+	var scar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scar_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	for sy in [0.25, -0.05, -0.30]:
+		var scar: MeshInstance3D = MeshInstance3D.new()
+		var scrb: BoxMesh = BoxMesh.new()
+		scrb.size = Vector3(0.45, 0.04, 0.04)
+		scar.mesh = scrb
+		scar.material_override = scar_mat
+		scar.position = Vector3(0, 2.00 + sy, 0.30)
+		scar.rotation_degrees = Vector3(0, 0, randf_range(-15, 15))
+		dummy.add_child(scar)
+	# Slight wobble tween
+	var wobble: Tween = post.create_tween().set_loops()
+	wobble.tween_property(post, "rotation_degrees:z", 3.0, 1.6)
+	wobble.tween_property(post, "rotation_degrees:z", -3.0, 1.6)
+	# Dummy collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.40, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.55
+	cap.height = 2.85
+	cs.shape = cap
+	stb.add_child(cs)
+	dummy.add_child(stb)
+
+
+func _build_d9_battle_smith_npc() -> void:
+	## Epic-9 T43: battle smith trainer NPC — half-armored figure with a
+	## demonstration sword raised in a guard stance.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9BattleSmithSlot"
+	slot.position = Vector3(D9_CENTER.x + 6, 0, -14)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9BattleSmith"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Battle Smith Vael")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_battle_smith")
+	slot.add_child(npc)
+	# Steel chest plate
+	var steel: StandardMaterial3D = StandardMaterial3D.new()
+	steel.albedo_color = Color(0.55, 0.58, 0.62)
+	steel.metallic = 0.85
+	steel.roughness = 0.30
+	var chest: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.95, 1.00, 0.55)
+	chest.mesh = cb
+	chest.material_override = steel
+	chest.position = Vector3(0, 1.10, 0)
+	npc.add_child(chest)
+	# Brass shoulder pauldrons
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	for sx in [-0.55, 0.55]:
+		var pld: MeshInstance3D = MeshInstance3D.new()
+		var psm: SphereMesh = SphereMesh.new()
+		psm.radius = 0.22
+		psm.height = 0.40
+		pld.mesh = psm
+		pld.material_override = brass
+		pld.position = Vector3(sx, 1.50, 0)
+		npc.add_child(pld)
+	# Open helmet (no visor — face exposed)
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.30
+	hsm.height = 0.50
+	helm.mesh = hsm
+	helm.material_override = steel
+	helm.position = Vector3(0, 1.95, -0.05)
+	npc.add_child(helm)
+	# Demonstration sword raised in guard (vertical, hand grip)
+	var sword_root: Node3D = Node3D.new()
+	sword_root.position = Vector3(0.55, 1.20, 0.20)
+	sword_root.rotation_degrees = Vector3(0, 0, 0)
+	npc.add_child(sword_root)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.78, 0.82, 0.88)
+	blade_mat.metallic = 0.92
+	blade_mat.roughness = 0.20
+	blade_mat.emission_enabled = true
+	blade_mat.emission = Color(0.85, 0.92, 1.0)
+	blade_mat.emission_energy_multiplier = 0.35
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blb: BoxMesh = BoxMesh.new()
+	blb.size = Vector3(0.10, 1.30, 0.04)
+	blade.mesh = blb
+	blade.material_override = blade_mat
+	blade.position = Vector3(0, 0.95, 0)
+	sword_root.add_child(blade)
+	var crossguard: MeshInstance3D = MeshInstance3D.new()
+	var cgb: BoxMesh = BoxMesh.new()
+	cgb.size = Vector3(0.30, 0.05, 0.05)
+	crossguard.mesh = cgb
+	crossguard.material_override = brass
+	crossguard.position = Vector3(0, 0.25, 0)
+	sword_root.add_child(crossguard)
+	var hilt: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(0.06, 0.20, 0.04)
+	hilt.mesh = hb
+	hilt.material_override = brass
+	hilt.position = Vector3(0, 0.10, 0)
+	sword_root.add_child(hilt)
+	# Slow guard adjustment tween
+	var sway: Tween = sword_root.create_tween().set_loops()
+	sway.tween_property(sword_root, "rotation_degrees:z", 5.0, 1.4)
+	sway.tween_property(sword_root, "rotation_degrees:z", -5.0, 1.4)
+
+
+func _build_d9_practice_weapon_stand(geom: Node) -> void:
+	## Epic-9 T44: stand of 4 wooden practice weapons leaning against a
+	## stone block — bokken, training axe, training mace, training spear.
+	var stand: Node3D = Node3D.new()
+	stand.name = "D9PracticeWeaponStand"
+	stand.position = Vector3(D9_CENTER.x - 4, 0, -14)
+	geom.add_child(stand)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.55, 0.38, 0.22)
+	wood.roughness = 0.85
+	# Stone block base
+	var block: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(1.40, 0.85, 0.85)
+	block.mesh = bb
+	block.material_override = stone_mat
+	block.position = Vector3(0, 0.42, 0)
+	stand.add_child(block)
+	# 4 weapons leaning against the block
+	# Bokken (long wooden sword)
+	var bokken: MeshInstance3D = MeshInstance3D.new()
+	var bok: BoxMesh = BoxMesh.new()
+	bok.size = Vector3(0.10, 1.30, 0.04)
+	bokken.mesh = bok
+	bokken.material_override = wood
+	bokken.position = Vector3(-0.55, 1.10, -0.45)
+	bokken.rotation_degrees = Vector3(0, 0, 22)
+	stand.add_child(bokken)
+	# Training axe (haft + wooden head)
+	var axe_haft: MeshInstance3D = MeshInstance3D.new()
+	var ahcm: CylinderMesh = CylinderMesh.new()
+	ahcm.top_radius = 0.05
+	ahcm.bottom_radius = 0.06
+	ahcm.height = 1.30
+	axe_haft.mesh = ahcm
+	axe_haft.material_override = wood
+	axe_haft.position = Vector3(-0.20, 1.10, -0.45)
+	axe_haft.rotation_degrees = Vector3(0, 0, 18)
+	stand.add_child(axe_haft)
+	var axe_head: MeshInstance3D = MeshInstance3D.new()
+	var ahb: BoxMesh = BoxMesh.new()
+	ahb.size = Vector3(0.30, 0.18, 0.06)
+	axe_head.mesh = ahb
+	axe_head.material_override = wood
+	axe_head.position = Vector3(-0.04, 1.65, -0.45)
+	axe_head.rotation_degrees = Vector3(0, 0, 18)
+	stand.add_child(axe_head)
+	# Training mace (haft + spherical head)
+	var mace_haft: MeshInstance3D = MeshInstance3D.new()
+	mace_haft.mesh = ahcm
+	mace_haft.material_override = wood
+	mace_haft.position = Vector3(0.20, 1.10, -0.45)
+	mace_haft.rotation_degrees = Vector3(0, 0, 14)
+	stand.add_child(mace_haft)
+	var mace_head: MeshInstance3D = MeshInstance3D.new()
+	var mhsm: SphereMesh = SphereMesh.new()
+	mhsm.radius = 0.16
+	mhsm.height = 0.32
+	mace_head.mesh = mhsm
+	mace_head.material_override = wood
+	mace_head.position = Vector3(0.36, 1.70, -0.45)
+	stand.add_child(mace_head)
+	# Training spear (long thin pole + small wooden tip)
+	var spear: MeshInstance3D = MeshInstance3D.new()
+	var spcm: CylinderMesh = CylinderMesh.new()
+	spcm.top_radius = 0.04
+	spcm.bottom_radius = 0.05
+	spcm.height = 1.85
+	spear.mesh = spcm
+	spear.material_override = wood
+	spear.position = Vector3(0.55, 1.30, -0.45)
+	spear.rotation_degrees = Vector3(0, 0, 10)
+	stand.add_child(spear)
+	var spear_tip: MeshInstance3D = MeshInstance3D.new()
+	var sptm: CylinderMesh = CylinderMesh.new()
+	sptm.top_radius = 0.0
+	sptm.bottom_radius = 0.06
+	sptm.height = 0.20
+	spear_tip.mesh = sptm
+	spear_tip.material_override = wood
+	spear_tip.position = Vector3(0.66, 2.20, -0.45)
+	stand.add_child(spear_tip)
+	# Stand collision (block)
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(1.40, 0.85, 0.85)
+	cs.shape = bs
+	stb.add_child(cs)
+	stand.add_child(stb)
+
+
+func _build_d9_cooling_rack(geom: Node) -> void:
+	## Epic-9 T45: long iron cooling rack with 5 finished blade swords laid
+	## across the bars, glowing red and slowly cooling.
+	var rack: Node3D = Node3D.new()
+	rack.name = "D9CoolingRack"
+	rack.position = Vector3(D9_CENTER.x - 12, 0, -8)
+	geom.add_child(rack)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.45, 0.42, 0.40)
+	iron_mat.metallic = 0.7
+	iron_mat.roughness = 0.45
+	# Two long parallel iron bars on legs
+	for sz in [-0.30, 0.30]:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bcm: CylinderMesh = CylinderMesh.new()
+		bcm.top_radius = 0.06
+		bcm.bottom_radius = 0.06
+		bcm.height = 2.20
+		bar.mesh = bcm
+		bar.material_override = iron_mat
+		bar.position = Vector3(0, 1.05, sz)
+		bar.rotation_degrees = Vector3(0, 0, 90)
+		rack.add_child(bar)
+	# 4 corner legs
+	for sx in [-1.0, 1.0]:
+		for sz in [-0.30, 0.30]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lcm: CylinderMesh = CylinderMesh.new()
+			lcm.top_radius = 0.06
+			lcm.bottom_radius = 0.08
+			lcm.height = 1.05
+			leg.mesh = lcm
+			leg.material_override = iron_mat
+			leg.position = Vector3(sx, 0.52, sz)
+			rack.add_child(leg)
+	# 5 cooling blade swords laid across
+	var hot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hot_mat.albedo_color = Color(0.85, 0.30, 0.10)
+	hot_mat.metallic = 0.55
+	hot_mat.roughness = 0.55
+	hot_mat.emission_enabled = true
+	hot_mat.emission = Color(1.0, 0.40, 0.10)
+	hot_mat.emission_energy_multiplier = 2.5
+	for i in range(5):
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var blb: BoxMesh = BoxMesh.new()
+		blb.size = Vector3(1.10, 0.05, 0.10)
+		blade.mesh = blb
+		blade.material_override = hot_mat
+		blade.position = Vector3(-0.85 + float(i) * 0.42, 1.13, 0)
+		blade.rotation_degrees = Vector3(0, 0, 0)
+		rack.add_child(blade)
+		var pulse: Tween = blade.create_tween().set_loops()
+		var phase: float = float(i) * 0.18
+		pulse.tween_property(hot_mat, "emission_energy_multiplier", 4.0, 1.0 + phase)
+		pulse.tween_property(hot_mat, "emission_energy_multiplier", 1.4, 1.0 + phase)
+	# Orange omni light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 2.5
+	lt.omni_range = 5.5
+	lt.position = Vector3(0, 1.40, 0)
+	rack.add_child(lt)
+	# Rack collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.20, 1.40, 0.85)
+	cs.shape = bs
+	stb.add_child(cs)
+	rack.add_child(stb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
