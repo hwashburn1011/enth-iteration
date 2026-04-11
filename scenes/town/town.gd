@@ -1875,6 +1875,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_farmer_npc()
 	# Epic-4 T15: straw scarecrow
 	_build_d4_scarecrow(geom)
+	# Epic-4 T16: 5 tree grove cluster
+	_build_d4_tree_grove(geom)
+	# Epic-4 T17: large apple tree with red apples
+	_build_d4_apple_tree(geom)
+	# Epic-4 T18: oval fish pond with circling fish
+	_build_d4_fish_pond(geom)
+	# Epic-4 T19: Fisherman NPC
+	_build_d4_fisherman_npc()
+	# Epic-4 T20: lily pads on the pond
+	_build_d4_lily_pads(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -2917,6 +2927,276 @@ func _build_d4_scarecrow(geom: Node) -> void:
 	cs.position = Vector3(0, 1.70, 0)
 	sb.add_child(cs)
 	crow.add_child(sb)
+
+
+func _build_d4_tree_grove(geom: Node) -> void:
+	## Epic-4 T16: 5 medium-sized trees in a grove cluster.
+	var positions: Array[Vector3] = [
+		D4_CENTER + Vector3(-18, 0, -10),
+		D4_CENTER + Vector3(-15, 0, -8),
+		D4_CENTER + Vector3(-20, 0, -6),
+		D4_CENTER + Vector3(-16, 0, -12),
+		D4_CENTER + Vector3(-12, 0, -10),
+	]
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	trunk_mat.metallic = 0.10
+	trunk_mat.roughness = 0.65
+	var leaves_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaves_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	leaves_mat.emission_enabled = true
+	leaves_mat.emission = Color(0.45, 1.0, 0.45)
+	leaves_mat.emission_energy_multiplier = 0.55
+	for i in positions.size():
+		var tree: Node3D = Node3D.new()
+		tree.name = "D4Tree_%d" % i
+		tree.position = positions[i]
+		geom.add_child(tree)
+		var trunk: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.30
+		tm.bottom_radius = 0.45
+		tm.height = 3.0
+		trunk.mesh = tm
+		trunk.position = Vector3(0, 1.50, 0)
+		trunk.material_override = trunk_mat
+		tree.add_child(trunk)
+		var leaves: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 1.40
+		lm.height = 2.80
+		leaves.mesh = lm
+		leaves.position = Vector3(0, 4.0, 0)
+		leaves.material_override = leaves_mat
+		tree.add_child(leaves)
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.55
+		cap.height = 3.0
+		cs.shape = cap
+		cs.position = Vector3(0, 1.50, 0)
+		sb.add_child(cs)
+		tree.add_child(sb)
+
+
+func _build_d4_apple_tree(geom: Node) -> void:
+	## Epic-4 T17: a single big apple tree with red apples on the leaves.
+	var tree: Node3D = Node3D.new()
+	tree.name = "D4AppleTree"
+	tree.position = D4_CENTER + Vector3(15, 0, -16)
+	geom.add_child(tree)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.55
+	tm.bottom_radius = 0.85
+	tm.height = 4.0
+	trunk.mesh = tm
+	trunk.position = Vector3(0, 2.0, 0)
+	trunk.material_override = trunk_mat
+	tree.add_child(trunk)
+	var leaves: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 2.40
+	lm.height = 4.80
+	leaves.mesh = lm
+	leaves.position = Vector3(0, 5.0, 0)
+	var lmat: StandardMaterial3D = StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.20, 0.55, 0.20)
+	lmat.emission_enabled = true
+	lmat.emission = Color(0.45, 1.0, 0.45)
+	lmat.emission_energy_multiplier = 0.55
+	leaves.material_override = lmat
+	tree.add_child(leaves)
+	# 8 red apple spheres
+	var apple_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apple_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	apple_mat.emission_enabled = true
+	apple_mat.emission = Color(1.0, 0.30, 0.30)
+	apple_mat.emission_energy_multiplier = 1.4
+	apple_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var apple: MeshInstance3D = MeshInstance3D.new()
+		var am: SphereMesh = SphereMesh.new()
+		am.radius = 0.18
+		am.height = 0.36
+		apple.mesh = am
+		apple.position = Vector3(cos(angle) * 1.85, 4.5 + sin(i * 0.85) * 0.55, sin(angle) * 1.85)
+		apple.material_override = apple_mat
+		tree.add_child(apple)
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.95
+	cap.height = 4.0
+	cs.shape = cap
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	tree.add_child(sb)
+
+
+func _build_d4_fish_pond(geom: Node) -> void:
+	## Epic-4 T18: oval fish pond with stone rim + 3 circling fish.
+	var pond: Node3D = Node3D.new()
+	pond.name = "D4FishPond"
+	pond.position = D4_CENTER + Vector3(-8, 0, 14)
+	geom.add_child(pond)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	stone_mat.metallic = 0.30
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 1.85
+	rm.outer_radius = 2.20
+	rim.mesh = rm
+	rim.position = Vector3(0, 0.10, 0)
+	rim.material_override = stone_mat
+	pond.add_child(rim)
+	# Water
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.85
+	wm.bottom_radius = 1.85
+	wm.height = 0.06
+	water.mesh = wm
+	water.position = Vector3(0, 0.10, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.65, 0.85, 0.85)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.55, 0.85, 1.0)
+	wmat.emission_energy_multiplier = 1.4
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	pond.add_child(water)
+	# 3 fish circling on a pivot
+	var fish_pivot: Node3D = Node3D.new()
+	fish_pivot.position = Vector3(0, 0.30, 0)
+	pond.add_child(fish_pivot)
+	for i in 3:
+		var angle: float = (float(i) / 3.0) * TAU
+		var fish: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.30, 0.10, 0.10)
+		fish.mesh = fm
+		fish.position = Vector3(cos(angle) * 1.20, 0, sin(angle) * 1.20)
+		fish.rotation = Vector3(0, -angle - PI * 0.5, 0)
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(1.0, 0.55, 0.20)
+		fmat.emission_enabled = true
+		fmat.emission = Color(1.0, 0.65, 0.20)
+		fmat.emission_energy_multiplier = 2.0
+		fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fish.material_override = fmat
+		fish_pivot.add_child(fish)
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(fish_pivot, "rotation:y", TAU, 6.0)
+
+
+func _build_d4_fisherman_npc() -> void:
+	## Epic-4 T19: Fisherman NPC by the pond holding a fishing rod.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var fish: Node3D = Node3D.new()
+	fish.name = "D4Fisherman"
+	fish.position = D4_CENTER + Vector3(-10, 0, 12)
+	slots.add_child(fish)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.55, 0.85)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.85, 1.0)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	fish.add_child(body)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.65, 0.45)
+	head.material_override = hmat
+	fish.add_child(head)
+	# Fishing rod — long thin angled cylinder
+	var rod: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.04
+	rm.bottom_radius = 0.06
+	rm.height = 2.40
+	rod.mesh = rm
+	rod.position = Vector3(0.55, 1.50, 0.55)
+	rod.rotation = Vector3(deg_to_rad(45), 0, deg_to_rad(-15))
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.30, 0.18, 0.10)
+	rod.material_override = rmat
+	fish.add_child(rod)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Fisherman"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.55, 0.85, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	fish.add_child(label)
+
+
+func _build_d4_lily_pads(geom: Node) -> void:
+	## Epic-4 T20: 6 lily pads scattered on the pond surface.
+	var positions: Array[Vector3] = [
+		D4_CENTER + Vector3(-9, 0.18, 13),
+		D4_CENTER + Vector3(-7, 0.18, 14),
+		D4_CENTER + Vector3(-8, 0.18, 15),
+		D4_CENTER + Vector3(-9, 0.18, 15),
+		D4_CENTER + Vector3(-7, 0.18, 13),
+		D4_CENTER + Vector3(-8, 0.18, 12),
+	]
+	var pad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pad_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	pad_mat.emission_enabled = true
+	pad_mat.emission = Color(0.45, 1.0, 0.45)
+	pad_mat.emission_energy_multiplier = 0.85
+	var flower_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flower_mat.albedo_color = Color(1.0, 0.55, 0.85)
+	flower_mat.emission_enabled = true
+	flower_mat.emission = Color(1.0, 0.65, 0.85)
+	flower_mat.emission_energy_multiplier = 1.8
+	flower_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		pad.name = "D4LilyPad_%d" % i
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.30
+		pm.bottom_radius = 0.30
+		pm.height = 0.06
+		pad.mesh = pm
+		pad.position = positions[i]
+		pad.material_override = pad_mat
+		geom.add_child(pad)
+		# Small lily flower on top of every other pad
+		if i % 2 == 0:
+			var flower: MeshInstance3D = MeshInstance3D.new()
+			var fm: SphereMesh = SphereMesh.new()
+			fm.radius = 0.10
+			fm.height = 0.20
+			flower.mesh = fm
+			flower.position = positions[i] + Vector3(0, 0.12, 0)
+			flower.material_override = flower_mat
+			geom.add_child(flower)
 
 
 
