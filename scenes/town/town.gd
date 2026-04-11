@@ -1423,6 +1423,393 @@ func _build_east_plaza() -> void:
 	_build_epic1_plaque(geom)
 	# Epic-1 T100: FINALE — massive central holographic Globbler landmark
 	_build_central_globbler_landmark(geom)
+	# === EPIC 2: District 2 — Stack Overflow Outskirts ===
+	_build_district_2(geom)
+
+
+func _build_district_2(geom: Node) -> void:
+	## Epic 2 entry point — builds the second district east of the East Plaza
+	## gate. Each task adds another _build_d2_X helper extending the area.
+	# Epic-2 T1: unlock the east gate forcefield + push boundary further east
+	_unlock_east_gate_and_extend(geom)
+	# Epic-2 T2: District 2 ground floor (darker cracked digital terrain)
+	_build_d2_ground(geom)
+	# Epic-2 T3: D2 entrance arch with district name
+	_build_d2_entrance_arch(geom)
+	# Epic-2 T4: broken data tower landmark
+	_build_d2_broken_tower(geom)
+	# Epic-2 T5: wandering survivor NPC
+	_build_d2_survivor_npc()
+
+
+const D2_CENTER := Vector3(85, 0, 0)
+
+
+func _unlock_east_gate_and_extend(geom: Node) -> void:
+	## Epic-2 T1: disable the locked east gate forcefield (player can now
+	## walk through), push the east boundary wall from x=70 to x=120 to
+	## make room for District 2.
+	# Find the east gate node
+	var gate: Node = geom.get_node_or_null("EastPlazaEastGate")
+	if gate:
+		# Remove the forcefield collision so the player can pass
+		var field: MeshInstance3D = gate.get_node_or_null("GateForceField") as MeshInstance3D
+		if field:
+			# Make it a translucent decorative shimmer instead of solid
+			field.scale = Vector3(1.0, 1.0, 0.05)
+			# Remove all StaticBody3D children of the gate (which include the
+			# forcefield collider and the pillar colliders — keep pillars by
+			# rebuilding their colliders selectively below)
+			pass
+		# The locked sign should change to "UNLOCKED"
+		for child in gate.get_children():
+			if child is Label3D:
+				(child as Label3D).text = "DISTRICT 2\nSECTOR OPEN"
+				(child as Label3D).modulate = Color(0.40, 1.0, 0.55)
+		# Find the gate forcefield static body and remove it specifically.
+		# The pillar bodies are also static bodies but we want to keep those.
+		# Strategy: walk the gate's children, find StaticBody3Ds with a single
+		# BoxShape3D matching the field collider size (5.6 x 6.2 x 0.5).
+		var to_remove: Array[Node] = []
+		for child in gate.get_children():
+			if child is StaticBody3D:
+				for shape_child in (child as StaticBody3D).get_children():
+					if shape_child is CollisionShape3D:
+						var shp: Shape3D = (shape_child as CollisionShape3D).shape
+						if shp is BoxShape3D:
+							var sz: Vector3 = (shp as BoxShape3D).size
+							if sz.x == 5.6 and sz.y == 6.2 and sz.z == 0.5:
+								to_remove.append(child)
+		for body in to_remove:
+			body.queue_free()
+	# Push the boundary east wall
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 120.0
+
+
+func _build_d2_ground(geom: Node) -> void:
+	## Epic-2 T2: District 2 ground — darker amber/red cracked digital floor
+	## extending from x=68 to x=118. Uses a different shader variant to
+	## visually distinguish from the cyan East Plaza tiles.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(50, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.name = "D2Ground"
+	ground.mesh = plane
+	ground.position = Vector3(93, 0, 0)
+	# Reuse a tweaked version of the digital grid shader — amber instead of cyan
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded;
+uniform vec3 base_color = vec3(0.10, 0.06, 0.04);
+uniform vec3 grid_color = vec3(1.00, 0.40, 0.10);
+uniform float grid_scale = 1.4;
+uniform float line_width = 0.04;
+
+void fragment() {
+	vec2 uv = UV * grid_scale * 30.0;
+	vec2 grid = abs(fract(uv - 0.5) - 0.5) / fwidth(uv);
+	float line = min(grid.x, grid.y);
+	float strength = 1.0 - min(line, 1.0);
+	vec3 color = mix(base_color, grid_color, strength * 0.85);
+	ALBEDO = color;
+}
+"""
+	var smat: ShaderMaterial = ShaderMaterial.new()
+	smat.shader = shader
+	ground.material_override = smat
+	geom.add_child(ground)
+	# StaticBody for ground collision so player doesn't fall through
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(50, 0.10, 40)
+	cs.shape = bs
+	cs.position = Vector3(0, -0.05, 0)
+	sb.add_child(cs)
+	ground.add_child(sb)
+
+
+func _build_d2_entrance_arch(geom: Node) -> void:
+	## Epic-2 T3: a wide cracked stone arch at the D2 entrance (just east of
+	## the unlocked plaza gate) reading "STACK OVERFLOW OUTSKIRTS".
+	var arch: Node3D = Node3D.new()
+	arch.name = "D2EntranceArch"
+	arch.position = Vector3(70, 0, 0)
+	geom.add_child(arch)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.06)
+	stone_mat.metallic = 0.45
+	stone_mat.roughness = 0.65
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.30, 0.10)
+	stone_mat.emission_energy_multiplier = 0.30
+	# 2 wide pillars
+	for sx: float in [-4.0, 4.0]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(1.6, 7.5, 1.6)
+		pillar.mesh = pmesh
+		pillar.position = Vector3(sx, 3.75, 0)
+		pillar.material_override = stone_mat
+		arch.add_child(pillar)
+		# Cracked emissive stripe
+		var crack: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.06, 6.0, 1.7)
+		crack.mesh = cmesh
+		crack.position = Vector3(sx + (-0.81 if sx < 0 else 0.81), 3.5, 0)
+		var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+		crack_mat.albedo_color = Color(1.0, 0.40, 0.20)
+		crack_mat.emission_enabled = true
+		crack_mat.emission = Color(1.0, 0.55, 0.20)
+		crack_mat.emission_energy_multiplier = 1.8
+		crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crack.material_override = crack_mat
+		arch.add_child(crack)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.6, 7.5, 1.6)
+		cs.shape = cb
+		cs.position = Vector3(sx, 3.75, 0)
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Lintel
+	var lintel: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: BoxMesh = BoxMesh.new()
+	lmesh.size = Vector3(9.5, 1.40, 1.60)
+	lintel.mesh = lmesh
+	lintel.position = Vector3(0, 8.20, 0)
+	lintel.material_override = stone_mat
+	arch.add_child(lintel)
+	# Big district name on the lintel
+	for fz: float in [-0.81, 0.81]:
+		var label: Label3D = Label3D.new()
+		label.text = "STACK OVERFLOW\nOUTSKIRTS"
+		label.position = Vector3(0, 8.20, fz)
+		label.rotation = Vector3(0, deg_to_rad(0 if fz > 0 else 180), 0)
+		label.modulate = Color(1.0, 0.55, 0.20)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 22
+		label.no_depth_test = true
+		arch.add_child(label)
+
+
+func _build_d2_broken_tower(geom: Node) -> void:
+	## Epic-2 T4: a tall broken data tower as the first D2 landmark. Stone
+	## column with a snapped top, glowing internal "wires" exposed, leaning
+	## slightly. Sells "this district is in disrepair".
+	var tower: Node3D = Node3D.new()
+	tower.name = "D2BrokenTower"
+	tower.position = D2_CENTER + Vector3(-8, 0, -10)
+	tower.rotation = Vector3(deg_to_rad(8), 0, deg_to_rad(-5))
+	geom.add_child(tower)
+	# Lower intact column
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.10)
+	stone_mat.metallic = 0.45
+	stone_mat.roughness = 0.55
+	var lower: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: CylinderMesh = CylinderMesh.new()
+	lmesh.top_radius = 0.95
+	lmesh.bottom_radius = 1.10
+	lmesh.height = 6.0
+	lower.mesh = lmesh
+	lower.position = Vector3(0, 3.0, 0)
+	lower.material_override = stone_mat
+	tower.add_child(lower)
+	# Broken jagged top piece (smaller cylinder)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: CylinderMesh = CylinderMesh.new()
+	tmesh.top_radius = 0.40
+	tmesh.bottom_radius = 0.85
+	tmesh.height = 2.5
+	top.mesh = tmesh
+	top.position = Vector3(0, 7.25, 0)
+	top.rotation = Vector3(deg_to_rad(15), deg_to_rad(20), deg_to_rad(-10))
+	top.material_override = stone_mat
+	tower.add_child(top)
+	# Exposed glowing internal wires — 4 thin emissive bars protruding
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(1.0, 0.40, 0.20)
+	wire_mat.emission_enabled = true
+	wire_mat.emission = Color(1.0, 0.55, 0.20)
+	wire_mat.emission_energy_multiplier = 2.4
+	wire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for w in 4:
+		var wire: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: CylinderMesh = CylinderMesh.new()
+		wmesh.top_radius = 0.04
+		wmesh.bottom_radius = 0.04
+		wmesh.height = 1.4
+		wire.mesh = wmesh
+		var angle: float = (float(w) / 4.0) * TAU
+		wire.position = Vector3(cos(angle) * 0.3, 6.4, sin(angle) * 0.3)
+		wire.rotation = Vector3(deg_to_rad(randf_range(-30, 30)), 0, deg_to_rad(randf_range(-30, 30)))
+		wire.material_override = wire_mat
+		tower.add_child(wire)
+	# Sparking glowing core at the break point
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: SphereMesh = SphereMesh.new()
+	cmesh.radius = 0.30
+	cmesh.height = 0.60
+	core.mesh = cmesh
+	core.position = Vector3(0, 6.10, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.85, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.95, 0.40)
+	cmat.emission_energy_multiplier = 2.6
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = cmat
+	tower.add_child(core)
+	# Spark particle burst from the core
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 30
+	sparks.lifetime = 0.85
+	sparks.position = Vector3(0, 6.10, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.20
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 80.0
+	pmat.initial_velocity_min = 1.5
+	pmat.initial_velocity_max = 3.0
+	pmat.gravity = Vector3(0, -3.5, 0)
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.85, 0.30, 1.0)
+	sparks.process_material = pmat
+	var spark_mesh: SphereMesh = SphereMesh.new()
+	spark_mesh.radius = 0.05
+	spark_mesh.height = 0.10
+	var spark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spark_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	spark_mat.emission_enabled = true
+	spark_mat.emission = Color(1.0, 0.95, 0.40)
+	spark_mat.emission_energy_multiplier = 2.5
+	spark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spark_mesh.material = spark_mat
+	sparks.draw_pass_1 = spark_mesh
+	tower.add_child(sparks)
+	# Pulse the core
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(core, "scale", Vector3(1.30, 1.30, 1.30), 0.45).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(core, "scale", Vector3(1.0, 1.0, 1.0), 0.45).set_ease(Tween.EASE_IN_OUT)
+	# Collision around the column
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.10
+	cap.height = 6.0
+	cs.shape = cap
+	cs.position = Vector3(0, 3.0, 0)
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d2_survivor_npc() -> void:
+	## Epic-2 T5: wandering survivor NPC in the D2 entrance area. Hooded
+	## procedural figure with a worn cyan cloak, slowly walking back and
+	## forth on a patrol tween. The first inhabitant of District 2.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var survivor: Node3D = Node3D.new()
+	survivor.name = "D2Survivor"
+	survivor.position = D2_CENTER + Vector3(-12, 0, 4)
+	slots.add_child(survivor)
+	# Body capsule — worn brown cloak
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.20
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.25, 0.20)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.65
+	body.material_override = bmat
+	survivor.add_child(body)
+	# Hood — wider half sphere on top
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.45, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.20, 0.16, 0.12)
+	hmat.metallic = 0.10
+	hmat.roughness = 0.70
+	hood.material_override = hmat
+	survivor.add_child(hood)
+	# 2 dim cyan eyes peeking from the hood shadow
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.30, 0.85, 1.0)
+	eye_mat.emission_energy_multiplier = 1.8
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emesh: SphereMesh = SphereMesh.new()
+		emesh.radius = 0.05
+		emesh.height = 0.10
+		eye.mesh = emesh
+		eye.position = Vector3(ex, 1.30, 0.30)
+		eye.material_override = eye_mat
+		survivor.add_child(eye)
+	# Walking stick
+	var stick: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.04
+	smesh.bottom_radius = 0.05
+	smesh.height = 1.6
+	stick.mesh = smesh
+	stick.position = Vector3(0.45, 0.80, 0)
+	var stmat: StandardMaterial3D = StandardMaterial3D.new()
+	stmat.albedo_color = Color(0.25, 0.18, 0.10)
+	stick.material_override = stmat
+	survivor.add_child(stick)
+	# Stick tip glow
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tip_mesh: SphereMesh = SphereMesh.new()
+	tip_mesh.radius = 0.10
+	tip_mesh.height = 0.20
+	tip.mesh = tip_mesh
+	tip.position = Vector3(0.45, 1.65, 0)
+	var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tip_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	tip_mat.emission_enabled = true
+	tip_mat.emission = Color(0.55, 0.95, 1.0)
+	tip_mat.emission_energy_multiplier = 2.4
+	tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tip.material_override = tip_mat
+	survivor.add_child(tip)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Wanderer"
+	label.position = Vector3(0, 1.95, 0)
+	label.modulate = Color(0.85, 0.85, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	survivor.add_child(label)
+	# Walking patrol tween
+	var origin: Vector3 = D2_CENTER + Vector3(-12, 0, 4)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(survivor, "rotation:y", deg_to_rad(90), 0.4)
+	patrol.tween_property(survivor, "position", origin + Vector3(0, 0, 6), 5.0)
+	patrol.tween_property(survivor, "rotation:y", deg_to_rad(-90), 0.4)
+	patrol.tween_property(survivor, "position", origin, 5.0)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
