@@ -87,6 +87,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_constellation_map(geom)
 	_build_th_stargazer_npc(town)
 	_build_th_combat_trial_pit(geom)
+	_build_th_pit_master_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -12908,3 +12909,206 @@ func _build_th_combat_trial_pit(geom: Node) -> void:
 	step.material_override = brass_mat
 	step.position = Vector3(0, 0.04, -(pit_w * 0.5) - (wall_t * 0.5))
 	pivot.add_child(step)
+
+
+func _build_th_pit_master_npc(town: Node) -> void:
+	## Epic-10 T71: Pit Master Krell NPC — battle-scarred trainer NPC standing
+	## just outside the front entry step of the combat pit, arms folded across
+	## chest, watching the training golems. Iron-plated brown vest, brass
+	## shoulder spikes, scar across one eye, broader muscular build.
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node = npc_scene.instantiate()
+	npc.name = "PitMaster_Krell"
+	# Position: just outside the combat pit's front step (ESE r=11.5, ang ~-PI*0.20)
+	# Place slightly inward (closer to plaza center) and offset to the side
+	var ang_pos: float = -PI * 0.20
+	var rad_pos: float = 9.10
+	var px: float = cos(ang_pos) * rad_pos - 0.30
+	var pz: float = sin(ang_pos) * rad_pos - 0.85
+	if npc is Node3D:
+		(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+		# Face the combat pit
+		var pit_x: float = cos(ang_pos) * 11.5
+		var pit_z: float = sin(ang_pos) * 11.5
+		(npc as Node3D).rotation.y = atan2(pit_x - px, pit_z - pz)
+	if "npc_name" in npc:
+		npc.set("npc_name", "Pit Master Krell")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_pit_master")
+	town.add_child(npc)
+	# ---- Cosmetic overlay ----
+	var ovl: Node3D = Node3D.new()
+	ovl.name = "PitMasterOverlay"
+	if npc is Node3D:
+		(npc as Node3D).add_child(ovl)
+	# Materials
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	vest_mat.metallic = 0.10
+	vest_mat.roughness = 0.92
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.30, 0.32, 0.38)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.45, 0.55, 0.70)
+	iron_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.78, 0.62, 0.48)
+	skin_mat.roughness = 0.85
+	var pant_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pant_mat.albedo_color = Color(0.18, 0.20, 0.25)
+	pant_mat.roughness = 0.92
+	# Wide brown vest (broader than standard NPC torso)
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vmm: BoxMesh = BoxMesh.new()
+	vmm.size = Vector3(1.10, 0.95, 0.62)
+	vest.mesh = vmm
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 1.30, 0)
+	ovl.add_child(vest)
+	# Iron plate strapped to chest
+	var plate: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.85, 0.65, 0.06)
+	plate.mesh = pmm
+	plate.material_override = iron_mat
+	plate.position = Vector3(0, 1.40, -0.36)
+	ovl.add_child(plate)
+	# Brass rivets on the iron plate (4 corners)
+	for s in [-1.0, 1.0]:
+		for s2 in [-1.0, 1.0]:
+			var rivet: MeshInstance3D = MeshInstance3D.new()
+			var rmm: SphereMesh = SphereMesh.new()
+			rmm.radius = 0.04
+			rmm.height = 0.08
+			rivet.mesh = rmm
+			rivet.material_override = brass_mat
+			rivet.position = Vector3(0.32 * s, 1.40 + 0.22 * s2, -0.40)
+			ovl.add_child(rivet)
+	# Wide pants/skirt section
+	var pants: MeshInstance3D = MeshInstance3D.new()
+	var psm: BoxMesh = BoxMesh.new()
+	psm.size = Vector3(0.95, 0.95, 0.55)
+	pants.mesh = psm
+	pants.material_override = pant_mat
+	pants.position = Vector3(0, 0.45, 0)
+	ovl.add_child(pants)
+	# Brass belt buckle
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var blm: BoxMesh = BoxMesh.new()
+	blm.size = Vector3(1.05, 0.10, 0.62)
+	belt.mesh = blm
+	belt.material_override = brass_mat
+	belt.position = Vector3(0, 0.95, 0)
+	ovl.add_child(belt)
+	# Brass shoulder spikes (2)
+	for s3 in [-1.0, 1.0]:
+		var spike_pivot: Node3D = Node3D.new()
+		spike_pivot.position = Vector3(0.55 * s3, 1.75, 0)
+		ovl.add_child(spike_pivot)
+		# Shoulder cap
+		var spc: MeshInstance3D = MeshInstance3D.new()
+		var spcm: SphereMesh = SphereMesh.new()
+		spcm.radius = 0.18
+		spcm.height = 0.30
+		spc.mesh = spcm
+		spc.material_override = brass_mat
+		spc.position = Vector3(0, 0, 0)
+		spike_pivot.add_child(spc)
+		# Spike (PrismMesh tip)
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spkm: PrismMesh = PrismMesh.new()
+		spkm.size = Vector3(0.10, 0.32, 0.10)
+		spike.mesh = spkm
+		spike.material_override = brass_mat
+		spike.position = Vector3(0.04 * s3, 0.18, 0)
+		spike.rotation.z = -0.30 * s3
+		spike_pivot.add_child(spike)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.22
+	hdm.height = 0.46
+	head.mesh = hdm
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.97, 0)
+	ovl.add_child(head)
+	# Bald head dome (no hair) — slight darker tone for shaved look already
+	# Two cyan eye dots
+	for s4 in [-1.0, 1.0]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emm: SphereMesh = SphereMesh.new()
+		emm.radius = 0.027
+		emm.height = 0.054
+		eye.mesh = emm
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_energy_multiplier = 5.5
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = eye_mat
+		eye.position = Vector3(0.08 * s4, 1.99, 0.20)
+		ovl.add_child(eye)
+	# Diagonal scar across one eye (small brass-amber line)
+	var scar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scar_mat.albedo_color = Color(0.95, 0.45, 0.25)
+	scar_mat.emission_enabled = true
+	scar_mat.emission = Color(0.95, 0.45, 0.20)
+	scar_mat.emission_energy_multiplier = 1.20
+	var scar: MeshInstance3D = MeshInstance3D.new()
+	var scrm: BoxMesh = BoxMesh.new()
+	scrm.size = Vector3(0.025, 0.18, 0.025)
+	scar.mesh = scrm
+	scar.material_override = scar_mat
+	scar.position = Vector3(-0.08, 1.99, 0.21)
+	scar.rotation.z = 0.50
+	ovl.add_child(scar)
+	# ---- Folded arms (two arms crossed across chest) ----
+	for s5 in [-1.0, 1.0]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var amm: CylinderMesh = CylinderMesh.new()
+		amm.top_radius = 0.10
+		amm.bottom_radius = 0.13
+		amm.height = 0.65
+		arm.mesh = amm
+		arm.material_override = skin_mat
+		arm.position = Vector3(0.10 * s5, 1.30, -0.32)
+		# Cross arms — rotate so each arm goes across chest
+		arm.rotation.z = (PI / 2.5) * -s5
+		ovl.add_child(arm)
+		# Brass wristband
+		var wrist: MeshInstance3D = MeshInstance3D.new()
+		var wtm: TorusMesh = TorusMesh.new()
+		wtm.inner_radius = 0.10
+		wtm.outer_radius = 0.14
+		wrist.mesh = wtm
+		wrist.material_override = brass_mat
+		wrist.position = Vector3(-0.30 * s5, 1.30, -0.32)
+		wrist.rotation.z = PI / 2.0
+		ovl.add_child(wrist)
+	# Subtle warm authority light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.65, -0.20)
+	lt.light_color = Color(1.0, 0.65, 0.30)
+	lt.light_energy = 1.20
+	lt.omni_range = 3.4
+	ovl.add_child(lt)
+	# ---- Slow imposing breathing (chest expansion) ----
+	var breath: Tween = ovl.create_tween().set_loops()
+	breath.tween_property(ovl, "scale:y", 1.018, 2.4).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(ovl, "scale:y", 0.988, 2.4).set_ease(Tween.EASE_IN_OUT)
+	# Eye ember slow pulse
+	var epulse: Tween = ovl.create_tween().set_loops()
+	epulse.tween_property(scar_mat, "emission_energy_multiplier", 2.4, 1.8).set_ease(Tween.EASE_IN_OUT)
+	epulse.tween_property(scar_mat, "emission_energy_multiplier", 0.80, 1.8).set_ease(Tween.EASE_IN_OUT)
