@@ -1658,6 +1658,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_memory_shards(geom)
 	# Epic-3 T10: archivist NPC
 	_build_d3_archivist_npc()
+	# Epic-3 T11: drifting ancient codex pages
+	_build_d3_codex_pages(geom)
+	# Epic-3 T12: spiral knowledge staircase landmark
+	_build_d3_spiral_stair(geom)
+	# Epic-3 T13: wisp enemy (small floating glow)
+	_build_d3_wisp_enemy(geom)
+	# Epic-3 T14: Vault Keeper NPC
+	_build_d3_vault_keeper_npc()
+	# Epic-3 T15: small memory pool
+	_build_d3_memory_pool(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -2464,6 +2474,393 @@ func _build_d3_archivist_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	arch.add_child(label)
+
+
+func _build_d3_codex_pages(geom: Node) -> void:
+	## Epic-3 T11: 12 drifting "codex pages" — small thin translucent
+	## boxes floating across the vault on independent paths, each with
+	## a small Label3D rune symbol on it.
+	var pages_root: Node3D = Node3D.new()
+	pages_root.name = "D3CodexPages"
+	geom.add_child(pages_root)
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 121
+	var symbols: Array[String] = ["α", "β", "γ", "δ", "ε", "ζ"]
+	for i in 12:
+		var page: MeshInstance3D = MeshInstance3D.new()
+		page.name = "CodexPage_%d" % i
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.40, 0.55, 0.04)
+		page.mesh = pmesh
+		page.position = D3_CENTER + Vector3(
+			rng.randf_range(-22, 22),
+			rng.randf_range(2, 8),
+			rng.randf_range(-16, 16)
+		)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.95, 0.85, 0.65, 0.75)
+		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pmat.emission_enabled = true
+		pmat.emission = Color(1.0, 0.85, 0.55)
+		pmat.emission_energy_multiplier = 0.85
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		page.material_override = pmat
+		pages_root.add_child(page)
+		# Symbol on page
+		var label: Label3D = Label3D.new()
+		label.text = symbols[i % symbols.size()]
+		label.position = page.position + Vector3(0, 0, 0.04)
+		label.modulate = Color(0.30, 0.10, 0.40)
+		label.outline_size = 0
+		label.font_size = 18
+		label.no_depth_test = true
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		pages_root.add_child(label)
+		# Drift tween
+		var origin: Vector3 = page.position
+		var drift: Tween = create_tween().set_loops()
+		var wp1: Vector3 = origin + Vector3(rng.randf_range(-3, 3), rng.randf_range(-1, 1), rng.randf_range(-3, 3))
+		var wp2: Vector3 = origin + Vector3(rng.randf_range(-3, 3), rng.randf_range(-1, 1), rng.randf_range(-3, 3))
+		drift.tween_property(page, "position", wp1, 5.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(page, "position", wp2, 5.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(page, "position", origin, 5.0).set_ease(Tween.EASE_IN_OUT)
+		# Tumble
+		var tumble: Tween = create_tween().set_loops()
+		tumble.tween_property(page, "rotation", Vector3(TAU, TAU * 0.5, 0), 7.0)
+
+
+func _build_d3_spiral_stair(geom: Node) -> void:
+	## Epic-3 T12: a tall spiral knowledge staircase landmark — 12 steps
+	## winding upward around a central column, each step with a small
+	## emissive trim. Decorative climb-tower on the side of the district.
+	var stair: Node3D = Node3D.new()
+	stair.name = "D3SpiralStair"
+	stair.position = D3_CENTER + Vector3(15, 0, -12)
+	geom.add_child(stair)
+	# Center column
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: CylinderMesh = CylinderMesh.new()
+	cmesh.top_radius = 0.55
+	cmesh.bottom_radius = 0.65
+	cmesh.height = 7.0
+	col.mesh = cmesh
+	col.position = Vector3(0, 3.5, 0)
+	col.material_override = stone_mat
+	stair.add_child(col)
+	# 12 steps spiraling upward
+	for i in 12:
+		var t: float = float(i) / 12.0
+		var angle: float = t * TAU * 1.5
+		var height: float = 0.3 + i * 0.55
+		var step_root: Node3D = Node3D.new()
+		step_root.position = Vector3(cos(angle) * 1.20, height, sin(angle) * 1.20)
+		step_root.rotation = Vector3(0, -angle, 0)
+		stair.add_child(step_root)
+		# Step slab
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.40, 0.20, 0.85)
+		step.mesh = sm
+		step.material_override = stone_mat
+		step_root.add_child(step)
+		# Glowing edge trim
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(1.40, 0.06, 0.06)
+		trim.mesh = tm
+		trim.position = Vector3(0, 0.15, 0.42)
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.85, 0.40, 1.0)
+		tmat.emission_enabled = true
+		tmat.emission = Color(1.0, 0.55, 1.0)
+		tmat.emission_energy_multiplier = 1.8
+		tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		trim.material_override = tmat
+		step_root.add_child(trim)
+		# Per-step collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.40, 0.20, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		step_root.add_child(sb)
+	# Top crown — pulsing violet sphere
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crmesh: SphereMesh = SphereMesh.new()
+	crmesh.radius = 0.45
+	crmesh.height = 0.90
+	crown.mesh = crmesh
+	crown.position = Vector3(0, 7.85, 0)
+	var crmat: StandardMaterial3D = StandardMaterial3D.new()
+	crmat.albedo_color = Color(0.85, 0.40, 1.0)
+	crmat.emission_enabled = true
+	crmat.emission = Color(1.0, 0.55, 1.0)
+	crmat.emission_energy_multiplier = 2.6
+	crmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	crown.material_override = crmat
+	stair.add_child(crown)
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(crown, "scale", Vector3(1.30, 1.30, 1.30), 1.8).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(crown, "scale", Vector3(0.85, 0.85, 0.85), 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Collision around the central column
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.65
+	cap.height = 7.0
+	cs.shape = cap
+	cs.position = Vector3(0, 3.5, 0)
+	sb.add_child(cs)
+	stair.add_child(sb)
+
+
+func _build_d3_wisp_enemy(geom: Node) -> void:
+	## Epic-3 T13: 4 small floating wisp enemies — pulsing emissive
+	## spheres with trailing tail particles, drifting through the vault.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-8, 2.5, 8),
+		D3_CENTER + Vector3(10, 3.0, -6),
+		D3_CENTER + Vector3(-12, 2.0, -4),
+		D3_CENTER + Vector3(14, 2.5, 10),
+	]
+	for i in positions.size():
+		var wisp: Node3D = Node3D.new()
+		wisp.name = "D3Wisp_%d" % i
+		wisp.position = positions[i]
+		geom.add_child(wisp)
+		# Core sphere
+		var core: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.30
+		cm.height = 0.60
+		core.mesh = cm
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.85, 0.40, 1.0)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 1.0)
+		cmat.emission_energy_multiplier = 3.0
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		core.material_override = cmat
+		wisp.add_child(core)
+		# Pulse the core
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(core, "scale", Vector3(1.40, 1.40, 1.40), 0.8).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(core, "scale", Vector3(0.85, 0.85, 0.85), 0.8).set_ease(Tween.EASE_IN_OUT)
+		# Trailing tail particles
+		var tail: GPUParticles3D = GPUParticles3D.new()
+		tail.amount = 30
+		tail.lifetime = 0.85
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		pmat.emission_sphere_radius = 0.20
+		pmat.direction = Vector3(0, -0.5, 0)
+		pmat.spread = 30.0
+		pmat.initial_velocity_min = 0.30
+		pmat.initial_velocity_max = 0.65
+		pmat.gravity = Vector3.ZERO
+		pmat.scale_min = 0.10
+		pmat.scale_max = 0.20
+		pmat.color = Color(1.0, 0.55, 1.0, 1.0)
+		tail.process_material = pmat
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.10
+		pm.height = 0.20
+		var pmm: StandardMaterial3D = StandardMaterial3D.new()
+		pmm.albedo_color = Color(1.0, 0.55, 1.0)
+		pmm.emission_enabled = true
+		pmm.emission = Color(1.0, 0.55, 1.0)
+		pmm.emission_energy_multiplier = 2.2
+		pmm.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pm.material = pmm
+		tail.draw_pass_1 = pm
+		wisp.add_child(tail)
+		# Slow drift patrol
+		var origin: Vector3 = positions[i]
+		var drift: Tween = create_tween().set_loops()
+		drift.tween_property(wisp, "position", origin + Vector3(3, 0.8, 3), 4.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(wisp, "position", origin + Vector3(-3, -0.8, 3), 4.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(wisp, "position", origin + Vector3(-3, 0.8, -3), 4.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(wisp, "position", origin, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_vault_keeper_npc() -> void:
+	## Epic-3 T14: Vault Keeper NPC — large statue-like guardian standing
+	## still by the entrance arch. Has a key motif on chest and golden eyes.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var keeper: Node3D = Node3D.new()
+	keeper.name = "D3VaultKeeper"
+	keeper.position = Vector3(125, 0, -3)
+	slots.add_child(keeper)
+	# Tall stone body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.18, 0.14, 0.24)
+	bmat.metallic = 0.40
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(1.20, 2.20, 0.85)
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.10, 0)
+	body.material_override = bmat
+	keeper.add_child(body)
+	# Head — square
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.85, 0.85, 0.85)
+	head.mesh = hm
+	head.position = Vector3(0, 2.65, 0)
+	head.material_override = bmat
+	keeper.add_child(head)
+	# 2 golden eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.95, 0.30)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.10
+		em.height = 0.20
+		eye.mesh = em
+		eye.position = Vector3(ex, 2.70, 0.45)
+		eye.material_override = eye_mat
+		keeper.add_child(eye)
+	# Key motif on chest — a thin emissive cross + circle
+	var key_mat: StandardMaterial3D = StandardMaterial3D.new()
+	key_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	key_mat.emission_enabled = true
+	key_mat.emission = Color(1.0, 0.95, 0.30)
+	key_mat.emission_energy_multiplier = 1.8
+	key_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Vertical bar
+	var v_bar: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.10, 0.85, 0.04)
+	v_bar.mesh = vm
+	v_bar.position = Vector3(0, 1.40, 0.45)
+	v_bar.material_override = key_mat
+	keeper.add_child(v_bar)
+	# Horizontal bar
+	var h_bar: MeshInstance3D = MeshInstance3D.new()
+	var hbm: BoxMesh = BoxMesh.new()
+	hbm.size = Vector3(0.40, 0.10, 0.04)
+	h_bar.mesh = hbm
+	h_bar.position = Vector3(0, 1.55, 0.45)
+	h_bar.material_override = key_mat
+	keeper.add_child(h_bar)
+	# Circle bow at top of key
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bowm: SphereMesh = SphereMesh.new()
+	bowm.radius = 0.18
+	bowm.height = 0.36
+	bow.mesh = bowm
+	bow.position = Vector3(0, 1.85, 0.45)
+	bow.material_override = key_mat
+	keeper.add_child(bow)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Vault Keeper"
+	label.position = Vector3(0, 3.30, 0)
+	label.modulate = Color(1.0, 0.85, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	keeper.add_child(label)
+
+
+func _build_d3_memory_pool(geom: Node) -> void:
+	## Epic-3 T15: a small circular memory pool — torus rim around a
+	## glowing translucent disc. Bubbling violet "data" rises from it.
+	var pool: Node3D = Node3D.new()
+	pool.name = "D3MemoryPool"
+	pool.position = D3_CENTER + Vector3(15, 0, 8)
+	geom.add_child(pool)
+	# Stone rim
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 1.40
+	rmesh.outer_radius = 1.85
+	rim.mesh = rmesh
+	rim.position = Vector3(0, 0.20, 0)
+	rim.material_override = stone_mat
+	pool.add_child(rim)
+	# Inner pool surface — glowing violet disc
+	var surface: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 1.40
+	sm.bottom_radius = 1.40
+	sm.height = 0.06
+	surface.mesh = sm
+	surface.position = Vector3(0, 0.20, 0)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.85, 0.40, 1.0, 0.85)
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	smat.emission_enabled = true
+	smat.emission = Color(1.0, 0.55, 1.0)
+	smat.emission_energy_multiplier = 1.8
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	surface.material_override = smat
+	pool.add_child(surface)
+	# Ripple tween
+	var ripple: Tween = create_tween().set_loops()
+	ripple.tween_property(surface, "scale", Vector3(1.05, 1.0, 0.96), 1.6).set_ease(Tween.EASE_IN_OUT)
+	ripple.tween_property(surface, "scale", Vector3(0.96, 1.0, 1.05), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Bubbling violet particles rising from the surface
+	var bubbles: GPUParticles3D = GPUParticles3D.new()
+	bubbles.amount = 30
+	bubbles.lifetime = 2.5
+	bubbles.position = Vector3(0, 0.30, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 1.20
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 12.0
+	pmat.initial_velocity_min = 0.55
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.10
+	pmat.scale_max = 0.20
+	pmat.color = Color(1.0, 0.55, 1.0, 1.0)
+	bubbles.process_material = pmat
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.10
+	bm.height = 0.20
+	var bm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bm_mat.albedo_color = Color(1.0, 0.55, 1.0)
+	bm_mat.emission_enabled = true
+	bm_mat.emission = Color(1.0, 0.55, 1.0)
+	bm_mat.emission_energy_multiplier = 2.6
+	bm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bm.material = bm_mat
+	bubbles.draw_pass_1 = bm
+	pool.add_child(bubbles)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "MEMORY POOL"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pool.add_child(label)
 
 
 
