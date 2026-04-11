@@ -22,6 +22,7 @@
 [ext_resource type="Script" path="res://scripts/components/equipment_component.gd" id="17_equip"]
 [ext_resource type="Script" path="res://scripts/components/ability_manager.gd" id="18_ability"]
 [ext_resource type="Script" path="res://scripts/components/level_component.gd" id="19_level"]
+[ext_resource type="Script" path="res://scripts/components/protocol_runner.gd" id="23_proto_run"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_col"]
 radius = 0.4
@@ -305,6 +306,9 @@ script = ExtResource("16_inv")
 [node name="EquipmentComponent" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("17_equip")
+
+[node name="ProtocolRunner" type="Node" parent="."]
+script = ExtResource("23_proto_run")
 
 [node name="AbilityManager" type="Node" parent="."]
 unique_name_in_owner = true

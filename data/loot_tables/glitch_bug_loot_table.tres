@@ -8,14 +8,14 @@
 [sub_resource type="Resource" id="entry_firewall"]
 script = ExtResource("2_entry")
 item_base = ExtResource("3_chip1")
-drop_chance = 0.15
+drop_chance = 0.22
 min_quantity = 1
 max_quantity = 1
 
 [sub_resource type="Resource" id="entry_overclocker"]
 script = ExtResource("2_entry")
 item_base = ExtResource("4_chip2")
-drop_chance = 0.08
+drop_chance = 0.12
 min_quantity = 1
 max_quantity = 1
 

@@ -8,14 +8,14 @@
 [sub_resource type="Resource" id="entry_packet_storm"]
 script = ExtResource("2_entry")
 item_base = ExtResource("3_mod")
-drop_chance = 0.10
+drop_chance = 0.16
 min_quantity = 1
 max_quantity = 1
 
 [sub_resource type="Resource" id="entry_siphon"]
 script = ExtResource("2_entry")
 item_base = ExtResource("4_proto")
-drop_chance = 0.06
+drop_chance = 0.10
 min_quantity = 1
 max_quantity = 1
 
