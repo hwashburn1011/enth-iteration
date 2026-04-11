@@ -8865,6 +8865,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_ice_spike_traps(geom)
 	# Epic-5 T50: GLACIAL WARDEN mini-boss landmark
 	_build_d5_glacial_warden(geom)
+	# Epic-5 T51: telescope observatory dome
+	_build_d5_telescope_observatory(geom)
+	# Epic-5 T52: stargazer NPC
+	_build_d5_stargazer_npc()
+	# Epic-5 T53: comet streaks in the sky
+	_build_d5_comet_streaks(geom)
+	# Epic-5 T54: ancient ice rune monument
+	_build_d5_rune_monument(geom)
+	# Epic-5 T55: arctic fox creature
+	_build_d5_arctic_fox(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -12825,6 +12835,407 @@ func _build_d5_glacial_warden(geom: Node) -> void:
 	pcs.shape = pcb
 	psb.add_child(pcs)
 	warden.add_child(psb)
+
+
+func _build_d5_telescope_observatory(geom: Node) -> void:
+	## Epic-5 T51: small observatory — round ice base + half-dome ice top
+	## with an open slit + protruding telescope barrel.
+	var obs: Node3D = Node3D.new()
+	obs.name = "TelescopeObservatory"
+	obs.position = Vector3(D5_CENTER.x + 18.0, 0.0, -2.0)
+	geom.add_child(obs)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.78, 0.92, 1.0)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 1.0)
+	ice_mat.emission_energy_multiplier = 0.30
+	ice_mat.roughness = 0.45
+	# Round base wall
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.85
+	bm.bottom_radius = 2.10
+	bm.height = 2.40
+	base.mesh = bm
+	base.material_override = ice_mat
+	base.position = Vector3(0, 1.20, 0)
+	obs.add_child(base)
+	# Dome roof (half sphere)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 2.00
+	dmm.height = 4.00
+	dome.mesh = dmm
+	dome.material_override = ice_mat
+	dome.position = Vector3(0, 2.40, 0)
+	dome.scale = Vector3(1.0, 0.55, 1.0)
+	obs.add_child(dome)
+	# Open slit (dark thin box on the dome)
+	var slit: MeshInstance3D = MeshInstance3D.new()
+	var sltm: BoxMesh = BoxMesh.new()
+	sltm.size = Vector3(0.45, 0.10, 1.85)
+	slit.mesh = sltm
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.05, 0.08, 0.12)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	slit.material_override = dark_mat
+	slit.position = Vector3(0, 3.40, 0)
+	obs.add_child(slit)
+	# Protruding telescope barrel (long cylinder angled outward)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var scope: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.30
+	sm.bottom_radius = 0.40
+	sm.height = 2.85
+	scope.mesh = sm
+	scope.material_override = metal_mat
+	scope.position = Vector3(0, 3.20, 0.55)
+	scope.rotation_degrees = Vector3(-25, 0, 0)
+	obs.add_child(scope)
+	# Lens (cyan emissive disc on the front of the scope)
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: CylinderMesh = CylinderMesh.new()
+	lm.top_radius = 0.32
+	lm.bottom_radius = 0.32
+	lm.height = 0.04
+	lens.mesh = lm
+	var lens_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lens_mat.albedo_color = Color(0.40, 0.95, 1.0)
+	lens_mat.emission_enabled = true
+	lens_mat.emission = Color(0.40, 1.0, 1.0)
+	lens_mat.emission_energy_multiplier = 2.5
+	lens_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lens.material_override = lens_mat
+	lens.position = Vector3(0, 4.40, 1.85)
+	lens.rotation_degrees = Vector3(-25, 0, 0)
+	obs.add_child(lens)
+	# Door slit at base
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dom: BoxMesh = BoxMesh.new()
+	dom.size = Vector3(0.85, 1.65, 0.10)
+	door.mesh = dom
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	door_mat.metallic = 0.65
+	door_mat.roughness = 0.35
+	door.material_override = door_mat
+	door.position = Vector3(0, 0.85, 2.10)
+	obs.add_child(door)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.10
+	cap.height = 2.40
+	cs.shape = cap
+	sb.add_child(cs)
+	obs.add_child(sb)
+
+
+func _build_d5_stargazer_npc() -> void:
+	## Epic-5 T52: stargazer NPC standing outside the observatory with a
+	## small handheld star chart.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "StargazerSlot"
+	slot.position = Vector3(D5_CENTER.x + 20.0, 0.0, -2.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Stargazer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Polaris")
+	if "npc_id" in npc:
+		npc.set("npc_id", "stargazer_d5")
+	slot.add_child(npc)
+	# Dark blue robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.05, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.10, 0.18, 0.45)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.10, 0.18, 0.55)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.65
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Tall pointed wizard hat
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.40, 0.85, 0.40)
+	hat.mesh = hm
+	hat.material_override = robe_mat
+	hat.position = Vector3(0, 1.65, 0)
+	npc.add_child(hat)
+	# Tiny stars sprinkled on the hat (4 small emissive spheres)
+	var star_mat: StandardMaterial3D = StandardMaterial3D.new()
+	star_mat.albedo_color = Color(1.0, 1.0, 0.85)
+	star_mat.emission_enabled = true
+	star_mat.emission = Color(1.0, 1.0, 0.85)
+	star_mat.emission_energy_multiplier = 3.5
+	star_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var star: MeshInstance3D = MeshInstance3D.new()
+		var smm: SphereMesh = SphereMesh.new()
+		smm.radius = 0.03
+		smm.height = 0.06
+		star.mesh = smm
+		star.material_override = star_mat
+		var ang: float = (TAU / 4.0) * i
+		star.position = Vector3(cos(ang) * 0.12, 1.55 + i * 0.18, sin(ang) * 0.12)
+		npc.add_child(star)
+	# Star chart held in hand (small open scroll prism)
+	var chart: MeshInstance3D = MeshInstance3D.new()
+	var cmm: BoxMesh = BoxMesh.new()
+	cmm.size = Vector3(0.40, 0.30, 0.04)
+	chart.mesh = cmm
+	var chart_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chart_mat.albedo_color = Color(0.95, 0.92, 0.75)
+	chart_mat.emission_enabled = true
+	chart_mat.emission = Color(0.55, 0.65, 0.85)
+	chart_mat.emission_energy_multiplier = 0.45
+	chart.material_override = chart_mat
+	chart.position = Vector3(0.40, 0.85, 0.20)
+	chart.rotation_degrees = Vector3(-30, 0, 0)
+	npc.add_child(chart)
+
+
+func _build_d5_comet_streaks(geom: Node) -> void:
+	## Epic-5 T53: 3 comet streaks across the high sky — long emissive
+	## tails that drift slowly across the district overhead.
+	var comets: Node3D = Node3D.new()
+	comets.name = "CometStreaks"
+	comets.position = Vector3(D5_CENTER.x, 22.0, 0.0)
+	geom.add_child(comets)
+	var streak_colors: Array = [
+		Color(1.0, 0.85, 0.65),
+		Color(0.85, 0.95, 1.0),
+		Color(1.0, 0.65, 0.85),
+	]
+	for i in 3:
+		var comet: Node3D = Node3D.new()
+		comet.position = Vector3(-25.0, i * 1.85, -8.0 + i * 4.0)
+		comet.rotation_degrees = Vector3(0, 0, -8.0 + i * 5.0)
+		comets.add_child(comet)
+		# Head (bright sphere)
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.40
+		hm.height = 0.75
+		head.mesh = hm
+		var head_mat: StandardMaterial3D = StandardMaterial3D.new()
+		head_mat.albedo_color = streak_colors[i]
+		head_mat.emission_enabled = true
+		head_mat.emission = streak_colors[i]
+		head_mat.emission_energy_multiplier = 4.0
+		head_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		head.material_override = head_mat
+		comet.add_child(head)
+		# Tail (long thin box trailing behind)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(8.0, 0.20, 0.20)
+		tail.mesh = tm
+		var tail_mat: StandardMaterial3D = StandardMaterial3D.new()
+		tail_mat.albedo_color = Color(streak_colors[i].r, streak_colors[i].g, streak_colors[i].b, 0.65)
+		tail_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		tail_mat.emission_enabled = true
+		tail_mat.emission = streak_colors[i]
+		tail_mat.emission_energy_multiplier = 2.0
+		tail_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		tail.material_override = tail_mat
+		tail.position = Vector3(-4.0, 0, 0)
+		comet.add_child(tail)
+		# Drift across the sky
+		var tw: Tween = comet.create_tween().set_loops()
+		tw.tween_property(comet, "position:x", 25.0, 22.0 + i * 2.0)
+		tw.tween_property(comet, "position:x", -25.0, 0.0)
+
+
+func _build_d5_rune_monument(geom: Node) -> void:
+	## Epic-5 T54: ancient ice rune monument — pyramidal stack of carved
+	## ice blocks with glowing cyan rune symbols on each face.
+	var mono: Node3D = Node3D.new()
+	mono.name = "IceRuneMonument"
+	mono.position = Vector3(D5_CENTER.x - 24.0, 0.0, -10.0)
+	geom.add_child(mono)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.30, 1.0, 1.0)
+	rune_mat.emission_energy_multiplier = 3.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4-tier ice pyramid (each tier smaller and higher)
+	var tier_sizes: Array = [
+		Vector3(3.20, 0.85, 3.20),
+		Vector3(2.40, 0.85, 2.40),
+		Vector3(1.65, 0.85, 1.65),
+		Vector3(0.95, 0.85, 0.95),
+	]
+	for i in tier_sizes.size():
+		var size: Vector3 = tier_sizes[i]
+		var tier: MeshInstance3D = MeshInstance3D.new()
+		var tmm: BoxMesh = BoxMesh.new()
+		tmm.size = size
+		tier.mesh = tmm
+		tier.material_override = ice_mat
+		tier.position = Vector3(0, 0.42 + i * 0.85, 0)
+		mono.add_child(tier)
+		# Rune carving on the front face
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmm: BoxMesh = BoxMesh.new()
+		rmm.size = Vector3(size.x * 0.45, size.y * 0.65, 0.04)
+		rune.mesh = rmm
+		rune.material_override = rune_mat
+		rune.position = Vector3(0, 0.42 + i * 0.85, size.z * 0.5 + 0.02)
+		mono.add_child(rune)
+		# Pulse rune
+		var tw: Tween = rune.create_tween().set_loops()
+		tw.tween_interval(i * 0.25)
+		tw.tween_property(rune, "scale:y", 1.20, 1.2)
+		tw.tween_property(rune, "scale:y", 0.85, 1.2)
+		# Tier collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42 + i * 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = size
+		cs.shape = cb
+		sb.add_child(cs)
+		mono.add_child(sb)
+	# Topmost crystal capstone
+	var capstone: MeshInstance3D = MeshInstance3D.new()
+	var capm: PrismMesh = PrismMesh.new()
+	capm.size = Vector3(0.55, 0.85, 0.55)
+	capstone.mesh = capm
+	capstone.material_override = rune_mat
+	capstone.position = Vector3(0, 4.30, 0)
+	mono.add_child(capstone)
+	# Capstone hover + spin
+	var ts: Tween = capstone.create_tween().set_loops()
+	ts.tween_property(capstone, "rotation_degrees:y", 360.0, 6.0)
+	ts.tween_property(capstone, "rotation_degrees:y", 0.0, 0.0)
+	var th: Tween = capstone.create_tween().set_loops()
+	th.tween_property(capstone, "position:y", 4.50, 1.6)
+	th.tween_property(capstone, "position:y", 4.30, 1.6)
+
+
+func _build_d5_arctic_fox(geom: Node) -> void:
+	## Epic-5 T55: small arctic fox creature — pure white fur, dark eye dots,
+	## bushy tail, with a hopping idle and slow patrol path.
+	var fox: Node3D = Node3D.new()
+	fox.name = "ArcticFox"
+	fox.position = Vector3(D5_CENTER.x - 8.0, 0.0, -8.0)
+	geom.add_child(fox)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.97, 0.98, 1.0)
+	fur_mat.roughness = 0.85
+	fur_mat.emission_enabled = true
+	fur_mat.emission = Color(0.85, 0.92, 0.98)
+	fur_mat.emission_energy_multiplier = 0.20
+	# Body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.22
+	bm.height = 0.40
+	body.mesh = bm
+	body.material_override = fur_mat
+	body.position = Vector3(0, 0.30, 0)
+	body.scale = Vector3(0.85, 0.75, 1.40)
+	fox.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.16
+	hm.height = 0.28
+	head.mesh = hm
+	head.material_override = fur_mat
+	head.position = Vector3(0, 0.42, 0.30)
+	fox.add_child(head)
+	# Snout (small prism)
+	var snout: MeshInstance3D = MeshInstance3D.new()
+	var snm: PrismMesh = PrismMesh.new()
+	snm.size = Vector3(0.10, 0.08, 0.16)
+	snout.mesh = snm
+	snout.material_override = fur_mat
+	snout.position = Vector3(0, 0.36, 0.45)
+	snout.rotation_degrees = Vector3(90, 0, 0)
+	fox.add_child(snout)
+	# 2 black eye dots
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.08)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.06, 0.06]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.025
+		em.height = 0.05
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 0.46, 0.42)
+		fox.add_child(eye)
+	# 2 perky ears
+	for sx in [-0.08, 0.08]:
+		var ear: MeshInstance3D = MeshInstance3D.new()
+		var em: PrismMesh = PrismMesh.new()
+		em.size = Vector3(0.06, 0.12, 0.04)
+		ear.mesh = em
+		ear.material_override = fur_mat
+		ear.position = Vector3(sx, 0.58, 0.30)
+		fox.add_child(ear)
+	# 4 legs (small cylinders)
+	for lx in [-0.08, 0.08]:
+		for lz in [-0.18, 0.18]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.04
+			lm.bottom_radius = 0.04
+			lm.height = 0.22
+			leg.mesh = lm
+			leg.material_override = fur_mat
+			leg.position = Vector3(lx, 0.11, lz)
+			fox.add_child(leg)
+	# Bushy tail (large fluffy sphere)
+	var tail: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 0.18
+	tm.height = 0.30
+	tail.mesh = tm
+	tail.material_override = fur_mat
+	tail.position = Vector3(0, 0.32, -0.30)
+	tail.scale = Vector3(0.85, 0.85, 1.65)
+	fox.add_child(tail)
+	# Patrol tween — slow back and forth
+	var tw: Tween = fox.create_tween().set_loops()
+	tw.tween_property(fox, "position", Vector3(D5_CENTER.x - 6.0, 0, -6.0), 4.0)
+	tw.tween_property(fox, "rotation_degrees:y", 180.0, 0.5)
+	tw.tween_property(fox, "position", Vector3(D5_CENTER.x - 10.0, 0, -10.0), 4.0)
+	tw.tween_property(fox, "rotation_degrees:y", 0.0, 0.5)
+	# Hopping bob
+	var th: Tween = fox.create_tween().set_loops()
+	th.tween_property(fox, "position:y", 0.10, 0.30)
+	th.tween_property(fox, "position:y", 0.0, 0.30)
+	th.tween_interval(0.85)
 
 
 
