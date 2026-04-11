@@ -93,6 +93,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_sky_ceremonial_banners(geom)
 	_build_th_sky_aurora_ribbon(geom)
 	_build_th_plaza_visitor_trio(town)
+	_build_th_inner_glyph_mosaic_tiles(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -14263,3 +14264,191 @@ func _build_th_plaza_visitor_trio(town: Node) -> void:
 		var breath: Tween = ovl.create_tween().set_loops()
 		breath.tween_property(robe, "scale:y", 1.012, 2.2).set_ease(Tween.EASE_IN_OUT)
 		breath.tween_property(robe, "scale:y", 0.992, 2.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_inner_glyph_mosaic_tiles(geom: Node) -> void:
+	## Epic-10 T77: Inner Glyph Mosaic Tiles — 4 large square floor mosaic
+	## tiles at the inner ordinal positions (radius 6.0, NE/NW/SE/SW). Each
+	## has a brass border and a unique glowing district-colored rune symbol
+	## in the center, with subtle pulse animation. Adds plaza floor accent
+	## without obstructing movement.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_InnerGlyphMosaicTiles"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	# 4 ordinal angles + colors
+	var glyph_data: Array = [
+		{"angle": PI * 0.25, "color": Color(0.55, 0.95, 1.0), "shape": "diamond"},  # NE cyan
+		{"angle": PI * 0.75, "color": Color(0.65, 0.40, 0.95), "shape": "triangle"},  # NW violet
+		{"angle": -PI * 0.75, "color": Color(1.0, 0.55, 0.15), "shape": "cross"},  # SW amber
+		{"angle": -PI * 0.25, "color": Color(0.45, 0.85, 0.30), "shape": "spiral"},  # SE green
+	]
+	var tile_radius: float = 6.0
+	var tile_size: float = 1.85
+	for i in range(4):
+		var g: Dictionary = glyph_data[i]
+		var ang: float = g["angle"]
+		var tx: float = cos(ang) * tile_radius
+		var tz: float = sin(ang) * tile_radius
+		var tile_pivot: Node3D = Node3D.new()
+		tile_pivot.position = Vector3(tx, 0, tz)
+		# Face inward toward center
+		tile_pivot.rotation.y = atan2(-tx, -tz)
+		pivot.add_child(tile_pivot)
+		# Stone slab base (very flat)
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var smm: BoxMesh = BoxMesh.new()
+		smm.size = Vector3(tile_size, 0.05, tile_size)
+		slab.mesh = smm
+		slab.material_override = stone_mat
+		slab.position = Vector3(0, 0.025, 0)
+		tile_pivot.add_child(slab)
+		# Brass border (4 thin strips around the slab)
+		var border_t: float = 0.06
+		var border_offsets: Array = [
+			Vector3(0, 0.04, (tile_size * 0.5) - (border_t * 0.5)),
+			Vector3(0, 0.04, -(tile_size * 0.5) + (border_t * 0.5)),
+			Vector3((tile_size * 0.5) - (border_t * 0.5), 0.04, 0),
+			Vector3(-(tile_size * 0.5) + (border_t * 0.5), 0.04, 0),
+		]
+		for k in range(4):
+			var bdr: MeshInstance3D = MeshInstance3D.new()
+			var bdmm: BoxMesh = BoxMesh.new()
+			if k < 2:
+				bdmm.size = Vector3(tile_size, 0.04, border_t)
+			else:
+				bdmm.size = Vector3(border_t, 0.04, tile_size)
+			bdr.mesh = bdmm
+			bdr.material_override = brass_mat
+			bdr.position = border_offsets[k]
+			tile_pivot.add_child(bdr)
+		# Brass corner studs (4)
+		for cs in [-1.0, 1.0]:
+			for cs2 in [-1.0, 1.0]:
+				var stud: MeshInstance3D = MeshInstance3D.new()
+				var stm: SphereMesh = SphereMesh.new()
+				stm.radius = 0.06
+				stm.height = 0.12
+				stud.mesh = stm
+				stud.material_override = brass_mat
+				stud.position = Vector3((tile_size * 0.5 - 0.10) * cs, 0.07, (tile_size * 0.5 - 0.10) * cs2)
+				tile_pivot.add_child(stud)
+		# Glyph rune material (district-colored unshaded)
+		var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+		rune_mat.albedo_color = g["color"]
+		rune_mat.emission_enabled = true
+		rune_mat.emission = g["color"]
+		rune_mat.emission_energy_multiplier = 4.5
+		rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# Build the glyph shape based on type
+		match g["shape"]:
+			"diamond":
+				# 4 thin bars forming a hollow diamond
+				for j in range(4):
+					var jang: float = float(j) * (PI / 2.0) + PI / 4.0
+					var bar: MeshInstance3D = MeshInstance3D.new()
+					var bmm: BoxMesh = BoxMesh.new()
+					bmm.size = Vector3(0.06, 0.04, 0.65)
+					bar.mesh = bmm
+					bar.material_override = rune_mat
+					bar.position = Vector3(cos(jang) * 0.30, 0.07, sin(jang) * 0.30)
+					bar.rotation.y = jang + PI / 2.0
+					tile_pivot.add_child(bar)
+				# Center dot
+				var dot: MeshInstance3D = MeshInstance3D.new()
+				var ddm: SphereMesh = SphereMesh.new()
+				ddm.radius = 0.10
+				ddm.height = 0.20
+				dot.mesh = ddm
+				dot.material_override = rune_mat
+				dot.position = Vector3(0, 0.10, 0)
+				tile_pivot.add_child(dot)
+			"triangle":
+				# 3 bars forming a triangle outline
+				for j in range(3):
+					var jang: float = float(j) * (TAU / 3.0) + PI / 2.0
+					var bar: MeshInstance3D = MeshInstance3D.new()
+					var bmm: BoxMesh = BoxMesh.new()
+					bmm.size = Vector3(0.06, 0.04, 0.85)
+					bar.mesh = bmm
+					bar.material_override = rune_mat
+					bar.position = Vector3(cos(jang) * 0.40, 0.07, sin(jang) * 0.40)
+					bar.rotation.y = jang + PI / 2.0
+					tile_pivot.add_child(bar)
+				# Center inverted triangle dot
+				var dot: MeshInstance3D = MeshInstance3D.new()
+				var ddm: PrismMesh = PrismMesh.new()
+				ddm.size = Vector3(0.20, 0.04, 0.20)
+				dot.mesh = ddm
+				dot.material_override = rune_mat
+				dot.position = Vector3(0, 0.10, 0)
+				tile_pivot.add_child(dot)
+			"cross":
+				# Plus-sign cross (2 perpendicular bars)
+				var bar1: MeshInstance3D = MeshInstance3D.new()
+				var bm1: BoxMesh = BoxMesh.new()
+				bm1.size = Vector3(0.10, 0.04, 1.20)
+				bar1.mesh = bm1
+				bar1.material_override = rune_mat
+				bar1.position = Vector3(0, 0.07, 0)
+				tile_pivot.add_child(bar1)
+				var bar2: MeshInstance3D = MeshInstance3D.new()
+				var bm2: BoxMesh = BoxMesh.new()
+				bm2.size = Vector3(1.20, 0.04, 0.10)
+				bar2.mesh = bm2
+				bar2.material_override = rune_mat
+				bar2.position = Vector3(0, 0.07, 0)
+				tile_pivot.add_child(bar2)
+				# 4 cross-arm dots
+				for j in range(4):
+					var jang: float = float(j) * (PI / 2.0)
+					var dot2: MeshInstance3D = MeshInstance3D.new()
+					var dm2: SphereMesh = SphereMesh.new()
+					dm2.radius = 0.06
+					dm2.height = 0.12
+					dot2.mesh = dm2
+					dot2.material_override = rune_mat
+					dot2.position = Vector3(cos(jang) * 0.55, 0.10, sin(jang) * 0.55)
+					tile_pivot.add_child(dot2)
+			"spiral":
+				# 6 small dots arranged in a curving line
+				for j in range(7):
+					var t: float = float(j) / 6.0
+					var sang: float = t * TAU * 1.2
+					var srad: float = 0.10 + t * 0.50
+					var dot3: MeshInstance3D = MeshInstance3D.new()
+					var dm3: SphereMesh = SphereMesh.new()
+					dm3.radius = 0.07
+					dm3.height = 0.14
+					dot3.mesh = dm3
+					dot3.material_override = rune_mat
+					dot3.position = Vector3(cos(sang) * srad, 0.08, sin(sang) * srad)
+					tile_pivot.add_child(dot3)
+		# Subtle warm light from each tile (softly lights the area above)
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 0.40, 0)
+		lt.light_color = g["color"]
+		lt.light_energy = 0.85
+		lt.omni_range = 2.4
+		tile_pivot.add_child(lt)
+		# Glyph slow rune pulse (per-tile phase offset)
+		var phase: float = float(i) * 0.30
+		var glow: Tween = tile_pivot.create_tween().set_loops()
+		glow.tween_interval(phase)
+		glow.tween_property(rune_mat, "emission_energy_multiplier", 7.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+		glow.tween_property(rune_mat, "emission_energy_multiplier", 3.0, 1.6).set_ease(Tween.EASE_IN_OUT)
