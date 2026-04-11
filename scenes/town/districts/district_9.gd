@@ -97,6 +97,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_vulcanologist_cinder_npc(town)
 	_build_d9_forge_memorial(geom)
 	_build_d9_memorial_keeper_ash_npc(town)
+	_build_d9_collapsed_skyforge_ruin(geom)
 	print("[D9Builder] done")
 
 
@@ -8306,4 +8307,254 @@ func _build_d9_memorial_keeper_ash_npc(town: Node) -> void:
 	var epulse: Tween = npc.create_tween().set_loops()
 	epulse.tween_property(ember_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	epulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_collapsed_skyforge_ruin(geom: Node) -> void:
+	## Epic-9 T77: collapsed sky-forge ironworks ruin in D9's NW quadrant.
+	## Half-fallen iron scaffold (4 standing posts at varying heights, 2
+	## bowed cross-girders), a snapped crane arm angled into the ground,
+	## a cracked anvil block, scattered fallen girders, and a smoldering
+	## ember pile at the impact site. Tells a story of an old collapse.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_CollapsedSkyforgeRuin"
+	pivot.position = D9_CENTER + Vector3(-22, 0, -16)
+	geom.add_child(pivot)
+	# Materials
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.50
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.65, 0.20, 0.05)
+	iron_mat.emission_energy_multiplier = 0.25
+	var rust_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rust_mat.albedo_color = Color(0.40, 0.18, 0.08)
+	rust_mat.metallic = 0.35
+	rust_mat.roughness = 0.85
+	rust_mat.emission_enabled = true
+	rust_mat.emission = Color(0.85, 0.25, 0.05)
+	rust_mat.emission_energy_multiplier = 0.30
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 6.0
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- 4 standing scaffold posts at varying heights (one snapped) ----
+	var post_data: Array = [
+		{"pos": Vector3(-3.5, 0, -3.0), "h": 5.50, "tilt": 0.00},
+		{"pos": Vector3(3.5, 0, -3.0), "h": 4.20, "tilt": 0.05},
+		{"pos": Vector3(-3.5, 0, 3.0), "h": 2.80, "tilt": -0.12},
+		{"pos": Vector3(3.5, 0, 3.0), "h": 1.50, "tilt": 0.20},
+	]
+	for pd in post_data:
+		var pp: Vector3 = pd["pos"]
+		var h: float = pd["h"]
+		var tilt: float = pd["tilt"]
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.40, h, 0.40)
+		post.mesh = pm
+		post.material_override = rust_mat
+		post.position = pp + Vector3(0, h * 0.5, 0)
+		post.rotation.z = tilt
+		pivot.add_child(post)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = pp + Vector3(0, h * 0.5, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(0.40, h, 0.40)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pivot.add_child(sb)
+	# ---- 2 bowed cross-girders connecting top corners ----
+	# Front girder — between the 2 tallest posts (left/right back)
+	var girder_a: MeshInstance3D = MeshInstance3D.new()
+	var gam: BoxMesh = BoxMesh.new()
+	gam.size = Vector3(7.20, 0.30, 0.30)
+	girder_a.mesh = gam
+	girder_a.material_override = rust_mat
+	girder_a.position = Vector3(0, 4.80, -3.00)
+	girder_a.rotation.z = -0.05
+	pivot.add_child(girder_a)
+	# Side girder — between left back tall post and left front shorter (broken/sagging)
+	var girder_b: MeshInstance3D = MeshInstance3D.new()
+	var gbm: BoxMesh = BoxMesh.new()
+	gbm.size = Vector3(0.30, 0.30, 6.00)
+	girder_b.mesh = gbm
+	girder_b.material_override = rust_mat
+	girder_b.position = Vector3(-3.50, 4.10, 0)
+	girder_b.rotation.x = -0.18
+	pivot.add_child(girder_b)
+	# ---- Snapped crane arm angled into the ground ----
+	var crane_arm: MeshInstance3D = MeshInstance3D.new()
+	var cam: BoxMesh = BoxMesh.new()
+	cam.size = Vector3(0.45, 5.50, 0.55)
+	crane_arm.mesh = cam
+	crane_arm.material_override = rust_mat
+	crane_arm.position = Vector3(-1.20, 1.85, -1.20)
+	crane_arm.rotation = Vector3(0.85, 0.6, 0.30)
+	pivot.add_child(crane_arm)
+	# Crane arm collision
+	var arm_sb: StaticBody3D = StaticBody3D.new()
+	arm_sb.position = Vector3(-1.20, 1.85, -1.20)
+	arm_sb.rotation = Vector3(0.85, 0.6, 0.30)
+	var arm_cs: CollisionShape3D = CollisionShape3D.new()
+	var arm_bsh: BoxShape3D = BoxShape3D.new()
+	arm_bsh.size = Vector3(0.45, 5.50, 0.55)
+	arm_cs.shape = arm_bsh
+	arm_sb.add_child(arm_cs)
+	pivot.add_child(arm_sb)
+	# Crane hook chain (cylinder) hanging from arm tip
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var chm: CylinderMesh = CylinderMesh.new()
+	chm.top_radius = 0.05
+	chm.bottom_radius = 0.05
+	chm.height = 1.20
+	chain.mesh = chm
+	chain.material_override = iron_mat
+	chain.position = Vector3(-2.40, 4.20, -3.30)
+	pivot.add_child(chain)
+	# Hook ring at the chain bottom
+	var hook: MeshInstance3D = MeshInstance3D.new()
+	var hkm: TorusMesh = TorusMesh.new()
+	hkm.inner_radius = 0.18
+	hkm.outer_radius = 0.30
+	hook.mesh = hkm
+	hook.material_override = iron_mat
+	hook.position = Vector3(-2.40, 3.55, -3.30)
+	pivot.add_child(hook)
+	# ---- Cracked anvil block at impact site ----
+	var anvil: MeshInstance3D = MeshInstance3D.new()
+	var anm: BoxMesh = BoxMesh.new()
+	anm.size = Vector3(1.40, 0.85, 0.85)
+	anvil.mesh = anm
+	anvil.material_override = iron_mat
+	anvil.position = Vector3(0.5, 0.42, -0.5)
+	anvil.rotation.z = 0.18
+	pivot.add_child(anvil)
+	# Anvil collision
+	var anv_sb: StaticBody3D = StaticBody3D.new()
+	anv_sb.position = Vector3(0.5, 0.42, -0.5)
+	anv_sb.rotation.z = 0.18
+	var anv_cs: CollisionShape3D = CollisionShape3D.new()
+	var anv_bsh: BoxShape3D = BoxShape3D.new()
+	anv_bsh.size = Vector3(1.40, 0.85, 0.85)
+	anv_cs.shape = anv_bsh
+	anv_sb.add_child(anv_cs)
+	pivot.add_child(anv_sb)
+	# Anvil glowing crack — thin amber stripe across the top
+	var anvil_crack: MeshInstance3D = MeshInstance3D.new()
+	var ackm: BoxMesh = BoxMesh.new()
+	ackm.size = Vector3(1.30, 0.05, 0.10)
+	anvil_crack.mesh = ackm
+	anvil_crack.material_override = ember_mat
+	anvil_crack.position = Vector3(0.5, 0.86, -0.5)
+	anvil_crack.rotation.z = 0.18
+	pivot.add_child(anvil_crack)
+	# ---- 5 scattered fallen girders (boxes lying around) ----
+	var fallen_data: Array = [
+		{"pos": Vector3(2.50, 0.20, 1.20), "size": Vector3(3.20, 0.25, 0.30), "rot": Vector3(0, 0.40, 0)},
+		{"pos": Vector3(-2.20, 0.20, -1.50), "size": Vector3(2.40, 0.22, 0.28), "rot": Vector3(0, -0.80, 0.05)},
+		{"pos": Vector3(0.0, 0.18, 2.40), "size": Vector3(2.80, 0.22, 0.28), "rot": Vector3(0, 1.20, 0)},
+		{"pos": Vector3(-1.50, 0.20, 1.80), "size": Vector3(1.80, 0.20, 0.25), "rot": Vector3(0, 0.20, 0)},
+		{"pos": Vector3(2.20, 0.20, -2.50), "size": Vector3(2.20, 0.22, 0.28), "rot": Vector3(0, -0.30, -0.10)},
+	]
+	for fd in fallen_data:
+		var f: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = fd["size"]
+		f.mesh = fm
+		f.material_override = rust_mat
+		f.position = fd["pos"]
+		f.rotation = fd["rot"]
+		pivot.add_child(f)
+	# ---- Smoldering ember pile at the impact site ----
+	# Pile of small dark rocks
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	rock_mat.metallic = 0.20
+	rock_mat.roughness = 0.90
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(0.55, 0.18, 0.05)
+	rock_mat.emission_energy_multiplier = 0.30
+	var pile_offsets: Array = [
+		Vector3(0.0, 0.10, 0.30), Vector3(0.30, 0.12, 0.10),
+		Vector3(-0.20, 0.10, -0.10), Vector3(0.10, 0.18, -0.30),
+		Vector3(-0.30, 0.14, 0.20),
+	]
+	for po in pile_offsets:
+		var rock: MeshInstance3D = MeshInstance3D.new()
+		var rmm: SphereMesh = SphereMesh.new()
+		rmm.radius = 0.18
+		rmm.height = 0.34
+		rock.mesh = rmm
+		rock.material_override = rock_mat
+		rock.position = Vector3(0.0, 0, 1.20) + po
+		pivot.add_child(rock)
+	# Glowing ember cluster on top of the pile
+	var ember_cluster: MeshInstance3D = MeshInstance3D.new()
+	var ecm: SphereMesh = SphereMesh.new()
+	ecm.radius = 0.22
+	ecm.height = 0.40
+	ember_cluster.mesh = ecm
+	ember_cluster.material_override = ember_mat
+	ember_cluster.position = Vector3(0.0, 0.30, 1.20)
+	pivot.add_child(ember_cluster)
+	# OmniLight for the smoldering pile
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0.0, 0.45, 1.20)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.4
+	lt.omni_range = 6.0
+	pivot.add_child(lt)
+	# Ember mote particles rising from the pile
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0.0, 0.55, 1.20)
+	motes.amount = 24
+	motes.lifetime = 2.4
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 0.5
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3(0, 0.3, 0)
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# Smoke drift particles (darker, larger, slower)
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.position = Vector3(0.0, 0.80, 1.20)
+	smoke.amount = 18
+	smoke.lifetime = 4.0
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.direction = Vector3(0, 1, 0)
+	smat.spread = 25.0
+	smat.initial_velocity_min = 0.5
+	smat.initial_velocity_max = 0.9
+	smat.gravity = Vector3(0, 0.4, 0)
+	smat.scale_min = 0.20
+	smat.scale_max = 0.40
+	smat.color = Color(0.30, 0.25, 0.20, 0.65)
+	smoke.process_material = smat
+	var smkm: SphereMesh = SphereMesh.new()
+	smkm.radius = 0.15
+	smkm.height = 0.30
+	smoke.draw_pass_1 = smkm
+	pivot.add_child(smoke)
+	# Ember + crack pulse
+	var epulse2: Tween = pivot.create_tween().set_loops()
+	epulse2.tween_property(ember_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	epulse2.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Crane arm subtle creak — tiny rotation wobble
+	var creak: Tween = pivot.create_tween().set_loops()
+	creak.tween_property(crane_arm, "rotation:z", 0.32, 2.6).set_ease(Tween.EASE_IN_OUT)
+	creak.tween_property(crane_arm, "rotation:z", 0.28, 2.6).set_ease(Tween.EASE_IN_OUT)
 
