@@ -19,6 +19,7 @@ func build(town: Node, geom: Node) -> void:
 	print("[TownHeartBuilder] start")
 	_build_th_beacon_monument(geom)
 	_build_th_compass_plaza(geom)
+	_build_th_district_nameplates(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -382,3 +383,178 @@ func _build_th_compass_plaza(geom: Node) -> void:
 	var spulse: Tween = pivot.create_tween().set_loops()
 	spulse.tween_property(seam_mat, "emission_energy_multiplier", 7.5, 2.4).set_ease(Tween.EASE_IN_OUT)
 	spulse.tween_property(seam_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_district_nameplates(geom: Node) -> void:
+	## Epic-10 T3: 8 directional district nameplates at the end of each
+	## radial path. Each nameplate: stepped basalt stand, brass plate face,
+	## 6 glowing letter blocks (representing the district name), brass
+	## emblem disc with district-themed accent color, and a small reading
+	## lantern. Tells players which way to travel for each destination.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_DistrictNameplates"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# District accent colors — one per direction (matches each district's theme)
+	# Order: E, NE, N, NW, W, SW, S, SE
+	# E=D1 cyan/orange data, NE=D2 toxic green, N=D3 violet, NW=D4 green
+	# W=D5 ice blue, SW=D6 magenta, S=D7 sandstone, SE=D8 ocean blue, [D9 amber via beacon]
+	var accent_colors: Array = [
+		Color(0.40, 0.85, 1.0),   # E — D1 data cyan
+		Color(0.55, 1.0, 0.40),   # NE — D2 toxic green
+		Color(0.75, 0.45, 1.0),   # N — D3 violet
+		Color(0.40, 0.95, 0.55),  # NW — D4 bloom green
+		Color(0.65, 0.85, 1.0),   # W — D5 ice blue
+		Color(1.0, 0.40, 0.85),   # SW — D6 neon magenta
+		Color(1.0, 0.75, 0.40),   # S — D7 sandstone amber
+		Color(0.30, 0.55, 1.0),   # SE — D8 ocean blue
+	]
+	# Letter widths spelling 6-letter abbreviations of each district
+	# (cosmetic — they're just unshaded blocks, not actual text)
+	for i in 8:
+		var ang: float = float(i) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		# Stand position — at the end of each radial path (radius ~13.5)
+		var sp: Vector3 = Vector3(dx * 13.50, 0, dz * 13.50)
+		var sgroup: Node3D = Node3D.new()
+		sgroup.name = "Nameplate_" + str(i)
+		sgroup.position = sp
+		# Face inward toward the beacon
+		sgroup.rotation.y = atan2(-dz, -dx) - PI / 2.0
+		pivot.add_child(sgroup)
+		# Per-stand accent material (so all elements of this stand share its color)
+		var accent_mat: StandardMaterial3D = StandardMaterial3D.new()
+		accent_mat.albedo_color = accent_colors[i]
+		accent_mat.emission_enabled = true
+		accent_mat.emission = accent_colors[i]
+		accent_mat.emission_energy_multiplier = 6.0
+		accent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# ---- Stepped basalt stand ----
+		# Base
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(2.40, 0.40, 1.10)
+		base.mesh = bm
+		base.material_override = stone_mat
+		base.position = Vector3(0, 0.20, 0)
+		sgroup.add_child(base)
+		# Top
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(2.00, 0.30, 0.85)
+		top.mesh = tm
+		top.material_override = stone_mat
+		top.position = Vector3(0, 0.55, 0)
+		sgroup.add_child(top)
+		# Stand collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.35, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(2.40, 0.70, 1.10)
+		cs.shape = bsh
+		sb.add_child(cs)
+		sgroup.add_child(sb)
+		# ---- Brass plate face (vertical, facing the beacon center) ----
+		var plate: MeshInstance3D = MeshInstance3D.new()
+		var plm: BoxMesh = BoxMesh.new()
+		plm.size = Vector3(2.10, 1.30, 0.10)
+		plate.mesh = plm
+		plate.material_override = brass_mat
+		plate.position = Vector3(0, 1.40, -0.30)
+		sgroup.add_child(plate)
+		# Plate brass support posts (2 vertical posts holding the plate up)
+		for spx in [-0.85, 0.85]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: CylinderMesh = CylinderMesh.new()
+			pm.top_radius = 0.06
+			pm.bottom_radius = 0.07
+			pm.height = 0.85
+			post.mesh = pm
+			post.material_override = brass_mat
+			post.position = Vector3(spx, 1.10, -0.30)
+			sgroup.add_child(post)
+		# ---- 6 glowing letter blocks across the brass plate ----
+		for col in 6:
+			var lx: float = -0.85 + float(col) * 0.34
+			var letter: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.22, 0.55, 0.05)
+			letter.mesh = lm
+			letter.material_override = accent_mat
+			letter.position = Vector3(lx, 1.40, -0.36)
+			sgroup.add_child(letter)
+		# ---- Brass emblem disc above the letters (district crest) ----
+		var disc: MeshInstance3D = MeshInstance3D.new()
+		var dm: TorusMesh = TorusMesh.new()
+		dm.inner_radius = 0.18
+		dm.outer_radius = 0.30
+		disc.mesh = dm
+		disc.material_override = accent_mat
+		disc.position = Vector3(0, 2.05, -0.36)
+		disc.rotation.x = PI / 2.0
+		sgroup.add_child(disc)
+		# Disc crossbar
+		var dbar: MeshInstance3D = MeshInstance3D.new()
+		var dbm: BoxMesh = BoxMesh.new()
+		dbm.size = Vector3(0.10, 0.55, 0.06)
+		dbar.mesh = dbm
+		dbar.material_override = accent_mat
+		dbar.position = Vector3(0, 2.05, -0.38)
+		sgroup.add_child(dbar)
+		# ---- Reading lantern on top of the stand (left side) ----
+		var lan_post: MeshInstance3D = MeshInstance3D.new()
+		var lpm: CylinderMesh = CylinderMesh.new()
+		lpm.top_radius = 0.05
+		lpm.bottom_radius = 0.06
+		lpm.height = 1.20
+		lan_post.mesh = lpm
+		lan_post.material_override = brass_mat
+		lan_post.position = Vector3(-0.85, 1.30, 0.30)
+		sgroup.add_child(lan_post)
+		# Lantern bulb
+		var lan: MeshInstance3D = MeshInstance3D.new()
+		var lansm: SphereMesh = SphereMesh.new()
+		lansm.radius = 0.13
+		lansm.height = 0.26
+		lan.mesh = lansm
+		lan.material_override = flame_mat
+		lan.position = Vector3(-0.85, 1.95, 0.30)
+		sgroup.add_child(lan)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(-0.85, 1.95, 0.30)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.8
+		lt.omni_range = 5.5
+		sgroup.add_child(lt)
+		# ---- Per-stand accent pulse — slow breath ----
+		var apulse: Tween = sgroup.create_tween().set_loops()
+		apulse.tween_property(accent_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+		apulse.tween_property(accent_mat, "emission_energy_multiplier", 4.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# ---- Shared lantern flame flicker for all 8 nameplates ----
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.45).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.45).set_ease(Tween.EASE_IN_OUT)
