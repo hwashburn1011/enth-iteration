@@ -1728,6 +1728,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_librarian_npc()
 	# Epic-3 T45: 4 elemental wisps in 4 colors
 	_build_d3_elemental_wisps(geom)
+	# Epic-3 T46: large sky portal ring overhead
+	_build_d3_sky_portal(geom)
+	# Epic-3 T47: judgment dais with throne
+	_build_d3_judgment_dais(geom)
+	# Epic-3 T48: Echo Singer NPC
+	_build_d3_echo_singer_npc()
+	# Epic-3 T49: mana crystal cluster
+	_build_d3_mana_crystals(geom)
+	# Epic-3 T50: MEMORY ECHO 2nd mini-boss
+	_build_d3_memory_echo(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -4898,6 +4908,339 @@ func _build_d3_elemental_wisps(geom: Node) -> void:
 		var bob: Tween = create_tween().set_loops()
 		bob.tween_property(wisp, "position:y", origin.y + 0.55, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
 		bob.tween_property(wisp, "position:y", origin.y, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_sky_portal(geom: Node) -> void:
+	## Epic-3 T46: a large sky portal ring 16m above the district center —
+	## a huge translucent torus with 8 emissive runes around its edge,
+	## slowly rotating + tilted at an angle.
+	var portal: Node3D = Node3D.new()
+	portal.name = "D3SkyPortal"
+	portal.position = D3_CENTER + Vector3(0, 16, 0)
+	portal.rotation = Vector3(deg_to_rad(20), 0, 0)
+	geom.add_child(portal)
+	# Big ring torus
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 5.5
+	rmesh.outer_radius = 6.0
+	ring.mesh = rmesh
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.85, 0.40, 1.0, 0.85)
+	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rmat.emission_enabled = true
+	rmat.emission = Color(1.0, 0.55, 1.0)
+	rmat.emission_energy_multiplier = 2.4
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = rmat
+	portal.add_child(ring)
+	# 8 small emissive rune dots around the ring's edge
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rm: SphereMesh = SphereMesh.new()
+		rm.radius = 0.30
+		rm.height = 0.60
+		rune.mesh = rm
+		rune.position = Vector3(cos(angle) * 5.75, 0, sin(angle) * 5.75)
+		var rmat2: StandardMaterial3D = StandardMaterial3D.new()
+		rmat2.albedo_color = Color(1.0, 0.55, 1.0)
+		rmat2.emission_enabled = true
+		rmat2.emission = Color(1.0, 0.55, 1.0)
+		rmat2.emission_energy_multiplier = 3.0
+		rmat2.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rune.material_override = rmat2
+		portal.add_child(rune)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(portal, "rotation:z", TAU, 24.0)
+
+
+func _build_d3_judgment_dais(geom: Node) -> void:
+	## Epic-3 T47: a raised judgment dais with a throne — 3-step stone
+	## platform supporting a tall stone seat. Empty throne suggesting
+	## "the judge of memories has not yet returned".
+	var dais: Node3D = Node3D.new()
+	dais.name = "D3JudgmentDais"
+	dais.position = D3_CENTER + Vector3(-15, 0, 14)
+	geom.add_child(dais)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	# 3 stepped platforms
+	for i in 3:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(3.40 - i * 0.55, 0.30, 3.40 - i * 0.55)
+		step.mesh = sm
+		step.position = Vector3(0, 0.15 + i * 0.30, 0)
+		step.material_override = stone_mat
+		dais.add_child(step)
+	# Throne — vertical box body + tall back
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(1.40, 0.65, 1.20)
+	seat.mesh = sm
+	seat.position = Vector3(0, 1.20, 0)
+	seat.material_override = stone_mat
+	dais.add_child(seat)
+	# Tall throne back
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 2.85, 0.30)
+	back.mesh = bm
+	back.position = Vector3(0, 2.55, -0.45)
+	back.material_override = stone_mat
+	dais.add_child(back)
+	# Crowning gem on the throne back
+	var gem: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 0.30
+	gm.height = 0.60
+	gem.mesh = gm
+	gem.position = Vector3(0, 4.0, -0.45)
+	var gmat: StandardMaterial3D = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.85, 0.40, 1.0)
+	gmat.emission_enabled = true
+	gmat.emission = Color(1.0, 0.55, 1.0)
+	gmat.emission_energy_multiplier = 3.0
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	gem.material_override = gmat
+	dais.add_child(gem)
+	# Pulse the gem
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(gem, "scale", Vector3(1.30, 1.30, 1.30), 1.4).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(gem, "scale", Vector3(0.85, 0.85, 0.85), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "JUDGMENT DAIS"
+	label.position = Vector3(0, 4.85, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dais.add_child(label)
+	# Collision around dais
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 4.0, 3.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	dais.add_child(sb)
+
+
+func _build_d3_echo_singer_npc() -> void:
+	## Epic-3 T48: Echo Singer NPC — translucent figure with a flowing
+	## robe that "sings" memory echoes. Has 5 small floating note glyphs
+	## drifting around their head.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var singer: Node3D = Node3D.new()
+	singer.name = "D3EchoSinger"
+	singer.position = D3_CENTER + Vector3(15, 0, 14)
+	slots.add_child(singer)
+	# Translucent robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.85, 1.0, 0.55)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.95, 1.0)
+	bmat.emission_energy_multiplier = 1.4
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	singer.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	head.material_override = bmat
+	singer.add_child(head)
+	# Open singing mouth
+	var mouth: MeshInstance3D = MeshInstance3D.new()
+	var mm: SphereMesh = SphereMesh.new()
+	mm.radius = 0.10
+	mm.height = 0.20
+	mouth.mesh = mm
+	mouth.position = Vector3(0, 1.45, 0.30)
+	var momat: StandardMaterial3D = StandardMaterial3D.new()
+	momat.albedo_color = Color(1, 1, 1)
+	momat.emission_enabled = true
+	momat.emission = Color(1, 1, 1)
+	momat.emission_energy_multiplier = 2.6
+	momat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mouth.material_override = momat
+	singer.add_child(mouth)
+	# 5 floating note glyphs around the head
+	var note_pivot: Node3D = Node3D.new()
+	note_pivot.position = Vector3(0, 1.85, 0)
+	singer.add_child(note_pivot)
+	for i in 5:
+		var angle: float = (float(i) / 5.0) * TAU
+		var note: Label3D = Label3D.new()
+		note.text = "♪"
+		note.position = Vector3(cos(angle) * 0.65, sin(i * 0.5) * 0.20, sin(angle) * 0.65)
+		note.modulate = Color(0.55, 0.95, 1.0)
+		note.outline_modulate = Color(0, 0, 0, 0.85)
+		note.outline_size = 4
+		note.font_size = 22
+		note.no_depth_test = true
+		note.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		note_pivot.add_child(note)
+	# Rotate the note pivot
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(note_pivot, "rotation:y", TAU, 4.0)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Echo Singer"
+	label.position = Vector3(0, 2.85, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	singer.add_child(label)
+
+
+func _build_d3_mana_crystals(geom: Node) -> void:
+	## Epic-3 T49: a cluster of 6 floating mana crystals at the corners
+	## of the judgment dais — each is a small spinning prism with strong
+	## emission.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-18, 0.5, 12),
+		D3_CENTER + Vector3(-12, 0.5, 12),
+		D3_CENTER + Vector3(-15, 0.5, 11),
+		D3_CENTER + Vector3(-18, 0.5, 17),
+		D3_CENTER + Vector3(-12, 0.5, 17),
+		D3_CENTER + Vector3(-15, 0.5, 18),
+	]
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(1.0, 0.55, 1.0)
+	crystal_mat.emission_energy_multiplier = 2.4
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var crystal: MeshInstance3D = MeshInstance3D.new()
+		crystal.name = "D3ManaCrystal_%d" % i
+		var cmesh: PrismMesh = PrismMesh.new()
+		cmesh.size = Vector3(0.30, 0.65, 0.30)
+		crystal.mesh = cmesh
+		crystal.position = positions[i]
+		crystal.material_override = crystal_mat
+		geom.add_child(crystal)
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(crystal, "rotation:y", TAU, 4.0 + i * 0.3)
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(crystal, "position:y", positions[i].y + 0.30, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(crystal, "position:y", positions[i].y, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_memory_echo(geom: Node) -> void:
+	## Epic-3 T50: MEMORY ECHO mini-boss — large translucent face with
+	## 4 floating cube fragments orbiting it. Slow patrol around the
+	## sealed gates area.
+	var echo: Node3D = Node3D.new()
+	echo.name = "D3MemoryEcho"
+	echo.position = D3_CENTER + Vector3(20, 0, 8)
+	geom.add_child(echo)
+	# Big translucent head sphere
+	var head_mat: StandardMaterial3D = StandardMaterial3D.new()
+	head_mat.albedo_color = Color(0.55, 0.30, 0.85, 0.45)
+	head_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	head_mat.emission_enabled = true
+	head_mat.emission = Color(1.0, 0.55, 1.0)
+	head_mat.emission_energy_multiplier = 2.0
+	head_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 1.40
+	hmesh.height = 2.80
+	head.mesh = hmesh
+	head.position = Vector3(0, 2.40, 0)
+	head.material_override = head_mat
+	echo.add_child(head)
+	# 2 huge glowing white eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 3.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.45, 0.45]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.30
+		em.height = 0.60
+		eye.mesh = em
+		eye.position = Vector3(ex, 2.55, 1.0)
+		eye.material_override = eye_mat
+		echo.add_child(eye)
+	# Floating mouth slit
+	var mouth: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.85, 0.10, 0.06)
+	mouth.mesh = mm
+	mouth.position = Vector3(0, 1.85, 1.20)
+	var momat: StandardMaterial3D = StandardMaterial3D.new()
+	momat.albedo_color = Color(1.0, 0.55, 1.0)
+	momat.emission_enabled = true
+	momat.emission = Color(1.0, 0.55, 1.0)
+	momat.emission_energy_multiplier = 2.6
+	momat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mouth.material_override = momat
+	echo.add_child(mouth)
+	# 4 cube fragments orbiting head
+	var orbit_pivot: Node3D = Node3D.new()
+	orbit_pivot.position = Vector3(0, 2.40, 0)
+	echo.add_child(orbit_pivot)
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var frag: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: BoxMesh = BoxMesh.new()
+		fmesh.size = Vector3(0.40, 0.40, 0.40)
+		frag.mesh = fmesh
+		frag.position = Vector3(cos(angle) * 2.20, randf_range(-0.30, 0.30), sin(angle) * 2.20)
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(0.85, 0.40, 1.0, 0.65)
+		fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		fmat.emission_enabled = true
+		fmat.emission = Color(1.0, 0.55, 1.0)
+		fmat.emission_energy_multiplier = 2.4
+		fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		frag.material_override = fmat
+		orbit_pivot.add_child(frag)
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(orbit_pivot, "rotation:y", TAU, 8.0)
+	# Slow patrol path
+	var origin: Vector3 = D3_CENTER + Vector3(20, 0, 8)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(echo, "position", origin + Vector3(-4, 0, -4), 6.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(echo, "position", origin + Vector3(-4, 0, 4), 6.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(echo, "position", origin, 6.0).set_ease(Tween.EASE_IN_OUT)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "MEMORY ECHO"
+	label.position = Vector3(0, 4.85, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	echo.add_child(label)
 
 
 
