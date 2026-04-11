@@ -46,6 +46,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_archive_tower(geom)
 	_build_th_forge_brazier_monument(geom)
 	_build_th_observatory_dome(geom)
+	_build_th_sky_lanterns(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -5330,3 +5331,117 @@ func _build_th_observatory_dome(geom: Node) -> void:
 	var dpulse2: Tween = pivot.create_tween().set_loops()
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_sky_lanterns(geom: Node) -> void:
+	## Epic-10 T30: 12 drifting glowing sky lanterns floating high above
+	## the plaza, forming an ambient overhead sky layer. Each lantern is
+	## a small brass cage with an unshaded amber bulb inside, hanging
+	## from a long thin chain anchored at sky height. Each lantern bobs
+	## up-and-down on its own period.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SkyLanterns"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	# Mix of warm amber and cool cyan lantern colors for variety
+	var bulb_colors: Array = [
+		Color(1.0, 0.65, 0.20),    # warm amber
+		Color(0.45, 0.85, 1.0),    # data cyan
+		Color(1.0, 0.55, 0.10),    # forge amber
+		Color(0.55, 0.95, 1.0),    # ice cyan
+	]
+	# 12 lantern positions distributed in a wide ring at radius 11, height 12
+	for i in 12:
+		var ang: float = float(i) / 12.0 * TAU
+		# Slight ring radius variation for organic feel
+		var r: float = 9.0 + sin(float(i) * 1.7) * 2.0
+		var lp: Vector3 = Vector3(cos(ang) * r, 12.0 + sin(float(i) * 0.9) * 1.5, sin(ang) * r)
+		var lgroup: Node3D = Node3D.new()
+		lgroup.name = "SkyLantern_" + str(i)
+		lgroup.position = lp
+		pivot.add_child(lgroup)
+		# Per-lantern bulb material (cycled color)
+		var col: Color = bulb_colors[i % bulb_colors.size()]
+		var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bulb_mat.albedo_color = col
+		bulb_mat.emission_enabled = true
+		bulb_mat.emission = col
+		bulb_mat.emission_energy_multiplier = 7.5
+		bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# ---- Long thin iron anchor chain reaching up out of sight ----
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var chm: CylinderMesh = CylinderMesh.new()
+		chm.top_radius = 0.025
+		chm.bottom_radius = 0.025
+		chm.height = 8.00
+		chain.mesh = chm
+		chain.material_override = iron_mat
+		chain.position = Vector3(0, 4.0, 0)
+		lgroup.add_child(chain)
+		# ---- Brass lantern top cap ----
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(0.36, 0.10, 0.36)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0, 0.20, 0)
+		lgroup.add_child(cap)
+		# ---- Brass cage (4 thin corner posts forming the lantern frame) ----
+		for cpx in [-0.13, 0.13]:
+			for cpz in [-0.13, 0.13]:
+				var cpost: MeshInstance3D = MeshInstance3D.new()
+				var cpm: CylinderMesh = CylinderMesh.new()
+				cpm.top_radius = 0.018
+				cpm.bottom_radius = 0.018
+				cpm.height = 0.40
+				cpost.mesh = cpm
+				cpost.material_override = brass_mat
+				cpost.position = Vector3(cpx, -0.05, cpz)
+				lgroup.add_child(cpost)
+		# Bottom rim torus
+		var bot_rim: MeshInstance3D = MeshInstance3D.new()
+		var brm: TorusMesh = TorusMesh.new()
+		brm.inner_radius = 0.13
+		brm.outer_radius = 0.18
+		bot_rim.mesh = brm
+		bot_rim.material_override = brass_mat
+		bot_rim.position = Vector3(0, -0.30, 0)
+		lgroup.add_child(bot_rim)
+		# ---- Unshaded bulb sphere inside the cage ----
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.16
+		bm.height = 0.32
+		bulb.mesh = bm
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(0, -0.10, 0)
+		lgroup.add_child(bulb)
+		# ---- Per-lantern OmniLight ----
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, -0.10, 0)
+		lt.light_color = col
+		lt.light_energy = 1.4
+		lt.omni_range = 6.0
+		lgroup.add_child(lt)
+		# ---- Per-lantern bob tween (Y oscillation, varied period) ----
+		var bob_period: float = 2.0 + float(i) * 0.18
+		var bob: Tween = lgroup.create_tween().set_loops()
+		bob.tween_property(lgroup, "position:y", lp.y + 0.85, bob_period).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(lgroup, "position:y", lp.y - 0.30, bob_period).set_ease(Tween.EASE_IN_OUT)
+		# ---- Per-lantern bulb pulse ----
+		var bulb_period: float = 1.6 + float(i) * 0.12
+		var bpulse: Tween = lgroup.create_tween().set_loops()
+		bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 9.5, bulb_period).set_ease(Tween.EASE_IN_OUT)
+		bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 5.5, bulb_period).set_ease(Tween.EASE_IN_OUT)
