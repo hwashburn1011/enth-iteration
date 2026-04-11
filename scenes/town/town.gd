@@ -1500,6 +1500,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_hoverbike_wreck(geom)
 	# Epic-2 T35: vertical code stream waterfall
 	_build_d2_code_waterfall(geom)
+	# Epic-2 T36: horizontal dust storm particles drifting east
+	_build_d2_dust_storm(geom)
+	# Epic-2 T37: ancient data well / tap landmark
+	_build_d2_data_well(geom)
+	# Epic-2 T38: scrap metal tower of stacked machines
+	_build_d2_scrap_tower(geom)
+	# Epic-2 T39: scrap metal vendor cart on the road
+	_build_d2_scrap_vendor_cart(geom)
+	# Epic-2 T40: smuggler NPC hiding behind a container
+	_build_d2_smuggler_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -10538,4 +10548,406 @@ func _build_d2_code_waterfall(geom: Node) -> void:
 	cs.position = Vector3(0, 7.5, 0)
 	sb.add_child(cs)
 	fall.add_child(sb)
+
+
+func _build_d2_dust_storm(geom: Node) -> void:
+	## Epic-2 T36: horizontal dust storm particles drifting eastward across
+	## the entire D2 floor — large slow grey-amber motes carried by wind.
+	var dust: GPUParticles3D = GPUParticles3D.new()
+	dust.name = "D2DustStorm"
+	dust.position = D2_CENTER + Vector3(-25, 3, 0)
+	dust.amount = 80
+	dust.lifetime = 8.0
+	dust.preprocess = 4.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(0.5, 4.0, 18.0)
+	pmat.direction = Vector3(1, 0, 0)
+	pmat.spread = 6.0
+	pmat.initial_velocity_min = 1.4
+	pmat.initial_velocity_max = 2.2
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.30
+	pmat.scale_max = 0.55
+	pmat.color = Color(0.85, 0.65, 0.40, 0.30)
+	dust.process_material = pmat
+	var dmesh: SphereMesh = SphereMesh.new()
+	dmesh.radius = 0.30
+	dmesh.height = 0.60
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.85, 0.65, 0.40, 0.30)
+	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dmesh.material = dmat
+	dust.draw_pass_1 = dmesh
+	geom.add_child(dust)
+
+
+func _build_d2_data_well(geom: Node) -> void:
+	## Epic-2 T37: an ancient data well — a stone circular rim around a
+	## glowing cyan pool, with a winch frame above it. The pool surface
+	## ripples (scale tween). The first sign of "old infrastructure" in D2.
+	var well: Node3D = Node3D.new()
+	well.name = "D2DataWell"
+	well.position = D2_CENTER + Vector3(0, 0, 6)
+	geom.add_child(well)
+	# Stone rim torus
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.18, 0.14)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 0.85
+	rmesh.outer_radius = 1.15
+	rim.mesh = rmesh
+	rim.position = Vector3(0, 0.30, 0)
+	rim.material_override = stone_mat
+	well.add_child(rim)
+	# Pool surface inside the rim — glowing cyan disc
+	var pool: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 0.85
+	pmesh.bottom_radius = 0.85
+	pmesh.height = 0.05
+	pool.mesh = pmesh
+	pool.position = Vector3(0, 0.30, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.30, 0.85, 1.0, 0.85)
+	pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.55, 0.95, 1.0)
+	pmat.emission_energy_multiplier = 1.6
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pool.material_override = pmat
+	well.add_child(pool)
+	# Ripple tween — scale x/z slightly
+	var ripple: Tween = create_tween().set_loops()
+	ripple.tween_property(pool, "scale", Vector3(1.05, 1.0, 0.96), 1.6).set_ease(Tween.EASE_IN_OUT)
+	ripple.tween_property(pool, "scale", Vector3(0.96, 1.0, 1.05), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Winch frame above the well — 4 legs + top crossbar
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	for ox: float in [-0.95, 0.95]:
+		for oz: float in [-0.95, 0.95]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lmesh: CylinderMesh = CylinderMesh.new()
+			lmesh.top_radius = 0.06
+			lmesh.bottom_radius = 0.08
+			lmesh.height = 2.4
+			leg.mesh = lmesh
+			leg.position = Vector3(ox * 0.85, 1.20, oz * 0.85)
+			# Tilt legs inward to form a tripod top
+			leg.rotation = Vector3(-sign(oz) * deg_to_rad(8), 0, sign(ox) * deg_to_rad(8))
+			leg.material_override = metal_mat
+			well.add_child(leg)
+	# Top crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CylinderMesh = CylinderMesh.new()
+	bmesh.top_radius = 0.07
+	bmesh.bottom_radius = 0.07
+	bmesh.height = 1.6
+	bar.mesh = bmesh
+	bar.position = Vector3(0, 2.40, 0)
+	bar.rotation = Vector3(0, 0, deg_to_rad(90))
+	bar.material_override = metal_mat
+	well.add_child(bar)
+	# Hanging bucket on a chain (cylinder + thin chain)
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: CylinderMesh = CylinderMesh.new()
+	cmesh.top_radius = 0.02
+	cmesh.bottom_radius = 0.02
+	cmesh.height = 1.40
+	chain.mesh = cmesh
+	chain.position = Vector3(0, 1.70, 0)
+	chain.material_override = metal_mat
+	well.add_child(chain)
+	var bucket: MeshInstance3D = MeshInstance3D.new()
+	var buc_mesh: CylinderMesh = CylinderMesh.new()
+	buc_mesh.top_radius = 0.20
+	buc_mesh.bottom_radius = 0.18
+	buc_mesh.height = 0.30
+	bucket.mesh = buc_mesh
+	bucket.position = Vector3(0, 1.0, 0)
+	bucket.material_override = metal_mat
+	well.add_child(bucket)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "DATA WELL"
+	label.position = Vector3(0, 3.0, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	well.add_child(label)
+	# Collision around the rim
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.0, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.40, 0)
+	sb.add_child(cs)
+	well.add_child(sb)
+
+
+func _build_d2_scrap_tower(geom: Node) -> void:
+	## Epic-2 T38: a tall stacked tower of broken machines welded together
+	## haphazardly. 8 random boxes in different sizes/orientations climbing
+	## upward, topped by a small antenna. Decorative landmark.
+	var tower: Node3D = Node3D.new()
+	tower.name = "D2ScrapTower"
+	tower.position = D2_CENTER + Vector3(-22, 0, 12)
+	geom.add_child(tower)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.18, 0.16, 0.12)
+	dark_mat.metallic = 0.65
+	dark_mat.roughness = 0.55
+	var rust_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rust_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	rust_mat.metallic = 0.30
+	rust_mat.roughness = 0.65
+	var current_y: float = 0.0
+	for i in 8:
+		var size: float = 1.5 - i * 0.10
+		var height: float = 0.85 + randf_range(-0.20, 0.30)
+		var box: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(size, height, size)
+		box.mesh = bmesh
+		box.position = Vector3(randf_range(-0.20, 0.20), current_y + height * 0.5, randf_range(-0.20, 0.20))
+		box.rotation = Vector3(0, deg_to_rad(randf_range(-25, 25)), 0)
+		box.material_override = dark_mat if i % 2 == 0 else rust_mat
+		tower.add_child(box)
+		# Random LED
+		if i % 2 == 0:
+			var led: MeshInstance3D = MeshInstance3D.new()
+			var lmesh: SphereMesh = SphereMesh.new()
+			lmesh.radius = 0.06
+			lmesh.height = 0.12
+			led.mesh = lmesh
+			led.position = Vector3(0, current_y + height * 0.5, size * 0.5 + 0.04)
+			var lmat: StandardMaterial3D = StandardMaterial3D.new()
+			lmat.albedo_color = Color(0.30, 1.0, 0.40)
+			lmat.emission_enabled = true
+			lmat.emission = Color(0.45, 1.0, 0.45)
+			lmat.emission_energy_multiplier = 2.0
+			lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			led.material_override = lmat
+			tower.add_child(led)
+		current_y += height
+	# Top antenna
+	var antenna: MeshInstance3D = MeshInstance3D.new()
+	var amesh: CylinderMesh = CylinderMesh.new()
+	amesh.top_radius = 0.04
+	amesh.bottom_radius = 0.10
+	amesh.height = 1.6
+	antenna.mesh = amesh
+	antenna.position = Vector3(0, current_y + 0.80, 0)
+	antenna.material_override = dark_mat
+	tower.add_child(antenna)
+	# Antenna tip blink
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: SphereMesh = SphereMesh.new()
+	tmesh.radius = 0.10
+	tmesh.height = 0.20
+	tip.mesh = tmesh
+	tip.position = Vector3(0, current_y + 1.65, 0)
+	var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tip_mat.albedo_color = Color(1.0, 0.40, 0.20)
+	tip_mat.emission_enabled = true
+	tip_mat.emission = Color(1.0, 0.55, 0.20)
+	tip_mat.emission_energy_multiplier = 2.4
+	tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tip.material_override = tip_mat
+	tower.add_child(tip)
+	var blink: Tween = create_tween().set_loops()
+	blink.tween_property(tip, "scale", Vector3(0.4, 0.4, 0.4), 0.5).set_ease(Tween.EASE_IN_OUT)
+	blink.tween_property(tip, "scale", Vector3(1.4, 1.4, 1.4), 0.5).set_ease(Tween.EASE_IN_OUT)
+	# Collision around the whole stack
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.6, current_y, 1.6)
+	cs.shape = cb
+	cs.position = Vector3(0, current_y * 0.5, 0)
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d2_scrap_vendor_cart(geom: Node) -> void:
+	## Epic-2 T39: a beat-up vendor cart selling scrap. Lower body with
+	## 2 wheels, a hood with hanging metal bits, a sign reading "SCRAP".
+	var cart: Node3D = Node3D.new()
+	cart.name = "D2ScrapVendorCart"
+	cart.position = D2_CENTER + Vector3(12, 0, 0)
+	geom.add_child(cart)
+	var rust_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rust_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	rust_mat.metallic = 0.30
+	rust_mat.roughness = 0.65
+	# Cart body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(1.85, 0.85, 1.0)
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	body.material_override = rust_mat
+	cart.add_child(body)
+	# 2 wheels
+	var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheel_mat.albedo_color = Color(0.10, 0.10, 0.12)
+	wheel_mat.metallic = 0.55
+	for sx: float in [-0.85, 0.85]:
+		var wheel: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: CylinderMesh = CylinderMesh.new()
+		wmesh.top_radius = 0.30
+		wmesh.bottom_radius = 0.30
+		wmesh.height = 0.10
+		wheel.mesh = wmesh
+		wheel.position = Vector3(sx, 0.30, 0)
+		wheel.rotation = Vector3(0, 0, deg_to_rad(90))
+		wheel.material_override = wheel_mat
+		cart.add_child(wheel)
+	# Hood roof — angled box overhead
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(2.2, 0.10, 1.4)
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.85, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.20, 0.16, 0.12)
+	hmat.metallic = 0.30
+	hmat.roughness = 0.55
+	hood.material_override = hmat
+	cart.add_child(hood)
+	# 4 vertical poles holding hood up
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	for ox: float in [-0.95, 0.95]:
+		for oz: float in [-0.55, 0.55]:
+			var pole: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.04
+			pmesh.bottom_radius = 0.04
+			pmesh.height = 0.85
+			pole.mesh = pmesh
+			pole.position = Vector3(ox, 1.40, oz)
+			pole.material_override = pole_mat
+			cart.add_child(pole)
+	# 5 hanging metal scrap bits from the hood
+	for i in 5:
+		var bit: MeshInstance3D = MeshInstance3D.new()
+		var bmesh2: BoxMesh = BoxMesh.new()
+		bmesh2.size = Vector3(0.18, 0.18, 0.04)
+		bit.mesh = bmesh2
+		var bx: float = -0.85 + i * 0.40
+		bit.position = Vector3(bx, 1.65, 0.30)
+		bit.rotation = Vector3(0, 0, deg_to_rad(randf_range(-25, 25)))
+		bit.material_override = pole_mat
+		cart.add_child(bit)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "SCRAP"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	cart.add_child(label)
+	# Collision around body
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.0, 1.6, 1.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.85, 0)
+	sb.add_child(cs)
+	cart.add_child(sb)
+
+
+func _build_d2_smuggler_npc() -> void:
+	## Epic-2 T40: a sneaky smuggler NPC peeking out from behind a shipping
+	## container. Crouched body, single shifty cyan eye, holding a small
+	## glowing red package. Crouching, with a periodic peek-out animation.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var smug: Node3D = Node3D.new()
+	smug.name = "D2Smuggler"
+	smug.position = D2_CENTER + Vector3(20, 0, 12)
+	slots.add_child(smug)
+	# Crouched body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.36
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.45, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.10, 0.14)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	body.material_override = bmat
+	smug.add_child(body)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.40
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.0, 0)
+	hood.material_override = bmat
+	smug.add_child(hood)
+	# Single shifty cyan eye
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var emesh: SphereMesh = SphereMesh.new()
+	emesh.radius = 0.08
+	emesh.height = 0.16
+	eye.mesh = emesh
+	eye.position = Vector3(0, 0.95, 0.30)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(0.30, 0.85, 1.0)
+	emat.emission_enabled = true
+	emat.emission = Color(0.55, 0.95, 1.0)
+	emat.emission_energy_multiplier = 2.6
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = emat
+	smug.add_child(eye)
+	# Glowing red package held in front
+	var pkg: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(0.30, 0.20, 0.30)
+	pkg.mesh = pmesh
+	pkg.position = Vector3(0.30, 0.50, 0.35)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.50, 0.10, 0.10)
+	pmat.emission_enabled = true
+	pmat.emission = Color(1.0, 0.30, 0.20)
+	pmat.emission_energy_multiplier = 1.6
+	pmat.metallic = 0.30
+	pkg.material_override = pmat
+	smug.add_child(pkg)
+	# Peek-out tween — body shifts left/right periodically
+	var peek: Tween = create_tween().set_loops()
+	peek.tween_interval(2.0)
+	peek.tween_property(smug, "position:x", D2_CENTER.x + 21.2, 0.5).set_ease(Tween.EASE_OUT)
+	peek.tween_interval(1.4)
+	peek.tween_property(smug, "position:x", D2_CENTER.x + 20.0, 0.5).set_ease(Tween.EASE_IN)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Smuggler"
+	label.position = Vector3(0, 1.55, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	smug.add_child(label)
+
 
