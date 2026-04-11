@@ -75,6 +75,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_bookstall(geom)
 	_build_th_postman_npc(town)
 	_build_th_bookkeeper_npc(town)
+	_build_th_sweeper_bot_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -10347,3 +10348,133 @@ func _build_th_bookkeeper_npc(town: Node) -> void:
 	var dpulse: Tween = npc.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_sweeper_bot_npc(town: Node) -> void:
+	## Epic-10 T59: Sweeper Bot Tidy — small floating cleaning drone NPC
+	## that orbits at ground level around the central beacon. Brass disc
+	## body with cyan eye + 2 brushy underside arms (small cyan strips
+	## that drag on the ground), tiny brass propeller cap on top.
+	## Different from the patrol guard / running child / courier drones
+	## by orbiting tighter and lower (ground level, 6m radius, 8s loop).
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	# Orbit pivot — the slot itself, will be rotated around Y for orbit
+	var orbit_slot: Marker3D = Marker3D.new()
+	orbit_slot.name = "THSweeperBotOrbit"
+	orbit_slot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	# Different starting phase from the other moving NPCs
+	orbit_slot.rotation.y = PI / 3.0
+	slots.add_child(orbit_slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THSweeperBotTidy"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sweeper Bot Tidy")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_sweeper_bot_tidy")
+	# Offset the bot from the orbit center along +X (radius 6, low altitude 0.6)
+	npc.position = Vector3(6.00, 0.55, 0)
+	npc.rotation.y = PI / 2.0
+	orbit_slot.add_child(npc)
+	# Materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Brass disc body (flat cylinder) ----
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.30
+	bm.bottom_radius = 0.30
+	bm.height = 0.18
+	body.mesh = bm
+	body.material_override = brass_mat
+	body.position = Vector3(0, 0, 0)
+	npc.add_child(body)
+	# Brass rim trim torus
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rim_m: TorusMesh = TorusMesh.new()
+	rim_m.inner_radius = 0.27
+	rim_m.outer_radius = 0.32
+	rim.mesh = rim_m
+	rim.material_override = brass_mat
+	rim.position = Vector3(0, 0.10, 0)
+	npc.add_child(rim)
+	# ---- Glowing cyan eye dot on the front of the body ----
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.06
+	em.height = 0.12
+	eye.mesh = em
+	eye.material_override = data_mat
+	eye.position = Vector3(0, 0.08, -0.27)
+	npc.add_child(eye)
+	# ---- 2 brush-strip underside arms (small cyan strips dragging on the ground) ----
+	for bx in [-0.20, 0.20]:
+		var brush: MeshInstance3D = MeshInstance3D.new()
+		var brm: BoxMesh = BoxMesh.new()
+		brm.size = Vector3(0.10, 0.06, 0.40)
+		brush.mesh = brm
+		brush.material_override = data_mat
+		brush.position = Vector3(bx, -0.40, 0)
+		npc.add_child(brush)
+	# ---- Tiny brass propeller cap on top ----
+	var prop_pivot: Node3D = Node3D.new()
+	prop_pivot.position = Vector3(0, 0.18, 0)
+	npc.add_child(prop_pivot)
+	# 4 small propeller blades
+	for p in 4:
+		var pang: float = float(p) / 4.0 * TAU
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var blm: BoxMesh = BoxMesh.new()
+		blm.size = Vector3(0.30, 0.03, 0.06)
+		blade.mesh = blm
+		blade.material_override = brass_mat
+		blade.position = Vector3(cos(pang) * 0.13, 0, sin(pang) * 0.13)
+		blade.rotation.y = pang
+		prop_pivot.add_child(blade)
+	# Prop hub cap
+	var hub: MeshInstance3D = MeshInstance3D.new()
+	var hbm: SphereMesh = SphereMesh.new()
+	hbm.radius = 0.05
+	hbm.height = 0.10
+	hub.mesh = hbm
+	hub.material_override = brass_mat
+	hub.position = Vector3(0, 0.04, 0)
+	prop_pivot.add_child(hub)
+	# ---- Subtle cyan ground glow OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, -0.30, 0)
+	lt.light_color = Color(0.55, 0.95, 1.0)
+	lt.light_energy = 1.2
+	lt.omni_range = 3.0
+	npc.add_child(lt)
+	# ---- Tweens ----
+	# Fast prop spin
+	var prop_spin: Tween = npc.create_tween().set_loops()
+	prop_spin.tween_property(prop_pivot, "rotation:y", TAU, 0.8)
+	# Orbit (8s loop, opposite direction from the patrol guard so the 3 movers
+	# never converge — guard CW 32s, child CCW 12s, sweeper CW 8s)
+	var orbit: Tween = npc.create_tween().set_loops()
+	orbit.tween_property(orbit_slot, "rotation:y", PI / 3.0 + TAU, 8.0)
+	# Subtle hover bob (Y oscillation)
+	var bob: Tween = npc.create_tween().set_loops()
+	bob.tween_property(npc, "position:y", 0.70, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(npc, "position:y", 0.45, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Eye + brush pulse
+	var dpulse2: Tween = npc.create_tween().set_loops()
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
