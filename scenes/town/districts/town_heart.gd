@@ -77,6 +77,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_bookkeeper_npc(town)
 	_build_th_sweeper_bot_npc(town)
 	_build_th_bellringer_npc(town)
+	_build_th_fountain_cherub_sprites(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -10647,3 +10648,156 @@ func _build_th_bellringer_npc(town: Node) -> void:
 	var epulse: Tween = npc.create_tween().set_loops()
 	epulse.tween_property(ember_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	epulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_fountain_cherub_sprites(geom: Node) -> void:
+	## Epic-10 T61: Fountain Cherub Sprites — 4 small data-sprite cherub statues
+	## perched on the rim of the central data fountain at the cardinal points,
+	## each holding a glowing data orb above its head. Orbs pulse in a chase
+	## sequence (N→E→S→W) creating a rotating "data heartbeat" around the pool.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_FountainCherubSprites"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.62, 0.72)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.78
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.40, 0.55, 0.85)
+	stone_mat.emission_energy_multiplier = 0.22
+	var moss_mat: StandardMaterial3D = StandardMaterial3D.new()
+	moss_mat.albedo_color = Color(0.18, 0.42, 0.28)
+	moss_mat.metallic = 0.05
+	moss_mat.roughness = 0.95
+	moss_mat.emission_enabled = true
+	moss_mat.emission = Color(0.20, 0.55, 0.30)
+	moss_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.50
+	# Cherub geometry helper data
+	var radius: float = 2.85  # fountain rim radius
+	var rim_y: float = 0.55
+	var orb_mats: Array[StandardMaterial3D] = []
+	for i in range(4):
+		var ang: float = float(i) * (PI / 2.0)  # N, E, S, W
+		var px: float = cos(ang) * radius
+		var pz: float = sin(ang) * radius
+		var face_in: float = atan2(-px, -pz)
+		var ch: Node3D = Node3D.new()
+		ch.name = "Cherub_%d" % i
+		ch.position = Vector3(px, rim_y, pz)
+		ch.rotation.y = face_in
+		pivot.add_child(ch)
+		# Pedestal disc
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.32
+		pmm.bottom_radius = 0.36
+		pmm.height = 0.10
+		ped.mesh = pmm
+		ped.material_override = stone_mat
+		ped.position = Vector3(0, 0.05, 0)
+		ch.add_child(ped)
+		# Body (small chubby torso)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmm: SphereMesh = SphereMesh.new()
+		bmm.radius = 0.22
+		bmm.height = 0.42
+		body.mesh = bmm
+		body.material_override = stone_mat
+		body.position = Vector3(0, 0.32, 0)
+		ch.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmm: SphereMesh = SphereMesh.new()
+		hmm.radius = 0.16
+		hmm.height = 0.32
+		head.mesh = hmm
+		head.material_override = stone_mat
+		head.position = Vector3(0, 0.62, 0)
+		ch.add_child(head)
+		# Tiny wings (two angled prisms)
+		for s in [-1.0, 1.0]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wmm: PrismMesh = PrismMesh.new()
+			wmm.size = Vector3(0.10, 0.32, 0.05)
+			wing.mesh = wmm
+			wing.material_override = stone_mat
+			wing.position = Vector3(0.18 * s, 0.40, 0.10)
+			wing.rotation.z = 0.45 * s
+			wing.rotation.y = 0.35 * s
+			ch.add_child(wing)
+		# Arms raised holding orb above head
+		for s2 in [-1.0, 1.0]:
+			var arm: MeshInstance3D = MeshInstance3D.new()
+			var amm: CylinderMesh = CylinderMesh.new()
+			amm.top_radius = 0.05
+			amm.bottom_radius = 0.06
+			amm.height = 0.34
+			arm.mesh = amm
+			arm.material_override = stone_mat
+			arm.position = Vector3(0.10 * s2, 0.55, 0)
+			arm.rotation.z = -0.50 * s2
+			ch.add_child(arm)
+		# Moss patches (flecks on the pedestal)
+		for k in range(3):
+			var moss: MeshInstance3D = MeshInstance3D.new()
+			var mmm: SphereMesh = SphereMesh.new()
+			mmm.radius = 0.04
+			mmm.height = 0.04
+			moss.mesh = mmm
+			moss.material_override = moss_mat
+			var ma: float = float(k) * (TAU / 3.0) + float(i) * 0.5
+			moss.position = Vector3(cos(ma) * 0.30, 0.10, sin(ma) * 0.30)
+			ch.add_child(moss)
+		# Crown brass band on head
+		var crown: MeshInstance3D = MeshInstance3D.new()
+		var cmm: TorusMesh = TorusMesh.new()
+		cmm.inner_radius = 0.14
+		cmm.outer_radius = 0.17
+		crown.mesh = cmm
+		crown.material_override = brass_mat
+		crown.position = Vector3(0, 0.66, 0)
+		crown.rotation.x = PI / 2.0
+		ch.add_child(crown)
+		# Glowing data orb (held above head)
+		var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		orb_mat.albedo_color = Color(0.40, 0.85, 1.0)
+		orb_mat.emission_enabled = true
+		orb_mat.emission = Color(0.45, 0.90, 1.0)
+		orb_mat.emission_energy_multiplier = 5.5
+		orb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		orb_mats.append(orb_mat)
+		var orb: MeshInstance3D = MeshInstance3D.new()
+		var omm: SphereMesh = SphereMesh.new()
+		omm.radius = 0.12
+		omm.height = 0.24
+		orb.mesh = omm
+		orb.material_override = orb_mat
+		orb.position = Vector3(0, 0.96, 0)
+		ch.add_child(orb)
+		# Subtle cyan light from orb
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 0.96, 0)
+		lt.light_color = Color(0.45, 0.85, 1.0)
+		lt.light_energy = 1.1
+		lt.omni_range = 3.5
+		ch.add_child(lt)
+		# Tiny bob tween (per cherub)
+		var bob: Tween = ch.create_tween().set_loops()
+		bob.tween_property(orb, "position:y", 1.04, 1.4).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(orb, "position:y", 0.96, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- Chase pulse: orbs flash N→E→S→W in sequence ----
+	# Drive each orb's emission via a single tween chain on the pivot
+	var chase: Tween = pivot.create_tween().set_loops()
+	for i2 in range(4):
+		var m: StandardMaterial3D = orb_mats[i2]
+		chase.tween_property(m, "emission_energy_multiplier", 11.0, 0.18).set_ease(Tween.EASE_OUT)
+		chase.tween_property(m, "emission_energy_multiplier", 5.5, 0.42).set_ease(Tween.EASE_IN)
