@@ -17280,6 +17280,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_protester_npc()
 	# Epic-6 T90: data exchange kiosk
 	_build_d6_data_exchange_kiosk(geom)
+	# Epic-6 T91: breakdancer NPC
+	_build_d6_breakdancer_npc()
+	# Epic-6 T92: cardboard sign holder NPC
+	_build_d6_sign_holder_npc()
+	# Epic-6 T93: parked hoverboard
+	_build_d6_hoverboard(geom)
+	# Epic-6 T94: cyber neon tree
+	_build_d6_neon_tree(geom)
+	# Epic-6 T95: holographic butterflies
+	_build_d6_holo_butterflies(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -24642,6 +24652,287 @@ func _build_d6_data_exchange_kiosk(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	kiosk.add_child(sb)
+
+
+func _build_d6_breakdancer_npc() -> void:
+	## Epic-6 T91: breakdancer NPC — body lying on side spinning, leg out.
+	## Created on its own pivot for windmill rotation.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BreakdancerSlot"
+	slot.position = Vector3(D6_CENTER.x - 4.0, 0.0, 12.0)
+	npc_slots.add_child(slot)
+	# Build a body root that rotates as a windmill
+	var body_root: Node3D = Node3D.new()
+	body_root.position = Vector3.ZERO
+	slot.add_child(body_root)
+	# Bright track jacket (oriented horizontally)
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jm: BoxMesh = BoxMesh.new()
+	jm.size = Vector3(0.55, 0.30, 1.0)
+	jacket.mesh = jm
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.95, 0.30, 0.30)
+	jacket_mat.emission_enabled = true
+	jacket_mat.emission = Color(0.95, 0.30, 0.30)
+	jacket_mat.emission_energy_multiplier = 0.55
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 0.30, 0)
+	body_root.add_child(jacket)
+	# Head (off to one side)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.18
+	hm.height = 0.32
+	head.mesh = hm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+	head.material_override = skin_mat
+	head.position = Vector3(0, 0.30, 0.65)
+	body_root.add_child(head)
+	# Outstretched leg
+	var leg: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(0.18, 0.18, 0.85)
+	leg.mesh = lm
+	var pant_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pant_mat.albedo_color = Color(0.20, 0.20, 0.30)
+	leg.material_override = pant_mat
+	leg.position = Vector3(0.55, 0.30, -0.30)
+	leg.rotation_degrees = Vector3(0, 25, 0)
+	body_root.add_child(leg)
+	# Windmill spin tween
+	var tw: Tween = body_root.create_tween().set_loops()
+	tw.tween_property(body_root, "rotation_degrees:y", 360.0, 1.5)
+	tw.tween_property(body_root, "rotation_degrees:y", 0.0, 0.0)
+
+
+func _build_d6_sign_holder_npc() -> void:
+	## Epic-6 T92: cardboard sign holder NPC — tattered coat + small sign
+	## with "WORLD ENDS" text.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SignHolderSlot"
+	slot.position = Vector3(D6_CENTER.x + 0.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "SignHolder"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Doomsayer")
+	if "npc_id" in npc:
+		npc.set("npc_id", "sign_d6")
+	slot.add_child(npc)
+	# Tattered coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.30, 0.25, 0.20)
+	coat_mat.roughness = 0.95
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Cardboard sign held up
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.85, 0.55, 0.04)
+	sign.mesh = sm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.85, 0.75, 0.55)
+	sign_mat.roughness = 0.95
+	sign.material_override = sign_mat
+	sign.position = Vector3(0.30, 1.30, 0.30)
+	sign.rotation_degrees = Vector3(-15, 0, 0)
+	npc.add_child(sign)
+	# Sign text
+	var label: Label3D = Label3D.new()
+	label.text = "STACK\nOVERFLOW\nSOON"
+	label.modulate = Color(0.10, 0.05, 0.05)
+	label.outline_modulate = Color(0.85, 0.75, 0.55)
+	label.outline_size = 4
+	label.font_size = 32
+	label.pixel_size = 0.0035
+	label.position = Vector3(0.30, 1.30, 0.34)
+	label.rotation_degrees = Vector3(-15, 0, 0)
+	npc.add_child(label)
+
+
+func _build_d6_hoverboard(geom: Node) -> void:
+	## Epic-6 T93: parked hoverboard — slim board hovering above the ground
+	## with magenta underglow strip.
+	var hb: Node3D = Node3D.new()
+	hb.name = "Hoverboard"
+	hb.position = Vector3(D6_CENTER.x + 6.0, 0.30, -2.0)
+	geom.add_child(hb)
+	var board_mat: StandardMaterial3D = StandardMaterial3D.new()
+	board_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	board_mat.metallic = 0.85
+	board_mat.roughness = 0.30
+	# Board (slim flat box)
+	var board: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 0.10, 0.40)
+	board.mesh = bm
+	board.material_override = board_mat
+	hb.add_child(board)
+	# Underglow strip (magenta)
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(1.40, 0.04, 0.40)
+	glow.mesh = gm
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.95, 0.20, 0.85)
+	glow_mat.emission_energy_multiplier = 4.0
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.material_override = glow_mat
+	glow.position = Vector3(0, -0.07, 0)
+	hb.add_child(glow)
+	# Underglow light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 1.6
+	light.omni_range = 2.5
+	light.position = Vector3(0, -0.20, 0)
+	hb.add_child(light)
+	# Hover bob
+	var tw: Tween = hb.create_tween().set_loops()
+	tw.tween_property(hb, "position:y", 0.45, 1.0)
+	tw.tween_property(hb, "position:y", 0.30, 1.0)
+
+
+func _build_d6_neon_tree(geom: Node) -> void:
+	## Epic-6 T94: decorative cyber neon tree — black metal trunk with
+	## glowing magenta+cyan branches forming a stylized tree shape.
+	var tree: Node3D = Node3D.new()
+	tree.name = "NeonTree"
+	tree.position = Vector3(D6_CENTER.x + 14.0, 0.0, 22.0)
+	geom.add_child(tree)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.10, 0.08, 0.12)
+	trunk_mat.metallic = 0.85
+	trunk_mat.roughness = 0.30
+	# Trunk
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var trm: CylinderMesh = CylinderMesh.new()
+	trm.top_radius = 0.10
+	trm.bottom_radius = 0.18
+	trm.height = 1.85
+	trunk.mesh = trm
+	trunk.material_override = trunk_mat
+	trunk.position = Vector3(0, 0.92, 0)
+	tree.add_child(trunk)
+	# Branch glow material (alternating magenta + cyan)
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 3.5
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.30, 1.0, 1.0)
+	cyan_mat.emission_energy_multiplier = 3.5
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 6 angled branches with glowing tubes
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var branch: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.04
+		bm.bottom_radius = 0.06
+		bm.height = 1.40
+		branch.mesh = bm
+		branch.material_override = magenta_mat if i % 2 == 0 else cyan_mat
+		branch.position = Vector3(cos(ang) * 0.55, 2.20, sin(ang) * 0.55)
+		branch.rotation = Vector3(deg_to_rad(35) * sin(ang), ang, deg_to_rad(35) * cos(ang))
+		tree.add_child(branch)
+		# Tip orb at the end of each branch
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.10
+		tm.height = 0.18
+		tip.mesh = tm
+		tip.material_override = branch.material_override
+		tip.position = Vector3(cos(ang) * 1.30, 2.85, sin(ang) * 1.30)
+		tree.add_child(tip)
+	# Top crown orb
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.18
+	cm.height = 0.32
+	crown.mesh = cm
+	crown.material_override = magenta_mat
+	crown.position = Vector3(0, 3.20, 0)
+	tree.add_child(crown)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.95, 0.30, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.40, 0)
+	tree.add_child(light)
+	# Trunk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.18
+	cap.height = 1.85
+	cs.shape = cap
+	sb.add_child(cs)
+	tree.add_child(sb)
+
+
+func _build_d6_holo_butterflies(geom: Node) -> void:
+	## Epic-6 T95: 8 holographic glow butterflies drifting around the neon
+	## tree — small wing pairs in alternating magenta + cyan.
+	var swarm: Node3D = Node3D.new()
+	swarm.name = "HoloButterflies"
+	swarm.position = Vector3(D6_CENTER.x + 14.0, 2.0, 22.0)
+	geom.add_child(swarm)
+	for i in 8:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, randf_range(-0.85, 0.85), 0)
+		pivot.rotation_degrees = Vector3(0, i * 45.0, 0)
+		swarm.add_child(pivot)
+		var bf: Node3D = Node3D.new()
+		bf.position = Vector3(2.40 + randf() * 0.85, 0, 0)
+		pivot.add_child(bf)
+		var wing_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wing_mat.albedo_color = Color(0.95, 0.20, 0.85, 0.85) if i % 2 == 0 else Color(0.30, 0.95, 1.0, 0.85)
+		wing_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		wing_mat.emission_enabled = true
+		wing_mat.emission = Color(0.95, 0.20, 0.85) if i % 2 == 0 else Color(0.30, 0.95, 1.0)
+		wing_mat.emission_energy_multiplier = 3.0
+		wing_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# 2 wings
+		for sx in [-0.15, 0.15]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.18, 0.04, 0.30)
+			wing.mesh = wm
+			wing.material_override = wing_mat
+			wing.position = Vector3(sx, 0, 0)
+			bf.add_child(wing)
+			# Flap tween
+			var twf: Tween = wing.create_tween().set_loops()
+			twf.tween_property(wing, "rotation_degrees:z", 35.0 if sx < 0 else -35.0, 0.10)
+			twf.tween_property(wing, "rotation_degrees:z", 0.0, 0.10)
+		# Pivot rotation tween
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0 + 360.0, 8.0 + i * 0.4)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0, 0.0)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
