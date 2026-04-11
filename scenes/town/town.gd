@@ -1955,6 +1955,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_hay_loft(geom)
 	# Epic-4 T55: pile of hay bales
 	_build_d4_hay_bales(geom)
+	# Epic-4 T56: pumpkin patch with various sized pumpkins
+	_build_d4_pumpkin_patch(geom)
+	# Epic-4 T57: chicken coop wooden hut
+	_build_d4_chicken_coop(geom)
+	# Epic-4 T58: rooster + chickens pecking around
+	_build_d4_chickens(geom)
+	# Epic-4 T59: harvest crates stacked with crops
+	_build_d4_harvest_crates(geom)
+	# Epic-4 T60: berry bushes lining a path
+	_build_d4_berry_bushes(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -5323,6 +5333,333 @@ func _build_d4_hay_bales(geom: Node) -> void:
 	cs.position = Vector3(0, 0.92, 0)
 	sb.add_child(cs)
 	bales.add_child(sb)
+
+
+func _build_d4_pumpkin_patch(geom: Node) -> void:
+	## Epic-4 T56: pumpkin patch — squat orange pumpkins of varying sizes on
+	## a small dirt plot at the south of D4.
+	var patch: Node3D = Node3D.new()
+	patch.name = "PumpkinPatch"
+	patch.position = Vector3(D4_CENTER.x - 6.0, 0.0, 14.0)
+	geom.add_child(patch)
+	# Dirt plot
+	var dirt: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(6.0, 0.10, 4.0)
+	dirt.mesh = dm
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.30, 0.18, 0.10)
+	dmat.roughness = 0.95
+	dirt.material_override = dmat
+	dirt.position = Vector3(0, 0.05, 0)
+	patch.add_child(dirt)
+	# Pumpkin material
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.95, 0.45, 0.10)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.85, 0.30, 0.05)
+	pmat.emission_energy_multiplier = 0.20
+	pmat.roughness = 0.55
+	# Stem material
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.30, 0.50, 0.15)
+	stem_mat.roughness = 0.80
+	# Place 9 pumpkins in a grid
+	var positions: Array = [
+		Vector3(-2.2, 0, -1.4), Vector3(-0.4, 0, -1.4), Vector3(1.6, 0, -1.4),
+		Vector3(-2.2, 0,  0.0), Vector3( 0.4, 0,  0.0), Vector3(2.0, 0, -0.2),
+		Vector3(-1.8, 0,  1.4), Vector3( 0.0, 0,  1.4), Vector3(1.8, 0,  1.4),
+	]
+	var sizes: Array = [0.55, 0.70, 0.45, 0.80, 0.50, 0.65, 0.60, 0.75, 0.55]
+	for i in positions.size():
+		var p: Vector3 = positions[i]
+		var s: float = sizes[i]
+		var pumpkin: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = s
+		sm.height = s * 1.4
+		pumpkin.mesh = sm
+		pumpkin.material_override = pmat
+		pumpkin.position = Vector3(p.x, s * 0.7, p.z)
+		pumpkin.scale = Vector3(1.0, 0.7, 1.0)
+		patch.add_child(pumpkin)
+		# Stem
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.06
+		stm.bottom_radius = 0.10
+		stm.height = 0.25
+		stem.mesh = stm
+		stem.material_override = stem_mat
+		stem.position = Vector3(p.x, s * 1.05, p.z)
+		patch.add_child(stem)
+
+
+func _build_d4_chicken_coop(geom: Node) -> void:
+	## Epic-4 T57: chicken coop — small wooden hut with sloped roof, opening,
+	## and a small wire fence run.
+	var coop: Node3D = Node3D.new()
+	coop.name = "ChickenCoop"
+	coop.position = Vector3(D4_CENTER.x + 7.0, 0.0, 13.0)
+	geom.add_child(coop)
+	# Wooden walls
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	wood_mat.roughness = 0.85
+	var hut: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(2.4, 1.6, 2.0)
+	hut.mesh = hm
+	hut.material_override = wood_mat
+	hut.position = Vector3(0, 0.8, 0)
+	coop.add_child(hut)
+	# Sloped roof (prism)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(2.6, 0.7, 2.2)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.40, 0.22, 0.10)
+	roof_mat.roughness = 0.85
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 1.95, 0)
+	coop.add_child(roof)
+	# Door opening (dark hole)
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(0.5, 0.7, 0.05)
+	door.mesh = dm
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.10, 0.07, 0.04)
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	door.material_override = dmat
+	door.position = Vector3(0, 0.45, 1.02)
+	coop.add_child(door)
+	# Run fence (4 short posts and rails)
+	var fence_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fence_mat.albedo_color = Color(0.45, 0.30, 0.15)
+	fence_mat.roughness = 0.90
+	var fence_corners: Array = [
+		Vector2(-1.5,  1.4), Vector2( 1.5,  1.4),
+		Vector2( 1.5,  3.4), Vector2(-1.5,  3.4),
+	]
+	for c in fence_corners:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.06
+		pm.height = 0.9
+		post.mesh = pm
+		post.material_override = fence_mat
+		post.position = Vector3(c.x, 0.45, c.y)
+		coop.add_child(post)
+	# Static collision body
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.8, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.6, 2.0)
+	cs.shape = cb
+	sb.add_child(cs)
+	coop.add_child(sb)
+
+
+func _build_d4_chickens(geom: Node) -> void:
+	## Epic-4 T58: rooster + 3 hens pecking and bobbing around the coop.
+	var flock: Node3D = Node3D.new()
+	flock.name = "Chickens"
+	flock.position = Vector3(D4_CENTER.x + 7.0, 0.0, 11.0)
+	geom.add_child(flock)
+	var birds: Array = [
+		{"pos": Vector3( 0.0, 0,  0.0), "color": Color(0.95, 0.92, 0.85), "is_rooster": true},
+		{"pos": Vector3(-1.4, 0,  0.6), "color": Color(0.95, 0.85, 0.60), "is_rooster": false},
+		{"pos": Vector3( 1.2, 0, -0.4), "color": Color(0.85, 0.55, 0.30), "is_rooster": false},
+		{"pos": Vector3( 0.4, 0,  1.4), "color": Color(0.95, 0.95, 0.92), "is_rooster": false},
+	]
+	for b in birds:
+		var bird: Node3D = Node3D.new()
+		bird.position = b["pos"]
+		flock.add_child(bird)
+		# Body
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = b["color"]
+		body_mat.roughness = 0.75
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.20
+		bm.height = 0.30
+		body.mesh = bm
+		body.material_override = body_mat
+		body.position = Vector3(0, 0.20, 0)
+		body.scale = Vector3(1.0, 0.85, 1.2)
+		bird.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.10
+		hm.height = 0.18
+		head.mesh = hm
+		head.material_override = body_mat
+		head.position = Vector3(0, 0.42, 0.18)
+		bird.add_child(head)
+		# Beak
+		var beak: MeshInstance3D = MeshInstance3D.new()
+		var bkm: PrismMesh = PrismMesh.new()
+		bkm.size = Vector3(0.06, 0.05, 0.10)
+		beak.mesh = bkm
+		var beak_mat: StandardMaterial3D = StandardMaterial3D.new()
+		beak_mat.albedo_color = Color(0.95, 0.65, 0.10)
+		beak.material_override = beak_mat
+		beak.position = Vector3(0, 0.40, 0.30)
+		beak.rotation_degrees = Vector3(90, 0, 0)
+		bird.add_child(beak)
+		# Comb (red, larger on rooster)
+		var comb: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		var sf: float = 1.5 if b["is_rooster"] else 1.0
+		cm.size = Vector3(0.05, 0.08 * sf, 0.14 * sf)
+		comb.mesh = cm
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.95, 0.20, 0.20)
+		cmat.emission_enabled = true
+		cmat.emission = Color(0.75, 0.10, 0.10)
+		cmat.emission_energy_multiplier = 0.30
+		comb.material_override = cmat
+		comb.position = Vector3(0, 0.52, 0.16)
+		bird.add_child(comb)
+		# Tail (rooster gets larger plume)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.12 if b["is_rooster"] else 0.08
+		tm.height = 0.20 if b["is_rooster"] else 0.14
+		tail.mesh = tm
+		var tail_mat: StandardMaterial3D = StandardMaterial3D.new()
+		var base_col: Color = b["color"]
+		if b["is_rooster"]:
+			tail_mat.albedo_color = base_col.darkened(0.3)
+		else:
+			tail_mat.albedo_color = base_col
+		tail.material_override = tail_mat
+		tail.position = Vector3(0, 0.30, -0.24)
+		bird.add_child(tail)
+		# Bobbing tween
+		var tw: Tween = bird.create_tween().set_loops()
+		tw.tween_property(bird, "position:y", 0.04, 0.30 + randf() * 0.20)
+		tw.tween_property(bird, "position:y", 0.0, 0.30 + randf() * 0.20)
+
+
+func _build_d4_harvest_crates(geom: Node) -> void:
+	## Epic-4 T59: stacked wooden crates filled with vegetables (carrots,
+	## potatoes, onions). Sit by the chicken coop.
+	var crates: Node3D = Node3D.new()
+	crates.name = "HarvestCrates"
+	crates.position = Vector3(D4_CENTER.x + 5.0, 0.0, 15.5)
+	geom.add_child(crates)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	wood_mat.roughness = 0.85
+	# 3 crates: two on bottom, one on top
+	var positions: Array = [
+		Vector3(-0.55, 0.40, 0.0),
+		Vector3( 0.55, 0.40, 0.0),
+		Vector3( 0.0,  1.20, 0.0),
+	]
+	var contents: Array = [
+		{"col": Color(0.95, 0.50, 0.10), "shape": "carrot"},
+		{"col": Color(0.85, 0.65, 0.40), "shape": "potato"},
+		{"col": Color(0.85, 0.85, 0.65), "shape": "onion"},
+	]
+	for i in positions.size():
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(1.0, 0.80, 1.0)
+		crate.mesh = cm
+		crate.material_override = wood_mat
+		crate.position = positions[i]
+		crates.add_child(crate)
+		# Veggies inside
+		var contents_mat: StandardMaterial3D = StandardMaterial3D.new()
+		contents_mat.albedo_color = contents[i]["col"]
+		contents_mat.roughness = 0.80
+		for j in 5:
+			var veg: MeshInstance3D = MeshInstance3D.new()
+			var vm: SphereMesh = SphereMesh.new()
+			vm.radius = 0.12
+			vm.height = 0.20
+			veg.mesh = vm
+			veg.material_override = contents_mat
+			var ox: float = randf_range(-0.30, 0.30)
+			var oz: float = randf_range(-0.30, 0.30)
+			veg.position = positions[i] + Vector3(ox, 0.50, oz)
+			crates.add_child(veg)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.20, 1.65, 1.00)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.80, 0)
+	sb.add_child(cs)
+	crates.add_child(sb)
+
+
+func _build_d4_berry_bushes(geom: Node) -> void:
+	## Epic-4 T60: row of 6 berry bushes lining a path. Each bush has dark
+	## green foliage with bright red berries (small spheres).
+	var row: Node3D = Node3D.new()
+	row.name = "BerryBushes"
+	row.position = Vector3(D4_CENTER.x - 14.0, 0.0, 4.0)
+	geom.add_child(row)
+	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.18, 0.45, 0.20)
+	leaf_mat.roughness = 0.85
+	var berry_mat: StandardMaterial3D = StandardMaterial3D.new()
+	berry_mat.albedo_color = Color(0.85, 0.10, 0.15)
+	berry_mat.emission_enabled = true
+	berry_mat.emission = Color(0.75, 0.10, 0.15)
+	berry_mat.emission_energy_multiplier = 0.30
+	berry_mat.roughness = 0.40
+	for i in 6:
+		var bush: Node3D = Node3D.new()
+		bush.position = Vector3(i * 1.6, 0, 0)
+		row.add_child(bush)
+		# Foliage (3 overlapping spheres)
+		for j in 3:
+			var leaf: MeshInstance3D = MeshInstance3D.new()
+			var lm: SphereMesh = SphereMesh.new()
+			lm.radius = 0.45
+			lm.height = 0.85
+			leaf.mesh = lm
+			leaf.material_override = leaf_mat
+			leaf.position = Vector3(
+				randf_range(-0.20, 0.20),
+				0.45 + randf_range(-0.10, 0.10),
+				randf_range(-0.20, 0.20)
+			)
+			bush.add_child(leaf)
+		# Berries (8 small red spheres scattered on the bush)
+		for j in 8:
+			var berry: MeshInstance3D = MeshInstance3D.new()
+			var bm: SphereMesh = SphereMesh.new()
+			bm.radius = 0.06
+			bm.height = 0.12
+			berry.mesh = bm
+			berry.material_override = berry_mat
+			berry.position = Vector3(
+				randf_range(-0.40, 0.40),
+				randf_range(0.30, 0.85),
+				randf_range(-0.40, 0.40)
+			)
+			bush.add_child(berry)
+		# Static collision (one body per bush)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.45, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 0.85, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		bush.add_child(sb)
 
 
 
