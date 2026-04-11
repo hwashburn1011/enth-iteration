@@ -26,6 +26,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_save_shrine(geom)
 	_build_th_quest_board(geom)
 	_build_th_stash_chest(geom)
+	_build_th_vendor_kiosk(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -1589,3 +1590,204 @@ func _build_th_stash_chest(geom: Node) -> void:
 	var bob: Tween = pivot.create_tween().set_loops()
 	bob.tween_property(icon_pivot, "position:y", 2.55, 1.4).set_ease(Tween.EASE_IN_OUT)
 	bob.tween_property(icon_pivot, "position:y", 2.30, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_vendor_kiosk(geom: Node) -> void:
+	## Epic-10 T10: vendor kiosk on the NW radial path. Brass merchant
+	## counter with stepped basalt base, brass overhead canopy held by 2
+	## posts, 4 floating holo wares spinning above the counter, brass
+	## coin stack on the counter, and a glowing data till at the front.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_VendorKiosk"
+	# NW radial path (angle = 3*pi/4 from +X), at radius 6.5
+	var ang: float = 3.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 6.5, 0, sin(ang) * 6.5)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ware_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ware_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	ware_mat.emission_enabled = true
+	ware_mat.emission = Color(1.0, 0.55, 0.10)
+	ware_mat.emission_energy_multiplier = 6.5
+	ware_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt base ----
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.60, 0.40, 1.30)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.20, 0)
+	pivot.add_child(base)
+	# Base collision
+	var base_sb: StaticBody3D = StaticBody3D.new()
+	base_sb.position = Vector3(0, 0.20, 0)
+	var base_cs: CollisionShape3D = CollisionShape3D.new()
+	var base_bsh: BoxShape3D = BoxShape3D.new()
+	base_bsh.size = Vector3(2.60, 0.40, 1.30)
+	base_cs.shape = base_bsh
+	base_sb.add_child(base_cs)
+	pivot.add_child(base_sb)
+	# ---- Brass merchant counter ----
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.40, 0.85, 1.05)
+	counter.mesh = cm
+	counter.material_override = brass_mat
+	counter.position = Vector3(0, 0.83, 0)
+	pivot.add_child(counter)
+	# Counter collision
+	var counter_sb: StaticBody3D = StaticBody3D.new()
+	counter_sb.position = Vector3(0, 0.83, 0)
+	var counter_cs: CollisionShape3D = CollisionShape3D.new()
+	var counter_bsh: BoxShape3D = BoxShape3D.new()
+	counter_bsh.size = Vector3(2.40, 0.85, 1.05)
+	counter_cs.shape = counter_bsh
+	counter_sb.add_child(counter_cs)
+	pivot.add_child(counter_sb)
+	# Counter top plate (slightly bigger overhang)
+	var top_plate: MeshInstance3D = MeshInstance3D.new()
+	var tpm: BoxMesh = BoxMesh.new()
+	tpm.size = Vector3(2.55, 0.10, 1.20)
+	top_plate.mesh = tpm
+	top_plate.material_override = brass_mat
+	top_plate.position = Vector3(0, 1.30, 0)
+	pivot.add_child(top_plate)
+	# ---- 2 brass canopy support posts ----
+	for px in [-1.10, 1.10]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.09
+		pm.height = 2.50
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = Vector3(px, 2.55, 0)
+		pivot.add_child(post)
+	# ---- Brass overhead canopy ----
+	var canopy: MeshInstance3D = MeshInstance3D.new()
+	var canm: BoxMesh = BoxMesh.new()
+	canm.size = Vector3(2.60, 0.20, 1.40)
+	canopy.mesh = canm
+	canopy.material_override = brass_mat
+	canopy.position = Vector3(0, 3.85, 0)
+	pivot.add_child(canopy)
+	# Canopy front fringe (small box hanging down at the front)
+	var fringe: MeshInstance3D = MeshInstance3D.new()
+	var frm: BoxMesh = BoxMesh.new()
+	frm.size = Vector3(2.60, 0.18, 0.06)
+	fringe.mesh = frm
+	fringe.material_override = brass_mat
+	fringe.position = Vector3(0, 3.65, -0.65)
+	pivot.add_child(fringe)
+	# ---- 4 floating holo wares spinning above the counter ----
+	# Each ware is a small unshaded amber primitive in a row, on a hover pivot
+	var ware_pivot: Node3D = Node3D.new()
+	ware_pivot.position = Vector3(0, 2.10, 0)
+	pivot.add_child(ware_pivot)
+	# Ware 1 — small sword (vertical box)
+	var w1: MeshInstance3D = MeshInstance3D.new()
+	var w1m: BoxMesh = BoxMesh.new()
+	w1m.size = Vector3(0.10, 0.55, 0.06)
+	w1.mesh = w1m
+	w1.material_override = ware_mat
+	w1.position = Vector3(-0.85, 0, 0)
+	ware_pivot.add_child(w1)
+	# Ware 2 — gem cluster (sphere)
+	var w2: MeshInstance3D = MeshInstance3D.new()
+	var w2m: SphereMesh = SphereMesh.new()
+	w2m.radius = 0.18
+	w2m.height = 0.36
+	w2.mesh = w2m
+	w2.material_override = ware_mat
+	w2.position = Vector3(-0.30, 0, 0)
+	ware_pivot.add_child(w2)
+	# Ware 3 — torus ring
+	var w3: MeshInstance3D = MeshInstance3D.new()
+	var w3m: TorusMesh = TorusMesh.new()
+	w3m.inner_radius = 0.10
+	w3m.outer_radius = 0.18
+	w3.mesh = w3m
+	w3.material_override = ware_mat
+	w3.position = Vector3(0.30, 0, 0)
+	w3.rotation.x = PI / 2.0
+	ware_pivot.add_child(w3)
+	# Ware 4 — potion vial (small cylinder)
+	var w4: MeshInstance3D = MeshInstance3D.new()
+	var w4m: CylinderMesh = CylinderMesh.new()
+	w4m.top_radius = 0.08
+	w4m.bottom_radius = 0.10
+	w4m.height = 0.40
+	w4.mesh = w4m
+	w4.material_override = ware_mat
+	w4.position = Vector3(0.85, 0, 0)
+	ware_pivot.add_child(w4)
+	# ---- Brass coin stack on the counter (4 stacked discs) ----
+	for stk in 4:
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.13
+		cmm.bottom_radius = 0.13
+		cmm.height = 0.04
+		coin.mesh = cmm
+		coin.material_override = brass_mat
+		coin.position = Vector3(0.85, 1.38 + float(stk) * 0.05, -0.20)
+		pivot.add_child(coin)
+	# ---- Glowing data till at the front of the counter ----
+	var till: MeshInstance3D = MeshInstance3D.new()
+	var tlm: BoxMesh = BoxMesh.new()
+	tlm.size = Vector3(0.65, 0.30, 0.10)
+	till.mesh = tlm
+	till.material_override = data_mat
+	till.position = Vector3(-0.65, 1.10, -0.55)
+	pivot.add_child(till)
+	# Till brass frame
+	var till_frame: MeshInstance3D = MeshInstance3D.new()
+	var tfm: BoxMesh = BoxMesh.new()
+	tfm.size = Vector3(0.75, 0.40, 0.06)
+	till_frame.mesh = tfm
+	till_frame.material_override = brass_mat
+	till_frame.position = Vector3(-0.65, 1.10, -0.58)
+	pivot.add_child(till_frame)
+	# ---- Strong canopy OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.80, -0.10)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 3.0
+	lt.omni_range = 8.5
+	pivot.add_child(lt)
+	# ---- Pulses ----
+	# Wares + till glow pulse (separate materials but matching cadence)
+	var wpulse: Tween = pivot.create_tween().set_loops()
+	wpulse.tween_property(ware_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	wpulse.tween_property(ware_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Wares spin slowly
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(ware_pivot, "rotation:y", TAU, 7.0)
+	# Wares hover bob
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(ware_pivot, "position:y", 2.25, 1.6).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(ware_pivot, "position:y", 1.95, 1.6).set_ease(Tween.EASE_IN_OUT)
