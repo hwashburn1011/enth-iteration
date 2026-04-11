@@ -1580,6 +1580,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_reality_tear(geom)
 	# Epic-2 T75: glitch rain particles falling
 	_build_d2_glitch_rain(geom)
+	# Epic-2 T76: message terminal mailbox
+	_build_d2_mail_terminal(geom)
+	# Epic-2 T77: permanent trading post building
+	_build_d2_trading_post(geom)
+	# Epic-2 T78: abandoned playground (swing + slide)
+	_build_d2_playground(geom)
+	# Epic-2 T79: floating data archive scrolls
+	_build_d2_data_scrolls(geom)
+	# Epic-2 T80: enchanter NPC with orbiting runes
+	_build_d2_enchanter_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -13939,4 +13949,433 @@ func _build_d2_glitch_rain(geom: Node) -> void:
 	geom.add_child(rain)
 
 
+func _build_d2_mail_terminal(geom: Node) -> void:
+	## Epic-2 T76: a small mail / message terminal kiosk. Tall thin box
+	## with a slot opening, an indicator light showing "new mail", and an
+	## envelope icon Label3D on the front.
+	var term: Node3D = Node3D.new()
+	term.name = "D2MailTerminal"
+	term.position = D2_CENTER + Vector3(-12, 0, -3)
+	geom.add_child(term)
+	# Body box
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.20, 0.18, 0.30)
+	body_mat.metallic = 0.65
+	body_mat.roughness = 0.40
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.40, 0.30, 0.85)
+	body_mat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.65, 1.85, 0.55)
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.92, 0)
+	body.material_override = body_mat
+	term.add_child(body)
+	# Mail slot — dark recess
+	var slot: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.45, 0.10, 0.04)
+	slot.mesh = smesh
+	slot.position = Vector3(0, 1.40, 0.27)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.04, 0.04, 0.06)
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	slot.material_override = smat
+	term.add_child(slot)
+	# "NEW MAIL" indicator light (small pulsing yellow sphere)
+	var indicator: MeshInstance3D = MeshInstance3D.new()
+	var im: SphereMesh = SphereMesh.new()
+	im.radius = 0.06
+	im.height = 0.12
+	indicator.mesh = im
+	indicator.position = Vector3(0, 1.62, 0.27)
+	var imat: StandardMaterial3D = StandardMaterial3D.new()
+	imat.albedo_color = Color(1.0, 0.95, 0.30)
+	imat.emission_enabled = true
+	imat.emission = Color(1.0, 0.95, 0.30)
+	imat.emission_energy_multiplier = 2.6
+	imat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator.material_override = imat
+	term.add_child(indicator)
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(indicator, "scale", Vector3(1.4, 1.4, 1.4), 0.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(indicator, "scale", Vector3(0.8, 0.8, 0.8), 0.6).set_ease(Tween.EASE_IN_OUT)
+	# Envelope icon label on the front
+	var icon: Label3D = Label3D.new()
+	icon.text = "✉"
+	icon.position = Vector3(0, 1.0, 0.30)
+	icon.modulate = Color(1.0, 0.95, 0.55)
+	icon.outline_modulate = Color(0, 0, 0, 0.85)
+	icon.outline_size = 4
+	icon.font_size = 28
+	icon.no_depth_test = true
+	term.add_child(icon)
+	# Sign above
+	var label: Label3D = Label3D.new()
+	label.text = "MAIL"
+	label.position = Vector3(0, 2.10, 0)
+	label.modulate = Color(0.85, 0.75, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	term.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.65, 1.85, 0.55)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	term.add_child(sb)
+
+
+func _build_d2_trading_post(geom: Node) -> void:
+	## Epic-2 T77: a permanent trading post building — small storefront
+	## hut with a sloped roof, a counter window cut into the front, and
+	## glowing "OPEN" sign hanging beside it.
+	var post: Node3D = Node3D.new()
+	post.name = "D2TradingPost"
+	post.position = D2_CENTER + Vector3(2, 0, -8)
+	geom.add_child(post)
+	# Walls — single wide box
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.30, 0.22, 0.16)
+	wall_mat.metallic = 0.20
+	wall_mat.roughness = 0.65
+	wall_mat.emission_enabled = true
+	wall_mat.emission = Color(0.85, 0.55, 0.20)
+	wall_mat.emission_energy_multiplier = 0.30
+	var hut: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(3.40, 2.80, 2.40)
+	hut.mesh = hmesh
+	hut.position = Vector3(0, 1.40, 0)
+	hut.material_override = wall_mat
+	post.add_child(hut)
+	# Sloped roof — prism on top
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.45, 0.20, 0.12)
+	roof_mat.metallic = 0.20
+	roof_mat.roughness = 0.55
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: PrismMesh = PrismMesh.new()
+	rmesh.size = Vector3(3.60, 0.85, 2.60)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 3.20, 0)
+	roof.material_override = roof_mat
+	post.add_child(roof)
+	# Counter window cut into front (a dark recessed box)
+	var window: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: BoxMesh = BoxMesh.new()
+	wmesh.size = Vector3(1.85, 0.85, 0.10)
+	window.mesh = wmesh
+	window.position = Vector3(0, 1.40, 1.21)
+	var winmat: StandardMaterial3D = StandardMaterial3D.new()
+	winmat.albedo_color = Color(0.05, 0.04, 0.10)
+	winmat.emission_enabled = true
+	winmat.emission = Color(0.85, 0.55, 0.20)
+	winmat.emission_energy_multiplier = 0.55
+	winmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	window.material_override = winmat
+	post.add_child(window)
+	# Counter board below the window
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(2.0, 0.10, 0.45)
+	counter.mesh = cmesh
+	counter.position = Vector3(0, 0.95, 1.30)
+	counter.material_override = roof_mat
+	post.add_child(counter)
+	# Hanging "OPEN" sign on the side
+	var sign_panel: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.85, 0.40, 0.05)
+	sign_panel.mesh = sm
+	sign_panel.position = Vector3(1.85, 1.85, 1.0)
+	var spmat: StandardMaterial3D = StandardMaterial3D.new()
+	spmat.albedo_color = Color(0.30, 1.0, 0.40)
+	spmat.emission_enabled = true
+	spmat.emission = Color(0.45, 1.0, 0.45)
+	spmat.emission_energy_multiplier = 1.6
+	spmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sign_panel.material_override = spmat
+	post.add_child(sign_panel)
+	var open_label: Label3D = Label3D.new()
+	open_label.text = "OPEN"
+	open_label.position = Vector3(1.85, 1.85, 1.04)
+	open_label.modulate = Color(1, 1, 1)
+	open_label.outline_modulate = Color(0, 0, 0, 0.85)
+	open_label.outline_size = 4
+	open_label.font_size = 16
+	open_label.no_depth_test = true
+	post.add_child(open_label)
+	# Big "TRADING POST" sign on the roof
+	var label: Label3D = Label3D.new()
+	label.text = "TRADING POST"
+	label.position = Vector3(0, 4.0, 0)
+	label.modulate = Color(1.0, 0.85, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	post.add_child(label)
+	# Collision around the hut
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 2.80, 2.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.40, 0)
+	sb.add_child(cs)
+	post.add_child(sb)
+
+
+func _build_d2_playground(geom: Node) -> void:
+	## Epic-2 T78: an eerie abandoned playground — a single swing on a
+	## rusty frame swaying gently in the wind + a small slide. The sense
+	## of "kids used to live here" before the district fell.
+	var play: Node3D = Node3D.new()
+	play.name = "D2Playground"
+	play.position = D2_CENTER + Vector3(-18, 0, 18)
+	geom.add_child(play)
+	var rust_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rust_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	rust_mat.metallic = 0.40
+	rust_mat.roughness = 0.65
+	# Swing frame — 2 angled legs + horizontal top bar
+	for sx: float in [-1.20, 1.20]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: CylinderMesh = CylinderMesh.new()
+		lmesh.top_radius = 0.07
+		lmesh.bottom_radius = 0.10
+		lmesh.height = 2.40
+		leg.mesh = lmesh
+		leg.position = Vector3(sx, 1.20, 0)
+		leg.rotation = Vector3(0, 0, sign(sx) * deg_to_rad(15))
+		leg.material_override = rust_mat
+		play.add_child(leg)
+	# Top bar
+	var top_bar: MeshInstance3D = MeshInstance3D.new()
+	var tbmesh: CylinderMesh = CylinderMesh.new()
+	tbmesh.top_radius = 0.06
+	tbmesh.bottom_radius = 0.06
+	tbmesh.height = 2.40
+	top_bar.mesh = tbmesh
+	top_bar.position = Vector3(0, 2.40, 0)
+	top_bar.rotation = Vector3(0, 0, deg_to_rad(90))
+	top_bar.material_override = rust_mat
+	play.add_child(top_bar)
+	# Swing pivot at top center
+	var swing_pivot: Node3D = Node3D.new()
+	swing_pivot.position = Vector3(0, 2.40, 0)
+	play.add_child(swing_pivot)
+	# Swing chains + seat
+	for sx: float in [-0.30, 0.30]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var ch_mesh: CylinderMesh = CylinderMesh.new()
+		ch_mesh.top_radius = 0.02
+		ch_mesh.bottom_radius = 0.02
+		ch_mesh.height = 1.30
+		chain.mesh = ch_mesh
+		chain.position = Vector3(sx, -0.65, 0)
+		chain.material_override = rust_mat
+		swing_pivot.add_child(chain)
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var seat_mesh: BoxMesh = BoxMesh.new()
+	seat_mesh.size = Vector3(0.85, 0.06, 0.30)
+	seat.mesh = seat_mesh
+	seat.position = Vector3(0, -1.30, 0)
+	var seat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seat_mat.albedo_color = Color(0.20, 0.16, 0.12)
+	seat_mat.metallic = 0.20
+	seat.material_override = seat_mat
+	swing_pivot.add_child(seat)
+	# Sway tween
+	var sway: Tween = create_tween().set_loops()
+	sway.tween_property(swing_pivot, "rotation:x", deg_to_rad(15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(swing_pivot, "rotation:x", deg_to_rad(-15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Small slide nearby — angled box
+	var slide: MeshInstance3D = MeshInstance3D.new()
+	var sl_mesh: BoxMesh = BoxMesh.new()
+	sl_mesh.size = Vector3(0.85, 0.10, 2.60)
+	slide.mesh = sl_mesh
+	slide.position = Vector3(3.5, 0.85, 0)
+	slide.rotation = Vector3(deg_to_rad(-30), 0, 0)
+	var sl_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sl_mat.albedo_color = Color(0.85, 0.85, 0.95)
+	sl_mat.metallic = 0.65
+	sl_mat.roughness = 0.30
+	slide.material_override = sl_mat
+	play.add_child(slide)
+	# Slide top platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pl_mesh: BoxMesh = BoxMesh.new()
+	pl_mesh.size = Vector3(0.85, 0.10, 0.85)
+	platform.mesh = pl_mesh
+	platform.position = Vector3(3.5, 1.85, -1.20)
+	platform.material_override = sl_mat
+	play.add_child(platform)
+	# Slide ladder (angled)
+	var ladder: MeshInstance3D = MeshInstance3D.new()
+	var ld_mesh: BoxMesh = BoxMesh.new()
+	ld_mesh.size = Vector3(0.45, 0.06, 1.85)
+	ladder.mesh = ld_mesh
+	ladder.position = Vector3(3.5, 0.95, -1.85)
+	ladder.rotation = Vector3(deg_to_rad(60), 0, 0)
+	ladder.material_override = rust_mat
+	play.add_child(ladder)
+
+
+func _build_d2_data_scrolls(geom: Node) -> void:
+	## Epic-2 T79: 5 floating data archive scrolls — vertical translucent
+	## strips with code-like symbols on them, drifting in a small cluster
+	## near the data well.
+	var origin: Vector3 = D2_CENTER + Vector3(0, 1.5, 6)
+	for i in 5:
+		var scroll: MeshInstance3D = MeshInstance3D.new()
+		scroll.name = "D2DataScroll_%d" % i
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.30, 1.40, 0.04)
+		scroll.mesh = smesh
+		scroll.position = origin + Vector3(randf_range(-1.5, 1.5), randf_range(0, 0.85), randf_range(-1.5, 1.5))
+		scroll.rotation = Vector3(0, deg_to_rad(randf_range(0, 360)), 0)
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.55, 0.95, 1.0, 0.65)
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		mat.emission_enabled = true
+		mat.emission = Color(0.55, 0.95, 1.0)
+		mat.emission_energy_multiplier = 1.4
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		scroll.material_override = mat
+		geom.add_child(scroll)
+		# Slow rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(scroll, "rotation:y", scroll.rotation.y + TAU, 8.0 + i)
+		# Slow vertical bob
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = scroll.position.y
+		bob.tween_property(scroll, "position:y", origin_y + 0.30, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(scroll, "position:y", origin_y, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d2_enchanter_npc() -> void:
+	## Epic-2 T80: enchanter NPC standing with 4 small rune cubes orbiting
+	## their head on a horizontal ring. Robed figure with a glowing violet
+	## staff. The "magical" archetype contrasting the more mechanical NPCs.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var enc: Node3D = Node3D.new()
+	enc.name = "D2Enchanter"
+	enc.position = D2_CENTER + Vector3(8, 0, 8)
+	slots.add_child(enc)
+	# Body — robed capsule
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.10, 0.30)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	enc.add_child(body)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	enc.add_child(hood)
+	# 2 small violet eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.34)
+		eye.material_override = eye_mat
+		enc.add_child(eye)
+	# Staff in front of the body — long thin cylinder
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.05
+	smesh.bottom_radius = 0.06
+	smesh.height = 2.0
+	staff.mesh = smesh
+	staff.position = Vector3(0.45, 1.0, 0)
+	var stmat: StandardMaterial3D = StandardMaterial3D.new()
+	stmat.albedo_color = Color(0.10, 0.06, 0.10)
+	stmat.metallic = 0.30
+	staff.material_override = stmat
+	enc.add_child(staff)
+	# Staff orb on top
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var om: SphereMesh = SphereMesh.new()
+	om.radius = 0.20
+	om.height = 0.40
+	orb.mesh = om
+	orb.position = Vector3(0.45, 2.10, 0)
+	var omat: StandardMaterial3D = StandardMaterial3D.new()
+	omat.albedo_color = Color(0.85, 0.40, 1.0)
+	omat.emission_enabled = true
+	omat.emission = Color(1.0, 0.55, 1.0)
+	omat.emission_energy_multiplier = 2.6
+	omat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	orb.material_override = omat
+	enc.add_child(orb)
+	# Pulse the orb
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(orb, "scale", Vector3(1.30, 1.30, 1.30), 1.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(orb, "scale", Vector3(1.0, 1.0, 1.0), 1.0).set_ease(Tween.EASE_IN_OUT)
+	# 4 orbiting rune cubes — pivot at the head, cubes at TAU/4 spacings
+	var rune_pivot: Node3D = Node3D.new()
+	rune_pivot.position = Vector3(0, 2.10, 0)
+	enc.add_child(rune_pivot)
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: BoxMesh = BoxMesh.new()
+		rmesh.size = Vector3(0.18, 0.18, 0.18)
+		rune.mesh = rmesh
+		rune.position = Vector3(cos(angle) * 0.65, 0, sin(angle) * 0.65)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		var color: Color = [Color(0.55, 0.95, 1.0), Color(1.0, 0.55, 0.20), Color(0.85, 0.40, 1.0), Color(0.45, 1.0, 0.55)][i]
+		rmat.albedo_color = color
+		rmat.emission_enabled = true
+		rmat.emission = color
+		rmat.emission_energy_multiplier = 2.4
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rune.material_override = rmat
+		rune_pivot.add_child(rune)
+	# Pivot rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(rune_pivot, "rotation:y", TAU, 4.0)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Enchanter"
+	label.position = Vector3(0, 2.55, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	enc.add_child(label)
 
