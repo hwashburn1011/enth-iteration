@@ -55,6 +55,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_north_entry_arch(geom)
 	_build_th_south_entry_arch(geom)
 	_build_th_patrol_guard_npc(town)
+	_build_th_running_child_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -7032,3 +7033,172 @@ func _build_th_patrol_guard_npc(town: Node) -> void:
 	var dpulse: Tween = npc.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_running_child_npc(town: Node) -> void:
+	## Epic-10 T39: Running Child Echo — small playful child NPC running
+	## in a tighter inner orbit (radius ~8.5) faster than the patrol guard
+	## (~12s loop) and in the OPPOSITE direction. Bright orange tunic with
+	## brass collar, two short stubby legs, head with cyan crown band,
+	## tiny brass bell held in right hand jingling as she runs.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	# Orbit pivot for the child's running circle
+	var orbit_slot: Marker3D = Marker3D.new()
+	orbit_slot.name = "THRunningChildOrbit"
+	orbit_slot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	# Start at a different phase than the guard so they don't overlap
+	orbit_slot.rotation.y = PI
+	slots.add_child(orbit_slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THRunningChildEcho"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Echo (child)")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_running_child_echo")
+	# Offset the child from the orbit center along +X (radius 8.5)
+	npc.position = Vector3(8.50, 0, 0)
+	# Face the orbit forward direction
+	npc.rotation.y = PI / 2.0
+	orbit_slot.add_child(npc)
+	# Materials
+	var tunic_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tunic_mat.albedo_color = Color(1.0, 0.55, 0.18)
+	tunic_mat.roughness = 0.85
+	tunic_mat.metallic = 0.10
+	tunic_mat.emission_enabled = true
+	tunic_mat.emission = Color(1.0, 0.55, 0.10)
+	tunic_mat.emission_energy_multiplier = 0.45
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Bright orange tunic body (smaller than adult NPCs) ----
+	var tunic: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.65, 0.85, 0.40)
+	tunic.mesh = tmesh
+	tunic.material_override = tunic_mat
+	tunic.position = Vector3(0, 0.85, 0)
+	npc.add_child(tunic)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.65, 0.08, 0.40)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.30, 0)
+	npc.add_child(collar)
+	# Belt rope
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var btm: BoxMesh = BoxMesh.new()
+	btm.size = Vector3(0.70, 0.08, 0.45)
+	belt.mesh = btm
+	belt.material_override = brass_mat
+	belt.position = Vector3(0, 0.55, 0)
+	npc.add_child(belt)
+	# ---- 2 stubby legs (small boxes) on a leg pivot for run animation ----
+	var leg_pivot: Node3D = Node3D.new()
+	leg_pivot.position = Vector3(0, 0.30, 0)
+	npc.add_child(leg_pivot)
+	# Left leg
+	var l_leg: MeshInstance3D = MeshInstance3D.new()
+	var llm: BoxMesh = BoxMesh.new()
+	llm.size = Vector3(0.20, 0.40, 0.20)
+	l_leg.mesh = llm
+	l_leg.material_override = tunic_mat
+	l_leg.position = Vector3(-0.18, -0.05, 0)
+	leg_pivot.add_child(l_leg)
+	# Right leg (separate so we can swap heights for run feel)
+	var r_leg: MeshInstance3D = MeshInstance3D.new()
+	r_leg.mesh = llm
+	r_leg.material_override = tunic_mat
+	r_leg.position = Vector3(0.18, -0.05, 0)
+	leg_pivot.add_child(r_leg)
+	# ---- Head sphere ----
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmm: SphereMesh = SphereMesh.new()
+	hmm.radius = 0.22
+	hmm.height = 0.44
+	head.mesh = hmm
+	head.material_override = tunic_mat
+	head.position = Vector3(0, 1.55, 0)
+	npc.add_child(head)
+	# Cyan crown band torus on the head
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crm: TorusMesh = TorusMesh.new()
+	crm.inner_radius = 0.22
+	crm.outer_radius = 0.27
+	crown.mesh = crm
+	crown.material_override = data_mat
+	crown.position = Vector3(0, 1.55, 0)
+	crown.rotation.x = PI / 2.0
+	npc.add_child(crown)
+	# 2 small dark eye dots on the front of the head
+	for ex in [-0.07, 0.07]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.04
+		em.height = 0.08
+		eye.mesh = em
+		eye.material_override = brass_mat
+		eye.position = Vector3(ex, 1.58, -0.20)
+		npc.add_child(eye)
+	# ---- Tiny brass bell held in right hand on a jingle pivot ----
+	var bell_pivot: Node3D = Node3D.new()
+	bell_pivot.position = Vector3(0.40, 0.95, 0)
+	npc.add_child(bell_pivot)
+	var bell: MeshInstance3D = MeshInstance3D.new()
+	var blm: SphereMesh = SphereMesh.new()
+	blm.radius = 0.10
+	blm.height = 0.18
+	bell.mesh = blm
+	bell.material_override = brass_mat
+	bell.position = Vector3(0, -0.10, 0)
+	bell.scale = Vector3(0.95, 1.20, 0.95)
+	bell_pivot.add_child(bell)
+	# Bell glowing dot on the bottom
+	var bell_dot: MeshInstance3D = MeshInstance3D.new()
+	var bdm: SphereMesh = SphereMesh.new()
+	bdm.radius = 0.04
+	bdm.height = 0.08
+	bell_dot.mesh = bdm
+	bell_dot.material_override = data_mat
+	bell_dot.position = Vector3(0, -0.20, 0)
+	bell_pivot.add_child(bell_dot)
+	# ---- Subtle warm OmniLight (smaller, since the child is smaller) ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.20, 0)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.2
+	lt.omni_range = 3.5
+	npc.add_child(lt)
+	# ---- Run orbit tween — orbit_slot rotates around Y in 12 seconds, COUNTER-CLOCKWISE
+	# (negative TAU) so the child runs in the opposite direction from the guard.
+	var run: Tween = npc.create_tween().set_loops()
+	run.tween_property(orbit_slot, "rotation:y", PI - TAU, 12.0)
+	# ---- Run leg pivot bob — vertical hop while running ----
+	var hop: Tween = npc.create_tween().set_loops()
+	hop.tween_property(npc, "position:y", 0.18, 0.30).set_ease(Tween.EASE_OUT)
+	hop.tween_property(npc, "position:y", 0.0, 0.30).set_ease(Tween.EASE_IN)
+	# ---- Bell jingle tween — fast left-right rotation ----
+	var jingle: Tween = npc.create_tween().set_loops()
+	jingle.tween_property(bell_pivot, "rotation:z", 0.40, 0.18).set_ease(Tween.EASE_IN_OUT)
+	jingle.tween_property(bell_pivot, "rotation:z", -0.40, 0.18).set_ease(Tween.EASE_IN_OUT)
+	# Crown + bell dot pulse
+	var dpulse2: Tween = npc.create_tween().set_loops()
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
