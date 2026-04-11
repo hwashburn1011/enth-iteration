@@ -2035,6 +2035,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_apprentice_gardener_npc()
 	# Epic-4 T95: sunflower field
 	_build_d4_sunflower_field(geom)
+	# Epic-4 T96: D4 welcome banner over the entrance
+	_build_d4_welcome_banner(geom)
+	# Epic-4 T97: grand bloom altar at the heart of the cluster
+	_build_d4_grand_altar(geom)
+	# Epic-4 T98: dedication plaque
+	_build_d4_district_plaque(geom)
+	# Epic-4 T99: ambient bloom-cluster light tweak
+	_build_d4_ambient_tweak(geom)
+	# Epic-4 T100: BLOOM ELDER — district boss / final encounter
+	_build_d4_bloom_elder(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -8304,6 +8314,449 @@ func _build_d4_sunflower_field(geom: Node) -> void:
 			cs.shape = cap
 			sb.add_child(cs)
 			stalk.add_child(sb)
+
+
+func _build_d4_welcome_banner(geom: Node) -> void:
+	## Epic-4 T96: tall double-pole banner welcoming travelers to the
+	## Bloom Cluster. Bright pink fabric with vine details.
+	var banner: Node3D = Node3D.new()
+	banner.name = "D4WelcomeBanner"
+	banner.position = Vector3(D4_CENTER.x - 28.0, 0.0, 0.0)
+	geom.add_child(banner)
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.45, 0.30, 0.15)
+	pole_mat.roughness = 0.85
+	for sx in [-2.40, 2.40]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.10
+		pm.bottom_radius = 0.14
+		pm.height = 5.50
+		pole.mesh = pm
+		pole.material_override = pole_mat
+		pole.position = Vector3(sx, 2.75, 0)
+		banner.add_child(pole)
+		# Pole collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.75, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.16
+		cap.height = 5.50
+		cs.shape = cap
+		sb.add_child(cs)
+		banner.add_child(sb)
+	# Top crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.08
+	bm.bottom_radius = 0.08
+	bm.height = 5.20
+	bar.mesh = bm
+	bar.material_override = pole_mat
+	bar.position = Vector3(0, 5.20, 0)
+	bar.rotation_degrees = Vector3(0, 0, 90)
+	banner.add_child(bar)
+	# Banner cloth (large pink box)
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(4.60, 2.80, 0.06)
+	cloth.mesh = cm
+	var cloth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloth_mat.albedo_color = Color(0.95, 0.55, 0.75)
+	cloth_mat.emission_enabled = true
+	cloth_mat.emission = Color(0.95, 0.40, 0.65)
+	cloth_mat.emission_energy_multiplier = 0.45
+	cloth_mat.roughness = 0.65
+	cloth.material_override = cloth_mat
+	cloth.position = Vector3(0, 3.50, 0)
+	banner.add_child(cloth)
+	# Banner text label
+	var label: Label3D = Label3D.new()
+	label.text = "BLOOM CLUSTER"
+	label.modulate = Color(1.0, 1.0, 1.0)
+	label.outline_modulate = Color(0.20, 0.10, 0.30)
+	label.outline_size = 12
+	label.font_size = 96
+	label.pixel_size = 0.012
+	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	label.position = Vector3(0, 4.00, 0.05)
+	banner.add_child(label)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "where the simulation still grows"
+	subtitle.modulate = Color(0.95, 0.85, 0.95)
+	subtitle.outline_modulate = Color(0.30, 0.10, 0.20)
+	subtitle.outline_size = 8
+	subtitle.font_size = 48
+	subtitle.pixel_size = 0.010
+	subtitle.position = Vector3(0, 3.10, 0.05)
+	banner.add_child(subtitle)
+	# 4 vine clusters draping from the bar
+	var vine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vine_mat.albedo_color = Color(0.30, 0.60, 0.20)
+	vine_mat.emission_enabled = true
+	vine_mat.emission = Color(0.20, 0.50, 0.15)
+	vine_mat.emission_energy_multiplier = 0.30
+	for sx in [-2.0, -0.7, 0.7, 2.0]:
+		var vine: MeshInstance3D = MeshInstance3D.new()
+		var vm: CylinderMesh = CylinderMesh.new()
+		vm.top_radius = 0.04
+		vm.bottom_radius = 0.02
+		vm.height = 1.60
+		vine.mesh = vm
+		vine.material_override = vine_mat
+		vine.position = Vector3(sx, 4.40, 0.10)
+		banner.add_child(vine)
+
+
+func _build_d4_grand_altar(geom: Node) -> void:
+	## Epic-4 T97: grand bloom altar at the heart of the cluster — large
+	## tiered stone platform with a giant glowing pink crystal flower
+	## bud at the top, supporting beams of light, and orbiting petals.
+	var altar: Node3D = Node3D.new()
+	altar.name = "GrandBloomAltar"
+	altar.position = Vector3(D4_CENTER.x, 0.0, -2.0)
+	geom.add_child(altar)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.65, 0.62, 0.55)
+	stone_mat.roughness = 0.92
+	# 3-tier base
+	var sizes: Array = [
+		Vector3(5.00, 0.40, 5.00),
+		Vector3(3.80, 0.40, 3.80),
+		Vector3(2.60, 0.40, 2.60),
+	]
+	for i in sizes.size():
+		var tier: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = sizes[i]
+		tier.mesh = tm
+		tier.material_override = stone_mat
+		tier.position = Vector3(0, 0.20 + i * 0.40, 0)
+		altar.add_child(tier)
+	# Pedestal column
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var clm: CylinderMesh = CylinderMesh.new()
+	clm.top_radius = 0.85
+	clm.bottom_radius = 1.00
+	clm.height = 1.40
+	col.mesh = clm
+	col.material_override = stone_mat
+	col.position = Vector3(0, 1.90, 0)
+	altar.add_child(col)
+	# Giant crystal bud (sphere + 6 petal prisms around it)
+	var bud_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bud_mat.albedo_color = Color(0.95, 0.45, 0.75)
+	bud_mat.emission_enabled = true
+	bud_mat.emission = Color(0.95, 0.30, 0.65)
+	bud_mat.emission_energy_multiplier = 2.5
+	bud_mat.metallic = 0.40
+	bud_mat.roughness = 0.15
+	var bud: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.85
+	bm.height = 1.50
+	bud.mesh = bm
+	bud.material_override = bud_mat
+	bud.position = Vector3(0, 3.40, 0)
+	altar.add_child(bud)
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var petal: MeshInstance3D = MeshInstance3D.new()
+		var pmm: PrismMesh = PrismMesh.new()
+		pmm.size = Vector3(0.55, 0.30, 1.20)
+		petal.mesh = pmm
+		petal.material_override = bud_mat
+		petal.position = Vector3(cos(ang) * 1.10, 3.40, sin(ang) * 1.10)
+		petal.rotation = Vector3(0, ang + PI * 0.5, 0)
+		altar.add_child(petal)
+	# Beam of light pillar (tall thin emissive cylinder rising from bud)
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 0.18
+	beam_m.bottom_radius = 0.55
+	beam_m.height = 12.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(0.95, 0.65, 0.85, 0.55)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(0.95, 0.45, 0.75)
+	beam_mat.emission_energy_multiplier = 1.4
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(0, 9.40, 0)
+	altar.add_child(beam)
+	# Pulse the beam
+	var tw: Tween = beam.create_tween().set_loops()
+	tw.tween_property(beam, "scale:x", 1.20, 1.6)
+	tw.tween_property(beam, "scale:x", 0.85, 1.6)
+	# 4 orbiting petals
+	for i in 4:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, 3.40, 0)
+		pivot.rotation_degrees = Vector3(0, 90.0 * i, 0)
+		altar.add_child(pivot)
+		var orbiter: MeshInstance3D = MeshInstance3D.new()
+		var om: SphereMesh = SphereMesh.new()
+		om.radius = 0.20
+		om.height = 0.36
+		orbiter.mesh = om
+		orbiter.material_override = bud_mat
+		orbiter.position = Vector3(2.20, 0, 0)
+		pivot.add_child(orbiter)
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", 90.0 * i + 360.0, 6.0 + i * 0.4)
+		trot.tween_property(pivot, "rotation_degrees:y", 90.0 * i, 0.0)
+	# Massive central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.85)
+	light.light_energy = 4.0
+	light.omni_range = 18.0
+	light.position = Vector3(0, 3.40, 0)
+	altar.add_child(light)
+	# Altar collision (3 tiers)
+	for i in sizes.size():
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.20 + i * 0.40, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = sizes[i]
+		cs.shape = cb
+		sb.add_child(cs)
+		altar.add_child(sb)
+
+
+func _build_d4_district_plaque(geom: Node) -> void:
+	## Epic-4 T98: dedication plaque mounted on a small stone pedestal at
+	## the entrance to the Bloom Cluster.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "D4Plaque"
+	plaque.position = Vector3(D4_CENTER.x - 24.0, 0.0, 4.0)
+	geom.add_child(plaque)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.65, 0.62, 0.55)
+	stone_mat.roughness = 0.92
+	# Pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.85, 1.20, 0.55)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.60, 0)
+	plaque.add_child(ped)
+	# Plaque face (bronze)
+	var face: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.75, 0.50, 0.06)
+	face.mesh = fm
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	bronze_mat.metallic = 0.75
+	bronze_mat.roughness = 0.30
+	face.material_override = bronze_mat
+	face.position = Vector3(0, 1.00, 0.30)
+	face.rotation_degrees = Vector3(-15, 0, 0)
+	plaque.add_child(face)
+	var label: Label3D = Label3D.new()
+	label.text = "BLOOM CLUSTER\nDistrict 04 — Iteration 04\nWhere code remembers how to grow"
+	label.modulate = Color(0.10, 0.05, 0.10)
+	label.outline_modulate = Color(0.95, 0.85, 0.55)
+	label.outline_size = 4
+	label.font_size = 32
+	label.pixel_size = 0.0035
+	label.position = Vector3(0, 1.05, 0.36)
+	label.rotation_degrees = Vector3(-15, 0, 0)
+	plaque.add_child(label)
+	# Pedestal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.60, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.20, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_d4_ambient_tweak(geom: Node) -> void:
+	## Epic-4 T99: gentle warm ambient tint over the Bloom Cluster — soft
+	## pink directional glow + low ambient OmniLight at center for warmth.
+	var amb: Node3D = Node3D.new()
+	amb.name = "D4Ambient"
+	amb.position = Vector3(D4_CENTER.x, 6.0, 0.0)
+	geom.add_child(amb)
+	# Wide-range warm fill
+	var fill: OmniLight3D = OmniLight3D.new()
+	fill.light_color = Color(1.0, 0.80, 0.85)
+	fill.light_energy = 0.65
+	fill.omni_range = 32.0
+	amb.add_child(fill)
+	# Slow color shift to feel "alive"
+	var tw: Tween = fill.create_tween().set_loops()
+	tw.tween_property(fill, "light_color", Color(0.95, 0.85, 0.95), 6.0)
+	tw.tween_property(fill, "light_color", Color(1.0, 0.80, 0.85), 6.0)
+	# Soft secondary directional from above
+	var sun: DirectionalLight3D = DirectionalLight3D.new()
+	sun.light_color = Color(1.0, 0.85, 0.95)
+	sun.light_energy = 0.30
+	sun.shadow_enabled = false
+	sun.position = Vector3(0, 14.0, 0)
+	sun.rotation_degrees = Vector3(-65, 35, 0)
+	amb.add_child(sun)
+
+
+func _build_d4_bloom_elder(geom: Node) -> void:
+	## Epic-4 T100: BLOOM ELDER — the district guardian / Epic 4 finale.
+	## Towering tree-spirit with a massive flowering crown, multiple eyes,
+	## floating petal halo, and an aura of ancient power. The
+	## emotional payoff for completing the Bloom Cluster.
+	var elder: Node3D = Node3D.new()
+	elder.name = "BloomElder"
+	elder.position = Vector3(D4_CENTER.x + 22.0, 0.0, -16.0)
+	geom.add_child(elder)
+	# Trunk — wide tapered stone-bark cylinder
+	var bark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bark_mat.albedo_color = Color(0.30, 0.22, 0.15)
+	bark_mat.emission_enabled = true
+	bark_mat.emission = Color(0.55, 0.30, 0.45)
+	bark_mat.emission_energy_multiplier = 0.30
+	bark_mat.roughness = 0.85
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var trm: CylinderMesh = CylinderMesh.new()
+	trm.top_radius = 0.85
+	trm.bottom_radius = 1.65
+	trm.height = 6.50
+	trunk.mesh = trm
+	trunk.material_override = bark_mat
+	trunk.position = Vector3(0, 3.25, 0)
+	elder.add_child(trunk)
+	# 4 root buttresses
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i + PI * 0.25
+		var root: MeshInstance3D = MeshInstance3D.new()
+		var rm: PrismMesh = PrismMesh.new()
+		rm.size = Vector3(0.65, 1.40, 1.50)
+		root.mesh = rm
+		root.material_override = bark_mat
+		root.position = Vector3(cos(ang) * 1.20, 0.70, sin(ang) * 1.20)
+		root.rotation = Vector3(0, ang + PI * 0.5, 0)
+		elder.add_child(root)
+	# Massive flowering crown (5 large overlapping spheres)
+	var crown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crown_mat.albedo_color = Color(0.95, 0.55, 0.75)
+	crown_mat.emission_enabled = true
+	crown_mat.emission = Color(0.95, 0.40, 0.65)
+	crown_mat.emission_energy_multiplier = 0.85
+	crown_mat.roughness = 0.55
+	for i in 5:
+		var ang: float = (TAU / 5.0) * i
+		var lobe: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 1.85
+		lm.height = 3.20
+		lobe.mesh = lm
+		lobe.material_override = crown_mat
+		lobe.position = Vector3(cos(ang) * 1.20, 7.20, sin(ang) * 1.20)
+		elder.add_child(lobe)
+	# Topmost giant flower bud (hero piece)
+	var top_bud: MeshInstance3D = MeshInstance3D.new()
+	var tbm: SphereMesh = SphereMesh.new()
+	tbm.radius = 1.40
+	tbm.height = 2.40
+	top_bud.mesh = tbm
+	var bud_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bud_mat.albedo_color = Color(0.95, 0.30, 0.65)
+	bud_mat.emission_enabled = true
+	bud_mat.emission = Color(0.95, 0.20, 0.55)
+	bud_mat.emission_energy_multiplier = 2.5
+	bud_mat.metallic = 0.30
+	bud_mat.roughness = 0.20
+	top_bud.material_override = bud_mat
+	top_bud.position = Vector3(0, 9.30, 0)
+	elder.add_child(top_bud)
+	# Central trunk face — 3 large glowing eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.30, 1.0, 0.50)
+	eye_mat.emission_energy_multiplier = 3.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.20
+		em.height = 0.36
+		eye.mesh = em
+		eye.material_override = eye_mat
+		var ang: float = (TAU / 3.0) * i + PI * 0.5
+		eye.position = Vector3(cos(ang) * 0.45, 4.20 + sin(ang) * 0.45, 1.10)
+		elder.add_child(eye)
+		# Pulse eye
+		var tw: Tween = eye.create_tween().set_loops()
+		tw.tween_interval(i * 0.30)
+		tw.tween_property(eye, "scale", Vector3.ONE * 1.20, 0.85)
+		tw.tween_property(eye, "scale", Vector3.ONE * 0.85, 0.85)
+	# Floating petal halo — 12 petals orbiting at head height
+	var halo_pivot: Node3D = Node3D.new()
+	halo_pivot.position = Vector3(0, 7.20, 0)
+	elder.add_child(halo_pivot)
+	for i in 12:
+		var ang: float = (TAU / 12.0) * i
+		var petal: MeshInstance3D = MeshInstance3D.new()
+		var pmm: PrismMesh = PrismMesh.new()
+		pmm.size = Vector3(0.30, 0.10, 0.55)
+		petal.mesh = pmm
+		petal.material_override = crown_mat
+		petal.position = Vector3(cos(ang) * 3.20, 0, sin(ang) * 3.20)
+		petal.rotation = Vector3(0, ang + PI * 0.5, 0)
+		halo_pivot.add_child(petal)
+	# Slow halo rotation
+	var thalo: Tween = halo_pivot.create_tween().set_loops()
+	thalo.tween_property(halo_pivot, "rotation_degrees:y", 360.0, 16.0)
+	thalo.tween_property(halo_pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Massive central aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.55, 0.85)
+	light.light_energy = 4.5
+	light.omni_range = 22.0
+	light.position = Vector3(0, 7.20, 0)
+	elder.add_child(light)
+	# Aura pulse
+	var tlight: Tween = light.create_tween().set_loops()
+	tlight.tween_property(light, "light_energy", 6.0, 2.4)
+	tlight.tween_property(light, "light_energy", 4.5, 2.4)
+	# Title label above the elder (lore moment)
+	var label: Label3D = Label3D.new()
+	label.text = "THE BLOOM ELDER"
+	label.modulate = Color(1.0, 0.85, 0.95)
+	label.outline_modulate = Color(0.30, 0.05, 0.20)
+	label.outline_size = 14
+	label.font_size = 84
+	label.pixel_size = 0.014
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = Vector3(0, 11.30, 0)
+	elder.add_child(label)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Guardian of the last living root"
+	subtitle.modulate = Color(0.85, 0.95, 0.75)
+	subtitle.outline_modulate = Color(0.10, 0.20, 0.05)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.011
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 10.50, 0)
+	elder.add_child(subtitle)
+	# Trunk collision (capsule)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.25, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.65
+	cap.height = 6.50
+	cs.shape = cap
+	sb.add_child(cs)
+	elder.add_child(sb)
 
 
 
