@@ -25547,6 +25547,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_divination_table(geom)
 	# Epic-7 T65: oracle NPC
 	_build_d7_d7_oracle_npc()
+	# Epic-7 T66: arched stone bridge
+	_build_d7_arched_bridge(geom)
+	# Epic-7 T67: yak creatures
+	_build_d7_yaks(geom)
+	# Epic-7 T68: yak herder NPC
+	_build_d7_yak_herder_npc()
+	# Epic-7 T69: hot spring pool
+	_build_d7_hot_spring_d7(geom)
+	# Epic-7 T70: bathing monk NPC
+	_build_d7_bathing_monk_npc()
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -30057,6 +30067,364 @@ func _build_d7_d7_oracle_npc() -> void:
 	var tw: Tween = ball.create_tween().set_loops()
 	tw.tween_property(ball, "scale", Vector3.ONE * 1.20, 1.4)
 	tw.tween_property(ball, "scale", Vector3.ONE * 0.85, 1.4)
+
+
+func _build_d7_arched_bridge(geom: Node) -> void:
+	## Epic-7 T66: large stone bridge with curved arch span — wide deck +
+	## 2 arched supports underneath + decorative railings.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "ArchedStoneBridge"
+	bridge.position = Vector3(D7_CENTER.x + 6.0, 0.0, 12.0)
+	geom.add_child(bridge)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Wide deck (long box)
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(9.50, 0.40, 3.20)
+	deck.mesh = dm
+	deck.material_override = stone_mat
+	deck.position = Vector3(0, 1.10, 0)
+	bridge.add_child(deck)
+	# 2 arched supports underneath (half torus)
+	for sx in [-2.40, 2.40]:
+		var arch: MeshInstance3D = MeshInstance3D.new()
+		var atm: TorusMesh = TorusMesh.new()
+		atm.inner_radius = 1.40
+		atm.outer_radius = 1.55
+		arch.mesh = atm
+		arch.material_override = stone_mat
+		arch.position = Vector3(sx, 0.55, 0)
+		arch.rotation_degrees = Vector3(0, 0, 0)
+		arch.scale = Vector3(1.0, 1.0, 0.40)
+		bridge.add_child(arch)
+	# 2 stone side railings
+	for sz in [-1.40, 1.40]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(9.50, 0.65, 0.20)
+		rail.mesh = rm
+		rail.material_override = stone_mat
+		rail.position = Vector3(0, 1.65, sz)
+		bridge.add_child(rail)
+	# 8 small balusters along each rail
+	for sz in [-1.40, 1.40]:
+		for i in 8:
+			var bal: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.18, 0.65, 0.18)
+			bal.mesh = bm
+			bal.material_override = stone_mat
+			bal.position = Vector3(-4.20 + i * 1.20, 1.65, sz)
+			bridge.add_child(bal)
+	# Deck collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(9.50, 0.40, 3.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	bridge.add_child(sb)
+	# Rail collisions
+	for sz in [-1.40, 1.40]:
+		var rsb: StaticBody3D = StaticBody3D.new()
+		rsb.position = Vector3(0, 1.65, sz)
+		var rcs: CollisionShape3D = CollisionShape3D.new()
+		var rcb: BoxShape3D = BoxShape3D.new()
+		rcb.size = Vector3(9.50, 0.65, 0.20)
+		rcs.shape = rcb
+		rsb.add_child(rcs)
+		bridge.add_child(rsb)
+
+
+func _build_d7_yaks(geom: Node) -> void:
+	## Epic-7 T67: 3 mountain yak creatures — large dark furry bodies +
+	## curved horns + slow grazing tween.
+	var herd: Node3D = Node3D.new()
+	herd.name = "Yaks"
+	herd.position = Vector3(D7_CENTER.x + 16.0, 0.0, -22.0)
+	geom.add_child(herd)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.20, 0.15, 0.10)
+	fur_mat.roughness = 0.95
+	var horn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	horn_mat.albedo_color = Color(0.85, 0.75, 0.55)
+	horn_mat.roughness = 0.65
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 2.85, 0,  1.40),
+		Vector3(-2.40, 0,  0.85),
+	]
+	for p in positions:
+		var yak: Node3D = Node3D.new()
+		yak.position = p
+		herd.add_child(yak)
+		# Body (large rounded sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.55
+		bm.height = 0.95
+		body.mesh = bm
+		body.material_override = fur_mat
+		body.position = Vector3(0, 0.85, 0)
+		body.scale = Vector3(1.0, 0.95, 1.55)
+		yak.add_child(body)
+		# Long shaggy fur skirt (lower box)
+		var skirt: MeshInstance3D = MeshInstance3D.new()
+		var skm: BoxMesh = BoxMesh.new()
+		skm.size = Vector3(1.10, 0.55, 1.65)
+		skirt.mesh = skm
+		skirt.material_override = fur_mat
+		skirt.position = Vector3(0, 0.30, 0)
+		yak.add_child(skirt)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.30
+		hm.height = 0.55
+		head.mesh = hm
+		head.material_override = fur_mat
+		head.position = Vector3(0, 0.95, 0.95)
+		yak.add_child(head)
+		# 2 long curved horns
+		for sx in [-0.20, 0.20]:
+			var horn: MeshInstance3D = MeshInstance3D.new()
+			var hrm: PrismMesh = PrismMesh.new()
+			hrm.size = Vector3(0.10, 0.55, 0.10)
+			horn.mesh = hrm
+			horn.material_override = horn_mat
+			horn.position = Vector3(sx, 1.30, 0.85)
+			horn.rotation_degrees = Vector3(0, 0, sx * 75.0)
+			yak.add_child(horn)
+		# 4 short legs
+		for lx in [-0.30, 0.30]:
+			for lz in [-0.55, 0.55]:
+				var leg: MeshInstance3D = MeshInstance3D.new()
+				var lm: CylinderMesh = CylinderMesh.new()
+				lm.top_radius = 0.10
+				lm.bottom_radius = 0.10
+				lm.height = 0.55
+				leg.mesh = lm
+				leg.material_override = fur_mat
+				leg.position = Vector3(lx, 0.27, lz)
+				yak.add_child(leg)
+		# Slow head grazing bob
+		var tw: Tween = head.create_tween().set_loops()
+		tw.tween_property(head, "position:y", 0.55, 1.4 + randf() * 0.4)
+		tw.tween_property(head, "position:y", 0.95, 1.4 + randf() * 0.4)
+		# Body collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.40, 1.40, 1.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		yak.add_child(sb)
+
+
+func _build_d7_yak_herder_npc() -> void:
+	## Epic-7 T68: yak herder NPC — heavy fur cloak + tall shepherd's
+	## crook + warm yellow scarf.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "YakHerderSlot"
+	slot.position = Vector3(D7_CENTER.x + 12.0, 0.0, -22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "YakHerder"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Highvalley")
+	if "npc_id" in npc:
+		npc.set("npc_id", "yak_herder_d7")
+	slot.add_child(npc)
+	# Fur cloak
+	var cloak: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 1.30, 0.55)
+	cloak.mesh = cm
+	var cloak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloak_mat.albedo_color = Color(0.40, 0.30, 0.18)
+	cloak_mat.roughness = 0.95
+	cloak.material_override = cloak_mat
+	cloak.position = Vector3(0, 0.65, 0)
+	npc.add_child(cloak)
+	# Yellow scarf
+	var scarf: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 0.10, 0.30)
+	scarf.mesh = sm
+	var scarf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scarf_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	scarf_mat.emission_enabled = true
+	scarf_mat.emission = Color(0.95, 0.85, 0.20)
+	scarf_mat.emission_energy_multiplier = 0.45
+	scarf.material_override = scarf_mat
+	scarf.position = Vector3(0, 1.30, 0)
+	npc.add_child(scarf)
+	# Tall shepherd's crook
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.04
+	stm.bottom_radius = 0.05
+	stm.height = 1.85
+	staff.mesh = stm
+	staff.material_override = wood_mat
+	staff.position = Vector3(0.45, 0.92, 0)
+	npc.add_child(staff)
+	# Crook curl (small torus)
+	var curl: MeshInstance3D = MeshInstance3D.new()
+	var ctm: TorusMesh = TorusMesh.new()
+	ctm.inner_radius = 0.13
+	ctm.outer_radius = 0.18
+	curl.mesh = ctm
+	curl.material_override = wood_mat
+	curl.position = Vector3(0.45, 1.92, 0)
+	curl.rotation_degrees = Vector3(90, 0, 0)
+	npc.add_child(curl)
+
+
+func _build_d7_hot_spring_d7(geom: Node) -> void:
+	## Epic-7 T69: D7 hot spring — round natural pool with stone-rim +
+	## warm green water + steam particles.
+	var spring: Node3D = Node3D.new()
+	spring.name = "HotSpringD7"
+	spring.position = Vector3(D7_CENTER.x + 22.0, 0.0, 22.0)
+	geom.add_child(spring)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.35, 0.25)
+	stone_mat.roughness = 0.92
+	# Stone rim
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 1.85
+	rm.outer_radius = 2.20
+	rim.mesh = rm
+	rim.material_override = stone_mat
+	rim.position = Vector3(0, 0.30, 0)
+	spring.add_child(rim)
+	# Warm water disc
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.85
+	wm.bottom_radius = 1.85
+	wm.height = 0.06
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.30, 0.85, 0.55, 0.85)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.95, 0.65)
+	water_mat.emission_energy_multiplier = 0.85
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.05
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.30, 0)
+	spring.add_child(water)
+	# Bob
+	var tw: Tween = water.create_tween().set_loops()
+	tw.tween_property(water, "position:y", 0.34, 1.5)
+	tw.tween_property(water, "position:y", 0.30, 1.5)
+	# Steam particles
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 35
+	steam.lifetime = 3.0
+	steam.preprocess = 1.5
+	steam.position = Vector3(0, 0.45, 0)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(1.85, 0.10, 1.85)
+	pm.direction = Vector3(0.10, 1, 0.10)
+	pm.spread = 22.0
+	pm.gravity = Vector3(0, 0.55, 0)
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.30
+	pm.scale_max = 0.65
+	pm.color = Color(0.95, 0.95, 1.0, 0.55)
+	steam.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.30
+	sm_mesh.height = 0.55
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	spring.add_child(steam)
+	# Warm light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.85, 0.95, 0.70)
+	light.light_energy = 2.0
+	light.omni_range = 5.5
+	light.position = Vector3(0, 0.85, 0)
+	spring.add_child(light)
+	# Rim collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.20
+	cap.height = 0.55
+	cs.shape = cap
+	sb.add_child(cs)
+	spring.add_child(sb)
+
+
+func _build_d7_bathing_monk_npc() -> void:
+	## Epic-7 T70: bathing monk NPC near the spring — wrapped in towel,
+	## peaceful expression.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BathingMonkSlot"
+	slot.position = Vector3(D7_CENTER.x + 24.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "BathingMonk"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Hotspring")
+	if "npc_id" in npc:
+		npc.set("npc_id", "bathing_monk_d7")
+	slot.add_child(npc)
+	# White towel wrap
+	var towel: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.65, 0.85, 0.45)
+	towel.mesh = tm
+	var towel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	towel_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	towel_mat.roughness = 0.85
+	towel.material_override = towel_mat
+	towel.position = Vector3(0, 0.55, 0)
+	npc.add_child(towel)
+	# Bald head
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.20
+	dm.height = 0.36
+	dome.mesh = dm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	skin_mat.roughness = 0.65
+	dome.material_override = skin_mat
+	dome.position = Vector3(0, 1.30, 0)
+	npc.add_child(dome)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
