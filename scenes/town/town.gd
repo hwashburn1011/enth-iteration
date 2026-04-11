@@ -1393,6 +1393,16 @@ func _build_east_plaza() -> void:
 	_build_chess_players(geom)
 	# Epic-1 T85: plaza directory hologram listing shops + NPCs
 	_build_plaza_directory(geom)
+	# Epic-1 T86: combat respawn beacon (separate from save shrine)
+	_build_respawn_beacon(geom)
+	# Epic-1 T87: glitching ground crack VFX showing the simulation seams
+	_build_ground_glitch(geom)
+	# Epic-1 T88: 6 floating purchase receipts drifting between vendors
+	_build_floating_receipts(geom)
+	# Epic-1 T89: animated combat training golem punching air
+	_build_combat_golem(geom)
+	# Epic-1 T90: decorative weather dial kiosk
+	_build_weather_dial(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -6578,4 +6588,336 @@ func _build_plaza_directory(geom: Node) -> void:
 	cs.position = Vector3(0, 0.50, 0)
 	sb.add_child(cs)
 	dir.add_child(sb)
+
+
+func _build_respawn_beacon(geom: Node) -> void:
+	## Epic-1 T86: combat respawn beacon — a tall narrow column of stacked
+	## glowing rings climbing into the sky. Visually distinct from the save
+	## shrine (which is solid green obelisk). This is hovering rings only.
+	var beacon: Node3D = Node3D.new()
+	beacon.name = "EastPlazaRespawnBeacon"
+	beacon.position = Vector3(36, 0, -11)
+	geom.add_child(beacon)
+	# Tiny base disc
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CylinderMesh = CylinderMesh.new()
+	bmesh.top_radius = 0.55
+	bmesh.bottom_radius = 0.55
+	bmesh.height = 0.10
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.05, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.13, 0.16)
+	bmat.metallic = 0.85
+	bmat.roughness = 0.30
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.30, 0.85, 1.0)
+	bmat.emission_energy_multiplier = 0.7
+	base.material_override = bmat
+	beacon.add_child(base)
+	# 6 stacked glowing rings rising upward
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.55, 0.95, 1.0)
+	ring_mat.emission_energy_multiplier = 2.4
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 0.30
+		rmesh.outer_radius = 0.40
+		ring.mesh = rmesh
+		var origin_y: float = 0.50 + i * 0.55
+		ring.position = Vector3(0, origin_y, 0)
+		ring.material_override = ring_mat
+		beacon.add_child(ring)
+		# Each ring rises and resets, staggered
+		var rise: Tween = create_tween().set_loops()
+		rise.tween_interval(i * 0.30)
+		rise.tween_property(ring, "position:y", origin_y + 3.30, 2.4).set_ease(Tween.EASE_OUT)
+		rise.tween_property(ring, "position:y", origin_y, 0.05)
+		rise.tween_interval(0.40)
+	# Floating "RESPAWN" label
+	var label: Label3D = Label3D.new()
+	label.text = "RESPAWN"
+	label.position = Vector3(0, 4.5, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	beacon.add_child(label)
+
+
+func _build_ground_glitch(geom: Node) -> void:
+	## Epic-1 T87: 4 ground "glitch crack" decals scattered through the
+	## plaza — thin emissive cracks suggesting the simulation seams. Each
+	## flickers on a fast tween to feel unstable.
+	var positions: Array[Vector3] = [
+		Vector3(29, 0.04, -11),
+		Vector3(38, 0.04, 4),
+		Vector3(31, 0.04, 13),
+		Vector3(42, 0.04, -8),
+	]
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(1.0, 0.20, 0.40)
+	crack_mat.emission_enabled = true
+	crack_mat.emission = Color(1.0, 0.40, 0.55)
+	crack_mat.emission_energy_multiplier = 2.6
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var crack_root: Node3D = Node3D.new()
+		crack_root.name = "EastPlazaGlitchCrack_%d" % i
+		crack_root.position = positions[i]
+		crack_root.rotation = Vector3(0, randf() * TAU, 0)
+		geom.add_child(crack_root)
+		# 3 thin emissive bars at random angles forming a "crack"
+		for s in 3:
+			var seg: MeshInstance3D = MeshInstance3D.new()
+			var smesh: BoxMesh = BoxMesh.new()
+			smesh.size = Vector3(0.85 + randf() * 0.4, 0.02, 0.05)
+			seg.mesh = smesh
+			seg.position = Vector3(randf_range(-0.3, 0.3), 0, randf_range(-0.3, 0.3))
+			seg.rotation = Vector3(0, randf() * TAU, 0)
+			seg.material_override = crack_mat
+			crack_root.add_child(seg)
+		# Flicker visibility
+		var flicker: Tween = create_tween().set_loops()
+		flicker.tween_property(crack_root, "visible", false, 0.08)
+		flicker.tween_interval(0.10 + randf() * 0.20)
+		flicker.tween_property(crack_root, "visible", true, 0.0)
+		flicker.tween_interval(0.85 + randf() * 0.50)
+
+
+func _build_floating_receipts(geom: Node) -> void:
+	## Epic-1 T88: 6 small floating "receipt" papers drifting through the
+	## plaza on slow paths, suggesting commerce and ambient wind. Each is a
+	## thin amber-tinted card that bobs and slowly cycles between waypoints.
+	var paths: Array = [
+		[Vector3(28, 1.6, -7), Vector3(30, 2.2, -3), Vector3(28, 1.8, 0)],
+		[Vector3(34, 2.0, 5), Vector3(36, 1.6, 9), Vector3(34, 2.4, 5)],
+		[Vector3(40, 1.8, -4), Vector3(42, 2.4, 0), Vector3(40, 1.6, 4)],
+		[Vector3(32, 2.4, -2), Vector3(34, 1.8, 2), Vector3(32, 2.0, -2)],
+		[Vector3(38, 1.6, 11), Vector3(40, 2.2, 13), Vector3(38, 1.8, 11)],
+		[Vector3(30, 2.0, 8), Vector3(28, 1.6, 11), Vector3(30, 2.4, 8)],
+	]
+	for i in paths.size():
+		var receipt: MeshInstance3D = MeshInstance3D.new()
+		receipt.name = "EastPlazaReceipt_%d" % i
+		var rmesh: BoxMesh = BoxMesh.new()
+		rmesh.size = Vector3(0.30, 0.45, 0.02)
+		receipt.mesh = rmesh
+		receipt.position = paths[i][0]
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(0.95, 0.90, 0.65)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.95, 0.55)
+		rmat.emission_energy_multiplier = 0.55
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		receipt.material_override = rmat
+		geom.add_child(receipt)
+		# Drift through waypoints
+		var drift: Tween = create_tween().set_loops()
+		var path: Array = paths[i]
+		for wp in path:
+			drift.tween_property(receipt, "position", wp, 3.5).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(receipt, "position", path[0], 3.5).set_ease(Tween.EASE_IN_OUT)
+		# Tumbling rotation
+		var tumble: Tween = create_tween().set_loops()
+		tumble.tween_property(receipt, "rotation", Vector3(TAU, TAU * 0.5, 0), 6.0)
+
+
+func _build_combat_golem(geom: Node) -> void:
+	## Epic-1 T89: animated combat training golem in the sparring arena.
+	## Larger than the practice dummies, has stubby arms that punch the air,
+	## and a glowing red core in its chest.
+	var golem: Node3D = Node3D.new()
+	golem.name = "EastPlazaCombatGolem"
+	golem.position = Vector3(34, 0, 9)
+	geom.add_child(golem)
+	# Stone body
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.20, 0.24, 0.30)
+	body_mat.metallic = 0.40
+	body_mat.roughness = 0.55
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(1.2, 1.6, 0.85)
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.20, 0)
+	body.material_override = body_mat
+	golem.add_child(body)
+	# Head box
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(0.85, 0.65, 0.65)
+	head.mesh = hmesh
+	head.position = Vector3(0, 2.30, 0)
+	head.material_override = body_mat
+	golem.add_child(head)
+	# Glowing red eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.30, 0.30)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emesh: SphereMesh = SphereMesh.new()
+		emesh.radius = 0.08
+		emesh.height = 0.16
+		eye.mesh = emesh
+		eye.position = Vector3(ex, 2.35, 0.34)
+		eye.material_override = eye_mat
+		golem.add_child(eye)
+	# Glowing red core in chest
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: SphereMesh = SphereMesh.new()
+	cmesh.radius = 0.20
+	cmesh.height = 0.40
+	core.mesh = cmesh
+	core.position = Vector3(0, 1.40, 0.45)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.30, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.40, 0.30)
+	cmat.emission_energy_multiplier = 2.4
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = cmat
+	golem.add_child(core)
+	# Pulsing core
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(core, "scale", Vector3(1.25, 1.25, 1.25), 0.85).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(core, "scale", Vector3(1.0, 1.0, 1.0), 0.85).set_ease(Tween.EASE_IN_OUT)
+	# 2 stubby arms with punch animation
+	for sx: float in [-1.0, 1.0]:
+		var arm_pivot: Node3D = Node3D.new()
+		arm_pivot.position = Vector3(sx * 0.65, 1.65, 0)
+		golem.add_child(arm_pivot)
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(0.40, 0.40, 1.0)
+		arm.mesh = amesh
+		arm.position = Vector3(0, 0, 0.55)
+		arm.material_override = body_mat
+		arm_pivot.add_child(arm)
+		# Punch tween — arm moves forward and back
+		var punch: Tween = create_tween().set_loops()
+		punch.tween_interval(sx * 0.20 + 0.30)
+		punch.tween_property(arm, "position:z", 1.10, 0.18).set_ease(Tween.EASE_OUT)
+		punch.tween_property(arm, "position:z", 0.55, 0.30).set_ease(Tween.EASE_IN)
+		punch.tween_interval(0.35)
+	# Collision around body
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.2, 2.6, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.30, 0)
+	sb.add_child(cs)
+	golem.add_child(sb)
+
+
+func _build_weather_dial(geom: Node) -> void:
+	## Epic-1 T90: a small "weather control dial" kiosk on a tall pole. The
+	## dial has 3 setting wedges (sunny/storm/glitch) and an indicator
+	## needle that slowly rotates between them.
+	var dial: Node3D = Node3D.new()
+	dial.name = "EastPlazaWeatherDial"
+	dial.position = Vector3(46, 0, 8)
+	geom.add_child(dial)
+	# Pole
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	pole_mat.roughness = 0.30
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 0.07
+	pmesh.bottom_radius = 0.10
+	pmesh.height = 1.85
+	pole.mesh = pmesh
+	pole.position = Vector3(0, 0.92, 0)
+	pole.material_override = pole_mat
+	dial.add_child(pole)
+	# Dial body — flat disc facing the player
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dmesh: CylinderMesh = CylinderMesh.new()
+	dmesh.top_radius = 0.45
+	dmesh.bottom_radius = 0.45
+	dmesh.height = 0.06
+	disc.mesh = dmesh
+	disc.position = Vector3(0, 2.0, 0)
+	disc.rotation = Vector3(deg_to_rad(90), 0, 0)
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.18, 0.22, 0.28)
+	dmat.metallic = 0.65
+	dmat.roughness = 0.30
+	disc.material_override = dmat
+	dial.add_child(disc)
+	# 3 colored wedge labels
+	var label_specs: Array = [
+		["SUN", Color(1.0, 0.85, 0.30), -0.30, 0.30],
+		["STORM", Color(0.55, 0.85, 1.0), 0.30, 0.30],
+		["GLITCH", Color(1.0, 0.30, 0.55), 0.0, -0.30],
+	]
+	for spec in label_specs:
+		var label: Label3D = Label3D.new()
+		label.text = spec[0]
+		label.position = Vector3(spec[2], 2.0 + spec[3], 0.06)
+		label.modulate = spec[1]
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 12
+		label.no_depth_test = true
+		dial.add_child(label)
+	# Needle indicator on the disc
+	var needle_pivot: Node3D = Node3D.new()
+	needle_pivot.position = Vector3(0, 2.0, 0.04)
+	dial.add_child(needle_pivot)
+	var needle: MeshInstance3D = MeshInstance3D.new()
+	var nmesh: BoxMesh = BoxMesh.new()
+	nmesh.size = Vector3(0.04, 0.34, 0.04)
+	needle.mesh = nmesh
+	needle.position = Vector3(0, 0.17, 0)
+	var nmat: StandardMaterial3D = StandardMaterial3D.new()
+	nmat.albedo_color = Color(1.0, 0.95, 0.40)
+	nmat.emission_enabled = true
+	nmat.emission = Color(1.0, 0.95, 0.55)
+	nmat.emission_energy_multiplier = 2.4
+	nmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	needle.material_override = nmat
+	needle_pivot.add_child(needle)
+	# Needle slowly cycles between the 3 settings
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(needle_pivot, "rotation:z", deg_to_rad(-45), 2.0).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_interval(1.0)
+	spin.tween_property(needle_pivot, "rotation:z", deg_to_rad(45), 2.0).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_interval(1.0)
+	spin.tween_property(needle_pivot, "rotation:z", deg_to_rad(180), 2.0).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_interval(1.0)
+	spin.tween_property(needle_pivot, "rotation:z", 0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Top label
+	var label: Label3D = Label3D.new()
+	label.text = "WEATHER"
+	label.position = Vector3(0, 2.65, 0)
+	label.modulate = Color(0.85, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 14
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dial.add_child(label)
+	# Collision around pole
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.20
+	cap.height = 1.85
+	cs.shape = cap
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	dial.add_child(sb)
+
 
