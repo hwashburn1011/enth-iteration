@@ -71,6 +71,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_ground_runes(geom)
 	_build_th_road_benches(geom)
 	_build_th_road_planters(geom)
+	_build_th_courier_hut(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -9425,3 +9426,290 @@ func _build_th_road_planters(geom: Node) -> void:
 	var cpulse: Tween = pivot.create_tween().set_loops()
 	cpulse.tween_property(crystal_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
 	cpulse.tween_property(crystal_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_courier_hut(geom: Node) -> void:
+	## Epic-10 T55: small wooden + brass cabin building on the NW outer
+	## perimeter (between the bench ring and the archive tower) acting as
+	## a courier post hut. 4 walls forming an enclosed building with
+	## collision, pitched 2-panel roof, doorway opening on the front,
+	## glowing cyan window on the side, brass chimney with smoke, and a
+	## brass sign over the door.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_CourierHut"
+	# NW outer perimeter at radius 12 between bench ring and archive tower
+	var ang: float = 3.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 12.50, 0, sin(ang) * 12.50)
+	# Face the beacon
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	wood_mat.metallic = 0.10
+	wood_mat.emission_enabled = true
+	wood_mat.emission = Color(0.65, 0.40, 0.10)
+	wood_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(0.45, 0.85, 1.0)
+	window_mat.emission_energy_multiplier = 7.0
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stone foundation ----
+	var foundation: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(3.40, 0.30, 2.85)
+	foundation.mesh = fm
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	foundation.material_override = stone_mat
+	foundation.position = Vector3(0, 0.15, 0)
+	pivot.add_child(foundation)
+	# ---- 4 wooden walls ----
+	# Back wall (full)
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.20, 2.50, 0.18)
+	back.mesh = bm
+	back.material_override = wood_mat
+	back.position = Vector3(0, 1.55, 1.30)
+	pivot.add_child(back)
+	# Back wall collision
+	var back_sb: StaticBody3D = StaticBody3D.new()
+	back_sb.position = Vector3(0, 1.55, 1.30)
+	var back_cs: CollisionShape3D = CollisionShape3D.new()
+	var back_bsh: BoxShape3D = BoxShape3D.new()
+	back_bsh.size = Vector3(3.20, 2.50, 0.18)
+	back_cs.shape = back_bsh
+	back_sb.add_child(back_cs)
+	pivot.add_child(back_sb)
+	# Left wall (full)
+	var left: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(0.18, 2.50, 2.85)
+	left.mesh = lm
+	left.material_override = wood_mat
+	left.position = Vector3(-1.60, 1.55, 0)
+	pivot.add_child(left)
+	# Left wall collision
+	var left_sb: StaticBody3D = StaticBody3D.new()
+	left_sb.position = Vector3(-1.60, 1.55, 0)
+	var left_cs: CollisionShape3D = CollisionShape3D.new()
+	var left_bsh: BoxShape3D = BoxShape3D.new()
+	left_bsh.size = Vector3(0.18, 2.50, 2.85)
+	left_cs.shape = left_bsh
+	left_sb.add_child(left_cs)
+	pivot.add_child(left_sb)
+	# Right wall (with glowing cyan window cut out)
+	# Right wall has 2 segments: front + back of the window
+	var right_top: MeshInstance3D = MeshInstance3D.new()
+	var rtm: BoxMesh = BoxMesh.new()
+	rtm.size = Vector3(0.18, 0.85, 2.85)
+	right_top.mesh = rtm
+	right_top.material_override = wood_mat
+	right_top.position = Vector3(1.60, 2.38, 0)
+	pivot.add_child(right_top)
+	var right_bot: MeshInstance3D = MeshInstance3D.new()
+	var rbm: BoxMesh = BoxMesh.new()
+	rbm.size = Vector3(0.18, 0.65, 2.85)
+	right_bot.mesh = rbm
+	right_bot.material_override = wood_mat
+	right_bot.position = Vector3(1.60, 0.62, 0)
+	pivot.add_child(right_bot)
+	# Right wall front + back segments (around the central window)
+	var right_front: MeshInstance3D = MeshInstance3D.new()
+	var rfm: BoxMesh = BoxMesh.new()
+	rfm.size = Vector3(0.18, 1.00, 0.95)
+	right_front.mesh = rfm
+	right_front.material_override = wood_mat
+	right_front.position = Vector3(1.60, 1.55, -0.95)
+	pivot.add_child(right_front)
+	var right_back: MeshInstance3D = MeshInstance3D.new()
+	right_back.mesh = rfm
+	right_back.material_override = wood_mat
+	right_back.position = Vector3(1.60, 1.55, 0.95)
+	pivot.add_child(right_back)
+	# Right wall collision (full slab)
+	var right_sb: StaticBody3D = StaticBody3D.new()
+	right_sb.position = Vector3(1.60, 1.55, 0)
+	var right_cs: CollisionShape3D = CollisionShape3D.new()
+	var right_bsh: BoxShape3D = BoxShape3D.new()
+	right_bsh.size = Vector3(0.18, 2.50, 2.85)
+	right_cs.shape = right_bsh
+	right_sb.add_child(right_cs)
+	pivot.add_child(right_sb)
+	# Glowing cyan window on the right wall
+	var window: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: BoxMesh = BoxMesh.new()
+	wmesh.size = Vector3(0.10, 0.95, 0.95)
+	window.mesh = wmesh
+	window.material_override = window_mat
+	window.position = Vector3(1.62, 1.55, 0)
+	pivot.add_child(window)
+	# Front wall (with doorway opening — 2 segments left and right of the door)
+	var front_left: MeshInstance3D = MeshInstance3D.new()
+	var flm: BoxMesh = BoxMesh.new()
+	flm.size = Vector3(1.00, 2.50, 0.18)
+	front_left.mesh = flm
+	front_left.material_override = wood_mat
+	front_left.position = Vector3(-1.10, 1.55, -1.30)
+	pivot.add_child(front_left)
+	var front_right: MeshInstance3D = MeshInstance3D.new()
+	front_right.mesh = flm
+	front_right.material_override = wood_mat
+	front_right.position = Vector3(1.10, 1.55, -1.30)
+	pivot.add_child(front_right)
+	# Front wall top header (above the doorway)
+	var front_top: MeshInstance3D = MeshInstance3D.new()
+	var ftm: BoxMesh = BoxMesh.new()
+	ftm.size = Vector3(1.20, 0.55, 0.18)
+	front_top.mesh = ftm
+	front_top.material_override = wood_mat
+	front_top.position = Vector3(0, 2.55, -1.30)
+	pivot.add_child(front_top)
+	# Front wall collision (segments only — leave doorway open)
+	var fl_sb: StaticBody3D = StaticBody3D.new()
+	fl_sb.position = Vector3(-1.10, 1.55, -1.30)
+	var fl_cs: CollisionShape3D = CollisionShape3D.new()
+	var fl_bsh: BoxShape3D = BoxShape3D.new()
+	fl_bsh.size = Vector3(1.00, 2.50, 0.18)
+	fl_cs.shape = fl_bsh
+	fl_sb.add_child(fl_cs)
+	pivot.add_child(fl_sb)
+	var fr_sb: StaticBody3D = StaticBody3D.new()
+	fr_sb.position = Vector3(1.10, 1.55, -1.30)
+	var fr_cs: CollisionShape3D = CollisionShape3D.new()
+	fr_cs.shape = fl_bsh
+	fr_sb.add_child(fr_cs)
+	pivot.add_child(fr_sb)
+	# ---- Pitched roof (2 angled wood panels) ----
+	for ry in 2:
+		var rmult: float = -1.0 if ry == 0 else 1.0
+		var roof_panel: MeshInstance3D = MeshInstance3D.new()
+		var rmm: BoxMesh = BoxMesh.new()
+		rmm.size = Vector3(3.60, 0.18, 1.85)
+		roof_panel.mesh = rmm
+		roof_panel.material_override = wood_mat
+		roof_panel.position = Vector3(0, 3.20, rmult * 0.85)
+		roof_panel.rotation.x = rmult * 0.45
+		pivot.add_child(roof_panel)
+	# Brass roof ridge cap
+	var ridge: MeshInstance3D = MeshInstance3D.new()
+	var rim: BoxMesh = BoxMesh.new()
+	rim.size = Vector3(3.40, 0.14, 0.20)
+	ridge.mesh = rim
+	ridge.material_override = brass_mat
+	ridge.position = Vector3(0, 3.55, 0)
+	pivot.add_child(ridge)
+	# ---- Brass chimney with smoke ----
+	var chimney: MeshInstance3D = MeshInstance3D.new()
+	var chm: BoxMesh = BoxMesh.new()
+	chm.size = Vector3(0.40, 1.10, 0.40)
+	chimney.mesh = chm
+	chimney.material_override = brass_mat
+	chimney.position = Vector3(-1.00, 3.95, 0.65)
+	pivot.add_child(chimney)
+	# Chimney smoke particles
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.position = Vector3(-1.00, 4.65, 0.65)
+	smoke.amount = 18
+	smoke.lifetime = 3.0
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.direction = Vector3(0, 1, 0)
+	smat.spread = 16.0
+	smat.initial_velocity_min = 0.5
+	smat.initial_velocity_max = 1.0
+	smat.gravity = Vector3(0.2, 0.4, 0)
+	smat.scale_min = 0.12
+	smat.scale_max = 0.24
+	smat.color = Color(0.30, 0.25, 0.20, 0.65)
+	smoke.process_material = smat
+	var smkm: SphereMesh = SphereMesh.new()
+	smkm.radius = 0.10
+	smkm.height = 0.20
+	smoke.draw_pass_1 = smkm
+	pivot.add_child(smoke)
+	# ---- Brass sign over the door (with glowing cyan center letter) ----
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var sgm: BoxMesh = BoxMesh.new()
+	sgm.size = Vector3(1.30, 0.45, 0.10)
+	sign.mesh = sgm
+	sign.material_override = brass_mat
+	sign.position = Vector3(0, 2.30, -1.40)
+	pivot.add_child(sign)
+	var sign_letter: MeshInstance3D = MeshInstance3D.new()
+	var sllm: BoxMesh = BoxMesh.new()
+	sllm.size = Vector3(0.95, 0.30, 0.06)
+	sign_letter.mesh = sllm
+	sign_letter.material_override = window_mat
+	sign_letter.position = Vector3(0, 2.30, -1.46)
+	pivot.add_child(sign_letter)
+	# Sign hanging chains
+	for hcx in [-0.55, 0.55]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var chm2: CylinderMesh = CylinderMesh.new()
+		chm2.top_radius = 0.025
+		chm2.bottom_radius = 0.025
+		chm2.height = 0.30
+		chain.mesh = chm2
+		chain.material_override = iron_mat
+		chain.position = Vector3(hcx, 2.65, -1.40)
+		pivot.add_child(chain)
+	# ---- 2 hanging brass lanterns flanking the doorway ----
+	for hlx in [-1.30, 1.30]:
+		# Bracket
+		var bracket: MeshInstance3D = MeshInstance3D.new()
+		var bktm: BoxMesh = BoxMesh.new()
+		bktm.size = Vector3(0.15, 0.18, 0.30)
+		bracket.mesh = bktm
+		bracket.material_override = brass_mat
+		bracket.position = Vector3(hlx, 2.05, -1.45)
+		pivot.add_child(bracket)
+		# Lantern bulb
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var blm: SphereMesh = SphereMesh.new()
+		blm.radius = 0.14
+		blm.height = 0.28
+		bulb.mesh = blm
+		var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+		bulb_mat.emission_enabled = true
+		bulb_mat.emission = Color(1.0, 0.65, 0.20)
+		bulb_mat.emission_energy_multiplier = 8.0
+		bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(hlx, 1.85, -1.55)
+		pivot.add_child(bulb)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(hlx, 1.85, -1.55)
+		lt.light_color = Color(1.0, 0.65, 0.20)
+		lt.light_energy = 2.4
+		lt.omni_range = 6.0
+		pivot.add_child(lt)
+	# ---- Strong cyan window OmniLight (interior glow leaking out) ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(1.95, 1.55, 0)
+	lt.light_color = Color(0.45, 0.85, 1.0)
+	lt.light_energy = 2.2
+	lt.omni_range = 6.5
+	pivot.add_child(lt)
+	# Window pulse
+	var wpulse: Tween = pivot.create_tween().set_loops()
+	wpulse.tween_property(window_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	wpulse.tween_property(window_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
