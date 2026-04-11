@@ -1450,6 +1450,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_junk_pile(geom)
 	# Epic-2 T10: abandoned roadside terminal kiosk
 	_build_d2_abandoned_kiosk(geom)
+	# Epic-2 T11: 4 ground impact craters with glowing rims
+	_build_d2_craters(geom)
+	# Epic-2 T12: overturned crate barricade
+	_build_d2_barricade(geom)
+	# Epic-2 T13: 5 toxic glowing puddles on the ground
+	_build_d2_toxic_puddles(geom)
+	# Epic-2 T14: ambient falling sparks raining from above
+	_build_d2_falling_sparks(geom)
+	# Epic-2 T15: scavenger NPC picking through junk
+	_build_d2_scavenger_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -8486,5 +8496,309 @@ func _build_d2_abandoned_kiosk(geom: Node) -> void:
 	cs.position = Vector3(0, 0.70, 0)
 	sb.add_child(cs)
 	kiosk.add_child(sb)
+
+
+func _build_d2_craters(geom: Node) -> void:
+	## Epic-2 T11: 4 ground impact craters scattered around D2. Each is a
+	## flat torus rim slightly recessed with a glowing inner disc.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-12, 0.04, 8),
+		D2_CENTER + Vector3(2, 0.04, -12),
+		D2_CENTER + Vector3(16, 0.04, 10),
+		D2_CENTER + Vector3(22, 0.04, -6),
+	]
+	for i in positions.size():
+		var crater: Node3D = Node3D.new()
+		crater.name = "D2Crater_%d" % i
+		crater.position = positions[i]
+		geom.add_child(crater)
+		# Outer rim torus
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 1.20
+		rmesh.outer_radius = 1.50
+		rim.mesh = rmesh
+		rim.position = Vector3(0, 0.05, 0)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(0.20, 0.10, 0.06)
+		rmat.metallic = 0.55
+		rmat.roughness = 0.55
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.40, 0.10)
+		rmat.emission_energy_multiplier = 0.95
+		rim.material_override = rmat
+		crater.add_child(rim)
+		# Inner glowing disc
+		var disc: MeshInstance3D = MeshInstance3D.new()
+		var dmesh: CylinderMesh = CylinderMesh.new()
+		dmesh.top_radius = 1.15
+		dmesh.bottom_radius = 1.15
+		dmesh.height = 0.04
+		disc.mesh = dmesh
+		disc.position = Vector3(0, 0.02, 0)
+		var dmat: StandardMaterial3D = StandardMaterial3D.new()
+		dmat.albedo_color = Color(1.0, 0.40, 0.10)
+		dmat.emission_enabled = true
+		dmat.emission = Color(1.0, 0.55, 0.15)
+		dmat.emission_energy_multiplier = 1.6
+		dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		disc.material_override = dmat
+		crater.add_child(disc)
+		# Pulse the disc
+		var pulse: Tween = create_tween().set_loops()
+		var ps: float = 1.4 + i * 0.2
+		pulse.tween_property(disc, "scale", Vector3(1.10, 1.0, 1.10), ps).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(disc, "scale", Vector3(0.95, 1.0, 0.95), ps).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d2_barricade(geom: Node) -> void:
+	## Epic-2 T12: an overturned crate barricade — 5 angled crates stacked
+	## haphazardly across part of the road, partially blocking passage.
+	## Glowing red warning bars stretched between two posts.
+	var bar: Node3D = Node3D.new()
+	bar.name = "D2Barricade"
+	bar.position = D2_CENTER + Vector3(-2, 0, 0)
+	geom.add_child(bar)
+	# 5 stacked tilted crates
+	var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crate_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	crate_mat.metallic = 0.30
+	crate_mat.roughness = 0.55
+	var crate_specs: Array = [
+		[Vector3(-1.0, 0.40, 0.0), Vector3(0, deg_to_rad(15), deg_to_rad(-8))],
+		[Vector3(-0.20, 0.40, 0.5), Vector3(0, deg_to_rad(-20), 0)],
+		[Vector3(0.6, 0.40, -0.3), Vector3(0, deg_to_rad(35), 0)],
+		[Vector3(-0.40, 1.10, 0.2), Vector3(0, deg_to_rad(10), deg_to_rad(15))],
+		[Vector3(0.30, 1.10, -0.4), Vector3(0, deg_to_rad(-25), 0)],
+	]
+	for spec in crate_specs:
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.85, 0.80, 0.85)
+		crate.mesh = cmesh
+		crate.position = spec[0]
+		crate.rotation = spec[1]
+		crate.material_override = crate_mat
+		bar.add_child(crate)
+	# 2 metal posts on either side
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	for sx: float in [-1.8, 1.8]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.07
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 1.6
+		post.mesh = pmesh
+		post.position = Vector3(sx, 0.80, 0)
+		post.material_override = post_mat
+		bar.add_child(post)
+	# 2 horizontal red warning bars between the posts
+	var warn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	warn_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	warn_mat.emission_enabled = true
+	warn_mat.emission = Color(1.0, 0.40, 0.30)
+	warn_mat.emission_energy_multiplier = 1.8
+	warn_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for wy: float in [0.55, 1.10]:
+		var warn: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		wmesh.size = Vector3(3.6, 0.10, 0.06)
+		warn.mesh = wmesh
+		warn.position = Vector3(0, wy, 0)
+		warn.material_override = warn_mat
+		bar.add_child(warn)
+	# Pulse warning bars
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(warn_mat, "emission_energy_multiplier", 2.6, 0.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(warn_mat, "emission_energy_multiplier", 0.8, 0.6).set_ease(Tween.EASE_IN_OUT)
+	# Collision around the whole barricade
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.6, 1.6, 1.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.80, 0)
+	sb.add_child(cs)
+	bar.add_child(sb)
+
+
+func _build_d2_toxic_puddles(geom: Node) -> void:
+	## Epic-2 T13: 5 toxic glowing puddles on the D2 ground. Each is a
+	## low elliptical disc of bright green emissive liquid that pulses
+	## scale to feel slimy and unstable.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-8, 0.04, 0),
+		D2_CENTER + Vector3(6, 0.04, 6),
+		D2_CENTER + Vector3(12, 0.04, -10),
+		D2_CENTER + Vector3(18, 0.04, 4),
+		D2_CENTER + Vector3(22, 0.04, 12),
+	]
+	for i in positions.size():
+		var puddle: MeshInstance3D = MeshInstance3D.new()
+		puddle.name = "D2ToxicPuddle_%d" % i
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.65 + randf_range(0, 0.30)
+		pmesh.bottom_radius = pmesh.top_radius
+		pmesh.height = 0.06
+		puddle.mesh = pmesh
+		puddle.position = positions[i]
+		puddle.scale = Vector3(1.0 + randf_range(-0.30, 0.30), 1.0, 1.0 + randf_range(-0.30, 0.30))
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.20, 0.95, 0.30)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.40, 1.0, 0.30)
+		pmat.emission_energy_multiplier = 1.8
+		pmat.metallic = 0.30
+		pmat.roughness = 0.10
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		puddle.material_override = pmat
+		geom.add_child(puddle)
+		# Pulse scale to feel like sloshing
+		var pulse: Tween = create_tween().set_loops()
+		var sx: float = puddle.scale.x
+		var sz: float = puddle.scale.z
+		var pp: float = 1.4 + i * 0.2
+		pulse.tween_property(puddle, "scale", Vector3(sx * 1.10, 1.0, sz * 0.92), pp).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(puddle, "scale", Vector3(sx * 0.92, 1.0, sz * 1.10), pp).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d2_falling_sparks(geom: Node) -> void:
+	## Epic-2 T14: ambient falling sparks raining down from high above the
+	## district — yellow tiny particles falling slowly with gravity. Sells
+	## "this place is electrically unstable".
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.name = "D2FallingSparks"
+	sparks.position = D2_CENTER + Vector3(0, 12, 0)
+	sparks.amount = 60
+	sparks.lifetime = 4.5
+	sparks.preprocess = 2.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(20, 0.5, 18)
+	pmat.direction = Vector3(0, -1, 0)
+	pmat.spread = 12.0
+	pmat.initial_velocity_min = 0.85
+	pmat.initial_velocity_max = 1.40
+	pmat.gravity = Vector3(0, -1.5, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.85, 0.30, 1.0)
+	sparks.process_material = pmat
+	var spark_mesh: SphereMesh = SphereMesh.new()
+	spark_mesh.radius = 0.05
+	spark_mesh.height = 0.10
+	var spark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spark_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	spark_mat.emission_enabled = true
+	spark_mat.emission = Color(1.0, 0.95, 0.40)
+	spark_mat.emission_energy_multiplier = 2.6
+	spark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spark_mesh.material = spark_mat
+	sparks.draw_pass_1 = spark_mesh
+	geom.add_child(sparks)
+
+
+func _build_d2_scavenger_npc() -> void:
+	## Epic-2 T15: a scavenger NPC bent over the junk pile sifting through
+	## debris. Crouched body, smaller than the wanderer, with a glowing
+	## flashlight cone pointed at the ground.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var scav: Node3D = Node3D.new()
+	scav.name = "D2Scavenger"
+	scav.position = D2_CENTER + Vector3(-6, 0, -12)
+	slots.add_child(scav)
+	# Crouched body — shorter capsule
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.45, 0)
+	body.rotation = Vector3(deg_to_rad(35), 0, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.28, 0.20, 0.14)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.65
+	body.material_override = bmat
+	scav.add_child(body)
+	# Goggles head — smaller box
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(0.40, 0.32, 0.40)
+	head.mesh = hmesh
+	head.position = Vector3(0, 0.85, 0.45)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.22, 0.16, 0.10)
+	hmat.metallic = 0.30
+	hmat.roughness = 0.60
+	head.material_override = hmat
+	scav.add_child(head)
+	# 2 cyan goggle lenses
+	var goggle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	goggle_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	goggle_mat.emission_enabled = true
+	goggle_mat.emission = Color(0.55, 0.95, 1.0)
+	goggle_mat.emission_energy_multiplier = 2.0
+	goggle_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var lens: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: SphereMesh = SphereMesh.new()
+		lmesh.radius = 0.06
+		lmesh.height = 0.12
+		lens.mesh = lmesh
+		lens.position = Vector3(ex, 0.85, 0.66)
+		lens.material_override = goggle_mat
+		scav.add_child(lens)
+	# Flashlight pointed at ground
+	var flashlight_root: Node3D = Node3D.new()
+	flashlight_root.position = Vector3(0.30, 0.50, 0.40)
+	scav.add_child(flashlight_root)
+	# Flashlight body
+	var flash: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: CylinderMesh = CylinderMesh.new()
+	fmesh.top_radius = 0.06
+	fmesh.bottom_radius = 0.06
+	fmesh.height = 0.30
+	flash.mesh = fmesh
+	flash.rotation = Vector3(deg_to_rad(80), 0, 0)
+	flash.material_override = bmat
+	flashlight_root.add_child(flash)
+	# Flashlight beam (visible cone)
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_mesh: CylinderMesh = CylinderMesh.new()
+	beam_mesh.top_radius = 0.06
+	beam_mesh.bottom_radius = 0.30
+	beam_mesh.height = 0.55
+	beam.mesh = beam_mesh
+	beam.position = Vector3(0, -0.30, 0.30)
+	beam.rotation = Vector3(deg_to_rad(80), 0, 0)
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(1.0, 0.95, 0.55, 0.30)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(1.0, 0.95, 0.55)
+	beam_mat.emission_energy_multiplier = 1.4
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	flashlight_root.add_child(beam)
+	# Sifting hand bobble — body rocks slightly
+	var rock: Tween = create_tween().set_loops()
+	rock.tween_property(scav, "rotation:y", deg_to_rad(15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	rock.tween_property(scav, "rotation:y", deg_to_rad(-15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Scavenger"
+	label.position = Vector3(0, 1.4, 0)
+	label.modulate = Color(0.85, 0.85, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	scav.add_child(label)
+
 
 
