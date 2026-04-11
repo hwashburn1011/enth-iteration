@@ -56,6 +56,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_south_entry_arch(geom)
 	_build_th_patrol_guard_npc(town)
 	_build_th_running_child_npc(town)
+	_build_th_sky_data_highway(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -7202,3 +7203,95 @@ func _build_th_running_child_npc(town: Node) -> void:
 	var dpulse2: Tween = npc.create_tween().set_loops()
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_sky_data_highway(geom: Node) -> void:
+	## Epic-10 T40: 2 long glowing cyan data lines stretching diagonally
+	## over the plaza connecting the 4 corner towers in an X pattern
+	## (NE bell tower ↔ SW forge brazier, NW archive tower ↔ SE observatory).
+	## Each line is a long thin glowing cyan box rotated to align with its
+	## endpoints, with a beam particle emitter at each endpoint sending
+	## data packets along the line.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SkyDataHighway"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Corner tower endpoints (matching T26-T29 positions at radius 16.5)
+	# NE bell tower
+	var ne: Vector3 = Vector3(cos(PI / 4.0) * 16.50, 18.0, sin(PI / 4.0) * 16.50)
+	# NW archive tower
+	var nw: Vector3 = Vector3(cos(3.0 * PI / 4.0) * 16.50, 16.0, sin(3.0 * PI / 4.0) * 16.50)
+	# SW forge brazier monument
+	var sw: Vector3 = Vector3(cos(5.0 * PI / 4.0) * 16.50, 7.0, sin(5.0 * PI / 4.0) * 16.50)
+	# SE observatory dome
+	var se: Vector3 = Vector3(cos(7.0 * PI / 4.0) * 16.50, 4.0, sin(7.0 * PI / 4.0) * 16.50)
+	# 2 diagonal beam pairs
+	var beam_pairs: Array = [
+		[ne, sw],  # NE bell tower → SW forge brazier
+		[nw, se],  # NW archive tower → SE observatory
+	]
+	for pair in beam_pairs:
+		var a: Vector3 = pair[0]
+		var b: Vector3 = pair[1]
+		var mid: Vector3 = (a + b) * 0.5
+		var diff: Vector3 = b - a
+		var span: float = diff.length()
+		# Beam line (long thin glowing cyan box rotated to align with the diagonal)
+		var beam: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(span, 0.18, 0.18)
+		beam.mesh = bm
+		beam.material_override = data_mat
+		beam.position = mid
+		# Rotate the beam so its X axis aligns with the diagonal
+		beam.look_at_from_position(mid, b, Vector3.UP)
+		beam.rotation.y += PI / 2.0
+		pivot.add_child(beam)
+		# Data packet particles flowing along the beam from A → B
+		var packets: GPUParticles3D = GPUParticles3D.new()
+		packets.position = a
+		packets.amount = 18
+		packets.lifetime = max(span / 6.0, 4.0)
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = (b - a).normalized()
+		pmat.spread = 4.0
+		pmat.initial_velocity_min = 5.0
+		pmat.initial_velocity_max = 6.5
+		pmat.gravity = Vector3(0, 0, 0)
+		pmat.scale_min = 0.18
+		pmat.scale_max = 0.30
+		pmat.color = Color(0.55, 0.95, 1.0, 1.0)
+		packets.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.10
+		psmesh.height = 0.20
+		packets.draw_pass_1 = psmesh
+		pivot.add_child(packets)
+		# Reverse data flow B → A using a second emitter
+		var packets_rev: GPUParticles3D = GPUParticles3D.new()
+		packets_rev.position = b
+		packets_rev.amount = 18
+		packets_rev.lifetime = max(span / 6.0, 4.0)
+		var prmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		prmat.direction = (a - b).normalized()
+		prmat.spread = 4.0
+		prmat.initial_velocity_min = 5.0
+		prmat.initial_velocity_max = 6.5
+		prmat.gravity = Vector3(0, 0, 0)
+		prmat.scale_min = 0.18
+		prmat.scale_max = 0.30
+		prmat.color = Color(0.95, 0.55, 0.20, 1.0)  # warm amber for reverse direction
+		packets_rev.process_material = prmat
+		packets_rev.draw_pass_1 = psmesh
+		pivot.add_child(packets_rev)
+	# Shared beam pulse
+	var bpulse: Tween = pivot.create_tween().set_loops()
+	bpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	bpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
