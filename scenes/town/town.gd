@@ -1895,6 +1895,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_chef_npc()
 	# Epic-4 T25: soup pot with steam
 	_build_d4_soup_pot(geom)
+	# Epic-4 T26: cracked stone path tiles
+	_build_d4_stone_path(geom)
+	# Epic-4 T27: windmill with rotating blades
+	_build_d4_windmill(geom)
+	# Epic-4 T28: wheat field grid
+	_build_d4_wheat_field(geom)
+	# Epic-4 T29: Miller NPC
+	_build_d4_miller_npc()
+	# Epic-4 T30: bread oven with smoke
+	_build_d4_bread_oven(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -3474,6 +3484,235 @@ func _build_d4_soup_pot(geom: Node) -> void:
 	cs.position = Vector3(0, 0.42, 0)
 	sb.add_child(cs)
 	pot.add_child(sb)
+
+
+func _build_d4_stone_path(geom: Node) -> void:
+	## Epic-4 T26: 12 cracked stone path tiles winding through D4.
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	for i in 12:
+		var t: float = float(i) / 12.0
+		var x: float = 192.0 + i * 2.4
+		var z: float = sin(t * 4.0) * 1.6
+		var tile: MeshInstance3D = MeshInstance3D.new()
+		tile.name = "D4PathTile_%d" % i
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(1.40, 0.10, 1.40)
+		tile.mesh = tm
+		tile.position = Vector3(x, 0.05, z)
+		tile.rotation = Vector3(0, deg_to_rad(randf_range(-15, 15)), 0)
+		tile.material_override = stone_mat
+		geom.add_child(tile)
+
+
+func _build_d4_windmill(geom: Node) -> void:
+	## Epic-4 T27: a tall windmill — round stone tower + 4 rotating blades.
+	var mill: Node3D = Node3D.new()
+	mill.name = "D4Windmill"
+	mill.position = D4_CENTER + Vector3(-15, 0, -16)
+	geom.add_child(mill)
+	# Tower body
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	var tower: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 1.20
+	tm.bottom_radius = 1.40
+	tm.height = 6.0
+	tower.mesh = tm
+	tower.position = Vector3(0, 3.0, 0)
+	tower.material_override = stone_mat
+	mill.add_child(tower)
+	# Roof cone
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(2.85, 1.20, 2.85)
+	roof.mesh = rm
+	roof.position = Vector3(0, 6.55, 0)
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	roof.material_override = roof_mat
+	mill.add_child(roof)
+	# Blade pivot at front
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 4.0, 1.40)
+	mill.add_child(pivot)
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.40, 3.40, 0.18)
+		blade.mesh = bm
+		blade.position = Vector3(cos(angle) * 1.70, sin(angle) * 1.70, 0)
+		blade.rotation = Vector3(0, 0, -angle)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.95, 0.95, 0.95)
+		blade.material_override = bmat
+		pivot.add_child(blade)
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:z", TAU, 8.0)
+	# Collision around tower
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.40
+	cap.height = 6.0
+	cs.shape = cap
+	cs.position = Vector3(0, 3.0, 0)
+	sb.add_child(cs)
+	mill.add_child(sb)
+
+
+func _build_d4_wheat_field(geom: Node) -> void:
+	## Epic-4 T28: 30 wheat stalks in a 5x6 grid.
+	var field: Node3D = Node3D.new()
+	field.name = "D4WheatField"
+	field.position = D4_CENTER + Vector3(-12, 0, -12)
+	geom.add_child(field)
+	var wheat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheat_mat.albedo_color = Color(0.95, 0.85, 0.30)
+	wheat_mat.emission_enabled = true
+	wheat_mat.emission = Color(1.0, 0.95, 0.30)
+	wheat_mat.emission_energy_multiplier = 0.85
+	wheat_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for r in 5:
+		for c in 6:
+			var stalk: MeshInstance3D = MeshInstance3D.new()
+			var sm: BoxMesh = BoxMesh.new()
+			sm.size = Vector3(0.06, 0.85, 0.06)
+			stalk.mesh = sm
+			stalk.position = Vector3(-1.5 + c * 0.65, 0.42, -1.0 + r * 0.55)
+			stalk.material_override = wheat_mat
+			field.add_child(stalk)
+
+
+func _build_d4_miller_npc() -> void:
+	## Epic-4 T29: Miller NPC with flour-dusted apron.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var miller: Node3D = Node3D.new()
+	miller.name = "D4Miller"
+	miller.position = D4_CENTER + Vector3(-12, 0, -16)
+	slots.add_child(miller)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.65, 0.45)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.85, 0.55)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	miller.add_child(body)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	head.material_override = bmat
+	miller.add_child(head)
+	var label: Label3D = Label3D.new()
+	label.text = "Miller"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.85, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	miller.add_child(label)
+
+
+func _build_d4_bread_oven(geom: Node) -> void:
+	## Epic-4 T30: stone bread oven with fire mouth and chimney smoke.
+	var oven: Node3D = Node3D.new()
+	oven.name = "D4BreadOven"
+	oven.position = D4_CENTER + Vector3(-9, 0, -16)
+	geom.add_child(oven)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 1.20, 1.40)
+	body.mesh = bm
+	body.position = Vector3(0, 0.60, 0)
+	body.material_override = stone_mat
+	oven.add_child(body)
+	# Dome top
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.85
+	dm.height = 0.85
+	dome.mesh = dm
+	dome.position = Vector3(0, 1.20, 0)
+	dome.scale = Vector3(1.0, 0.6, 1.0)
+	dome.material_override = stone_mat
+	oven.add_child(dome)
+	# Dark fire mouth
+	var mouth: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.55, 0.40, 0.10)
+	mouth.mesh = mm
+	mouth.position = Vector3(0, 0.65, 0.71)
+	var mmat: StandardMaterial3D = StandardMaterial3D.new()
+	mmat.albedo_color = Color(0.10, 0.06, 0.04)
+	mmat.emission_enabled = true
+	mmat.emission = Color(1.0, 0.55, 0.20)
+	mmat.emission_energy_multiplier = 2.0
+	mmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mouth.material_override = mmat
+	oven.add_child(mouth)
+	# Chimney
+	var chimney: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.30, 1.0, 0.30)
+	chimney.mesh = cm
+	chimney.position = Vector3(0, 2.0, -0.40)
+	chimney.material_override = stone_mat
+	oven.add_child(chimney)
+	# Smoke particles
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.amount = 20
+	smoke.lifetime = 3.0
+	smoke.position = Vector3(0, 2.55, -0.40)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.10
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 12.0
+	pmat.initial_velocity_min = 0.55
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.20
+	pmat.scale_max = 0.40
+	pmat.color = Color(0.40, 0.40, 0.50, 0.55)
+	smoke.process_material = pmat
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.20
+	sm.height = 0.40
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.40, 0.40, 0.50, 0.55)
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = sm_mat
+	smoke.draw_pass_1 = sm
+	oven.add_child(smoke)
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 1.85, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	oven.add_child(sb)
 
 
 
