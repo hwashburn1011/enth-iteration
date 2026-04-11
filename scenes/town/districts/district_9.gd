@@ -106,6 +106,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_imp_pack(geom)
 	_build_d9_iron_sentinel_statues(geom)
 	_build_d9_drift_lava_pool(geom)
+	_build_d9_sentinel_oath_wall(geom)
 	print("[D9Builder] done")
 
 
@@ -9753,4 +9754,155 @@ func _build_d9_drift_lava_pool(geom: Node) -> void:
 	var lpulse: Tween = pivot.create_tween().set_loops()
 	lpulse.tween_property(lava_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(lava_mat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_sentinel_oath_wall(geom: Node) -> void:
+	## Epic-9 T86: long basalt inscription wall standing behind the iron
+	## sentinel statues (T84). Carved with the sentinels' oath as 4 rows
+	## of glowing rune blocks plus a central guild crest plaque, framed
+	## by 4 brass torch sconces along the wall length.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_SentinelOathWall"
+	# Behind the iron sentinels (T84 at +20, 0, 0; statues at +/-7 X with -PI/2 yaw)
+	# The sentinels face the center; "behind" them is a couple meters further out
+	# We'll place the wall at the +20 X line, slightly south of the statues
+	pivot.position = D9_CENTER + Vector3(20, 0, 6)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.45, 0.15, 0.04)
+	basalt_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.55, 0.10)
+	rune_mat.emission_energy_multiplier = 5.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Main wall slab ----
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(18.0, 4.20, 0.65)
+	wall.mesh = wm
+	wall.material_override = basalt_mat
+	wall.position = Vector3(0, 2.10, 0)
+	pivot.add_child(wall)
+	# Wall collision
+	var wsb: StaticBody3D = StaticBody3D.new()
+	wsb.position = Vector3(0, 2.10, 0)
+	var wcs: CollisionShape3D = CollisionShape3D.new()
+	var wbsh: BoxShape3D = BoxShape3D.new()
+	wbsh.size = Vector3(18.0, 4.20, 0.65)
+	wcs.shape = wbsh
+	wsb.add_child(wcs)
+	pivot.add_child(wsb)
+	# Brass top trim
+	var top_trim: MeshInstance3D = MeshInstance3D.new()
+	var ttm: BoxMesh = BoxMesh.new()
+	ttm.size = Vector3(18.20, 0.20, 0.85)
+	top_trim.mesh = ttm
+	top_trim.material_override = brass_mat
+	top_trim.position = Vector3(0, 4.30, 0)
+	pivot.add_child(top_trim)
+	# Brass bottom trim
+	var bot_trim: MeshInstance3D = MeshInstance3D.new()
+	var btm: BoxMesh = BoxMesh.new()
+	btm.size = Vector3(18.20, 0.20, 0.85)
+	bot_trim.mesh = btm
+	bot_trim.material_override = brass_mat
+	bot_trim.position = Vector3(0, 0.10, 0)
+	pivot.add_child(bot_trim)
+	# ---- 4 rows of glowing rune blocks (small horizontal stripes) ----
+	# 12 rune segments per row, distributed across the wall length, with the
+	# center 2 segments left empty for the guild crest plaque
+	var row_ys: Array = [1.10, 1.85, 2.60, 3.35]
+	for ry in row_ys:
+		for col in 12:
+			# Skip center 2 columns to leave room for the crest plaque
+			if col == 5 or col == 6:
+				continue
+			var rx: float = -8.25 + float(col) * 1.50
+			var rune: MeshInstance3D = MeshInstance3D.new()
+			var rmesh: BoxMesh = BoxMesh.new()
+			rmesh.size = Vector3(1.10, 0.18, 0.06)
+			rune.mesh = rmesh
+			rune.material_override = rune_mat
+			rune.position = Vector3(rx, ry, -0.34)
+			pivot.add_child(rune)
+	# ---- Central guild crest plaque ----
+	var plaque: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(2.40, 2.80, 0.10)
+	plaque.mesh = plm
+	plaque.material_override = brass_mat
+	plaque.position = Vector3(0, 2.20, -0.36)
+	pivot.add_child(plaque)
+	# Crest torus on the plaque
+	var crest: MeshInstance3D = MeshInstance3D.new()
+	var ctm: TorusMesh = TorusMesh.new()
+	ctm.inner_radius = 0.45
+	ctm.outer_radius = 0.65
+	crest.mesh = ctm
+	crest.material_override = rune_mat
+	crest.position = Vector3(0, 2.50, -0.42)
+	crest.rotation.x = PI / 2.0
+	pivot.add_child(crest)
+	# Crest center bar (hammer crossing the torus)
+	var crest_bar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(0.18, 1.20, 0.06)
+	crest_bar.mesh = cbm
+	crest_bar.material_override = rune_mat
+	crest_bar.position = Vector3(0, 2.50, -0.44)
+	pivot.add_child(crest_bar)
+	# ---- 4 brass torch sconces along the wall length ----
+	for tx in [-7.50, -3.00, 3.00, 7.50]:
+		# Bracket — small box mounted on the wall
+		var bracket: MeshInstance3D = MeshInstance3D.new()
+		var bkm: BoxMesh = BoxMesh.new()
+		bkm.size = Vector3(0.30, 0.18, 0.45)
+		bracket.mesh = bkm
+		bracket.material_override = brass_mat
+		bracket.position = Vector3(tx, 2.40, -0.55)
+		pivot.add_child(bracket)
+		# Torch flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.20
+		flm.height = 0.42
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(tx, 2.65, -0.78)
+		pivot.add_child(flame)
+		# Torch OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(tx, 2.65, -0.85)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 2.4
+		lt.omni_range = 6.5
+		pivot.add_child(lt)
+	# Rune pulse — slow breathe like words being read aloud
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 7.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 3.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Torch flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 
