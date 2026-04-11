@@ -84,6 +84,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_pond_caretaker_npc(town)
 	_build_th_botanical_conservatory(geom)
 	_build_th_botanist_npc(town)
+	_build_th_constellation_map(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -12140,3 +12141,240 @@ func _build_th_botanist_npc(town: Node) -> void:
 	var breath: Tween = ovl.create_tween().set_loops()
 	breath.tween_property(ovl, "scale:y", 1.012, 2.0).set_ease(Tween.EASE_IN_OUT)
 	breath.tween_property(ovl, "scale:y", 0.992, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_constellation_map(geom: Node) -> void:
+	## Epic-10 T68: 3D Constellation Map — floating holographic 3D world map
+	## on a brass plinth at WSW mid-plaza. Shows the 9 districts as glowing
+	## colored nodes connected by data beams, slowly rotating like a
+	## constellation projection above the plinth. The Town Heart sits at
+	## the center as a brighter cyan-amber dual-tone node.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_ConstellationMap"
+	# WSW position at radius 11.5, angle ~PI*1.15 (between W and SW)
+	var ang_pos: float = PI * 1.15
+	var rad_pos: float = 11.5
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 0, pz_p)
+	pivot.rotation.y = atan2(-px_p, -pz_p)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.46, 0.55)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(0.50, 0.90, 1.0)
+	beam_mat.emission_energy_multiplier = 4.5
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Brass plinth ----
+	var plinth: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 0.85
+	pmm.bottom_radius = 1.05
+	pmm.height = 1.20
+	plinth.mesh = pmm
+	plinth.material_override = stone_mat
+	plinth.position = Vector3(0, 0.60, 0)
+	pivot.add_child(plinth)
+	# Brass cap on plinth
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cmm: CylinderMesh = CylinderMesh.new()
+	cmm.top_radius = 0.92
+	cmm.bottom_radius = 0.95
+	cmm.height = 0.10
+	cap.mesh = cmm
+	cap.material_override = brass_mat
+	cap.position = Vector3(0, 1.25, 0)
+	pivot.add_child(cap)
+	# Brass control ring on the cap (interactive feel)
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rtm: TorusMesh = TorusMesh.new()
+	rtm.inner_radius = 0.65
+	rtm.outer_radius = 0.78
+	ring.mesh = rtm
+	ring.material_override = brass_mat
+	ring.position = Vector3(0, 1.32, 0)
+	ring.rotation.x = PI / 2.0
+	pivot.add_child(ring)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	pivot.add_child(sb)
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var cs: CylinderShape3D = CylinderShape3D.new()
+	cs.radius = 1.10
+	cs.height = 1.40
+	col.shape = cs
+	col.position = Vector3(0, 0.70, 0)
+	sb.add_child(col)
+	# ---- Hologram pivot (this is what rotates) ----
+	var holo_pivot: Node3D = Node3D.new()
+	holo_pivot.position = Vector3(0, 2.30, 0)
+	pivot.add_child(holo_pivot)
+	# Holographic base disc (brass-cyan transparent disc under the constellation)
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.45)
+	base_mat.metallic = 0.20
+	base_mat.roughness = 0.10
+	base_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	base_mat.emission_enabled = true
+	base_mat.emission = Color(0.55, 0.95, 1.0)
+	base_mat.emission_energy_multiplier = 1.80
+	var base_disc: MeshInstance3D = MeshInstance3D.new()
+	var bdm: CylinderMesh = CylinderMesh.new()
+	bdm.top_radius = 0.65
+	bdm.bottom_radius = 0.65
+	bdm.height = 0.04
+	base_disc.mesh = bdm
+	base_disc.material_override = base_mat
+	base_disc.position = Vector3(0, -0.85, 0)
+	holo_pivot.add_child(base_disc)
+	# Vertical cone of light projecting from cap to constellation
+	var beam_proj_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_proj_mat.albedo_color = Color(0.55, 0.95, 1.0, 0.18)
+	beam_proj_mat.metallic = 0.0
+	beam_proj_mat.roughness = 1.0
+	beam_proj_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_proj_mat.emission_enabled = true
+	beam_proj_mat.emission = Color(0.55, 0.95, 1.0)
+	beam_proj_mat.emission_energy_multiplier = 1.20
+	beam_proj_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var proj: MeshInstance3D = MeshInstance3D.new()
+	var prm: CylinderMesh = CylinderMesh.new()
+	prm.top_radius = 0.65
+	prm.bottom_radius = 0.10
+	prm.height = 1.0
+	proj.mesh = prm
+	proj.material_override = beam_proj_mat
+	proj.position = Vector3(0, -1.40, 0)
+	holo_pivot.add_child(proj)
+	# ---- 9 district nodes arranged in a circle ----
+	var district_colors: Array[Color] = [
+		Color(0.40, 0.85, 1.0),  # D1 cyan
+		Color(0.95, 0.30, 0.30),  # D2 red
+		Color(0.65, 0.40, 0.95),  # D3 violet
+		Color(0.40, 0.85, 0.30),  # D4 green
+		Color(0.55, 0.85, 1.0),  # D5 ice
+		Color(1.0, 0.30, 0.65),  # D6 magenta
+		Color(0.95, 0.75, 0.30),  # D7 gold
+		Color(0.30, 0.55, 0.95),  # D8 deep blue
+		Color(1.0, 0.45, 0.10),  # D9 amber
+	]
+	var node_positions: Array[Vector3] = []
+	for i in range(9):
+		var ang: float = float(i) * (TAU / 9.0)
+		var nx: float = cos(ang) * 0.60
+		var nz: float = sin(ang) * 0.60
+		# Vary y slightly so it feels 3D
+		var ny: float = sin(float(i) * 0.85) * 0.18
+		node_positions.append(Vector3(nx, ny, nz))
+		# District node sphere
+		var dn_mat: StandardMaterial3D = StandardMaterial3D.new()
+		dn_mat.albedo_color = district_colors[i]
+		dn_mat.emission_enabled = true
+		dn_mat.emission = district_colors[i] * 1.2
+		dn_mat.emission_energy_multiplier = 6.0
+		dn_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var node: MeshInstance3D = MeshInstance3D.new()
+		var nmm: SphereMesh = SphereMesh.new()
+		nmm.radius = 0.07
+		nmm.height = 0.14
+		node.mesh = nmm
+		node.material_override = dn_mat
+		node.position = Vector3(nx, ny, nz)
+		holo_pivot.add_child(node)
+		# Node pulse with phase offset
+		var phase: float = float(i) * 0.22
+		var npulse: Tween = node.create_tween().set_loops()
+		npulse.tween_interval(phase)
+		npulse.tween_property(dn_mat, "emission_energy_multiplier", 9.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+		npulse.tween_property(dn_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- Center "Town Heart" dual-color node ----
+	var th_mat: StandardMaterial3D = StandardMaterial3D.new()
+	th_mat.albedo_color = Color(1.0, 0.85, 0.55)
+	th_mat.emission_enabled = true
+	th_mat.emission = Color(1.0, 0.80, 0.40)
+	th_mat.emission_energy_multiplier = 9.0
+	th_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var th_node: MeshInstance3D = MeshInstance3D.new()
+	var thm: SphereMesh = SphereMesh.new()
+	thm.radius = 0.11
+	thm.height = 0.22
+	th_node.mesh = thm
+	th_node.material_override = th_mat
+	th_node.position = Vector3(0, 0, 0)
+	holo_pivot.add_child(th_node)
+	# Outer glow ring around center
+	var glow_ring: MeshInstance3D = MeshInstance3D.new()
+	var gtm: TorusMesh = TorusMesh.new()
+	gtm.inner_radius = 0.16
+	gtm.outer_radius = 0.20
+	glow_ring.mesh = gtm
+	glow_ring.material_override = th_mat
+	glow_ring.position = Vector3(0, 0, 0)
+	glow_ring.rotation.x = PI / 2.0
+	holo_pivot.add_child(glow_ring)
+	# ---- Connection beams from each district node to the Town Heart center ----
+	for j in range(9):
+		var endp: Vector3 = node_positions[j]
+		var beam: MeshInstance3D = MeshInstance3D.new()
+		var bmm: CylinderMesh = CylinderMesh.new()
+		bmm.top_radius = 0.012
+		bmm.bottom_radius = 0.012
+		bmm.height = endp.length()
+		beam.mesh = bmm
+		beam.material_override = beam_mat
+		beam.position = endp * 0.5
+		# Align cylinder along the vector to the endpoint
+		beam.look_at_from_position(endp * 0.5, endp, Vector3(0, 1, 0))
+		beam.rotate_object_local(Vector3(1, 0, 0), PI / 2.0)
+		holo_pivot.add_child(beam)
+	# ---- Center column light (bright cyan) ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.10, 0)
+	lt.light_color = Color(0.55, 0.95, 1.0)
+	lt.light_energy = 2.10
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
+	# ---- Slow rotation of the constellation hologram ----
+	var rot: Tween = holo_pivot.create_tween().set_loops()
+	rot.tween_property(holo_pivot, "rotation:y", TAU, 18.0).from(0.0)
+	# ---- Center heart pulse ----
+	var hp: Tween = holo_pivot.create_tween().set_loops()
+	hp.tween_property(th_mat, "emission_energy_multiplier", 12.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	hp.tween_property(th_mat, "emission_energy_multiplier", 6.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Drifting sparkle particles around the constellation
+	var sk: GPUParticles3D = GPUParticles3D.new()
+	var sp: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	sp.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	sp.emission_sphere_radius = 0.85
+	sp.direction = Vector3(0, 1, 0)
+	sp.spread = 35.0
+	sp.gravity = Vector3(0, 0.05, 0)
+	sp.initial_velocity_min = 0.10
+	sp.initial_velocity_max = 0.35
+	sp.scale_min = 0.02
+	sp.scale_max = 0.05
+	sp.color = Color(0.55, 0.95, 1.0, 0.85)
+	sk.process_material = sp
+	var skm: SphereMesh = SphereMesh.new()
+	skm.radius = 0.02
+	skm.height = 0.04
+	sk.draw_pass_1 = skm
+	sk.amount = 22
+	sk.lifetime = 3.0
+	sk.position = Vector3(0, 2.30, 0)
+	pivot.add_child(sk)
