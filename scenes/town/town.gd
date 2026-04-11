@@ -17120,6 +17120,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_night_crowd(geom)
 	# Epic-6 T10: holographic billboard
 	_build_d6_holo_billboard(geom)
+	# Epic-6 T11: ramen shop building
+	_build_d6_ramen_shop(geom)
+	# Epic-6 T12: hacker terminal pods
+	_build_d6_hacker_pods(geom)
+	# Epic-6 T13: hacker NPC at a terminal
+	_build_d6_hacker_npc()
+	# Epic-6 T14: ambient rain particles
+	_build_d6_rain(geom)
+	# Epic-6 T15: cyber rickshaw vehicle
+	_build_d6_cyber_rickshaw(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -17885,6 +17895,406 @@ func _build_d6_holo_billboard(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	bb.add_child(sb)
+
+
+func _build_d6_ramen_shop(geom: Node) -> void:
+	## Epic-6 T11: full ramen shop building — wooden facade with sliding
+	## door, paper-lantern strings, slatted overhang, and glowing window.
+	var shop: Node3D = Node3D.new()
+	shop.name = "RamenShop"
+	shop.position = Vector3(D6_CENTER.x + 12.0, 0.0, 14.0)
+	geom.add_child(shop)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.20, 0.12, 0.06)
+	dark_wood.roughness = 0.85
+	# Main building box
+	var building: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(5.50, 3.40, 4.20)
+	building.mesh = bm
+	building.material_override = wood_mat
+	building.position = Vector3(0, 1.70, 0)
+	shop.add_child(building)
+	# Sloped roof (wide prism)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(6.0, 1.40, 4.50)
+	roof.mesh = rm
+	roof.material_override = dark_wood
+	roof.position = Vector3(0, 4.10, 0)
+	shop.add_child(roof)
+	# Slatted overhang in front
+	for i in 4:
+		var slat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(5.20, 0.06, 0.20)
+		slat.mesh = sm
+		slat.material_override = dark_wood
+		slat.position = Vector3(0, 2.85 - i * 0.18, 2.30)
+		shop.add_child(slat)
+	# Sliding door (dark frame + paper panels)
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(1.40, 1.85, 0.08)
+	door.mesh = dm
+	var paper_mat: StandardMaterial3D = StandardMaterial3D.new()
+	paper_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	paper_mat.emission_enabled = true
+	paper_mat.emission = Color(0.95, 0.65, 0.30)
+	paper_mat.emission_energy_multiplier = 1.4
+	door.material_override = paper_mat
+	door.position = Vector3(0, 1.0, 2.15)
+	shop.add_child(door)
+	# Glowing wide window
+	var window: MeshInstance3D = MeshInstance3D.new()
+	var wmm: BoxMesh = BoxMesh.new()
+	wmm.size = Vector3(2.85, 0.85, 0.06)
+	window.mesh = wmm
+	window.material_override = paper_mat
+	window.position = Vector3(-1.85, 2.20, 2.13)
+	shop.add_child(window)
+	# 3 hanging paper lanterns under the overhang
+	var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lantern_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	lantern_mat.emission_enabled = true
+	lantern_mat.emission = Color(0.95, 0.30, 0.20)
+	lantern_mat.emission_energy_multiplier = 2.5
+	lantern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var lantern: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.30
+		lm.height = 0.55
+		lantern.mesh = lm
+		lantern.material_override = lantern_mat
+		lantern.position = Vector3(-2.0 + i * 2.0, 2.40, 2.40)
+		lantern.scale = Vector3(1.0, 1.30, 1.0)
+		shop.add_child(lantern)
+		# Small light per lantern
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.45, 0.30)
+		light.light_energy = 1.4
+		light.omni_range = 3.5
+		light.position = Vector3(-2.0 + i * 2.0, 2.40, 2.40)
+		shop.add_child(light)
+	# RAMEN sign over the door
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(2.40, 0.65, 0.10)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 3.20, 2.20)
+	shop.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "RAMEN"
+	label.modulate = Color(1.0, 0.30, 0.20)
+	label.outline_modulate = Color(1.0, 0.85, 0.55)
+	label.outline_size = 6
+	label.font_size = 96
+	label.pixel_size = 0.012
+	label.position = Vector3(0, 3.20, 2.30)
+	shop.add_child(label)
+	# Building collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 3.40, 4.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	shop.add_child(sb)
+
+
+func _build_d6_hacker_pods(geom: Node) -> void:
+	## Epic-6 T12: 3 hacker terminal pods — recliner-style chairs facing
+	## glowing screens. Public hacking stations.
+	var pods: Node3D = Node3D.new()
+	pods.name = "HackerPods"
+	pods.position = Vector3(D6_CENTER.x - 18.0, 0.0, -10.0)
+	geom.add_child(pods)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.30, 0.95, 0.30)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 1.0, 0.30)
+	screen_mat.emission_energy_multiplier = 3.0
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var pod: Node3D = Node3D.new()
+		pod.position = Vector3(i * 2.40, 0, 0)
+		pods.add_child(pod)
+		# Recliner base
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.85, 0.30, 1.65)
+		base.mesh = bm
+		base.material_override = metal_mat
+		base.position = Vector3(0, 0.30, 0)
+		pod.add_child(base)
+		# Recliner backrest (angled box)
+		var back: MeshInstance3D = MeshInstance3D.new()
+		var bcm: BoxMesh = BoxMesh.new()
+		bcm.size = Vector3(0.85, 1.30, 0.18)
+		back.mesh = bcm
+		back.material_override = metal_mat
+		back.position = Vector3(0, 0.95, -0.65)
+		back.rotation_degrees = Vector3(-25, 0, 0)
+		pod.add_child(back)
+		# Display arm extending from base over the recliner
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.06
+		am.bottom_radius = 0.08
+		am.height = 1.85
+		arm.mesh = am
+		arm.material_override = metal_mat
+		arm.position = Vector3(-0.45, 1.0, 0.65)
+		arm.rotation_degrees = Vector3(45, 0, 0)
+		pod.add_child(arm)
+		# Display screen at the end of the arm
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.85, 0.55, 0.04)
+		screen.mesh = sm
+		screen.material_override = screen_mat
+		screen.position = Vector3(-0.45, 1.85, 0.85)
+		screen.rotation_degrees = Vector3(-25, 0, 0)
+		pod.add_child(screen)
+		# Pulsing screen flicker
+		var tw: Tween = screen.create_tween().set_loops()
+		tw.tween_interval(i * 0.15)
+		tw.tween_property(screen, "scale:y", 1.20, 0.55)
+		tw.tween_property(screen, "scale:y", 0.85, 0.55)
+		# Pod collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 1.30, 1.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		pod.add_child(sb)
+
+
+func _build_d6_hacker_npc() -> void:
+	## Epic-6 T13: hacker NPC standing next to a pod with a holographic
+	## glove and a glowing visor.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "HackerSlot"
+	slot.position = Vector3(D6_CENTER.x - 14.5, 0.0, -10.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Hacker"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sudo")
+	if "npc_id" in npc:
+		npc.set("npc_id", "hacker_d6")
+	slot.add_child(npc)
+	# Black hoodie
+	var hoodie: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.65, 1.05, 0.45)
+	hoodie.mesh = hm
+	var hoodie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hoodie_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	hoodie_mat.roughness = 0.85
+	hoodie.material_override = hoodie_mat
+	hoodie.position = Vector3(0, 0.55, 0)
+	npc.add_child(hoodie)
+	# Hood (sphere)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.24
+	hdm.height = 0.42
+	hood.mesh = hdm
+	hood.material_override = hoodie_mat
+	hood.position = Vector3(0, 1.42, -0.05)
+	npc.add_child(hood)
+	# Glowing green visor
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.40, 0.10, 0.04)
+	visor.mesh = vm
+	var visor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	visor_mat.albedo_color = Color(0.30, 1.0, 0.30)
+	visor_mat.emission_enabled = true
+	visor_mat.emission = Color(0.30, 1.0, 0.30)
+	visor_mat.emission_energy_multiplier = 3.5
+	visor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = visor_mat
+	visor.position = Vector3(0, 1.40, 0.21)
+	npc.add_child(visor)
+	# Holographic glove (3 floating tiny green cubes around the right hand)
+	var hand_pivot: Node3D = Node3D.new()
+	hand_pivot.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(hand_pivot)
+	for i in 3:
+		var cube: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.08, 0.08, 0.08)
+		cube.mesh = cmm
+		cube.material_override = visor_mat
+		var ang: float = (TAU / 3.0) * i
+		cube.position = Vector3(cos(ang) * 0.18, 0, sin(ang) * 0.18)
+		hand_pivot.add_child(cube)
+	var trot: Tween = hand_pivot.create_tween().set_loops()
+	trot.tween_property(hand_pivot, "rotation_degrees:y", 360.0, 3.0)
+	trot.tween_property(hand_pivot, "rotation_degrees:y", 0.0, 0.0)
+
+
+func _build_d6_rain(geom: Node) -> void:
+	## Epic-6 T14: ambient cyberpunk rain — vertical streak particles
+	## falling across the entire bazaar district.
+	var rain: GPUParticles3D = GPUParticles3D.new()
+	rain.name = "Rain"
+	rain.position = Vector3(D6_CENTER.x, 12.0, 0.0)
+	rain.amount = 350
+	rain.lifetime = 1.6
+	rain.preprocess = 1.0
+	rain.explosiveness = 0.0
+	rain.randomness = 0.4
+	rain.visibility_aabb = AABB(Vector3(-45, -14, -25), Vector3(90, 28, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(40, 0.5, 22)
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 4.0
+	pm.gravity = Vector3(0, -8.5, 0)
+	pm.initial_velocity_min = 4.5
+	pm.initial_velocity_max = 6.5
+	pm.scale_min = 0.45
+	pm.scale_max = 0.85
+	pm.color = Color(0.55, 0.85, 1.0, 0.65)
+	rain.process_material = pm
+	# Streak mesh — long thin box
+	var streak_mesh: BoxMesh = BoxMesh.new()
+	streak_mesh.size = Vector3(0.04, 0.55, 0.04)
+	rain.draw_pass_1 = streak_mesh
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.55, 0.85, 1.0, 0.65)
+	smat.emission_enabled = true
+	smat.emission = Color(0.40, 0.85, 1.0)
+	smat.emission_energy_multiplier = 1.4
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	streak_mesh.material = smat
+	geom.add_child(rain)
+
+
+func _build_d6_cyber_rickshaw(geom: Node) -> void:
+	## Epic-6 T15: cyber rickshaw — 3-wheeled hover taxi with magenta neon
+	## underglow, side handles, and a small canopy.
+	var rick: Node3D = Node3D.new()
+	rick.name = "CyberRickshaw"
+	rick.position = Vector3(D6_CENTER.x - 8.0, 0.0, -4.0)
+	geom.add_child(rick)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.18, 0.30)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var seat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seat_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	seat_mat.metallic = 0.30
+	seat_mat.roughness = 0.45
+	# Body chassis (long box)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.40, 0.65, 1.10)
+	body.mesh = bm
+	body.material_override = metal_mat
+	body.position = Vector3(0, 0.55, 0)
+	rick.add_child(body)
+	# Bench seat (red)
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(2.0, 0.20, 0.85)
+	seat.mesh = sm
+	seat.material_override = seat_mat
+	seat.position = Vector3(0, 0.95, 0)
+	rick.add_child(seat)
+	# Backrest
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bckm: BoxMesh = BoxMesh.new()
+	bckm.size = Vector3(2.0, 0.85, 0.18)
+	back.mesh = bckm
+	back.material_override = seat_mat
+	back.position = Vector3(0, 1.40, -0.45)
+	rick.add_child(back)
+	# Front handle bars
+	var bars: MeshInstance3D = MeshInstance3D.new()
+	var bbm: CylinderMesh = CylinderMesh.new()
+	bbm.top_radius = 0.04
+	bbm.bottom_radius = 0.04
+	bbm.height = 0.85
+	bars.mesh = bbm
+	bars.material_override = metal_mat
+	bars.position = Vector3(1.30, 1.20, 0)
+	bars.rotation_degrees = Vector3(0, 0, 90)
+	rick.add_child(bars)
+	# 3 wheels (1 front + 2 back)
+	var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheel_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	wheel_mat.roughness = 0.85
+	var wheel_positions: Array = [
+		Vector3( 1.20, 0.30,  0.0),
+		Vector3(-1.10, 0.30,  0.55),
+		Vector3(-1.10, 0.30, -0.55),
+	]
+	for wp in wheel_positions:
+		var wheel: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.30
+		wm.bottom_radius = 0.30
+		wm.height = 0.10
+		wheel.mesh = wm
+		wheel.material_override = wheel_mat
+		wheel.position = wp
+		wheel.rotation_degrees = Vector3(0, 0, 90)
+		rick.add_child(wheel)
+	# Magenta neon underglow strip
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var glm: BoxMesh = BoxMesh.new()
+	glm.size = Vector3(2.30, 0.04, 1.0)
+	glow.mesh = glm
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.95, 0.20, 0.85)
+	glow_mat.emission_energy_multiplier = 3.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.material_override = glow_mat
+	glow.position = Vector3(0, 0.18, 0)
+	rick.add_child(glow)
+	# Underglow light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 2.0
+	light.omni_range = 3.5
+	light.position = Vector3(0, 0.18, 0)
+	rick.add_child(light)
+	# Cyber rickshaw collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 1.65, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	rick.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
