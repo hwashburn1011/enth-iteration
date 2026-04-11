@@ -17230,6 +17230,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_mural_artist_npc()
 	# Epic-6 T65: holo dance billboard
 	_build_d6_dance_billboard(geom)
+	# Epic-6 T66: souvenir vendor cart
+	_build_d6_souvenir_cart(geom)
+	# Epic-6 T67: souvenir vendor NPC
+	_build_d6_souvenir_vendor_npc()
+	# Epic-6 T68: holographic koi pond
+	_build_d6_holo_koi_pond(geom)
+	# Epic-6 T69: koi creatures
+	_build_d6_koi_fish(geom)
+	# Epic-6 T70: small street shrine
+	_build_d6_street_shrine(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -22619,6 +22629,377 @@ func _build_d6_dance_billboard(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	bb.add_child(sb)
+
+
+func _build_d6_souvenir_cart(geom: Node) -> void:
+	## Epic-6 T66: souvenir vendor cart — small wheeled cart with shelves
+	## of brightly colored trinkets.
+	var cart: Node3D = Node3D.new()
+	cart.name = "SouvenirCart"
+	cart.position = Vector3(D6_CENTER.x - 8.0, 0.0, 18.0)
+	geom.add_child(cart)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	# Body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.20, 0.85, 1.10)
+	body.mesh = bm
+	body.material_override = wood_mat
+	body.position = Vector3(0, 0.55, 0)
+	cart.add_child(body)
+	# 2 wheels
+	var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheel_mat.albedo_color = Color(0.20, 0.18, 0.10)
+	wheel_mat.roughness = 0.85
+	for sx in [-0.85, 0.85]:
+		var wheel: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.30
+		wm.bottom_radius = 0.30
+		wm.height = 0.10
+		wheel.mesh = wm
+		wheel.material_override = wheel_mat
+		wheel.position = Vector3(sx, 0.30, 0.55)
+		wheel.rotation_degrees = Vector3(0, 0, 90)
+		cart.add_child(wheel)
+	# Cart handle
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.05
+	hm.bottom_radius = 0.05
+	hm.height = 1.10
+	handle.mesh = hm
+	handle.material_override = wood_mat
+	handle.position = Vector3(-1.40, 0.85, 0)
+	handle.rotation_degrees = Vector3(0, 0, 60)
+	cart.add_child(handle)
+	# Slanted roof shade
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(2.40, 0.10, 1.30)
+	roof.mesh = rmm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	roof_mat.roughness = 0.85
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 1.85, -0.10)
+	roof.rotation_degrees = Vector3(-12, 0, 0)
+	cart.add_child(roof)
+	# Roof support posts
+	for sx in [-1.10, 1.10]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.05
+		pm.bottom_radius = 0.05
+		pm.height = 0.85
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(sx, 1.40, -0.30)
+		cart.add_child(post)
+	# 9 colored trinkets on the body top
+	var trinket_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.30, 0.85),
+		Color(0.55, 0.30, 0.95),
+		Color(0.30, 0.95, 0.85),
+		Color(0.95, 0.55, 0.20),
+		Color(0.95, 0.95, 0.20),
+	]
+	for i in 9:
+		var trinket: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.12
+		tm.height = 0.20
+		trinket.mesh = tm
+		var t_mat: StandardMaterial3D = StandardMaterial3D.new()
+		t_mat.albedo_color = trinket_colors[i]
+		t_mat.emission_enabled = true
+		t_mat.emission = trinket_colors[i]
+		t_mat.emission_energy_multiplier = 1.4
+		trinket.material_override = t_mat
+		trinket.position = Vector3(-0.85 + (i % 3) * 0.85, 1.10, -0.30 + (i / 3) * 0.30)
+		cart.add_child(trinket)
+	# Cart collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.85, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	cart.add_child(sb)
+
+
+func _build_d6_souvenir_vendor_npc() -> void:
+	## Epic-6 T67: souvenir vendor NPC — bright apron + holding a small
+	## souvenir trinket up.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SouvenirVendorSlot"
+	slot.position = Vector3(D6_CENTER.x - 8.0, 0.0, 17.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "SouvenirVendor"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Trinket")
+	if "npc_id" in npc:
+		npc.set("npc_id", "souvenir_d6")
+	slot.add_child(npc)
+	# Bright pink apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.95, 0.45, 0.75)
+	apron_mat.emission_enabled = true
+	apron_mat.emission = Color(0.95, 0.30, 0.75)
+	apron_mat.emission_energy_multiplier = 0.30
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Held trinket (small bright sphere)
+	var trinket: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 0.10
+	tm.height = 0.18
+	trinket.mesh = tm
+	var t_mat: StandardMaterial3D = StandardMaterial3D.new()
+	t_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	t_mat.emission_enabled = true
+	t_mat.emission = Color(0.30, 1.0, 1.0)
+	t_mat.emission_energy_multiplier = 2.5
+	t_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	trinket.material_override = t_mat
+	trinket.position = Vector3(0.40, 1.10, 0.20)
+	npc.add_child(trinket)
+
+
+func _build_d6_holo_koi_pond(geom: Node) -> void:
+	## Epic-6 T68: holographic koi pond — round translucent purple disc on
+	## a stone rim, with cyan ripple textures.
+	var pond: Node3D = Node3D.new()
+	pond.name = "HoloKoiPond"
+	pond.position = Vector3(D6_CENTER.x + 12.0, 0.0, 6.0)
+	geom.add_child(pond)
+	# Stone rim
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.20, 0.30)
+	stone_mat.roughness = 0.92
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 1.85
+	rm.outer_radius = 2.20
+	rim.mesh = rm
+	rim.material_override = stone_mat
+	rim.position = Vector3(0, 0.18, 0)
+	pond.add_child(rim)
+	# Holographic water surface (translucent purple)
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.95
+	wm.bottom_radius = 1.95
+	wm.height = 0.06
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.40, 0.30, 0.85, 0.65)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.55, 0.40, 0.95)
+	water_mat.emission_energy_multiplier = 1.4
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.10
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.18, 0)
+	pond.add_child(water)
+	# Bob the water surface
+	var tw: Tween = water.create_tween().set_loops()
+	tw.tween_property(water, "position:y", 0.22, 1.6)
+	tw.tween_property(water, "position:y", 0.18, 1.6)
+	# 3 cyan ripple ring tweens (small tori expanding)
+	for i in 3:
+		var ripple: MeshInstance3D = MeshInstance3D.new()
+		var rim2: TorusMesh = TorusMesh.new()
+		rim2.inner_radius = 0.30
+		rim2.outer_radius = 0.40
+		ripple.mesh = rim2
+		var ripple_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ripple_mat.albedo_color = Color(0.30, 0.95, 1.0, 0.85)
+		ripple_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		ripple_mat.emission_enabled = true
+		ripple_mat.emission = Color(0.30, 1.0, 1.0)
+		ripple_mat.emission_energy_multiplier = 2.0
+		ripple_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ripple.material_override = ripple_mat
+		ripple.position = Vector3(randf_range(-0.85, 0.85), 0.25, randf_range(-0.85, 0.85))
+		ripple.rotation_degrees = Vector3(90, 0, 0)
+		pond.add_child(ripple)
+		# Expand and fade tween
+		var twr: Tween = ripple.create_tween().set_loops()
+		twr.tween_interval(i * 0.50)
+		twr.tween_property(ripple, "scale", Vector3.ONE * 2.50, 1.40)
+		twr.tween_property(ripple, "scale", Vector3.ONE * 1.0, 0.0)
+	# Pond light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.55, 0.40, 0.95)
+	light.light_energy = 1.6
+	light.omni_range = 5.0
+	light.position = Vector3(0, 0.85, 0)
+	pond.add_child(light)
+	# Rim collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.18, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.20
+	cap.height = 0.40
+	cs.shape = cap
+	sb.add_child(cs)
+	pond.add_child(sb)
+
+
+func _build_d6_koi_fish(geom: Node) -> void:
+	## Epic-6 T69: 4 koi fish swimming in the holo pond — flat colored
+	## prisms with rotation pivots.
+	var koi: Node3D = Node3D.new()
+	koi.name = "KoiFish"
+	koi.position = Vector3(D6_CENTER.x + 12.0, 0.30, 6.0)
+	geom.add_child(koi)
+	var koi_colors: Array = [
+		Color(0.95, 0.55, 0.20),
+		Color(0.95, 0.95, 1.0),
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.55, 0.95),
+	]
+	for i in 4:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, 0, 0)
+		pivot.rotation_degrees = Vector3(0, i * 90.0, 0)
+		koi.add_child(pivot)
+		var fish: Node3D = Node3D.new()
+		fish.position = Vector3(1.0 + i * 0.20, 0, 0)
+		pivot.add_child(fish)
+		# Body (long flat prism)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: PrismMesh = PrismMesh.new()
+		bm.size = Vector3(0.18, 0.08, 0.40)
+		body.mesh = bm
+		var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+		fish_mat.albedo_color = koi_colors[i]
+		fish_mat.emission_enabled = true
+		fish_mat.emission = koi_colors[i]
+		fish_mat.emission_energy_multiplier = 1.4
+		body.material_override = fish_mat
+		fish.add_child(body)
+		# Tail (small prism behind)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: PrismMesh = PrismMesh.new()
+		tm.size = Vector3(0.04, 0.08, 0.18)
+		tail.mesh = tm
+		tail.material_override = fish_mat
+		tail.position = Vector3(0, 0, -0.25)
+		fish.add_child(tail)
+		# Rotation tween
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0 + 360.0, 5.0 + i * 0.4)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
+
+
+func _build_d6_street_shrine(geom: Node) -> void:
+	## Epic-6 T70: small street shrine — wooden box with a glowing red
+	## offering inside, paper lantern on top.
+	var shrine: Node3D = Node3D.new()
+	shrine.name = "StreetShrine"
+	shrine.position = Vector3(D6_CENTER.x + 22.0, 0.0, 18.0)
+	geom.add_child(shrine)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	wood_mat.roughness = 0.85
+	# Pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.85, 0.85, 0.85)
+	ped.mesh = pm
+	ped.material_override = wood_mat
+	ped.position = Vector3(0, 0.42, 0)
+	shrine.add_child(ped)
+	# Shrine box
+	var box: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.65, 0.85, 0.65)
+	box.mesh = bm
+	box.material_override = wood_mat
+	box.position = Vector3(0, 1.30, 0)
+	shrine.add_child(box)
+	# Sloped roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(0.85, 0.30, 0.85)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.55, 0.20, 0.15)
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 1.85, 0)
+	shrine.add_child(roof)
+	# Glowing red offering inside (sphere)
+	var offering: MeshInstance3D = MeshInstance3D.new()
+	var om: SphereMesh = SphereMesh.new()
+	om.radius = 0.18
+	om.height = 0.32
+	offering.mesh = om
+	var off_mat: StandardMaterial3D = StandardMaterial3D.new()
+	off_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	off_mat.emission_enabled = true
+	off_mat.emission = Color(0.95, 0.30, 0.20)
+	off_mat.emission_energy_multiplier = 3.5
+	off_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	offering.material_override = off_mat
+	offering.position = Vector3(0, 1.30, 0.30)
+	shrine.add_child(offering)
+	# Pulse the offering
+	var tw: Tween = offering.create_tween().set_loops()
+	tw.tween_property(offering, "scale", Vector3.ONE * 1.20, 0.85)
+	tw.tween_property(offering, "scale", Vector3.ONE * 0.85, 0.85)
+	# Hanging paper lantern overhead
+	var lantern: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.18
+	lm.height = 0.30
+	lantern.mesh = lm
+	var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lantern_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	lantern_mat.emission_enabled = true
+	lantern_mat.emission = Color(0.95, 0.65, 0.30)
+	lantern_mat.emission_energy_multiplier = 2.5
+	lantern.material_override = lantern_mat
+	lantern.position = Vector3(0, 2.55, 0)
+	shrine.add_child(lantern)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 2.0, 0)
+	shrine.add_child(light)
+	# Shrine collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.85, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	shrine.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
