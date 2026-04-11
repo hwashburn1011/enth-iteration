@@ -1313,6 +1313,16 @@ func _build_east_plaza() -> void:
 	_build_gate_guards()
 	# Epic-1 T45: ambient cipher data orbs floating through the plaza
 	_build_cipher_orbs(geom)
+	# Epic-1 T46: holographic shop window displays at vendor row
+	_build_holo_shop_windows(geom)
+	# Epic-1 T47: translucent glass atrium roof above market core
+	_build_atrium_roof(geom)
+	# Epic-1 T48: small cafe seating cluster (tables + chairs) near vendors
+	_build_cafe_seating(geom)
+	# Epic-1 T49: secondary data-stream fountains flanking the main fountain
+	_build_data_streams(geom)
+	# Epic-1 T50: directional district signpost cluster at the plaza arch
+	_build_district_signposts(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -3549,3 +3559,375 @@ func _build_info_totems(geom: Node) -> void:
 		col_shape.position = Vector3(0, 1.35, 0)
 		sb.add_child(col_shape)
 		totem.add_child(sb)
+
+
+func _build_holo_shop_windows(geom: Node) -> void:
+	## Epic-1 T46: 4 holographic shop windows along vendor row at z=10. Each is
+	## a large translucent cyan panel with a floating product silhouette inside,
+	## bobbing gently to suggest a hovering 3d hologram preview.
+	var product_names: Array[String] = ["BLADE", "SHARD", "CORE", "PATCH"]
+	for i in 4:
+		var booth: Node3D = Node3D.new()
+		booth.name = "EastPlazaHoloShop_%d" % i
+		booth.position = Vector3(26 + i * 3.5, 0, 10)
+		geom.add_child(booth)
+		# Backing frame
+		var frame: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: BoxMesh = BoxMesh.new()
+		fmesh.size = Vector3(2.4, 2.6, 0.18)
+		frame.mesh = fmesh
+		frame.position = Vector3(0, 1.6, 0)
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(0.06, 0.10, 0.14)
+		fmat.metallic = 0.85
+		fmat.roughness = 0.25
+		frame.material_override = fmat
+		booth.add_child(frame)
+		# Translucent cyan glass panel
+		var panel: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(2.1, 2.3, 0.04)
+		panel.mesh = pmesh
+		panel.position = Vector3(0, 1.65, 0.1)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.20, 0.85, 1.0, 0.30)
+		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.30, 0.85, 1.0)
+		pmat.emission_energy_multiplier = 0.6
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		panel.material_override = pmat
+		booth.add_child(panel)
+		# Floating product silhouette (rotating cube as placeholder hologram)
+		var holo: MeshInstance3D = MeshInstance3D.new()
+		holo.name = "Hologram"
+		var hmesh: BoxMesh = BoxMesh.new()
+		hmesh.size = Vector3(0.55, 0.55, 0.55)
+		holo.mesh = hmesh
+		holo.position = Vector3(0, 1.7, 0.2)
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = Color(0.85, 0.95, 1.0, 0.55)
+		hmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		hmat.emission_enabled = true
+		hmat.emission = Color(0.50, 0.95, 1.0)
+		hmat.emission_energy_multiplier = 1.6
+		hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		holo.material_override = hmat
+		booth.add_child(holo)
+		# Slow rotation tween + bob
+		var rot: Tween = create_tween().set_loops()
+		rot.tween_property(holo, "rotation:y", TAU, 6.0)
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(holo, "position:y", 1.85, 1.6).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(holo, "position:y", 1.7, 1.6).set_ease(Tween.EASE_IN_OUT)
+		# Product label above panel
+		var label: Label3D = Label3D.new()
+		label.text = product_names[i]
+		label.position = Vector3(0, 3.0, 0.15)
+		label.modulate = Color(0.55, 0.95, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 5
+		label.font_size = 22
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		booth.add_child(label)
+		# Collision so the player cannot phase through the booth
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_box: BoxShape3D = BoxShape3D.new()
+		col_box.size = Vector3(2.4, 2.6, 0.5)
+		col_shape.shape = col_box
+		col_shape.position = Vector3(0, 1.3, 0)
+		sb.add_child(col_shape)
+		booth.add_child(sb)
+
+
+func _build_atrium_roof(geom: Node) -> void:
+	## Epic-1 T47: translucent glass atrium roof spanning the market core. 4
+	## tall metal columns and a wide flat glass panel suggest a covered market
+	## hall without occluding the camera. Edge trim glows cyan.
+	var atrium: Node3D = Node3D.new()
+	atrium.name = "EastPlazaAtrium"
+	atrium.position = Vector3(32, 0, 0)
+	geom.add_child(atrium)
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.55, 0.85, 1.0, 0.18)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.35, 0.80, 1.0)
+	glass_mat.emission_energy_multiplier = 0.20
+	glass_mat.metallic = 0.30
+	glass_mat.roughness = 0.10
+	var col_mat: StandardMaterial3D = StandardMaterial3D.new()
+	col_mat.albedo_color = Color(0.12, 0.16, 0.20)
+	col_mat.metallic = 0.85
+	col_mat.roughness = 0.30
+	col_mat.emission_enabled = true
+	col_mat.emission = Color(0.25, 0.75, 1.0)
+	col_mat.emission_energy_multiplier = 0.4
+	# 4 perimeter columns
+	var col_offsets: Array[Vector3] = [
+		Vector3(-6, 0, -6),
+		Vector3(6, 0, -6),
+		Vector3(-6, 0, 6),
+		Vector3(6, 0, 6),
+	]
+	for off in col_offsets:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: CylinderMesh = CylinderMesh.new()
+		cmesh.top_radius = 0.22
+		cmesh.bottom_radius = 0.30
+		cmesh.height = 6.5
+		pillar.mesh = cmesh
+		pillar.position = off + Vector3(0, 3.25, 0)
+		pillar.material_override = col_mat
+		atrium.add_child(pillar)
+		# Collision so columns are solid
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.30
+		cap.height = 6.5
+		cs.shape = cap
+		cs.position = off + Vector3(0, 3.25, 0)
+		sb.add_child(cs)
+		atrium.add_child(sb)
+	# Flat glass roof slab
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(13, 0.10, 13)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 6.55, 0)
+	roof.material_override = glass_mat
+	atrium.add_child(roof)
+	# Glowing edge trim — 4 thin emissive bars around the slab perimeter
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.50, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 1.4
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var trim_specs: Array = [
+		[Vector3(0, 6.55, -6.5), Vector3(13, 0.12, 0.12)],
+		[Vector3(0, 6.55, 6.5), Vector3(13, 0.12, 0.12)],
+		[Vector3(-6.5, 6.55, 0), Vector3(0.12, 0.12, 13)],
+		[Vector3(6.5, 6.55, 0), Vector3(0.12, 0.12, 13)],
+	]
+	for spec in trim_specs:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = spec[1]
+		bar.mesh = bmesh
+		bar.position = spec[0]
+		bar.material_override = trim_mat
+		atrium.add_child(bar)
+
+
+func _build_cafe_seating(geom: Node) -> void:
+	## Epic-1 T48: 3 small round cafe tables with 2 stools each, near vendor row.
+	## Tables have warm amber emissive tops to read as data-cafes.
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.30, 0.20, 0.08)
+	table_mat.emission_enabled = true
+	table_mat.emission = Color(0.95, 0.65, 0.20)
+	table_mat.emission_energy_multiplier = 0.45
+	table_mat.metallic = 0.55
+	table_mat.roughness = 0.40
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.10, 0.12, 0.14)
+	leg_mat.metallic = 0.85
+	leg_mat.roughness = 0.30
+	var stool_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stool_mat.albedo_color = Color(0.22, 0.30, 0.40)
+	stool_mat.emission_enabled = true
+	stool_mat.emission = Color(0.30, 0.65, 0.95)
+	stool_mat.emission_energy_multiplier = 0.30
+	stool_mat.metallic = 0.50
+	var positions: Array[Vector3] = [
+		Vector3(28, 0, 7),
+		Vector3(33, 0, 7),
+		Vector3(38, 0, 7),
+	]
+	for i in positions.size():
+		var cafe: Node3D = Node3D.new()
+		cafe.name = "EastPlazaCafe_%d" % i
+		cafe.position = positions[i]
+		geom.add_child(cafe)
+		# Table column
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var leg_mesh: CylinderMesh = CylinderMesh.new()
+		leg_mesh.top_radius = 0.08
+		leg_mesh.bottom_radius = 0.10
+		leg_mesh.height = 0.85
+		leg.mesh = leg_mesh
+		leg.position = Vector3(0, 0.43, 0)
+		leg.material_override = leg_mat
+		cafe.add_child(leg)
+		# Round table top
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var top_mesh: CylinderMesh = CylinderMesh.new()
+		top_mesh.top_radius = 0.55
+		top_mesh.bottom_radius = 0.55
+		top_mesh.height = 0.08
+		top.mesh = top_mesh
+		top.position = Vector3(0, 0.89, 0)
+		top.material_override = table_mat
+		cafe.add_child(top)
+		# 2 stools facing each other
+		for sx: float in [-1.0, 1.0]:
+			var stool: MeshInstance3D = MeshInstance3D.new()
+			var smesh: CylinderMesh = CylinderMesh.new()
+			smesh.top_radius = 0.22
+			smesh.bottom_radius = 0.22
+			smesh.height = 0.55
+			stool.mesh = smesh
+			stool.position = Vector3(sx, 0.27, 0)
+			stool.material_override = stool_mat
+			cafe.add_child(stool)
+		# Collision: one box around the table
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.6, 1.0, 1.2)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.5, 0)
+		sb.add_child(cs)
+		cafe.add_child(sb)
+
+
+func _build_data_streams(geom: Node) -> void:
+	## Epic-1 T49: 2 small secondary data-stream fountains flanking the main
+	## fountain at the plaza center. Each is a low ring + a tall vertical column
+	## of cyan particles flowing upward and dispersing — pure ambient effect.
+	var positions: Array[Vector3] = [
+		Vector3(28, 0, -3),
+		Vector3(36, 0, -3),
+	]
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.10, 0.18, 0.26)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.30, 0.85, 1.0)
+	ring_mat.emission_energy_multiplier = 0.7
+	ring_mat.metallic = 0.55
+	ring_mat.roughness = 0.30
+	for i in positions.size():
+		var stream: Node3D = Node3D.new()
+		stream.name = "EastPlazaDataStream_%d" % i
+		stream.position = positions[i]
+		geom.add_child(stream)
+		# Low torus ring base
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: TorusMesh = TorusMesh.new()
+		tmesh.inner_radius = 0.55
+		tmesh.outer_radius = 0.85
+		ring.mesh = tmesh
+		ring.position = Vector3(0, 0.15, 0)
+		ring.material_override = ring_mat
+		stream.add_child(ring)
+		# Vertical particle column
+		var col: GPUParticles3D = GPUParticles3D.new()
+		col.name = "Stream"
+		col.amount = 60
+		col.lifetime = 1.8
+		col.position = Vector3(0, 0.5, 0)
+		col.one_shot = false
+		col.explosiveness = 0.0
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		pmat.emission_sphere_radius = 0.30
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 8.0
+		pmat.initial_velocity_min = 1.4
+		pmat.initial_velocity_max = 2.2
+		pmat.gravity = Vector3(0, -0.4, 0)
+		pmat.scale_min = 0.05
+		pmat.scale_max = 0.12
+		pmat.color = Color(0.55, 0.95, 1.0, 1.0)
+		col.process_material = pmat
+		# A simple sphere mesh draw
+		var dmesh: SphereMesh = SphereMesh.new()
+		dmesh.radius = 0.10
+		dmesh.height = 0.20
+		var dmat: StandardMaterial3D = StandardMaterial3D.new()
+		dmat.albedo_color = Color(0.55, 0.95, 1.0)
+		dmat.emission_enabled = true
+		dmat.emission = Color(0.55, 0.95, 1.0)
+		dmat.emission_energy_multiplier = 2.4
+		dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dmesh.material = dmat
+		col.draw_pass_1 = dmesh
+		stream.add_child(col)
+
+
+func _build_district_signposts(geom: Node) -> void:
+	## Epic-1 T50: directional signpost cluster at the plaza arch entrance.
+	## Single tall metal pole with 4 angled arrow signs pointing toward
+	## hypothetical districts to telegraph future expansion.
+	var post_root: Node3D = Node3D.new()
+	post_root.name = "EastPlazaDistrictSignpost"
+	post_root.position = Vector3(22, 0, 0)
+	geom.add_child(post_root)
+	# Tall metal pole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 0.07
+	pmesh.bottom_radius = 0.10
+	pmesh.height = 3.4
+	pole.mesh = pmesh
+	pole.position = Vector3(0, 1.7, 0)
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	pole_mat.roughness = 0.30
+	pole.material_override = pole_mat
+	post_root.add_child(pole)
+	# 4 arrow signs at different heights / yaws
+	var sign_specs: Array = [
+		["MARKET", Color(0.95, 0.65, 0.20), 2.9, 0.0],
+		["DUNGEON", Color(0.85, 0.30, 0.30), 2.45, PI * 0.5],
+		["TOURNAMENT", Color(0.45, 0.95, 0.65), 2.0, PI],
+		["CIPHER LAB", Color(0.85, 0.40, 1.0), 1.55, PI * 1.5],
+	]
+	for spec in sign_specs:
+		var sign_text: String = spec[0]
+		var color: Color = spec[1]
+		var sign_y: float = spec[2]
+		var yaw: float = spec[3]
+		var arrow: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(1.6, 0.32, 0.06)
+		arrow.mesh = amesh
+		arrow.position = Vector3(0.85, sign_y, 0)
+		var amat: StandardMaterial3D = StandardMaterial3D.new()
+		amat.albedo_color = Color(color.r * 0.4, color.g * 0.4, color.b * 0.4)
+		amat.emission_enabled = true
+		amat.emission = color
+		amat.emission_energy_multiplier = 1.0
+		amat.metallic = 0.4
+		arrow.material_override = amat
+		var pivot: Node3D = Node3D.new()
+		pivot.rotation = Vector3(0, yaw, 0)
+		pivot.add_child(arrow)
+		post_root.add_child(pivot)
+		# Label on sign
+		var label: Label3D = Label3D.new()
+		label.text = sign_text
+		label.position = Vector3(0.85, sign_y, 0.05)
+		label.modulate = Color(1, 1, 1)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 14
+		label.no_depth_test = true
+		var lpivot: Node3D = Node3D.new()
+		lpivot.rotation = Vector3(0, yaw, 0)
+		lpivot.add_child(label)
+		post_root.add_child(lpivot)
+	# Collision around the pole
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.20
+	cap.height = 3.4
+	cs.shape = cap
+	cs.position = Vector3(0, 1.7, 0)
+	sb.add_child(cs)
+	post_root.add_child(sb)
