@@ -1470,6 +1470,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_black_market_npc()
 	# Epic-2 T20: hovering watchtower with sweeping searchlight
 	_build_d2_watchtower(geom)
+	# Epic-2 T21: data conduit pipes running across district
+	_build_d2_data_conduits(geom)
+	# Epic-2 T22: tall server farm tower with rack lights
+	_build_d2_server_farm(geom)
+	# Epic-2 T23: cracked highway billboard
+	_build_d2_cracked_billboard(geom)
+	# Epic-2 T24: shipping container clutter pile
+	_build_d2_shipping_containers(geom)
+	# Epic-2 T25: large wandering glitch beast (mini-boss visual)
+	_build_d2_glitch_beast(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -9240,4 +9250,440 @@ func _build_d2_watchtower(geom: Node) -> void:
 	cs.position = Vector3(0, 4.0, 0)
 	sb.add_child(cs)
 	tower.add_child(sb)
+
+
+func _build_d2_data_conduits(geom: Node) -> void:
+	## Epic-2 T21: 3 large suspended data conduit pipes running east-west
+	## across the district at varying heights. Each is a long thick cylinder
+	## with cyan emissive bands at intervals + a slow energy pulse traveling
+	## along its length (mocked by moving a bright sphere along the pipe).
+	var pipe_specs: Array = [
+		[Vector3(70, 4.5, -16), Vector3(115, 4.5, -16), Color(0.55, 0.95, 1.0)],
+		[Vector3(70, 5.5, 0), Vector3(115, 5.5, 0), Color(1.0, 0.55, 0.20)],
+		[Vector3(70, 4.5, 16), Vector3(115, 4.5, 16), Color(0.85, 0.40, 1.0)],
+	]
+	var pipe_metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pipe_metal_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	pipe_metal_mat.metallic = 0.85
+	pipe_metal_mat.roughness = 0.30
+	for i in pipe_specs.size():
+		var spec: Array = pipe_specs[i]
+		var from: Vector3 = spec[0]
+		var to: Vector3 = spec[1]
+		var color: Color = spec[2]
+		var dist: float = from.distance_to(to)
+		var mid: Vector3 = (from + to) * 0.5
+		var pipe: MeshInstance3D = MeshInstance3D.new()
+		pipe.name = "D2DataConduit_%d" % i
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.30
+		pmesh.bottom_radius = 0.30
+		pmesh.height = dist
+		pipe.mesh = pmesh
+		pipe.position = mid
+		pipe.rotation = Vector3(0, 0, deg_to_rad(90))
+		pipe.material_override = pipe_metal_mat
+		geom.add_child(pipe)
+		# Emissive band rings every 5m along the pipe
+		var num_bands: int = int(dist / 5.0)
+		for b in num_bands:
+			var t: float = float(b + 1) / float(num_bands + 1)
+			var band_pos: Vector3 = from.lerp(to, t)
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var bmesh: TorusMesh = TorusMesh.new()
+			bmesh.inner_radius = 0.32
+			bmesh.outer_radius = 0.40
+			band.mesh = bmesh
+			band.position = band_pos
+			band.rotation = Vector3(0, 0, deg_to_rad(90))
+			var bmat: StandardMaterial3D = StandardMaterial3D.new()
+			bmat.albedo_color = color
+			bmat.emission_enabled = true
+			bmat.emission = color
+			bmat.emission_energy_multiplier = 1.6
+			bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			band.material_override = bmat
+			geom.add_child(band)
+		# Pulse sphere traveling along the pipe
+		var pulse_ball: MeshInstance3D = MeshInstance3D.new()
+		var pmesh_b: SphereMesh = SphereMesh.new()
+		pmesh_b.radius = 0.22
+		pmesh_b.height = 0.44
+		pulse_ball.mesh = pmesh_b
+		pulse_ball.position = from
+		var pball_mat: StandardMaterial3D = StandardMaterial3D.new()
+		pball_mat.albedo_color = color
+		pball_mat.emission_enabled = true
+		pball_mat.emission = color
+		pball_mat.emission_energy_multiplier = 3.0
+		pball_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pulse_ball.material_override = pball_mat
+		geom.add_child(pulse_ball)
+		var travel: Tween = create_tween().set_loops()
+		travel.tween_property(pulse_ball, "position", to, 4.0 + i * 0.5).set_ease(Tween.EASE_IN_OUT)
+		travel.tween_property(pulse_ball, "position", from, 0.05)
+
+
+func _build_d2_server_farm(geom: Node) -> void:
+	## Epic-2 T22: a tall multi-rack server farm tower in D2. 3 stacked
+	## rack units with rows of small green/red LED lights, vent fins on
+	## the sides, and a roof antenna. Hints "this district hosts compute".
+	var farm: Node3D = Node3D.new()
+	farm.name = "D2ServerFarm"
+	farm.position = D2_CENTER + Vector3(-15, 0, 14)
+	geom.add_child(farm)
+	# Base
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.30
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var base_mesh: BoxMesh = BoxMesh.new()
+	base_mesh.size = Vector3(2.4, 0.30, 2.0)
+	base.mesh = base_mesh
+	base.position = Vector3(0, 0.15, 0)
+	base.material_override = dark_mat
+	farm.add_child(base)
+	# 3 stacked rack units
+	for r in 3:
+		var rack: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: BoxMesh = BoxMesh.new()
+		rmesh.size = Vector3(2.0, 1.6, 1.6)
+		rack.mesh = rmesh
+		rack.position = Vector3(0, 1.15 + r * 1.85, 0)
+		rack.material_override = dark_mat
+		farm.add_child(rack)
+		# Rows of LEDs across the front face
+		for row in 4:
+			for col in 5:
+				var led: MeshInstance3D = MeshInstance3D.new()
+				var lmesh: SphereMesh = SphereMesh.new()
+				lmesh.radius = 0.05
+				lmesh.height = 0.10
+				led.mesh = lmesh
+				led.position = Vector3(-0.85 + col * 0.40, 1.50 + r * 1.85 + row * 0.30, 0.81)
+				var lmat: StandardMaterial3D = StandardMaterial3D.new()
+				var c: Color = Color(0.30, 1.0, 0.40) if (row + col) % 2 == 0 else Color(1.0, 0.40, 0.30)
+				lmat.albedo_color = c
+				lmat.emission_enabled = true
+				lmat.emission = c
+				lmat.emission_energy_multiplier = 2.0
+				lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+				led.material_override = lmat
+				farm.add_child(led)
+				# Random blink (some lights flicker)
+				if (row * 5 + col) % 3 == 0:
+					var blink: Tween = create_tween().set_loops()
+					blink.tween_interval(0.5 + randf() * 1.0)
+					blink.tween_property(led, "visible", false, 0.0)
+					blink.tween_interval(0.10)
+					blink.tween_property(led, "visible", true, 0.0)
+		# Vent fins on each side of the rack
+		for sx: float in [-1.05, 1.05]:
+			for fy in 4:
+				var fin: MeshInstance3D = MeshInstance3D.new()
+				var fmesh: BoxMesh = BoxMesh.new()
+				fmesh.size = Vector3(0.05, 0.06, 1.5)
+				fin.mesh = fmesh
+				fin.position = Vector3(sx, 1.20 + r * 1.85 + fy * 0.36, 0)
+				fin.material_override = dark_mat
+				farm.add_child(fin)
+	# Roof antenna
+	var antenna: MeshInstance3D = MeshInstance3D.new()
+	var amesh: CylinderMesh = CylinderMesh.new()
+	amesh.top_radius = 0.04
+	amesh.bottom_radius = 0.10
+	amesh.height = 1.6
+	antenna.mesh = amesh
+	antenna.position = Vector3(0, 7.50, 0)
+	antenna.material_override = dark_mat
+	farm.add_child(antenna)
+	# Antenna blink tip
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tip_mesh: SphereMesh = SphereMesh.new()
+	tip_mesh.radius = 0.10
+	tip_mesh.height = 0.20
+	tip.mesh = tip_mesh
+	tip.position = Vector3(0, 8.30, 0)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(1.0, 0.30, 0.30)
+	tmat.emission_enabled = true
+	tmat.emission = Color(1.0, 0.40, 0.40)
+	tmat.emission_energy_multiplier = 2.5
+	tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tip.material_override = tmat
+	farm.add_child(tip)
+	var blink: Tween = create_tween().set_loops()
+	blink.tween_property(tip, "scale", Vector3(0.4, 0.4, 0.4), 0.6).set_ease(Tween.EASE_IN_OUT)
+	blink.tween_property(tip, "scale", Vector3(1.4, 1.4, 1.4), 0.6).set_ease(Tween.EASE_IN_OUT)
+	# Label
+	var label: Label3D = Label3D.new()
+	label.text = "SERVER FARM"
+	label.position = Vector3(0, 9.0, 0)
+	label.modulate = Color(0.40, 1.0, 0.50)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	farm.add_child(label)
+	# Collision around the whole stack
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 7.0, 2.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 3.50, 0)
+	sb.add_child(cs)
+	farm.add_child(sb)
+
+
+func _build_d2_cracked_billboard(geom: Node) -> void:
+	## Epic-2 T23: a tall cracked highway billboard mounted on 2 thick
+	## posts. Old advert face is faded with diagonal cracks. Reads "RUN
+	## FASTER / BETA TEST 0.99" with vertical text glitching.
+	var bb: Node3D = Node3D.new()
+	bb.name = "D2CrackedBillboard"
+	bb.position = D2_CENTER + Vector3(-12, 0, -6)
+	bb.rotation = Vector3(0, deg_to_rad(20), 0)
+	geom.add_child(bb)
+	# 2 support posts
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	post_mat.roughness = 0.30
+	for sx: float in [-1.6, 1.6]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.10
+		pmesh.bottom_radius = 0.14
+		pmesh.height = 4.5
+		post.mesh = pmesh
+		post.position = Vector3(sx, 2.25, 0)
+		post.material_override = post_mat
+		bb.add_child(post)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 4.5
+		cs.shape = cap
+		cs.position = Vector3(sx, 2.25, 0)
+		sb.add_child(cs)
+		bb.add_child(sb)
+	# Billboard backing — wide rectangle
+	var back_mat: StandardMaterial3D = StandardMaterial3D.new()
+	back_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	back_mat.emission_enabled = true
+	back_mat.emission = Color(1.0, 0.85, 0.55)
+	back_mat.emission_energy_multiplier = 0.40
+	back_mat.metallic = 0.10
+	back_mat.roughness = 0.65
+	var board: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(4.5, 2.4, 0.10)
+	board.mesh = bmesh
+	board.position = Vector3(0, 4.50, 0)
+	board.material_override = back_mat
+	bb.add_child(board)
+	# Diagonal crack lines on the board
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(0.10, 0.10, 0.10)
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for c in 3:
+		var crack: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(3.5, 0.05, 0.02)
+		crack.mesh = cmesh
+		crack.position = Vector3(0, 4.50 + c * 0.30 - 0.40, 0.06)
+		crack.rotation = Vector3(0, 0, deg_to_rad(-22 + c * 20))
+		crack.material_override = crack_mat
+		bb.add_child(crack)
+	# Big text on the board
+	var label1: Label3D = Label3D.new()
+	label1.text = "RUN FASTER"
+	label1.position = Vector3(0, 5.05, 0.07)
+	label1.modulate = Color(0.95, 0.30, 0.20)
+	label1.outline_modulate = Color(0, 0, 0, 0.85)
+	label1.outline_size = 6
+	label1.font_size = 32
+	label1.no_depth_test = true
+	bb.add_child(label1)
+	var label2: Label3D = Label3D.new()
+	label2.text = "BETA TEST 0.99"
+	label2.position = Vector3(0, 4.10, 0.07)
+	label2.modulate = Color(0.20, 0.20, 0.30)
+	label2.outline_modulate = Color(0, 0, 0, 0.85)
+	label2.outline_size = 4
+	label2.font_size = 18
+	label2.no_depth_test = true
+	bb.add_child(label2)
+	# Glitch flicker on the title
+	var flicker: Tween = create_tween().set_loops()
+	flicker.tween_interval(2.0)
+	flicker.tween_property(label1, "visible", false, 0.0)
+	flicker.tween_interval(0.10)
+	flicker.tween_property(label1, "visible", true, 0.0)
+	flicker.tween_interval(0.05)
+	flicker.tween_property(label1, "visible", false, 0.0)
+	flicker.tween_interval(0.08)
+	flicker.tween_property(label1, "visible", true, 0.0)
+
+
+func _build_d2_shipping_containers(geom: Node) -> void:
+	## Epic-2 T24: 5 stacked shipping containers cluttering an area. Each
+	## is a long box at varying colors with stenciled IDs and rusty trim.
+	var stack: Node3D = Node3D.new()
+	stack.name = "D2ShippingContainers"
+	stack.position = D2_CENTER + Vector3(22, 0, 14)
+	geom.add_child(stack)
+	var container_specs: Array = [
+		[Vector3(0, 0.70, 0), Vector3(0, 0, 0), Color(0.20, 0.40, 0.55)],
+		[Vector3(0, 2.10, 0), Vector3(0, deg_to_rad(15), 0), Color(0.55, 0.30, 0.20)],
+		[Vector3(2.5, 0.70, 0.5), Vector3(0, deg_to_rad(-25), 0), Color(0.30, 0.45, 0.25)],
+		[Vector3(-2.0, 0.70, 0.8), Vector3(0, deg_to_rad(8), 0), Color(0.55, 0.45, 0.20)],
+		[Vector3(2.5, 2.10, 0.5), Vector3(0, deg_to_rad(-15), deg_to_rad(8)), Color(0.40, 0.35, 0.40)],
+	]
+	for i in container_specs.size():
+		var spec: Array = container_specs[i]
+		var color: Color = spec[2]
+		var container: MeshInstance3D = MeshInstance3D.new()
+		container.name = "Container_%d" % i
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(2.6, 1.40, 1.20)
+		container.mesh = cmesh
+		container.position = spec[0]
+		container.rotation = spec[1]
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = color
+		cmat.metallic = 0.55
+		cmat.roughness = 0.65
+		container.material_override = cmat
+		stack.add_child(container)
+		# Stencil ID label on side
+		var id_label: Label3D = Label3D.new()
+		id_label.text = "C-%03d" % (i * 47 + 12)
+		id_label.position = spec[0] + Vector3(0, 0.20, 0.66)
+		id_label.rotation = spec[1]
+		id_label.modulate = Color(0.95, 0.95, 0.95, 0.85)
+		id_label.outline_modulate = Color(0, 0, 0, 0.55)
+		id_label.outline_size = 3
+		id_label.font_size = 18
+		id_label.no_depth_test = true
+		stack.add_child(id_label)
+		# Collision per container
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.6, 1.40, 1.20)
+		cs.shape = cb
+		cs.position = spec[0]
+		sb.add_child(cs)
+		stack.add_child(sb)
+
+
+func _build_d2_glitch_beast(geom: Node) -> void:
+	## Epic-2 T25: a large wandering "glitch beast" — bigger than the
+	## glitch enemies, the visual mini-boss of D2. 4-legged hulking body
+	## with 6 magenta eyes and a glowing back spike row. Slow patrol.
+	var beast: Node3D = Node3D.new()
+	beast.name = "D2GlitchBeast"
+	beast.position = D2_CENTER + Vector3(15, 0, 14)
+	geom.add_child(beast)
+	# Body — chunky box
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.30, 0.10, 0.18)
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(1.0, 0.20, 0.40)
+	body_mat.emission_energy_multiplier = 0.55
+	body_mat.metallic = 0.40
+	body_mat.roughness = 0.55
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(2.0, 1.20, 1.40)
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.30, 0)
+	body.material_override = body_mat
+	beast.add_child(body)
+	# Head — smaller box jutting forward
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(1.0, 0.85, 1.0)
+	head.mesh = hmesh
+	head.position = Vector3(1.30, 1.20, 0)
+	head.material_override = body_mat
+	beast.add_child(head)
+	# 6 magenta eyes (3x2 grid on the head front)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.30, 0.55)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.40, 0.65)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for col in 3:
+		for row in 2:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emesh: SphereMesh = SphereMesh.new()
+			emesh.radius = 0.10
+			emesh.height = 0.20
+			eye.mesh = emesh
+			eye.position = Vector3(1.85, 1.05 + row * 0.30, -0.30 + col * 0.30)
+			eye.material_override = eye_mat
+			beast.add_child(eye)
+	# Glowing back spike row — 5 prisms along the body top
+	var spike_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spike_mat.albedo_color = Color(1.0, 0.20, 0.40)
+	spike_mat.emission_enabled = true
+	spike_mat.emission = Color(1.0, 0.30, 0.55)
+	spike_mat.emission_energy_multiplier = 2.2
+	spike_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for s in 5:
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var smesh: PrismMesh = PrismMesh.new()
+		smesh.size = Vector3(0.20, 0.65, 0.20)
+		spike.mesh = smesh
+		spike.position = Vector3(0.80 - s * 0.40, 2.20, 0)
+		spike.material_override = spike_mat
+		beast.add_child(spike)
+	# 4 chunky legs
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.16, 0.06, 0.10)
+	leg_mat.metallic = 0.30
+	leg_mat.roughness = 0.55
+	var leg_offsets: Array[Vector3] = [
+		Vector3(-0.85, 0.40, -0.55),
+		Vector3(0.85, 0.40, -0.55),
+		Vector3(-0.85, 0.40, 0.55),
+		Vector3(0.85, 0.40, 0.55),
+	]
+	for off in leg_offsets:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: BoxMesh = BoxMesh.new()
+		lmesh.size = Vector3(0.30, 0.85, 0.30)
+		leg.mesh = lmesh
+		leg.position = off
+		leg.material_override = leg_mat
+		beast.add_child(leg)
+	# Slow patrol path
+	var origin: Vector3 = D2_CENTER + Vector3(15, 0, 14)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(beast, "rotation:y", 0.0, 0.4)
+	patrol.tween_property(beast, "position", origin + Vector3(8, 0, 0), 8.0)
+	patrol.tween_property(beast, "rotation:y", deg_to_rad(180), 0.6)
+	patrol.tween_property(beast, "position", origin, 8.0)
+	# Pulse the back spikes
+	var spike_pulse: Tween = create_tween().set_loops()
+	spike_pulse.tween_property(spike_mat, "emission_energy_multiplier", 3.4, 0.85).set_ease(Tween.EASE_IN_OUT)
+	spike_pulse.tween_property(spike_mat, "emission_energy_multiplier", 1.4, 0.85).set_ease(Tween.EASE_IN_OUT)
+	# Boss-like name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "GLITCH BEAST"
+	label.position = Vector3(0, 3.20, 0)
+	label.modulate = Color(1.0, 0.30, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	beast.add_child(label)
+
 
