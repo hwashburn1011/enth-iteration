@@ -1225,6 +1225,14 @@ func _build_east_plaza() -> void:
 	_build_plaza_lights(geom)
 	# Step 9: data merchant NPC (placeholder + interaction)
 	_build_data_merchant_npc()
+	# Epic-1 T2: Cipher data broker NPC at far east
+	_build_cipher_npc()
+	# Epic-1 T3: procedural Market Hall building NE of the centerpiece
+	_build_market_hall(geom)
+	# Epic-1 T4: kiosk interaction labels
+	_attach_kiosk_interactables(geom)
+	# Epic-1 T5: ambient market chatter trigger zone (sets a meta on enter)
+	_build_market_chatter_zone(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -1490,3 +1498,181 @@ func _build_data_merchant_npc() -> void:
 	label.font_size = 24
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	merchant.add_child(label)
+
+
+func _build_cipher_npc() -> void:
+	## Epic-1 T2: Cipher data broker — colder violet NPC at far east edge
+	var cipher: Node3D = Node3D.new()
+	cipher.name = "EastPlazaCipher"
+	cipher.position = Vector3(40, 0.5, 5)
+	add_child(cipher)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.42
+	sphere.height = 0.84
+	body.mesh = sphere
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.42, 0.20, 0.65)
+	mat.emission_enabled = true
+	mat.emission = Color(0.55, 0.25, 0.85)
+	mat.emission_energy_multiplier = 0.7
+	mat.metallic = 0.5
+	body.material_override = mat
+	cipher.add_child(body)
+	# Floating eye
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.95, 0.85, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.85, 0.55, 1.0)
+	eye_mat.emission_energy_multiplier = 2.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for side: float in [-0.13, 0.13]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.07
+		em.height = 0.14
+		eye.mesh = em
+		eye.position = Vector3(side, 0.18, -0.32)
+		eye.material_override = eye_mat
+		body.add_child(eye)
+	var label: Label3D = Label3D.new()
+	label.text = "Cipher"
+	label.position = Vector3(0, 1.4, 0)
+	label.modulate = Color(0.85, 0.5, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 24
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	cipher.add_child(label)
+
+
+func _build_market_hall(geom: Node) -> void:
+	## Epic-1 T3: procedural Market Hall NE of the data terminal
+	var hall: Node3D = Node3D.new()
+	hall.name = "EastPlazaMarketHall"
+	hall.position = Vector3(38, 0, -10)
+	geom.add_child(hall)
+	# Walls (4 panels)
+	var hall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hall_mat.albedo_color = Color(0.18, 0.10, 0.04)
+	hall_mat.emission_enabled = true
+	hall_mat.emission = Color(0.85, 0.45, 0.15)
+	hall_mat.emission_energy_multiplier = 0.45
+	hall_mat.metallic = 0.4
+	hall_mat.roughness = 0.55
+	for side in [Vector3(0, 1.5, -3), Vector3(0, 1.5, 3), Vector3(-3, 1.5, 0), Vector3(3, 1.5, 0)]:
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		# Walls along x-axis are wider in x; walls along z-axis are wider in z
+		if abs(side.x) > 0.01:
+			wmesh.size = Vector3(0.3, 3.0, 6.0)
+		else:
+			wmesh.size = Vector3(6.0, 3.0, 0.3)
+		wall.mesh = wmesh
+		wall.position = side
+		wall.material_override = hall_mat
+		hall.add_child(wall)
+	# Roof (flat slab)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(6.4, 0.2, 6.4)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 3.1, 0)
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.25, 0.15, 0.05)
+	roof_mat.emission_enabled = true
+	roof_mat.emission = Color(0.65, 0.35, 0.10)
+	roof_mat.emission_energy_multiplier = 0.3
+	roof_mat.metallic = 0.6
+	roof.material_override = roof_mat
+	hall.add_child(roof)
+	# Marquee strip — horizontal cyan glow above the entrance
+	var marquee: MeshInstance3D = MeshInstance3D.new()
+	var qmesh: BoxMesh = BoxMesh.new()
+	qmesh.size = Vector3(5.5, 0.4, 0.15)
+	marquee.mesh = qmesh
+	marquee.position = Vector3(0, 2.6, -3.05)
+	var qmat: StandardMaterial3D = StandardMaterial3D.new()
+	qmat.albedo_color = Color(0.15, 0.55, 0.75)
+	qmat.emission_enabled = true
+	qmat.emission = Color(0.30, 0.80, 1.0)
+	qmat.emission_energy_multiplier = 2.5
+	qmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	marquee.material_override = qmat
+	hall.add_child(marquee)
+	# Marquee text label
+	var marquee_text: Label3D = Label3D.new()
+	marquee_text.text = "DATA MARKET"
+	marquee_text.position = Vector3(0, 2.6, -3.13)
+	marquee_text.modulate = Color(1.0, 0.95, 0.85)
+	marquee_text.outline_modulate = Color(0, 0.05, 0.15, 1.0)
+	marquee_text.outline_size = 8
+	marquee_text.font_size = 32
+	marquee_text.no_depth_test = true
+	hall.add_child(marquee_text)
+	# Collision around the hall (simple box covering the perimeter)
+	var body: StaticBody3D = StaticBody3D.new()
+	for side in [Vector3(0, 1.5, -3), Vector3(0, 1.5, 3), Vector3(-3, 1.5, 0), Vector3(3, 1.5, 0)]:
+		var shape: CollisionShape3D = CollisionShape3D.new()
+		var cbox: BoxShape3D = BoxShape3D.new()
+		if abs(side.x) > 0.01:
+			cbox.size = Vector3(0.3, 3.0, 6.0)
+		else:
+			cbox.size = Vector3(6.0, 3.0, 0.3)
+		shape.shape = cbox
+		shape.position = side
+		body.add_child(shape)
+	hall.add_child(body)
+	# Interior point light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 2.4, 0)
+	light.light_color = Color(1.0, 0.7, 0.4)
+	light.light_energy = 1.6
+	light.omni_range = 8.0
+	light.omni_attenuation = 1.5
+	hall.add_child(light)
+
+
+func _attach_kiosk_interactables(geom: Node) -> void:
+	## Epic-1 T4: add a small floating "[E] Browse" label above each plaza kiosk
+	## (purely visual for now — full dialogue branching is a later epic).
+	var positions: Array[Vector3] = [
+		Vector3(28, 0, -4), Vector3(36, 0, -4),
+		Vector3(28, 0, 4), Vector3(36, 0, 4),
+	]
+	for pos in positions:
+		var label: Label3D = Label3D.new()
+		label.text = "[E] Browse"
+		label.position = pos + Vector3(0, 1.85, 0)
+		label.modulate = Color(0.6, 0.95, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 18
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.no_depth_test = true
+		geom.add_child(label)
+
+
+func _build_market_chatter_zone(geom: Node) -> void:
+	## Epic-1 T5: invisible Area3D over the plaza that fires "entered_plaza"
+	## meta on the GameManager when the player enters. Future epics can hook
+	## ambient market chatter SFX to this trigger.
+	var area: Area3D = Area3D.new()
+	area.name = "EastPlazaChatterZone"
+	area.position = Vector3(32, 1.0, 0)
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = Vector3(20, 4, 30)
+	shape.shape = box
+	area.add_child(shape)
+	area.collision_layer = 0
+	area.collision_mask = 1  # scan player layer
+	area.body_entered.connect(func(body: Node3D) -> void:
+		if body.is_in_group(&"player"):
+			GameManager.set_meta(&"in_east_plaza", true)
+	)
+	area.body_exited.connect(func(body: Node3D) -> void:
+		if body.is_in_group(&"player"):
+			GameManager.set_meta(&"in_east_plaza", false)
+	)
+	geom.add_child(area)
