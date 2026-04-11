@@ -108,6 +108,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_drift_lava_pool(geom)
 	_build_d9_sentinel_oath_wall(geom)
 	_build_d9_slag_heap_pit(geom)
+	_build_d9_slagmaster_borg_npc(town)
 	print("[D9Builder] done")
 
 
@@ -10128,4 +10129,185 @@ func _build_d9_slag_heap_pit(geom: Node) -> void:
 	var cpulse: Tween = pivot.create_tween().set_loops()
 	cpulse.tween_property(molten_mat, "emission_energy_multiplier", 10.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	cpulse.tween_property(molten_mat, "emission_energy_multiplier", 5.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_slagmaster_borg_npc(town: Node) -> void:
+	## Epic-9 T88: Slagmaster Borg — broad-shouldered foreman NPC standing
+	## at the slag heap pit. Heavy heat-shielded body suit, oversized
+	## brass forearm plates, full-face respirator with two glowing amber
+	## filter cannisters, long iron rake held in front (stirring the slag).
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9SlagmasterBorgSlot"
+	# Stand at the south edge of the slag pit (pit at -32, 0; rim at radius 5)
+	slot.position = Vector3(D9_CENTER.x - 32, 0, 6)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9SlagmasterBorg"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Slagmaster Borg")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_slagmaster_borg")
+	# Face the pit (-Z direction)
+	npc.rotation.y = PI
+	slot.add_child(npc)
+	# Materials
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.20, 0.16, 0.13)
+	suit_mat.roughness = 0.85
+	suit_mat.metallic = 0.20
+	suit_mat.emission_enabled = true
+	suit_mat.emission = Color(0.65, 0.20, 0.05)
+	suit_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.30
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Heavy heat-shielded body suit (wide chest box) ----
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.30, 1.55, 0.85)
+	torso.mesh = tm
+	torso.material_override = suit_mat
+	torso.position = Vector3(0, 1.20, 0)
+	npc.add_child(torso)
+	# Brass chest plate seam
+	var chest_seam: MeshInstance3D = MeshInstance3D.new()
+	var csm: BoxMesh = BoxMesh.new()
+	csm.size = Vector3(0.20, 1.40, 0.06)
+	chest_seam.mesh = csm
+	chest_seam.material_override = brass_mat
+	chest_seam.position = Vector3(0, 1.20, -0.44)
+	npc.add_child(chest_seam)
+	# Glowing amber chest core dot
+	var chest_core: MeshInstance3D = MeshInstance3D.new()
+	var ccm: SphereMesh = SphereMesh.new()
+	ccm.radius = 0.08
+	ccm.height = 0.16
+	chest_core.mesh = ccm
+	chest_core.material_override = amber_mat
+	chest_core.position = Vector3(0, 1.45, -0.46)
+	npc.add_child(chest_core)
+	# ---- Oversized brass forearm plates ----
+	for ax in [-0.75, 0.75]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var amm: BoxMesh = BoxMesh.new()
+		amm.size = Vector3(0.30, 0.65, 0.32)
+		arm.mesh = amm
+		arm.material_override = brass_mat
+		arm.position = Vector3(ax, 1.10, 0.10)
+		npc.add_child(arm)
+	# ---- Full-face respirator helm ----
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hmm: BoxMesh = BoxMesh.new()
+	hmm.size = Vector3(0.85, 0.85, 0.80)
+	helm.mesh = hmm
+	helm.material_override = iron_mat
+	helm.position = Vector3(0, 2.15, 0)
+	npc.add_child(helm)
+	# Helm crown ridge (small prism)
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crm: PrismMesh = PrismMesh.new()
+	crm.size = Vector3(0.85, 0.20, 0.30)
+	crown.mesh = crm
+	crown.material_override = brass_mat
+	crown.position = Vector3(0, 2.65, 0)
+	npc.add_child(crown)
+	# Two glowing amber filter cannisters jutting from each side of the helm
+	for fx in [-0.50, 0.50]:
+		var cannister: MeshInstance3D = MeshInstance3D.new()
+		var cnm: CylinderMesh = CylinderMesh.new()
+		cnm.top_radius = 0.10
+		cnm.bottom_radius = 0.12
+		cnm.height = 0.30
+		cannister.mesh = cnm
+		cannister.material_override = brass_mat
+		cannister.position = Vector3(fx, 2.10, -0.35)
+		cannister.rotation.x = PI / 2.0
+		npc.add_child(cannister)
+		# Glowing filter end-cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: SphereMesh = SphereMesh.new()
+		capm.radius = 0.10
+		capm.height = 0.20
+		cap.mesh = capm
+		cap.material_override = amber_mat
+		cap.position = Vector3(fx, 2.10, -0.50)
+		npc.add_child(cap)
+	# Helm visor band — thin glowing horizontal stripe across the front
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.06, 0.04)
+	visor.mesh = vm
+	visor.material_override = amber_mat
+	visor.position = Vector3(0, 2.20, -0.42)
+	npc.add_child(visor)
+	# ---- Long iron rake held in front (stirring the slag) ----
+	var rake_pivot: Node3D = Node3D.new()
+	rake_pivot.position = Vector3(0, 1.20, -0.50)
+	npc.add_child(rake_pivot)
+	# Rake shaft (long cylinder)
+	var rake_shaft: MeshInstance3D = MeshInstance3D.new()
+	var rsm: CylinderMesh = CylinderMesh.new()
+	rsm.top_radius = 0.05
+	rsm.bottom_radius = 0.06
+	rsm.height = 2.10
+	rake_shaft.mesh = rsm
+	rake_shaft.material_override = iron_mat
+	rake_shaft.position = Vector3(0, 0, -0.70)
+	rake_shaft.rotation.x = PI / 2.0
+	rake_pivot.add_child(rake_shaft)
+	# Rake head (wide flat box)
+	var rake_head: MeshInstance3D = MeshInstance3D.new()
+	var rhm: BoxMesh = BoxMesh.new()
+	rhm.size = Vector3(0.55, 0.10, 0.20)
+	rake_head.mesh = rhm
+	rake_head.material_override = iron_mat
+	rake_head.position = Vector3(0, 0, -1.80)
+	rake_pivot.add_child(rake_head)
+	# 4 rake teeth (small box prongs)
+	for tx in [-0.20, -0.07, 0.07, 0.20]:
+		var tooth: MeshInstance3D = MeshInstance3D.new()
+		var thm: BoxMesh = BoxMesh.new()
+		thm.size = Vector3(0.05, 0.20, 0.05)
+		tooth.mesh = thm
+		tooth.material_override = iron_mat
+		tooth.position = Vector3(tx, -0.13, -1.80)
+		rake_pivot.add_child(tooth)
+	# Rake stir tween — slow horizontal sweep like stirring the pit
+	var stir: Tween = npc.create_tween().set_loops()
+	stir.tween_property(rake_pivot, "rotation:y", 0.35, 2.0).set_ease(Tween.EASE_IN_OUT)
+	stir.tween_property(rake_pivot, "rotation:y", -0.35, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Warm OmniLight from helm filters
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.20, -0.40)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.0
+	lt.omni_range = 5.0
+	npc.add_child(lt)
+	# Filter + visor pulse
+	var fpulse: Tween = npc.create_tween().set_loops()
+	fpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
