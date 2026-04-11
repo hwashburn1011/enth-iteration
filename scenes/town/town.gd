@@ -1600,6 +1600,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_gargoyles(geom)
 	# Epic-2 T85: boss arena teaser at the far east edge
 	_build_d2_boss_arena_teaser(geom)
+	# Epic-2 T86: second rival faction wall painted with a different symbol
+	_build_d2_rival_faction_wall(geom)
+	# Epic-2 T87: skill trainer NPC with practice target
+	_build_d2_skill_trainer_npc()
+	# Epic-2 T88: large ground fissure ravine
+	_build_d2_ground_fissure(geom)
+	# Epic-2 T89: scratch + skid marks decal cluster
+	_build_d2_scratch_decals(geom)
+	# Epic-2 T90: ammo crate stash
+	_build_d2_ammo_stash(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -14891,5 +14901,311 @@ func _build_d2_boss_arena_teaser(geom: Node) -> void:
 	label.font_size = 26
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	arena.add_child(label)
+
+
+func _build_d2_rival_faction_wall(geom: Node) -> void:
+	## Epic-2 T86: a second rival faction wall opposite the first one,
+	## painted with a glowing cyan triangle symbol and "NULL CREW" tag.
+	## Establishes "two factions are fighting over this district".
+	var wall: Node3D = Node3D.new()
+	wall.name = "D2RivalFactionWall"
+	wall.position = D2_CENTER + Vector3(22, 0, 4)
+	wall.rotation = Vector3(0, deg_to_rad(180), 0)
+	geom.add_child(wall)
+	# Wall slab
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.16, 0.12)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.30, 4.0, 4.5)
+	slab.mesh = smesh
+	slab.position = Vector3(0, 2.0, 0)
+	slab.material_override = stone_mat
+	wall.add_child(slab)
+	# Painted triangle symbol — 3 box edges forming the outline
+	var sym_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sym_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	sym_mat.emission_enabled = true
+	sym_mat.emission = Color(0.55, 0.95, 1.0)
+	sym_mat.emission_energy_multiplier = 1.8
+	sym_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 3 triangle sides
+	var tri_specs: Array = [
+		[Vector3(0.16, 1.10, 0), Vector3(0.06, 0.20, 2.40), 0.0],
+		[Vector3(0.16, 2.05, -0.55), Vector3(0.06, 0.20, 2.20), deg_to_rad(60)],
+		[Vector3(0.16, 2.05, 0.55), Vector3(0.06, 0.20, 2.20), deg_to_rad(-60)],
+	]
+	for spec in tri_specs:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = spec[1]
+		seg.mesh = sm
+		seg.position = spec[0]
+		seg.rotation = Vector3(spec[2], 0, 0)
+		seg.material_override = sym_mat
+		wall.add_child(seg)
+	# Faction tag
+	var label: Label3D = Label3D.new()
+	label.text = "NULL CREW"
+	label.position = Vector3(0.18, 0.65, 0)
+	label.rotation = Vector3(0, deg_to_rad(90), 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 26
+	label.no_depth_test = true
+	wall.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.30, 4.0, 4.5)
+	cs.shape = cb
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	wall.add_child(sb)
+
+
+func _build_d2_skill_trainer_npc() -> void:
+	## Epic-2 T87: skill trainer NPC standing next to a punching dummy,
+	## demonstrating combat skills with a periodic punch animation.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var trainer: Node3D = Node3D.new()
+	trainer.name = "D2SkillTrainer"
+	trainer.position = D2_CENTER + Vector3(2, 0, -3)
+	slots.add_child(trainer)
+	# Body — fit capsule
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.30, 0.20)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.40, 0.20)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	trainer.add_child(body)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.36
+	hmesh.height = 0.65
+	head.mesh = hmesh
+	head.position = Vector3(0, 1.55, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.30, 0.20, 0.15)
+	hmat.metallic = 0.20
+	hmat.roughness = 0.65
+	head.material_override = hmat
+	trainer.add_child(head)
+	# 2 amber eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.95, 0.30)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.55, 0.30)
+		eye.material_override = eye_mat
+		trainer.add_child(eye)
+	# Punching arm in front of body — animated forward/back tween
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var amesh: BoxMesh = BoxMesh.new()
+	amesh.size = Vector3(0.20, 0.20, 0.85)
+	arm.mesh = amesh
+	arm.position = Vector3(0, 0.95, 0.55)
+	arm.material_override = bmat
+	trainer.add_child(arm)
+	# Punching dummy in front of trainer
+	var dummy_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dummy_mat.albedo_color = Color(0.40, 0.30, 0.18)
+	dummy_mat.metallic = 0.10
+	dummy_mat.roughness = 0.65
+	var dummy: MeshInstance3D = MeshInstance3D.new()
+	var dmesh: CapsuleMesh = CapsuleMesh.new()
+	dmesh.radius = 0.40
+	dmesh.height = 1.40
+	dummy.mesh = dmesh
+	dummy.position = Vector3(0, 0.70, 1.85)
+	dummy.material_override = dummy_mat
+	trainer.add_child(dummy)
+	# Dummy stand
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.45
+	smesh.bottom_radius = 0.45
+	smesh.height = 0.10
+	stand.mesh = smesh
+	stand.position = Vector3(0, 0.05, 1.85)
+	var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stand_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	stand_mat.metallic = 0.85
+	stand.material_override = stand_mat
+	trainer.add_child(stand)
+	# Punch tween — arm shoots forward and back, dummy recoils slightly
+	var punch: Tween = create_tween().set_loops()
+	punch.tween_property(arm, "position:z", 1.40, 0.18).set_ease(Tween.EASE_OUT)
+	punch.tween_property(dummy, "position:z", 2.00, 0.10).set_ease(Tween.EASE_OUT)
+	punch.tween_property(arm, "position:z", 0.55, 0.30).set_ease(Tween.EASE_IN)
+	punch.tween_property(dummy, "position:z", 1.85, 0.30).set_ease(Tween.EASE_IN)
+	punch.tween_interval(0.40)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Skill Trainer"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	trainer.add_child(label)
+
+
+func _build_d2_ground_fissure(geom: Node) -> void:
+	## Epic-2 T88: a long jagged ground fissure — 6 connected emissive
+	## red bars at random angles forming a crack across the floor.
+	var fissure: Node3D = Node3D.new()
+	fissure.name = "D2GroundFissure"
+	fissure.position = D2_CENTER + Vector3(10, 0.06, -6)
+	fissure.rotation = Vector3(0, deg_to_rad(35), 0)
+	geom.add_child(fissure)
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(1.0, 0.30, 0.20)
+	crack_mat.emission_enabled = true
+	crack_mat.emission = Color(1.0, 0.40, 0.20)
+	crack_mat.emission_energy_multiplier = 2.4
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var current_offset: float = 0.0
+	for i in 6:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		var seg_len: float = 1.40 + randf_range(-0.30, 0.30)
+		smesh.size = Vector3(seg_len, 0.04, 0.30 + randf_range(-0.10, 0.10))
+		seg.mesh = smesh
+		seg.position = Vector3(current_offset + seg_len * 0.5, 0, randf_range(-0.30, 0.30))
+		seg.rotation = Vector3(0, deg_to_rad(randf_range(-25, 25)), 0)
+		seg.material_override = crack_mat
+		fissure.add_child(seg)
+		current_offset += seg_len * 0.85
+		# Pulse on a random delay
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_interval(randf() * 0.4)
+		pulse.tween_property(crack_mat, "emission_energy_multiplier", 3.5, 0.85).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(crack_mat, "emission_energy_multiplier", 1.4, 0.85).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d2_scratch_decals(geom: Node) -> void:
+	## Epic-2 T89: 12 small skid mark decals scattered on the road —
+	## thin dark grey lines suggesting hover-vehicle landings + drag.
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 99
+	var decal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	decal_mat.albedo_color = Color(0.04, 0.04, 0.06)
+	decal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 12:
+		var decal: MeshInstance3D = MeshInstance3D.new()
+		decal.name = "D2Skid_%d" % i
+		var dmesh: BoxMesh = BoxMesh.new()
+		dmesh.size = Vector3(rng.randf_range(0.85, 1.40), 0.02, 0.10)
+		decal.mesh = dmesh
+		decal.position = D2_CENTER + Vector3(
+			rng.randf_range(-22, 22),
+			0.04,
+			rng.randf_range(-16, 16)
+		)
+		decal.rotation = Vector3(0, deg_to_rad(rng.randf_range(0, 360)), 0)
+		decal.material_override = decal_mat
+		geom.add_child(decal)
+
+
+func _build_d2_ammo_stash(geom: Node) -> void:
+	## Epic-2 T90: a small ammo crate stash — 4 ammo boxes stacked with
+	## a tarp covering them and a glowing yellow "AMMO" label.
+	var stash: Node3D = Node3D.new()
+	stash.name = "D2AmmoStash"
+	stash.position = D2_CENTER + Vector3(16, 0, -3)
+	geom.add_child(stash)
+	var box_mat: StandardMaterial3D = StandardMaterial3D.new()
+	box_mat.albedo_color = Color(0.30, 0.40, 0.20)
+	box_mat.metallic = 0.30
+	box_mat.roughness = 0.55
+	box_mat.emission_enabled = true
+	box_mat.emission = Color(0.45, 0.55, 0.20)
+	box_mat.emission_energy_multiplier = 0.30
+	# 4 stacked boxes
+	var box_specs: Array = [
+		[Vector3(0, 0.30, 0), 0.0],
+		[Vector3(0.55, 0.30, 0), 0.0],
+		[Vector3(0.30, 0.85, 0), deg_to_rad(8)],
+		[Vector3(-0.10, 0.85, 0.30), deg_to_rad(-15)],
+	]
+	for spec in box_specs:
+		var box: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.55, 0.40)
+		box.mesh = bm
+		box.position = spec[0]
+		box.rotation = Vector3(0, spec[1], 0)
+		box.material_override = box_mat
+		stash.add_child(box)
+		# Side label
+		var side: Label3D = Label3D.new()
+		side.text = "AMMO"
+		side.position = (spec[0] as Vector3) + Vector3(0, 0, 0.21)
+		side.rotation = Vector3(0, spec[1], 0)
+		side.modulate = Color(1.0, 0.95, 0.30)
+		side.outline_modulate = Color(0, 0, 0, 0.85)
+		side.outline_size = 3
+		side.font_size = 12
+		side.no_depth_test = true
+		stash.add_child(side)
+	# Tarp draped over the top — flat box
+	var tarp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tarp_mat.albedo_color = Color(0.20, 0.20, 0.25)
+	tarp_mat.metallic = 0.10
+	tarp_mat.roughness = 0.85
+	var tarp: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.40, 0.04, 1.0)
+	tarp.mesh = tmesh
+	tarp.position = Vector3(0.20, 1.20, 0.10)
+	tarp.rotation = Vector3(deg_to_rad(-8), deg_to_rad(15), deg_to_rad(5))
+	tarp.material_override = tarp_mat
+	stash.add_child(tarp)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "AMMO STASH"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(1.0, 0.95, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	stash.add_child(label)
+	# Collision around the whole stash
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 1.20, 1.0)
+	cs.shape = cb
+	cs.position = Vector3(0.20, 0.60, 0.10)
+	sb.add_child(cs)
+	stash.add_child(sb)
+
 
 
