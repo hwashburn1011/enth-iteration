@@ -25497,6 +25497,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_shrine_pillars(geom)
 	# Epic-7 T40: spirit braziers
 	_build_d7_spirit_braziers(geom)
+	# Epic-7 T41: alms bowl row
+	_build_d7_alms_bowls(geom)
+	# Epic-7 T42: alms collector NPC
+	_build_d7_alms_collector_npc()
+	# Epic-7 T43: stone Buddha statue
+	_build_d7_buddha_statue(geom)
+	# Epic-7 T44: incense smoke columns
+	_build_d7_incense_columns(geom)
+	# Epic-7 T45: ancient sage NPC
+	_build_d7_ancient_sage_npc()
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -28180,6 +28190,341 @@ func _build_d7_spirit_braziers(geom: Node) -> void:
 		cs.shape = cap
 		sb.add_child(cs)
 		brazier.add_child(sb)
+
+
+func _build_d7_alms_bowls(geom: Node) -> void:
+	## Epic-7 T41: row of 5 bronze alms bowls on small wooden pedestals.
+	var bowls: Node3D = Node3D.new()
+	bowls.name = "AlmsBowls"
+	bowls.position = Vector3(D7_CENTER.x - 18.0, 0.0, 22.0)
+	geom.add_child(bowls)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	bronze_mat.metallic = 0.85
+	bronze_mat.roughness = 0.30
+	for i in 5:
+		var stand: Node3D = Node3D.new()
+		stand.position = Vector3(i * 1.10, 0, 0)
+		bowls.add_child(stand)
+		# Wooden pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.55, 0.85, 0.55)
+		ped.mesh = pm
+		ped.material_override = wood_mat
+		ped.position = Vector3(0, 0.42, 0)
+		stand.add_child(ped)
+		# Bronze bowl on top
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.22
+		bm.height = 0.20
+		bowl.mesh = bm
+		bowl.material_override = bronze_mat
+		bowl.position = Vector3(0, 0.95, 0)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		stand.add_child(bowl)
+		# Glow inside (small bright sphere)
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gm: SphereMesh = SphereMesh.new()
+		gm.radius = 0.08
+		gm.height = 0.10
+		glow.mesh = gm
+		var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+		glow_mat.albedo_color = Color(1.0, 0.85, 0.30)
+		glow_mat.emission_enabled = true
+		glow_mat.emission = Color(1.0, 0.75, 0.20)
+		glow_mat.emission_energy_multiplier = 2.5
+		glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow.material_override = glow_mat
+		glow.position = Vector3(0, 0.99, 0)
+		stand.add_child(glow)
+		# Pedestal collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 0.85, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		stand.add_child(sb)
+
+
+func _build_d7_alms_collector_npc() -> void:
+	## Epic-7 T42: alms collector NPC — simple brown robe + holding a
+	## small wooden bowl.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "AlmsCollectorSlot"
+	slot.position = Vector3(D7_CENTER.x - 14.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "AlmsCollector"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Mendicant")
+	if "npc_id" in npc:
+		npc.set("npc_id", "alms_d7")
+	slot.add_child(npc)
+	# Brown robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Wooden bowl
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.18
+	bm.height = 0.18
+	bowl.mesh = bm
+	bowl.material_override = robe_mat
+	bowl.position = Vector3(0.40, 0.85, 0.20)
+	bowl.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(bowl)
+
+
+func _build_d7_buddha_statue(geom: Node) -> void:
+	## Epic-7 T43: large stone Buddha statue — round seated pose with
+	## crossed legs, robes draped over, halo behind head.
+	var statue: Node3D = Node3D.new()
+	statue.name = "BuddhaStatue"
+	statue.position = Vector3(D7_CENTER.x - 4.0, 0.0, 22.0)
+	geom.add_child(statue)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.75, 0.65, 0.45)
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.65, 0.30)
+	stone_mat.emission_energy_multiplier = 0.30
+	stone_mat.roughness = 0.85
+	# Stone base/lotus pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 1.40
+	pm.bottom_radius = 1.65
+	pm.height = 0.55
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.27, 0)
+	statue.add_child(ped)
+	# Crossed legs (large flat sphere)
+	var legs: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 1.10
+	lm.height = 0.85
+	legs.mesh = lm
+	legs.material_override = stone_mat
+	legs.position = Vector3(0, 0.85, 0)
+	legs.scale = Vector3(1.30, 0.55, 1.10)
+	statue.add_child(legs)
+	# Torso (rounded sphere)
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 0.85
+	tm.height = 1.40
+	torso.mesh = tm
+	torso.material_override = stone_mat
+	torso.position = Vector3(0, 1.85, 0)
+	torso.scale = Vector3(1.0, 0.85, 0.85)
+	statue.add_child(torso)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.55
+	hm.height = 0.95
+	head.mesh = hm
+	head.material_override = stone_mat
+	head.position = Vector3(0, 3.10, 0)
+	statue.add_child(head)
+	# Topknot (small sphere on head)
+	var topknot: MeshInstance3D = MeshInstance3D.new()
+	var tnm: SphereMesh = SphereMesh.new()
+	tnm.radius = 0.18
+	tnm.height = 0.32
+	topknot.mesh = tnm
+	topknot.material_override = stone_mat
+	topknot.position = Vector3(0, 3.65, 0)
+	statue.add_child(topknot)
+	# Halo (torus behind head)
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var halm: TorusMesh = TorusMesh.new()
+	halm.inner_radius = 0.85
+	halm.outer_radius = 1.0
+	halo.mesh = halm
+	var halo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	halo_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	halo_mat.emission_enabled = true
+	halo_mat.emission = Color(1.0, 0.85, 0.30)
+	halo_mat.emission_energy_multiplier = 3.0
+	halo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = halo_mat
+	halo.position = Vector3(0, 3.10, -0.30)
+	halo.rotation_degrees = Vector3(90, 0, 0)
+	statue.add_child(halo)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 3.5
+	light.omni_range = 9.0
+	light.position = Vector3(0, 3.10, 0)
+	statue.add_child(light)
+	# Statue collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.30
+	cap.height = 3.85
+	cs.shape = cap
+	sb.add_child(cs)
+	statue.add_child(sb)
+
+
+func _build_d7_incense_columns(geom: Node) -> void:
+	## Epic-7 T44: 6 thin incense smoke columns rising from the ground —
+	## tall ground-anchored GPU particle smoke trails.
+	var cols: Node3D = Node3D.new()
+	cols.name = "IncenseColumns"
+	cols.position = Vector3(D7_CENTER.x + 4.0, 0.0, 18.0)
+	geom.add_child(cols)
+	for i in 6:
+		var col: Node3D = Node3D.new()
+		col.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0,
+			randf_range(-2.5, 2.5)
+		)
+		cols.add_child(col)
+		# Tiny grey base stick (incense)
+		var stick: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.025
+		stm.bottom_radius = 0.025
+		stm.height = 0.85
+		stick.mesh = stm
+		var stick_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stick_mat.albedo_color = Color(0.30, 0.20, 0.10)
+		stick.material_override = stick_mat
+		stick.position = Vector3(0, 0.42, 0)
+		col.add_child(stick)
+		# Tiny glow tip
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.04
+		tm.height = 0.08
+		tip.mesh = tm
+		var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+		tip_mat.albedo_color = Color(1.0, 0.45, 0.20)
+		tip_mat.emission_enabled = true
+		tip_mat.emission = Color(1.0, 0.45, 0.20)
+		tip_mat.emission_energy_multiplier = 3.5
+		tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		tip.material_override = tip_mat
+		tip.position = Vector3(0, 0.85, 0)
+		col.add_child(tip)
+		# Smoke particles rising
+		var smoke: GPUParticles3D = GPUParticles3D.new()
+		smoke.amount = 22
+		smoke.lifetime = 4.0
+		smoke.preprocess = 2.0
+		smoke.position = Vector3(0, 0.85, 0)
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 8.0
+		pm.gravity = Vector3.ZERO
+		pm.initial_velocity_min = 0.30
+		pm.initial_velocity_max = 0.55
+		pm.scale_min = 0.08
+		pm.scale_max = 0.18
+		pm.color = Color(0.92, 0.85, 0.65, 0.65)
+		smoke.process_material = pm
+		var sm_mesh: SphereMesh = SphereMesh.new()
+		sm_mesh.radius = 0.12
+		sm_mesh.height = 0.24
+		smoke.draw_pass_1 = sm_mesh
+		var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sm_mat.albedo_color = Color(0.95, 0.85, 0.65, 0.45)
+		sm_mat.emission_enabled = true
+		sm_mat.emission = Color(0.85, 0.65, 0.30)
+		sm_mat.emission_energy_multiplier = 0.55
+		sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm_mesh.material = sm_mat
+		col.add_child(smoke)
+
+
+func _build_d7_ancient_sage_npc() -> void:
+	## Epic-7 T45: ancient sage NPC — long white robe + extremely long
+	## white beard sphere + walking staff.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "AncientSageSlot"
+	slot.position = Vector3(D7_CENTER.x + 6.0, 0.0, 18.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "AncientSage"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Cloudwhite")
+	if "npc_id" in npc:
+		npc.set("npc_id", "sage_d7")
+	slot.add_child(npc)
+	# Long white robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.30, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.92, 0.92, 0.85)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.85, 0.85, 0.85)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.75
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.65, 0)
+	npc.add_child(robe)
+	# Long white beard (long elongated sphere)
+	var beard: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.18
+	bm.height = 0.85
+	beard.mesh = bm
+	var beard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beard_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	beard_mat.roughness = 0.95
+	beard.material_override = beard_mat
+	beard.position = Vector3(0, 1.0, 0.20)
+	beard.scale = Vector3(0.85, 1.85, 0.55)
+	npc.add_child(beard)
+	# Walking staff
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.04
+	stm.bottom_radius = 0.05
+	stm.height = 1.85
+	staff.mesh = stm
+	staff.material_override = wood_mat
+	staff.position = Vector3(0.45, 0.92, 0)
+	npc.add_child(staff)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
