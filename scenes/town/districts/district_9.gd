@@ -107,6 +107,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_iron_sentinel_statues(geom)
 	_build_d9_drift_lava_pool(geom)
 	_build_d9_sentinel_oath_wall(geom)
+	_build_d9_slag_heap_pit(geom)
 	print("[D9Builder] done")
 
 
@@ -9905,4 +9906,226 @@ func _build_d9_sentinel_oath_wall(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_slag_heap_pit(geom: Node) -> void:
+	## Epic-9 T87: large open pit with a glowing molten slag pile at the
+	## bottom and a warning chain perimeter. Wide cylinder pit rim with
+	## collision, sunken slag floor, central glowing slag mound made of
+	## stacked rocks, 8 brass posts holding warning chains around the rim,
+	## 4 hazard signs, and rising smoke + ember motes.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_SlagHeapPit"
+	pivot.position = D9_CENTER + Vector3(-32, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.45, 0.15, 0.04)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var slag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	slag_mat.albedo_color = Color(0.16, 0.10, 0.07)
+	slag_mat.metallic = 0.40
+	slag_mat.roughness = 0.85
+	slag_mat.emission_enabled = true
+	slag_mat.emission = Color(1.0, 0.30, 0.05)
+	slag_mat.emission_energy_multiplier = 0.85
+	var molten_mat: StandardMaterial3D = StandardMaterial3D.new()
+	molten_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	molten_mat.emission_enabled = true
+	molten_mat.emission = Color(1.0, 0.45, 0.05)
+	molten_mat.emission_energy_multiplier = 7.5
+	molten_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	# ---- Pit rim ring (collar) — wide low torus around the lip ----
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rim_m: TorusMesh = TorusMesh.new()
+	rim_m.inner_radius = 4.20
+	rim_m.outer_radius = 5.00
+	rim.mesh = rim_m
+	rim.material_override = basalt_mat
+	rim.position = Vector3(0, 0.20, 0)
+	pivot.add_child(rim)
+	# Rim collision (cylinder ring approximation)
+	var rim_sb: StaticBody3D = StaticBody3D.new()
+	rim_sb.position = Vector3(0, 0.20, 0)
+	var rim_cs: CollisionShape3D = CollisionShape3D.new()
+	var rim_cyl: CylinderShape3D = CylinderShape3D.new()
+	rim_cyl.top_radius = 5.00
+	rim_cyl.bottom_radius = 5.00
+	rim_cyl.height = 0.40
+	rim_cs.shape = rim_cyl
+	rim_sb.add_child(rim_cs)
+	pivot.add_child(rim_sb)
+	# ---- Sunken slag floor disc ----
+	var floor_disc: MeshInstance3D = MeshInstance3D.new()
+	var fdm: CylinderMesh = CylinderMesh.new()
+	fdm.top_radius = 4.20
+	fdm.bottom_radius = 4.20
+	fdm.height = 0.10
+	floor_disc.mesh = fdm
+	floor_disc.material_override = slag_mat
+	floor_disc.position = Vector3(0, 0.05, 0)
+	pivot.add_child(floor_disc)
+	# ---- Central slag pile (3 stacked rocks of decreasing size + glowing core) ----
+	var pile_data: Array = [
+		{"r": 1.40, "h": 2.55, "y": 0.65},
+		{"r": 1.05, "h": 1.85, "y": 1.45},
+		{"r": 0.65, "h": 1.20, "y": 2.05},
+	]
+	for pd in pile_data:
+		var p: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = pd["r"]
+		pm.height = pd["h"]
+		p.mesh = pm
+		p.material_override = slag_mat
+		p.position = Vector3(0, pd["y"], 0)
+		p.scale = Vector3(1.0, 0.65, 1.0)
+		pivot.add_child(p)
+	# Glowing core sphere on top of the pile
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var corem: SphereMesh = SphereMesh.new()
+	corem.radius = 0.45
+	corem.height = 0.85
+	core.mesh = corem
+	core.material_override = molten_mat
+	core.position = Vector3(0, 2.50, 0)
+	pivot.add_child(core)
+	# Strong central OmniLight from the slag pile
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.40, 0)
+	lt.light_color = Color(1.0, 0.45, 0.10)
+	lt.light_energy = 4.5
+	lt.omni_range = 13.0
+	pivot.add_child(lt)
+	# ---- 8 brass posts holding warning chains around the rim ----
+	var post_count: int = 8
+	for i in post_count:
+		var ang: float = float(i) / float(post_count) * TAU
+		var px: float = cos(ang) * 4.60
+		var pz: float = sin(ang) * 4.60
+		# Brass post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.08
+		pm.bottom_radius = 0.10
+		pm.height = 1.20
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = Vector3(px, 0.80, pz)
+		pivot.add_child(post)
+		# Post cap (small sphere)
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: SphereMesh = SphereMesh.new()
+		capm.radius = 0.10
+		capm.height = 0.20
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(px, 1.45, pz)
+		pivot.add_child(cap)
+		# Hanging chain to the next post — straight box approximation
+		var next_ang: float = float(i + 1) / float(post_count) * TAU
+		var nx: float = cos(next_ang) * 4.60
+		var nz: float = sin(next_ang) * 4.60
+		var mid: Vector3 = Vector3((px + nx) * 0.5, 1.05, (pz + nz) * 0.5)
+		var dir: Vector3 = Vector3(nx - px, 0, nz - pz)
+		var chain_len: float = dir.length()
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var cchm: BoxMesh = BoxMesh.new()
+		cchm.size = Vector3(chain_len, 0.08, 0.08)
+		chain.mesh = cchm
+		chain.material_override = iron_mat
+		chain.position = mid
+		chain.rotation.y = atan2(dir.z, dir.x)
+		pivot.add_child(chain)
+	# ---- 4 hazard signs at every other post position ----
+	for i in [0, 2, 4, 6]:
+		var ang: float = float(i) / float(post_count) * TAU
+		var px: float = cos(ang) * 4.60
+		var pz: float = sin(ang) * 4.60
+		# Sign post extension upward
+		var ext: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.06, 0.50, 0.06)
+		ext.mesh = em
+		ext.material_override = brass_mat
+		ext.position = Vector3(px, 1.70, pz)
+		pivot.add_child(ext)
+		# Hazard sign — small unshaded amber prism
+		var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sign_mat.albedo_color = Color(1.0, 0.65, 0.10)
+		sign_mat.emission_enabled = true
+		sign_mat.emission = Color(1.0, 0.55, 0.10)
+		sign_mat.emission_energy_multiplier = 5.5
+		sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var sign: MeshInstance3D = MeshInstance3D.new()
+		var sgm: PrismMesh = PrismMesh.new()
+		sgm.size = Vector3(0.45, 0.45, 0.06)
+		sign.mesh = sgm
+		sign.material_override = sign_mat
+		sign.position = Vector3(px, 2.00, pz)
+		# Face the center
+		sign.rotation.y = atan2(-pz, -px) + PI
+		pivot.add_child(sign)
+	# ---- Rising smoke from the slag pile ----
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.position = Vector3(0, 2.80, 0)
+	smoke.amount = 26
+	smoke.lifetime = 4.0
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.direction = Vector3(0, 1, 0)
+	smat.spread = 22.0
+	smat.initial_velocity_min = 0.6
+	smat.initial_velocity_max = 1.2
+	smat.gravity = Vector3(0, 0.4, 0)
+	smat.scale_min = 0.25
+	smat.scale_max = 0.50
+	smat.color = Color(0.30, 0.25, 0.20, 0.65)
+	smoke.process_material = smat
+	var smkm: SphereMesh = SphereMesh.new()
+	smkm.radius = 0.20
+	smkm.height = 0.40
+	smoke.draw_pass_1 = smkm
+	pivot.add_child(smoke)
+	# ---- Ember mote shower from the slag core ----
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 2.60, 0)
+	motes.amount = 32
+	motes.lifetime = 2.4
+	var emat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	emat.direction = Vector3(0, 1, 0)
+	emat.spread = 30.0
+	emat.initial_velocity_min = 1.0
+	emat.initial_velocity_max = 2.0
+	emat.gravity = Vector3(0, -1.5, 0)
+	emat.scale_min = 0.05
+	emat.scale_max = 0.10
+	emat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = emat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# Slag pulse + core pulse
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(slag_mat, "emission_energy_multiplier", 1.20, 1.8).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(slag_mat, "emission_energy_multiplier", 0.55, 1.8).set_ease(Tween.EASE_IN_OUT)
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(molten_mat, "emission_energy_multiplier", 10.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(molten_mat, "emission_energy_multiplier", 5.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 
