@@ -1363,6 +1363,16 @@ func _build_east_plaza() -> void:
 	_build_pit_spotlights(geom)
 	# Epic-1 T70: ambient floating data-flake snow particles over the plaza
 	_build_data_snow(geom)
+	# Epic-1 T71: rope barrier rings around sparring + tournament arenas
+	_build_arena_rope_barriers(geom)
+	# Epic-1 T72: floating "% OFF" sale signs over the kiosks
+	_build_sale_signs(geom)
+	# Epic-1 T73: intermittent NPC chatter speech bubbles
+	_build_chatter_bubbles(geom)
+	# Epic-1 T74: fountain mist particles rising from data fountain
+	_build_fountain_mist(geom)
+	# Epic-1 T75: tournament champion banner stretched across the pit
+	_build_champion_banner(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -5512,4 +5522,305 @@ func _build_data_snow(geom: Node) -> void:
 	flake.material = flake_mat
 	snow.draw_pass_1 = flake
 	geom.add_child(snow)
+
+
+func _build_arena_rope_barriers(geom: Node) -> void:
+	## Epic-1 T71: low rope-style barrier rings around the sparring arena
+	## (36, 0, 6) and tournament pit (40, 0, 12). Each consists of 8 short
+	## posts connected by glowing horizontal cyan bars at 2 heights.
+	var arenas: Array = [
+		[Vector3(36, 0, 6), 3.5],
+		[Vector3(40, 0, 12), 5.5],
+	]
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	post_mat.roughness = 0.30
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	rope_mat.emission_enabled = true
+	rope_mat.emission = Color(0.55, 0.95, 1.0)
+	rope_mat.emission_energy_multiplier = 1.6
+	rope_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ai in arenas.size():
+		var center: Vector3 = arenas[ai][0]
+		var radius: float = arenas[ai][1]
+		var ring_root: Node3D = Node3D.new()
+		ring_root.name = "EastPlazaRopeRing_%d" % ai
+		ring_root.position = center
+		geom.add_child(ring_root)
+		var post_count: int = 8
+		var prev_post_pos: Vector3 = Vector3.ZERO
+		var first_post_pos: Vector3 = Vector3.ZERO
+		for p in post_count:
+			var angle: float = (float(p) / post_count) * TAU
+			var pos: Vector3 = Vector3(cos(angle) * radius, 0, sin(angle) * radius)
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.06
+			pmesh.bottom_radius = 0.08
+			pmesh.height = 0.95
+			post.mesh = pmesh
+			post.position = pos + Vector3(0, 0.48, 0)
+			post.material_override = post_mat
+			ring_root.add_child(post)
+			# Connect to previous post with two horizontal rope bars
+			if p > 0:
+				_make_rope_segment(ring_root, prev_post_pos, pos, 0.30, rope_mat)
+				_make_rope_segment(ring_root, prev_post_pos, pos, 0.75, rope_mat)
+			else:
+				first_post_pos = pos
+			prev_post_pos = pos
+		# Close the ring back to the first post
+		_make_rope_segment(ring_root, prev_post_pos, first_post_pos, 0.30, rope_mat)
+		_make_rope_segment(ring_root, prev_post_pos, first_post_pos, 0.75, rope_mat)
+
+
+func _make_rope_segment(parent: Node3D, a: Vector3, b: Vector3, y: float, mat: Material) -> void:
+	## Helper for arena_rope_barriers — places a thin emissive bar between
+	## two ground points at the given Y height, oriented along the segment.
+	var seg: MeshInstance3D = MeshInstance3D.new()
+	var dist: float = a.distance_to(b)
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(dist, 0.05, 0.05)
+	seg.mesh = bmesh
+	var mid: Vector3 = (a + b) * 0.5 + Vector3(0, y, 0)
+	seg.position = mid
+	var dir: Vector3 = (b - a).normalized()
+	var yaw: float = atan2(dir.z, dir.x)
+	seg.rotation = Vector3(0, -yaw, 0)
+	seg.material_override = mat
+	parent.add_child(seg)
+
+
+func _build_sale_signs(geom: Node) -> void:
+	## Epic-1 T72: 3 floating "% OFF" sale signs above the kiosks suggesting
+	## a market discount. Each is a small box panel with floating text on a
+	## bobbing tween. Bright orange to grab attention.
+	var positions: Array[Vector3] = [
+		Vector3(28, 3.5, -2),
+		Vector3(34, 3.5, 2),
+		Vector3(40, 3.5, -4),
+	]
+	var texts: Array[String] = ["50% OFF", "BUY 1\nGET 1", "FLASH\nDEAL"]
+	for i in positions.size():
+		var sign_root: Node3D = Node3D.new()
+		sign_root.name = "EastPlazaSaleSign_%d" % i
+		sign_root.position = positions[i]
+		geom.add_child(sign_root)
+		# Backing card
+		var card: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(1.0, 0.65, 0.05)
+		card.mesh = cmesh
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.95, 0.40, 0.10)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.55, 0.15)
+		cmat.emission_energy_multiplier = 1.6
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		card.material_override = cmat
+		sign_root.add_child(card)
+		# Label on top of card
+		var label: Label3D = Label3D.new()
+		label.text = texts[i]
+		label.position = Vector3(0, 0, 0.04)
+		label.modulate = Color(1, 1, 1)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 5
+		label.font_size = 22
+		label.no_depth_test = true
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		sign_root.add_child(label)
+		# Bob tween
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(sign_root, "position:y", origin_y + 0.30, 1.2 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(sign_root, "position:y", origin_y, 1.2 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		# Slow rotation for visibility
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(sign_root, "rotation:y", TAU, 6.0)
+
+
+func _build_chatter_bubbles(geom: Node) -> void:
+	## Epic-1 T73: 4 ambient speech bubbles floating above pedestrian spawn
+	## locations, each containing a short overheard chatter line. Cycle the
+	## visible text on a timer to suggest different conversations.
+	var positions: Array[Vector3] = [
+		Vector3(29, 2.4, 9),
+		Vector3(35, 2.4, -7),
+		Vector3(41, 2.4, 3),
+		Vector3(33, 2.4, 14),
+	]
+	var lines: Array[String] = [
+		"...did you see\nthe glitch?",
+		"prices are\noutrageous!",
+		"i heard the\nboss is back",
+		"new shipment\ntomorrow",
+	]
+	for i in positions.size():
+		var bubble: Node3D = Node3D.new()
+		bubble.name = "EastPlazaChatterBubble_%d" % i
+		bubble.position = positions[i]
+		geom.add_child(bubble)
+		# Bubble backing
+		var card: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(1.4, 0.65, 0.05)
+		card.mesh = cmesh
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.92, 0.92, 0.95, 0.85)
+		cmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		cmat.emission_enabled = true
+		cmat.emission = Color(0.95, 0.95, 1.0)
+		cmat.emission_energy_multiplier = 0.40
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		card.material_override = cmat
+		bubble.add_child(card)
+		# Tail (small triangle prism pointing down)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: PrismMesh = PrismMesh.new()
+		tmesh.size = Vector3(0.30, 0.30, 0.05)
+		tail.mesh = tmesh
+		tail.position = Vector3(0, -0.45, 0)
+		tail.rotation = Vector3(deg_to_rad(180), 0, 0)
+		tail.material_override = cmat
+		bubble.add_child(tail)
+		# Text
+		var label: Label3D = Label3D.new()
+		label.text = lines[i]
+		label.position = Vector3(0, 0, 0.04)
+		label.modulate = Color(0.10, 0.12, 0.20)
+		label.outline_size = 0
+		label.font_size = 14
+		label.no_depth_test = true
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		bubble.add_child(label)
+		# Bob and fade tween (alpha pulse via modulate)
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(bubble, "position:y", origin_y + 0.25, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(bubble, "position:y", origin_y, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_fountain_mist(geom: Node) -> void:
+	## Epic-1 T74: ambient cyan mist rising off the data fountain at the
+	## plaza center. Wide gentle particle emitter, very transparent.
+	var mist: GPUParticles3D = GPUParticles3D.new()
+	mist.name = "EastPlazaFountainMist"
+	mist.position = Vector3(32, 1.4, 0)
+	mist.amount = 50
+	mist.lifetime = 3.5
+	mist.preprocess = 1.5
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.85
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 30.0
+	pmat.initial_velocity_min = 0.30
+	pmat.initial_velocity_max = 0.65
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.30
+	pmat.scale_max = 0.65
+	pmat.color = Color(0.55, 0.95, 1.0, 0.30)
+	mist.process_material = pmat
+	var dmesh: SphereMesh = SphereMesh.new()
+	dmesh.radius = 0.30
+	dmesh.height = 0.60
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.55, 0.95, 1.0, 0.30)
+	dmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dmat.emission_enabled = true
+	dmat.emission = Color(0.55, 0.95, 1.0)
+	dmat.emission_energy_multiplier = 0.85
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dmesh.material = dmat
+	mist.draw_pass_1 = dmesh
+	geom.add_child(mist)
+
+
+func _build_champion_banner(geom: Node) -> void:
+	## Epic-1 T75: long horizontal champion banner stretched between two
+	## tall poles above the tournament pit. Reads "TOURNAMENT CHAMPION /
+	## CIPHER 99". Adds vertical drama and reinforces the leaderboard.
+	var banner_root: Node3D = Node3D.new()
+	banner_root.name = "EastPlazaChampionBanner"
+	banner_root.position = Vector3(40, 0, 12)
+	geom.add_child(banner_root)
+	# Pole material
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	pole_mat.roughness = 0.30
+	# 2 tall side poles flanking the pit
+	for sx: float in [-7.0, 7.0]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.10
+		pmesh.bottom_radius = 0.14
+		pmesh.height = 8.0
+		pole.mesh = pmesh
+		pole.position = Vector3(sx, 4.0, 0)
+		pole.material_override = pole_mat
+		banner_root.add_child(pole)
+		# Collision on pole
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.25
+		cap.height = 8.0
+		cs.shape = cap
+		cs.position = Vector3(sx, 4.0, 0)
+		sb.add_child(cs)
+		banner_root.add_child(sb)
+	# The banner cloth
+	var banner: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(13.0, 1.6, 0.06)
+	banner.mesh = bmesh
+	banner.position = Vector3(0, 7.0, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.10, 0.04)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.55, 0.10)
+	bmat.emission_energy_multiplier = 0.95
+	bmat.metallic = 0.10
+	bmat.roughness = 0.55
+	banner.material_override = bmat
+	banner_root.add_child(banner)
+	# Top + bottom emissive trim
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(1.0, 0.95, 0.40)
+	trim_mat.emission_energy_multiplier = 1.8
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ty: float in [7.78, 6.22]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(13.0, 0.08, 0.10)
+		trim.mesh = tmesh
+		trim.position = Vector3(0, ty, 0)
+		trim.material_override = trim_mat
+		banner_root.add_child(trim)
+	# 2 lines of text on the banner
+	var line1: Label3D = Label3D.new()
+	line1.text = "TOURNAMENT CHAMPION"
+	line1.position = Vector3(0, 7.30, 0.05)
+	line1.modulate = Color(1.0, 0.85, 0.30)
+	line1.outline_modulate = Color(0, 0, 0, 0.85)
+	line1.outline_size = 6
+	line1.font_size = 28
+	line1.no_depth_test = true
+	banner_root.add_child(line1)
+	var line2: Label3D = Label3D.new()
+	line2.text = "CIPHER 99"
+	line2.position = Vector3(0, 6.65, 0.05)
+	line2.modulate = Color(1.0, 0.95, 0.55)
+	line2.outline_modulate = Color(0, 0, 0, 0.85)
+	line2.outline_size = 6
+	line2.font_size = 36
+	line2.no_depth_test = true
+	banner_root.add_child(line2)
+
 
