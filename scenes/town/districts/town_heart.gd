@@ -37,6 +37,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_cartographer_npc(town)
 	_build_th_shrine_keeper_npc(town)
 	_build_th_quest_master_npc(town)
+	_build_th_banker_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -3517,3 +3518,202 @@ func _build_th_quest_master_npc(town: Node) -> void:
 	var dpulse: Tween = npc.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_banker_npc(town: Node) -> void:
+	## Epic-10 T21: Banker Numera — meticulous accountant NPC standing
+	## beside the stash chest on the SW radial path. Black-and-brass
+	## formal vest with gold pinstripes, brass coin pouch on his belt,
+	## leather tally book held in left hand, right hand making a
+	## counting tap-tap gesture toward the chest.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THBankerNumeraSlot"
+	# Stand beside the stash chest on the SW radial path
+	var ang: float = 5.0 * PI / 4.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 7.6, 0, sin(ang) * 7.6)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THBankerNumera"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Banker Numera")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_banker_numera")
+	# Face the chest (toward beacon center)
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	vest_mat.roughness = 0.55
+	vest_mat.metallic = 0.30
+	vest_mat.emission_enabled = true
+	vest_mat.emission = Color(0.30, 0.30, 0.40)
+	vest_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	# ---- Black formal vest ----
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vmesh: BoxMesh = BoxMesh.new()
+	vmesh.size = Vector3(1.05, 1.40, 0.55)
+	vest.mesh = vmesh
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 1.10, 0)
+	npc.add_child(vest)
+	# 3 brass pinstripes down the chest
+	for sx in [-0.30, 0.0, 0.30]:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(0.04, 1.30, 0.04)
+		stripe.mesh = stm
+		stripe.material_override = brass_mat
+		stripe.position = Vector3(sx, 1.10, -0.30)
+		npc.add_child(stripe)
+	# Brass formal collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(1.05, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.80, 0)
+	npc.add_child(collar)
+	# Glowing data tie pin (small unshaded cyan dot at the throat)
+	var pin: MeshInstance3D = MeshInstance3D.new()
+	var pm: SphereMesh = SphereMesh.new()
+	pm.radius = 0.06
+	pm.height = 0.12
+	pin.mesh = pm
+	pin.material_override = data_mat
+	pin.position = Vector3(0, 1.70, -0.32)
+	npc.add_child(pin)
+	# ---- Leather belt at waist ----
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var btm: BoxMesh = BoxMesh.new()
+	btm.size = Vector3(1.10, 0.18, 0.60)
+	belt.mesh = btm
+	belt.material_override = leather_mat
+	belt.position = Vector3(0, 0.55, 0)
+	npc.add_child(belt)
+	# Brass belt buckle
+	var buckle: MeshInstance3D = MeshInstance3D.new()
+	var bkm: BoxMesh = BoxMesh.new()
+	bkm.size = Vector3(0.20, 0.18, 0.06)
+	buckle.mesh = bkm
+	buckle.material_override = brass_mat
+	buckle.position = Vector3(0, 0.55, -0.32)
+	npc.add_child(buckle)
+	# ---- Brass coin pouch on the right hip ----
+	var pouch: MeshInstance3D = MeshInstance3D.new()
+	var poum: SphereMesh = SphereMesh.new()
+	poum.radius = 0.18
+	poum.height = 0.32
+	pouch.mesh = poum
+	pouch.material_override = brass_mat
+	pouch.position = Vector3(0.45, 0.45, -0.05)
+	pouch.scale = Vector3(0.95, 1.10, 0.85)
+	npc.add_child(pouch)
+	# Pouch top tie (small box)
+	var tie: MeshInstance3D = MeshInstance3D.new()
+	var tmm: BoxMesh = BoxMesh.new()
+	tmm.size = Vector3(0.10, 0.08, 0.10)
+	tie.mesh = tmm
+	tie.material_override = leather_mat
+	tie.position = Vector3(0.45, 0.62, -0.05)
+	npc.add_child(tie)
+	# 2 small glowing coin tip dots peeking out the top of the pouch
+	for ix in [-0.04, 0.05]:
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cmm: SphereMesh = SphereMesh.new()
+		cmm.radius = 0.04
+		cmm.height = 0.08
+		coin.mesh = cmm
+		coin.material_override = data_mat
+		coin.position = Vector3(0.45 + ix, 0.65, -0.06)
+		npc.add_child(coin)
+	# ---- Leather tally book held in left hand ----
+	var book: MeshInstance3D = MeshInstance3D.new()
+	var bmm: BoxMesh = BoxMesh.new()
+	bmm.size = Vector3(0.40, 0.55, 0.10)
+	book.mesh = bmm
+	book.material_override = leather_mat
+	book.position = Vector3(-0.55, 1.20, -0.30)
+	book.rotation.x = -0.20
+	npc.add_child(book)
+	# Glowing data ledger stripe on the open page
+	var ledger: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(0.32, 0.10, 0.04)
+	ledger.mesh = lm
+	ledger.material_override = data_mat
+	ledger.position = Vector3(-0.55, 1.25, -0.34)
+	ledger.rotation.x = -0.20
+	npc.add_child(ledger)
+	# Brass book corner caps (4 small box accents)
+	for cx in [-0.74, -0.36]:
+		for cy in [1.42, 0.98]:
+			var corner: MeshInstance3D = MeshInstance3D.new()
+			var ccm: BoxMesh = BoxMesh.new()
+			ccm.size = Vector3(0.06, 0.06, 0.06)
+			corner.mesh = ccm
+			corner.material_override = brass_mat
+			corner.position = Vector3(cx, cy, -0.32)
+			npc.add_child(corner)
+	# ---- Right arm + counting hand on a pivot ----
+	var count_pivot: Node3D = Node3D.new()
+	count_pivot.position = Vector3(0.55, 1.50, 0)
+	npc.add_child(count_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = vest_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	count_pivot.add_child(right_arm)
+	# Right hand (small brass box at the end of the arm)
+	var right_hand: MeshInstance3D = MeshInstance3D.new()
+	var rhm: BoxMesh = BoxMesh.new()
+	rhm.size = Vector3(0.18, 0.16, 0.20)
+	right_hand.mesh = rhm
+	right_hand.material_override = brass_mat
+	right_hand.position = Vector3(0, -0.92, 0)
+	count_pivot.add_child(right_hand)
+	# Initial pose — arm raised forward in counting position
+	count_pivot.rotation.x = -1.10
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.30)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Counting tap-tap gesture tween — short jab forward + recover, repeat ----
+	var count: Tween = npc.create_tween().set_loops()
+	count.tween_property(count_pivot, "rotation:x", -1.40, 0.30).set_ease(Tween.EASE_OUT)
+	count.tween_property(count_pivot, "rotation:x", -1.10, 0.30).set_ease(Tween.EASE_IN)
+	count.tween_property(count_pivot, "rotation:x", -1.40, 0.30).set_ease(Tween.EASE_OUT)
+	count.tween_property(count_pivot, "rotation:x", -1.10, 0.30).set_ease(Tween.EASE_IN)
+	count.tween_property(count_pivot, "rotation:x", -1.10, 0.80)
+	# Pin + ledger + coin pulse
+	var dpulse2: Tween = npc.create_tween().set_loops()
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
