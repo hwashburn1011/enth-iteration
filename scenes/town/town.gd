@@ -1798,6 +1798,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_dreamcatcher(geom)
 	# Epic-3 T80: Starseer NPC
 	_build_d3_starseer_npc()
+	# Epic-3 T81: spell scrolls cluster
+	_build_d3_spell_scrolls(geom)
+	# Epic-3 T82: Cleric NPC
+	_build_d3_cleric_npc()
+	# Epic-3 T83: 3 ancient violet gargoyles
+	_build_d3_ancient_gargoyles(geom)
+	# Epic-3 T84: lone tall bell
+	_build_d3_lone_bell(geom)
+	# Epic-3 T85: DREAM EATER 3rd mini-boss
+	_build_d3_dream_eater(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -7421,6 +7431,366 @@ func _build_d3_starseer_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	seer.add_child(label)
+
+
+func _build_d3_spell_scrolls(geom: Node) -> void:
+	## Epic-3 T81: 8 spell scrolls floating in a cluster — long thin
+	## emissive cylinders with rune labels at varying heights.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-15, 2.5, 8),
+		D3_CENTER + Vector3(-15, 3.0, 9),
+		D3_CENTER + Vector3(-14, 2.5, 9),
+		D3_CENTER + Vector3(-16, 2.5, 9),
+		D3_CENTER + Vector3(-15, 3.5, 8),
+		D3_CENTER + Vector3(-14, 3.5, 8),
+		D3_CENTER + Vector3(-16, 3.5, 8),
+		D3_CENTER + Vector3(-15, 4.0, 9),
+	]
+	var scroll_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scroll_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	scroll_mat.emission_enabled = true
+	scroll_mat.emission = Color(1.0, 0.85, 0.55)
+	scroll_mat.emission_energy_multiplier = 1.4
+	scroll_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var scroll: MeshInstance3D = MeshInstance3D.new()
+		scroll.name = "D3SpellScroll_%d" % i
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.10
+		sm.bottom_radius = 0.10
+		sm.height = 0.55
+		scroll.mesh = sm
+		scroll.position = positions[i]
+		scroll.rotation = Vector3(0, 0, deg_to_rad(randf_range(-25, 25)))
+		scroll.material_override = scroll_mat
+		geom.add_child(scroll)
+		# Bob + spin
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = positions[i].y
+		bob.tween_property(scroll, "position:y", origin_y + 0.30, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(scroll, "position:y", origin_y, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(scroll, "rotation:y", TAU, 5.0 + i * 0.4)
+
+
+func _build_d3_cleric_npc() -> void:
+	## Epic-3 T82: Cleric NPC standing by the healing fountain holding a
+	## green glowing healing wand.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var cleric: Node3D = Node3D.new()
+	cleric.name = "D3Cleric"
+	cleric.position = D3_CENTER + Vector3(18, 0, -8)
+	slots.add_child(cleric)
+	# Robed body — white-green
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.95, 0.85)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.45, 1.0, 0.55)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	cleric.add_child(body)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	cleric.add_child(hood)
+	# 2 green eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 1.0, 0.55)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 1.0, 0.55)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.34)
+		eye.material_override = eye_mat
+		cleric.add_child(eye)
+	# Healing wand held in front
+	var wand: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.04
+	wm.bottom_radius = 0.06
+	wm.height = 1.20
+	wand.mesh = wm
+	wand.position = Vector3(0.45, 1.0, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.20, 0.10)
+	wmat.metallic = 0.30
+	wand.material_override = wmat
+	cleric.add_child(wand)
+	# Glowing tip orb
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var om: SphereMesh = SphereMesh.new()
+	om.radius = 0.18
+	om.height = 0.36
+	orb.mesh = om
+	orb.position = Vector3(0.45, 1.65, 0)
+	var omat: StandardMaterial3D = StandardMaterial3D.new()
+	omat.albedo_color = Color(0.55, 1.0, 0.55)
+	omat.emission_enabled = true
+	omat.emission = Color(0.55, 1.0, 0.55)
+	omat.emission_energy_multiplier = 3.0
+	omat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	orb.material_override = omat
+	cleric.add_child(orb)
+	# Pulse the orb
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(orb, "scale", Vector3(1.40, 1.40, 1.40), 1.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(orb, "scale", Vector3(0.85, 0.85, 0.85), 1.0).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Cleric"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.55, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	cleric.add_child(label)
+
+
+func _build_d3_ancient_gargoyles(geom: Node) -> void:
+	## Epic-3 T83: 3 violet gargoyle statues guarding the sealed gates.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(16, 0, -4),
+		D3_CENTER + Vector3(16, 0, 4),
+		D3_CENTER + Vector3(20, 0, 0),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.30
+	for i in positions.size():
+		var garg: Node3D = Node3D.new()
+		garg.name = "D3AncientGargoyle_%d" % i
+		garg.position = positions[i]
+		garg.rotation = Vector3(0, deg_to_rad(180 + i * 45), 0)
+		geom.add_child(garg)
+		# Pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.85, 0.85, 0.85)
+		ped.mesh = pm
+		ped.position = Vector3(0, 0.42, 0)
+		ped.material_override = stone_mat
+		garg.add_child(ped)
+		# Crouched body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.55, 0.65)
+		body.mesh = bm
+		body.position = Vector3(0, 1.10, 0)
+		body.material_override = stone_mat
+		garg.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: BoxMesh = BoxMesh.new()
+		hm.size = Vector3(0.40, 0.40, 0.40)
+		head.mesh = hm
+		head.position = Vector3(0, 1.55, 0.10)
+		head.material_override = stone_mat
+		garg.add_child(head)
+		# 2 violet glowing eyes
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(1.0, 0.55, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(1.0, 0.55, 1.0)
+		eye_mat.emission_energy_multiplier = 2.6
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex: float in [-0.08, 0.08]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = 0.05
+			em.height = 0.10
+			eye.mesh = em
+			eye.position = Vector3(ex, 1.58, 0.32)
+			eye.material_override = eye_mat
+			garg.add_child(eye)
+		# Wings — angled boxes on the body
+		for sx: float in [-0.40, 0.40]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.10, 0.55, 0.20)
+			wing.mesh = wm
+			wing.position = Vector3(sx, 1.30, -0.10)
+			wing.rotation = Vector3(0, 0, sign(sx) * deg_to_rad(25))
+			wing.material_override = stone_mat
+			garg.add_child(wing)
+		# Per-gargoyle collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 1.85, 0.85)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.92, 0)
+		sb.add_child(cs)
+		garg.add_child(sb)
+
+
+func _build_d3_lone_bell(geom: Node) -> void:
+	## Epic-3 T84: a lone tall bell on a stone arch frame near the
+	## boundary, swinging gently.
+	var bell: Node3D = Node3D.new()
+	bell.name = "D3LoneBell"
+	bell.position = D3_CENTER + Vector3(-22, 0, 14)
+	geom.add_child(bell)
+	# 2 frame legs
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for sx: float in [-0.85, 0.85]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.30, 3.40, 0.30)
+		leg.mesh = lm
+		leg.position = Vector3(sx, 1.70, 0)
+		leg.material_override = stone_mat
+		bell.add_child(leg)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.30, 3.40, 0.30)
+		cs.shape = cb
+		cs.position = Vector3(sx, 1.70, 0)
+		sb.add_child(cs)
+		bell.add_child(sb)
+	# Crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.0, 0.30, 0.30)
+	bar.mesh = bm
+	bar.position = Vector3(0, 3.40, 0)
+	bar.material_override = stone_mat
+	bell.add_child(bar)
+	# Pivot for the bell
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 3.40, 0)
+	bell.add_child(pivot)
+	# Bell — wider cylinder + half sphere
+	var bell_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bell_mat.albedo_color = Color(0.85, 0.65, 0.30)
+	bell_mat.emission_enabled = true
+	bell_mat.emission = Color(1.0, 0.75, 0.30)
+	bell_mat.emission_energy_multiplier = 0.85
+	bell_mat.metallic = 0.85
+	bell_mat.roughness = 0.20
+	var bell_body: MeshInstance3D = MeshInstance3D.new()
+	var bbm: CylinderMesh = CylinderMesh.new()
+	bbm.top_radius = 0.30
+	bbm.bottom_radius = 0.55
+	bbm.height = 0.85
+	bell_body.mesh = bbm
+	bell_body.position = Vector3(0, -0.65, 0)
+	bell_body.material_override = bell_mat
+	pivot.add_child(bell_body)
+	# Swing tween
+	var swing: Tween = create_tween().set_loops()
+	swing.tween_property(pivot, "rotation:z", deg_to_rad(15), 1.4).set_ease(Tween.EASE_IN_OUT)
+	swing.tween_property(pivot, "rotation:z", deg_to_rad(-15), 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_dream_eater(geom: Node) -> void:
+	## Epic-3 T85: DREAM EATER 3rd mini-boss — a wide hovering creature
+	## with translucent tentacle arms hanging down. Slow drift patrol.
+	var eater: Node3D = Node3D.new()
+	eater.name = "D3DreamEater"
+	eater.position = D3_CENTER + Vector3(-20, 4, 8)
+	geom.add_child(eater)
+	# Wide hovering body — flattened sphere
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.30, 0.85, 0.55)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.55, 1.0)
+	bmat.emission_energy_multiplier = 1.8
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: SphereMesh = SphereMesh.new()
+	bmesh.radius = 1.40
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0, 0)
+	body.scale = Vector3(1.0, 0.6, 1.0)
+	body.material_override = bmat
+	eater.add_child(body)
+	# Single bright eye in the center
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.40
+	em.height = 0.80
+	eye.mesh = em
+	eye.position = Vector3(0, 0.10, 0)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(1, 1, 1)
+	emat.emission_enabled = true
+	emat.emission = Color(1, 1, 1)
+	emat.emission_energy_multiplier = 3.4
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = emat
+	eater.add_child(eye)
+	# 6 hanging tentacle arms
+	var tent_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tent_mat.albedo_color = Color(0.85, 0.40, 1.0, 0.55)
+	tent_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	tent_mat.emission_enabled = true
+	tent_mat.emission = Color(1.0, 0.55, 1.0)
+	tent_mat.emission_energy_multiplier = 1.4
+	tent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var angle: float = (float(i) / 6.0) * TAU
+		var tent: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.10
+		tm.bottom_radius = 0.04
+		tm.height = 1.40
+		tent.mesh = tm
+		tent.position = Vector3(cos(angle) * 0.85, -1.0, sin(angle) * 0.85)
+		tent.material_override = tent_mat
+		eater.add_child(tent)
+	# Slow drift patrol
+	var origin: Vector3 = D3_CENTER + Vector3(-20, 4, 8)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(eater, "position", origin + Vector3(4, 0, 4), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(eater, "position", origin + Vector3(0, 0, 8), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(eater, "position", origin, 8.0).set_ease(Tween.EASE_IN_OUT)
+	# Pulse the eye
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(emat, "emission_energy_multiplier", 4.5, 0.85).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(emat, "emission_energy_multiplier", 2.0, 0.85).set_ease(Tween.EASE_IN_OUT)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "DREAM EATER"
+	label.position = Vector3(0, 2.0, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	eater.add_child(label)
 
 
 
