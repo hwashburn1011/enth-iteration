@@ -1,6 +1,15 @@
 class_name PlayerDashState
 extends "res://scripts/state_machines/state.gd"
 ## Teleport dash with i-frames. Instantly moves the player in facing direction.
+##
+## Attack-cancel: after a brief DASH_CANCEL_LOCKOUT (60ms) the player can
+## cancel out of dash i-frames into a primary attack via force_transition_to,
+## allowing aggressive dash-attack weaves. The base AttackState will preserve
+## the dash direction since p.facing_direction was set in enter().
+
+const DASH_CANCEL_LOCKOUT: float = 0.06
+const DASH_SHAKE_AMP: float = 0.06
+const DASH_SHAKE_DECAY: float = 10.0
 
 var _iframe_timer: float = 0.0
 var _iframe_active: bool = false
@@ -11,7 +20,7 @@ func _ready() -> void:
 
 
 func enter() -> void:
-	var p = player
+	var p: CharacterBody3D = player
 	var from_position: Vector3 = p.global_position
 
 	# Play dash animation
@@ -47,7 +56,7 @@ func enter() -> void:
 	# Brief screen shake on dash
 	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	if camera and camera.has_method(&"shake"):
-		camera.shake(0.06, 10.0)
+		camera.shake(DASH_SHAKE_AMP, DASH_SHAKE_DECAY)
 
 	# Emit event
 	EventBus.player_dashed.emit(from_position, p.global_position)
@@ -63,10 +72,23 @@ func enter() -> void:
 	p.dash_cooldown_timer.start(p.dash_cooldown)
 
 
+func handle_input(event: InputEvent) -> void:
+	## Dash-cancel into attack — opens after DASH_CANCEL_LOCKOUT so the
+	## dash always commits visually. Charged-attack cancel is also allowed
+	## so a held button can be released into a burst.
+	if not _iframe_active or _iframe_timer < DASH_CANCEL_LOCKOUT:
+		return
+	var p: CharacterBody3D = player
+	if event.is_action_pressed(&"attack_primary") and p.can_attack:
+		state_machine.force_transition_to(state_machine.get_node("AttackState") as Node)
+	elif event.is_action_pressed(&"attack_secondary") and p.can_attack:
+		state_machine.force_transition_to(state_machine.get_node("ChargeState") as Node)
+
+
 func physics_update(delta: float) -> void:
 	if not _iframe_active:
 		return
-	var p = player
+	var p: CharacterBody3D = player
 	_iframe_timer += delta
 	if _iframe_timer >= p.iframe_duration:
 		_iframe_active = false
