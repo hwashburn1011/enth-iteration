@@ -8905,6 +8905,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_ice_climbing_wall(geom)
 	# Epic-5 T70: ice climber NPC
 	_build_d5_ice_climber_npc()
+	# Epic-5 T71: ice block maze
+	_build_d5_ice_maze(geom)
+	# Epic-5 T72: lost wanderer NPC inside the maze
+	_build_d5_lost_wanderer_npc()
+	# Epic-5 T73: glacial chess set with giant pieces
+	_build_d5_glacial_chess(geom)
+	# Epic-5 T74: chess player NPC
+	_build_d5_chess_player_npc()
+	# Epic-5 T75: large data crystal cluster
+	_build_d5_crystal_cluster(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -14506,6 +14516,462 @@ func _build_d5_ice_climber_npc() -> void:
 	pick.position = Vector3(0.65, 1.20, 0.20)
 	pick.rotation_degrees = Vector3(45, 0, 0)
 	npc.add_child(pick)
+
+
+func _build_d5_ice_maze(geom: Node) -> void:
+	## Epic-5 T71: simple ice block maze — 5x5 grid pattern with some
+	## blocks removed to form a winding path. Each block is a tall ice
+	## cube with collision.
+	var maze: Node3D = Node3D.new()
+	maze.name = "IceMaze"
+	maze.position = Vector3(D5_CENTER.x - 24.0, 0.0, 4.0)
+	geom.add_child(maze)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	# 5x5 grid layout (1 = block, 0 = empty path)
+	var layout: Array = [
+		[1, 1, 1, 1, 1],
+		[1, 0, 0, 0, 1],
+		[1, 0, 1, 0, 1],
+		[1, 0, 0, 0, 0],
+		[1, 1, 1, 1, 1],
+	]
+	for r in 5:
+		for c in 5:
+			if layout[r][c] == 1:
+				var block: MeshInstance3D = MeshInstance3D.new()
+				var bm: BoxMesh = BoxMesh.new()
+				bm.size = Vector3(1.40, 1.85, 1.40)
+				block.mesh = bm
+				block.material_override = ice_mat
+				block.position = Vector3(c * 1.50, 0.92, r * 1.50)
+				maze.add_child(block)
+				# Block collision
+				var sb: StaticBody3D = StaticBody3D.new()
+				sb.position = block.position
+				var cs: CollisionShape3D = CollisionShape3D.new()
+				var cb: BoxShape3D = BoxShape3D.new()
+				cb.size = bm.size
+				cs.shape = cb
+				sb.add_child(cs)
+				maze.add_child(sb)
+
+
+func _build_d5_lost_wanderer_npc() -> void:
+	## Epic-5 T72: lost wanderer NPC inside the ice maze — looking
+	## bewildered, holding a small lantern.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "LostWandererSlot"
+	slot.position = Vector3(D5_CENTER.x - 21.5, 0.0, 7.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "LostWanderer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Misroute")
+	if "npc_id" in npc:
+		npc.set("npc_id", "wanderer_d5")
+	slot.add_child(npc)
+	# Tattered grey cloak
+	var cloak: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.10, 0.45)
+	cloak.mesh = cm
+	var cloak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloak_mat.albedo_color = Color(0.30, 0.32, 0.35)
+	cloak_mat.roughness = 0.85
+	cloak.material_override = cloak_mat
+	cloak.position = Vector3(0, 0.55, 0)
+	npc.add_child(cloak)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.22
+	hm.height = 0.40
+	hood.mesh = hm
+	hood.material_override = cloak_mat
+	hood.position = Vector3(0, 1.45, 0)
+	npc.add_child(hood)
+	# Held lantern (small box with glowing core)
+	var lantern: MeshInstance3D = MeshInstance3D.new()
+	var lmm: BoxMesh = BoxMesh.new()
+	lmm.size = Vector3(0.20, 0.30, 0.20)
+	lantern.mesh = lmm
+	var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lantern_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	lantern_mat.metallic = 0.65
+	lantern_mat.roughness = 0.45
+	lantern.material_override = lantern_mat
+	lantern.position = Vector3(0.45, 0.85, 0.20)
+	npc.add_child(lantern)
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 0.10
+	gm.height = 0.18
+	glow.mesh = gm
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(1.0, 0.75, 0.20)
+	glow_mat.emission_energy_multiplier = 3.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.material_override = glow_mat
+	glow.position = Vector3(0.45, 0.85, 0.20)
+	npc.add_child(glow)
+	# Lantern light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.75, 0.30)
+	light.light_energy = 1.6
+	light.omni_range = 3.5
+	light.position = Vector3(0.45, 0.85, 0.20)
+	npc.add_child(light)
+
+
+func _build_d5_glacial_chess(geom: Node) -> void:
+	## Epic-5 T73: giant ice chess set on a checkerboard floor — 8x8
+	## board pattern with 4 large ice chess pieces (king, queen, rook, knight).
+	var chess: Node3D = Node3D.new()
+	chess.name = "GlacialChess"
+	chess.position = Vector3(D5_CENTER.x + 26.0, 0.0, -10.0)
+	geom.add_child(chess)
+	var light_mat: StandardMaterial3D = StandardMaterial3D.new()
+	light_mat.albedo_color = Color(0.92, 0.96, 1.0)
+	light_mat.emission_enabled = true
+	light_mat.emission = Color(0.85, 0.95, 1.0)
+	light_mat.emission_energy_multiplier = 0.45
+	light_mat.roughness = 0.55
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.20, 0.30, 0.40)
+	dark_mat.emission_enabled = true
+	dark_mat.emission = Color(0.15, 0.25, 0.35)
+	dark_mat.emission_energy_multiplier = 0.25
+	dark_mat.roughness = 0.55
+	# 8x8 checkerboard tiles
+	for r in 8:
+		for c in 8:
+			var tile: MeshInstance3D = MeshInstance3D.new()
+			var tm: BoxMesh = BoxMesh.new()
+			tm.size = Vector3(0.85, 0.10, 0.85)
+			tile.mesh = tm
+			tile.material_override = light_mat if (r + c) % 2 == 0 else dark_mat
+			tile.position = Vector3(c * 0.85 - 3.0, 0.05, r * 0.85 - 3.0)
+			chess.add_child(tile)
+	# 4 large chess pieces (all light material to keep it simple)
+	# Piece scale ~2x normal so they read as monumental
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.78, 0.92, 1.0, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 1.0)
+	ice_mat.emission_energy_multiplier = 0.65
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	# King — tall central column with cross top
+	var king: Node3D = Node3D.new()
+	king.position = Vector3(-1.30, 0.10, -1.30)
+	chess.add_child(king)
+	var k_body: MeshInstance3D = MeshInstance3D.new()
+	var kbm: CylinderMesh = CylinderMesh.new()
+	kbm.top_radius = 0.18
+	kbm.bottom_radius = 0.30
+	kbm.height = 1.65
+	k_body.mesh = kbm
+	k_body.material_override = ice_mat
+	k_body.position = Vector3(0, 0.85, 0)
+	king.add_child(k_body)
+	var k_head: MeshInstance3D = MeshInstance3D.new()
+	var khm: SphereMesh = SphereMesh.new()
+	khm.radius = 0.22
+	khm.height = 0.40
+	k_head.mesh = khm
+	k_head.material_override = ice_mat
+	k_head.position = Vector3(0, 1.85, 0)
+	king.add_child(k_head)
+	# Cross on top
+	for axis in 2:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var brm: BoxMesh = BoxMesh.new()
+		brm.size = Vector3(0.25, 0.04, 0.04) if axis == 0 else Vector3(0.04, 0.25, 0.04)
+		bar.mesh = brm
+		bar.material_override = ice_mat
+		bar.position = Vector3(0, 2.20, 0)
+		king.add_child(bar)
+	# King collision
+	var ksb: StaticBody3D = StaticBody3D.new()
+	ksb.position = Vector3(-1.30, 1.10, -1.30)
+	var kcs: CollisionShape3D = CollisionShape3D.new()
+	var kcap: CapsuleShape3D = CapsuleShape3D.new()
+	kcap.radius = 0.30
+	kcap.height = 2.20
+	kcs.shape = kcap
+	ksb.add_child(kcs)
+	chess.add_child(ksb)
+	# Queen — slim column with crown
+	var queen: Node3D = Node3D.new()
+	queen.position = Vector3(0.0, 0.10, -1.30)
+	chess.add_child(queen)
+	var q_body: MeshInstance3D = MeshInstance3D.new()
+	var qbm: CylinderMesh = CylinderMesh.new()
+	qbm.top_radius = 0.16
+	qbm.bottom_radius = 0.28
+	qbm.height = 1.55
+	q_body.mesh = qbm
+	q_body.material_override = ice_mat
+	q_body.position = Vector3(0, 0.80, 0)
+	queen.add_child(q_body)
+	var q_head: MeshInstance3D = MeshInstance3D.new()
+	var qhm: SphereMesh = SphereMesh.new()
+	qhm.radius = 0.20
+	qhm.height = 0.36
+	q_head.mesh = qhm
+	q_head.material_override = ice_mat
+	q_head.position = Vector3(0, 1.75, 0)
+	queen.add_child(q_head)
+	# 5 crown spikes
+	for i in 5:
+		var ang: float = (TAU / 5.0) * i
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.05, 0.18, 0.05)
+		spike.mesh = spm
+		spike.material_override = ice_mat
+		spike.position = Vector3(cos(ang) * 0.18, 1.95, sin(ang) * 0.18)
+		queen.add_child(spike)
+	var qsb: StaticBody3D = StaticBody3D.new()
+	qsb.position = Vector3(0, 1.10, -1.30)
+	var qcs: CollisionShape3D = CollisionShape3D.new()
+	var qcap: CapsuleShape3D = CapsuleShape3D.new()
+	qcap.radius = 0.28
+	qcap.height = 2.10
+	qcs.shape = qcap
+	qsb.add_child(qcs)
+	chess.add_child(qsb)
+	# Rook — square fortress on a column
+	var rook: Node3D = Node3D.new()
+	rook.position = Vector3(1.30, 0.10, -1.30)
+	chess.add_child(rook)
+	var r_body: MeshInstance3D = MeshInstance3D.new()
+	var rbm: CylinderMesh = CylinderMesh.new()
+	rbm.top_radius = 0.22
+	rbm.bottom_radius = 0.30
+	rbm.height = 1.40
+	r_body.mesh = rbm
+	r_body.material_override = ice_mat
+	r_body.position = Vector3(0, 0.72, 0)
+	rook.add_child(r_body)
+	# Crenellated top
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm2: BoxMesh = BoxMesh.new()
+	tm2.size = Vector3(0.55, 0.30, 0.55)
+	top.mesh = tm2
+	top.material_override = ice_mat
+	top.position = Vector3(0, 1.55, 0)
+	rook.add_child(top)
+	for cx in [-0.20, 0.20]:
+		for cz in [-0.20, 0.20]:
+			var cren: MeshInstance3D = MeshInstance3D.new()
+			var cmm2: BoxMesh = BoxMesh.new()
+			cmm2.size = Vector3(0.10, 0.18, 0.10)
+			cren.mesh = cmm2
+			cren.material_override = ice_mat
+			cren.position = Vector3(cx, 1.85, cz)
+			rook.add_child(cren)
+	var rsb: StaticBody3D = StaticBody3D.new()
+	rsb.position = Vector3(1.30, 1.0, -1.30)
+	var rcs: CollisionShape3D = CollisionShape3D.new()
+	var rcap: CapsuleShape3D = CapsuleShape3D.new()
+	rcap.radius = 0.30
+	rcap.height = 2.0
+	rcs.shape = rcap
+	rsb.add_child(rcs)
+	chess.add_child(rsb)
+	# Knight — angular horse-head shape
+	var knight: Node3D = Node3D.new()
+	knight.position = Vector3(2.55, 0.10, -1.30)
+	chess.add_child(knight)
+	var n_body: MeshInstance3D = MeshInstance3D.new()
+	var nbm: CylinderMesh = CylinderMesh.new()
+	nbm.top_radius = 0.22
+	nbm.bottom_radius = 0.30
+	nbm.height = 1.10
+	n_body.mesh = nbm
+	n_body.material_override = ice_mat
+	n_body.position = Vector3(0, 0.55, 0)
+	knight.add_child(n_body)
+	# Horse head (angled prism)
+	var n_head: MeshInstance3D = MeshInstance3D.new()
+	var nhm: PrismMesh = PrismMesh.new()
+	nhm.size = Vector3(0.40, 0.85, 0.30)
+	n_head.mesh = nhm
+	n_head.material_override = ice_mat
+	n_head.position = Vector3(0.10, 1.55, 0)
+	n_head.rotation_degrees = Vector3(0, 0, -25)
+	knight.add_child(n_head)
+	var nsb: StaticBody3D = StaticBody3D.new()
+	nsb.position = Vector3(2.55, 1.0, -1.30)
+	var ncs: CollisionShape3D = CollisionShape3D.new()
+	var ncap: CapsuleShape3D = CapsuleShape3D.new()
+	ncap.radius = 0.30
+	ncap.height = 2.0
+	ncs.shape = ncap
+	nsb.add_child(ncs)
+	chess.add_child(nsb)
+
+
+func _build_d5_chess_player_npc() -> void:
+	## Epic-5 T74: chess player NPC pondering the board — chin in hand pose,
+	## scholarly grey beard hint via colored hood.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ChessPlayerSlot"
+	slot.position = Vector3(D5_CENTER.x + 26.0, 0.0, -6.5)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ChessPlayer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Endgame")
+	if "npc_id" in npc:
+		npc.set("npc_id", "chess_d5")
+	slot.add_child(npc)
+	# Long dark robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.10, 0.40)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.20, 0.18, 0.30)
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Grey beard hint (small grey sphere under chin)
+	var beard: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.14
+	bm.height = 0.24
+	beard.mesh = bm
+	var beard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beard_mat.albedo_color = Color(0.85, 0.85, 0.82)
+	beard_mat.roughness = 0.95
+	beard.material_override = beard_mat
+	beard.position = Vector3(0, 1.20, 0.15)
+	beard.scale = Vector3(0.85, 0.55, 0.55)
+	npc.add_child(beard)
+	# Pondering hand (small sphere near chin)
+	var hand: MeshInstance3D = MeshInstance3D.new()
+	var hmm: SphereMesh = SphereMesh.new()
+	hmm.radius = 0.08
+	hmm.height = 0.14
+	hand.mesh = hmm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+	skin_mat.roughness = 0.65
+	hand.material_override = skin_mat
+	hand.position = Vector3(0.12, 1.30, 0.18)
+	npc.add_child(hand)
+
+
+func _build_d5_crystal_cluster(geom: Node) -> void:
+	## Epic-5 T75: large data crystal cluster landmark — central tall crystal
+	## surrounded by 6 smaller satellite crystals + an aura beam.
+	var cluster: Node3D = Node3D.new()
+	cluster.name = "DataCrystalCluster"
+	cluster.position = Vector3(D5_CENTER.x - 14.0, 0.0, -22.0)
+	geom.add_child(cluster)
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.30, 0.95, 1.0)
+	crystal_mat.emission_energy_multiplier = 1.6
+	crystal_mat.metallic = 0.55
+	crystal_mat.roughness = 0.10
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone base
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.50, 0.55)
+	stone_mat.roughness = 0.92
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.85
+	bm.bottom_radius = 2.10
+	bm.height = 0.40
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.20, 0)
+	cluster.add_child(base)
+	# Central tall crystal
+	var central: MeshInstance3D = MeshInstance3D.new()
+	var cmm: PrismMesh = PrismMesh.new()
+	cmm.size = Vector3(1.10, 4.85, 1.10)
+	central.mesh = cmm
+	central.material_override = crystal_mat
+	central.position = Vector3(0, 2.85, 0)
+	cluster.add_child(central)
+	# 6 satellite crystals around the central one
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var sat: MeshInstance3D = MeshInstance3D.new()
+		var sm: PrismMesh = PrismMesh.new()
+		sm.size = Vector3(0.55, 2.40 + randf() * 0.85, 0.55)
+		sat.mesh = sm
+		sat.material_override = crystal_mat
+		sat.position = Vector3(cos(ang) * 1.40, 1.65, sin(ang) * 1.40)
+		sat.rotation_degrees = Vector3(15 * cos(ang), 0, 15 * sin(ang))
+		cluster.add_child(sat)
+	# Aura beam
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 0.10
+	beam_m.bottom_radius = 0.55
+	beam_m.height = 11.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.45)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(0.30, 0.95, 1.0)
+	beam_mat.emission_energy_multiplier = 1.4
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(0, 9.85, 0)
+	cluster.add_child(beam)
+	# Pulse beam
+	var tw: Tween = beam.create_tween().set_loops()
+	tw.tween_property(beam, "scale:x", 1.30, 1.6)
+	tw.tween_property(beam, "scale:x", 0.85, 1.6)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 4.5
+	light.omni_range = 14.0
+	light.position = Vector3(0, 4.20, 0)
+	cluster.add_child(light)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.10
+	cap.height = 0.40
+	cs.shape = cap
+	sb.add_child(cs)
+	cluster.add_child(sb)
 
 
 
