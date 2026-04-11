@@ -32,6 +32,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_district_map_kiosk(geom)
 	_build_th_banner_streamers(geom)
 	_build_th_ambient_data_motes(geom)
+	_build_th_vendor_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -2538,3 +2539,190 @@ func _build_th_ambient_data_motes(geom: Node) -> void:
 	central_emit.process_material = cpmat
 	central_emit.draw_pass_1 = mote_mesh
 	pivot.add_child(central_emit)
+
+
+func _build_th_vendor_npc(town: Node) -> void:
+	## Epic-10 T16: Vendor Merchant Trex — flamboyant merchant standing
+	## behind the vendor kiosk, calling out wares with his right arm
+	## raised. Wide brass-trimmed coat with multi-pocket apron, brass
+	## hat with a feather plume, and an arm-wave tween.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THVendorMerchantTrexSlot"
+	# Stand behind the vendor kiosk (kiosk at NW radial path radius 6.5)
+	# Position is just behind the kiosk counter (slightly further out)
+	var ang: float = 3.0 * PI / 4.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 7.5, 0, sin(ang) * 7.5)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THVendorMerchantTrex"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Merchant Trex")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_vendor_merchant_trex")
+	# Face inward toward the beacon (along ang+pi)
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	coat_mat.roughness = 0.85
+	coat_mat.metallic = 0.18
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.65, 0.30, 0.05)
+	coat_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.55, 0.18, 0.10)
+	apron_mat.roughness = 0.85
+	apron_mat.metallic = 0.10
+	apron_mat.emission_enabled = true
+	apron_mat.emission = Color(0.85, 0.20, 0.05)
+	apron_mat.emission_energy_multiplier = 0.30
+	var feather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	feather_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	feather_mat.emission_enabled = true
+	feather_mat.emission = Color(1.0, 0.55, 0.10)
+	feather_mat.emission_energy_multiplier = 5.0
+	feather_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Wide brass-trimmed coat (chest box) ----
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.10, 1.40, 0.65)
+	coat.mesh = cmesh
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.05, 0)
+	npc.add_child(coat)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(1.10, 0.10, 0.65)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.75, 0)
+	npc.add_child(collar)
+	# Coat front brass buttons (4 stud spheres down the chest)
+	for by in [1.55, 1.30, 1.05, 0.80]:
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.05
+		bm.height = 0.10
+		btn.mesh = bm
+		btn.material_override = brass_mat
+		btn.position = Vector3(0, by, -0.34)
+		npc.add_child(btn)
+	# ---- Multi-pocket apron front (a smaller apron box overlay) ----
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var apm: BoxMesh = BoxMesh.new()
+	apm.size = Vector3(0.95, 0.85, 0.06)
+	apron.mesh = apm
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.90, -0.36)
+	npc.add_child(apron)
+	# 4 small brass pocket slot bars on the apron
+	for px in [-0.30, 0.30]:
+		for py in [1.00, 0.75]:
+			var pocket: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.32, 0.06, 0.04)
+			pocket.mesh = pm
+			pocket.material_override = brass_mat
+			pocket.position = Vector3(px, py, -0.40)
+			npc.add_child(pocket)
+	# ---- Brass hat (wide-brimmed cylinder with feather plume) ----
+	# Hat brim (wide flat torus)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: TorusMesh = TorusMesh.new()
+	brm.inner_radius = 0.32
+	brm.outer_radius = 0.50
+	brim.mesh = brm
+	brim.material_override = coat_mat
+	brim.position = Vector3(0, 1.95, 0)
+	brim.rotation.x = PI / 2.0
+	npc.add_child(brim)
+	# Hat crown (cylinder)
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crm: CylinderMesh = CylinderMesh.new()
+	crm.top_radius = 0.30
+	crm.bottom_radius = 0.32
+	crm.height = 0.30
+	crown.mesh = crm
+	crown.material_override = coat_mat
+	crown.position = Vector3(0, 2.10, 0)
+	npc.add_child(crown)
+	# Hat brass band
+	var hat_band: MeshInstance3D = MeshInstance3D.new()
+	var hbm: TorusMesh = TorusMesh.new()
+	hbm.inner_radius = 0.28
+	hbm.outer_radius = 0.34
+	hat_band.mesh = hbm
+	hat_band.material_override = brass_mat
+	hat_band.position = Vector3(0, 2.00, 0)
+	hat_band.rotation.x = PI / 2.0
+	npc.add_child(hat_band)
+	# Feather plume (long thin prism on the side of the hat)
+	var feather: MeshInstance3D = MeshInstance3D.new()
+	var fmm: PrismMesh = PrismMesh.new()
+	fmm.size = Vector3(0.10, 0.55, 0.06)
+	feather.mesh = fmm
+	feather.material_override = feather_mat
+	feather.position = Vector3(0.25, 2.45, -0.10)
+	feather.rotation.z = -0.40
+	npc.add_child(feather)
+	# ---- Arms ----
+	# Left arm (down at his side)
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.20, 0.85, 0.20)
+	left_arm.mesh = lam
+	left_arm.material_override = coat_mat
+	left_arm.position = Vector3(-0.65, 1.05, 0)
+	npc.add_child(left_arm)
+	# Right arm — pivot at the shoulder so we can wave it
+	var right_arm_pivot: Node3D = Node3D.new()
+	right_arm_pivot.position = Vector3(0.65, 1.55, 0)
+	npc.add_child(right_arm_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.20, 0.85, 0.20)
+	right_arm.mesh = ram
+	right_arm.material_override = coat_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	right_arm_pivot.add_child(right_arm)
+	# Right hand (small box at the end of the arm)
+	var right_hand: MeshInstance3D = MeshInstance3D.new()
+	var rhm: BoxMesh = BoxMesh.new()
+	rhm.size = Vector3(0.20, 0.18, 0.20)
+	right_hand.mesh = rhm
+	right_hand.material_override = brass_mat
+	right_hand.position = Vector3(0, -0.92, 0)
+	right_arm_pivot.add_child(right_hand)
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, -0.20)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Arm-wave tween — right arm rotates up + down repeatedly ----
+	var wave: Tween = npc.create_tween().set_loops()
+	wave.tween_property(right_arm_pivot, "rotation:z", -2.20, 0.85).set_ease(Tween.EASE_IN_OUT)
+	wave.tween_property(right_arm_pivot, "rotation:z", -1.40, 0.45).set_ease(Tween.EASE_IN_OUT)
+	wave.tween_property(right_arm_pivot, "rotation:z", -2.20, 0.85).set_ease(Tween.EASE_IN_OUT)
+	wave.tween_property(right_arm_pivot, "rotation:z", -0.10, 0.55).set_ease(Tween.EASE_IN_OUT)
+	wave.tween_property(right_arm_pivot, "rotation:z", -0.10, 1.00)
+	# Feather pulse
+	var fpulse: Tween = npc.create_tween().set_loops()
+	fpulse.tween_property(feather_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(feather_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
