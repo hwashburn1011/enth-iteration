@@ -48,6 +48,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_observatory_dome(geom)
 	_build_th_sky_lanterns(geom)
 	_build_th_west_entry_arch(geom)
+	_build_th_food_cart(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -5647,3 +5648,259 @@ func _build_th_west_entry_arch(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_food_cart(geom: Node) -> void:
+	## Epic-10 T32: small mobile food vendor cart parked between the south
+	## benches. Wood + brass cart body on 2 cylinder wheels, brass top
+	## counter, hot pot with steam, 3 floating food holos above the counter
+	## (a noodle bowl, a fruit, a meat skewer), small chimney pipe, and a
+	## warm hood OmniLight.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_FoodCart"
+	# Park near the south radial path between the south benches
+	pivot.position = TOWN_CENTER + Vector3(2.50, 0, 11.50)
+	# Face inward toward the beacon
+	pivot.rotation.y = PI
+	geom.add_child(pivot)
+	# Materials
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	wood_mat.metallic = 0.10
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var holo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	holo_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	holo_mat.emission_enabled = true
+	holo_mat.emission = Color(1.0, 0.55, 0.10)
+	holo_mat.emission_energy_multiplier = 6.0
+	holo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var pot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pot_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	pot_mat.metallic = 0.85
+	pot_mat.roughness = 0.45
+	pot_mat.emission_enabled = true
+	pot_mat.emission = Color(1.0, 0.40, 0.10)
+	pot_mat.emission_energy_multiplier = 0.45
+	# ---- Cart body (wood box) ----
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.85, 0.85, 1.05)
+	body.mesh = bm
+	body.material_override = wood_mat
+	body.position = Vector3(0, 0.85, 0)
+	pivot.add_child(body)
+	# Body collision
+	var body_sb: StaticBody3D = StaticBody3D.new()
+	body_sb.position = Vector3(0, 0.85, 0)
+	var body_cs: CollisionShape3D = CollisionShape3D.new()
+	var body_bsh: BoxShape3D = BoxShape3D.new()
+	body_bsh.size = Vector3(1.85, 0.85, 1.05)
+	body_cs.shape = body_bsh
+	body_sb.add_child(body_cs)
+	pivot.add_child(body_sb)
+	# Brass top counter plate
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var ctm: BoxMesh = BoxMesh.new()
+	ctm.size = Vector3(2.00, 0.10, 1.20)
+	counter.mesh = ctm
+	counter.material_override = brass_mat
+	counter.position = Vector3(0, 1.32, 0)
+	pivot.add_child(counter)
+	# Brass cart side trim bands (front + back)
+	for tz in [-0.55, 0.55]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmm: BoxMesh = BoxMesh.new()
+		tmm.size = Vector3(1.95, 0.08, 0.06)
+		trim.mesh = tmm
+		trim.material_override = brass_mat
+		trim.position = Vector3(0, 1.20, tz)
+		pivot.add_child(trim)
+	# ---- 2 large cart wheels ----
+	for wx in [-0.85, 0.85]:
+		var wheel: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.42
+		wm.bottom_radius = 0.42
+		wm.height = 0.12
+		wheel.mesh = wm
+		wheel.material_override = wood_mat
+		wheel.position = Vector3(wx, 0.42, 0.62)
+		wheel.rotation.x = PI / 2.0
+		pivot.add_child(wheel)
+		# Brass wheel hub torus
+		var hub: MeshInstance3D = MeshInstance3D.new()
+		var hbm: TorusMesh = TorusMesh.new()
+		hbm.inner_radius = 0.10
+		hbm.outer_radius = 0.16
+		hub.mesh = hbm
+		hub.material_override = brass_mat
+		hub.position = Vector3(wx, 0.42, 0.62)
+		pivot.add_child(hub)
+	# ---- Hot pot on top of the counter (iron pot with brass rim) ----
+	var pot: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 0.32
+	pmm.bottom_radius = 0.28
+	pmm.height = 0.42
+	pot.mesh = pmm
+	pot.material_override = pot_mat
+	pot.position = Vector3(-0.45, 1.58, 0)
+	pivot.add_child(pot)
+	# Pot brass rim torus
+	var pot_rim: MeshInstance3D = MeshInstance3D.new()
+	var prm: TorusMesh = TorusMesh.new()
+	prm.inner_radius = 0.30
+	prm.outer_radius = 0.38
+	pot_rim.mesh = prm
+	pot_rim.material_override = brass_mat
+	pot_rim.position = Vector3(-0.45, 1.78, 0)
+	pivot.add_child(pot_rim)
+	# Pot lid (small dome)
+	var lid: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.30
+	lm.height = 0.22
+	lid.mesh = lm
+	lid.material_override = brass_mat
+	lid.position = Vector3(-0.45, 1.85, 0)
+	lid.scale = Vector3(1.0, 0.55, 1.0)
+	pivot.add_child(lid)
+	# Lid handle (small brass knob)
+	var knob: MeshInstance3D = MeshInstance3D.new()
+	var knm: SphereMesh = SphereMesh.new()
+	knm.radius = 0.07
+	knm.height = 0.14
+	knob.mesh = knm
+	knob.material_override = brass_mat
+	knob.position = Vector3(-0.45, 1.97, 0)
+	pivot.add_child(knob)
+	# ---- Steam particles rising from the pot ----
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.position = Vector3(-0.45, 2.10, 0)
+	steam.amount = 22
+	steam.lifetime = 3.5
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.direction = Vector3(0, 1, 0)
+	smat.spread = 22.0
+	smat.initial_velocity_min = 0.5
+	smat.initial_velocity_max = 1.0
+	smat.gravity = Vector3(0, 0.4, 0)
+	smat.scale_min = 0.18
+	smat.scale_max = 0.35
+	smat.color = Color(0.85, 0.80, 0.75, 0.65)
+	steam.process_material = smat
+	var smkm: SphereMesh = SphereMesh.new()
+	smkm.radius = 0.12
+	smkm.height = 0.24
+	steam.draw_pass_1 = smkm
+	pivot.add_child(steam)
+	# ---- 3 floating food holos above the right side of the counter ----
+	var holo_pivot: Node3D = Node3D.new()
+	holo_pivot.position = Vector3(0.55, 1.95, 0)
+	pivot.add_child(holo_pivot)
+	# Holo 1 — noodle bowl (small flat torus)
+	var noodle: MeshInstance3D = MeshInstance3D.new()
+	var nrm: TorusMesh = TorusMesh.new()
+	nrm.inner_radius = 0.10
+	nrm.outer_radius = 0.16
+	noodle.mesh = nrm
+	noodle.material_override = holo_mat
+	noodle.position = Vector3(-0.30, 0, 0)
+	noodle.rotation.x = PI / 2.0
+	holo_pivot.add_child(noodle)
+	# Holo 2 — fruit (small sphere)
+	var fruit: MeshInstance3D = MeshInstance3D.new()
+	var frm: SphereMesh = SphereMesh.new()
+	frm.radius = 0.13
+	frm.height = 0.26
+	fruit.mesh = frm
+	fruit.material_override = holo_mat
+	fruit.position = Vector3(0, 0, 0)
+	holo_pivot.add_child(fruit)
+	# Holo 3 — meat skewer (small box on a thin cylinder)
+	var skewer_stick: MeshInstance3D = MeshInstance3D.new()
+	var ssm: CylinderMesh = CylinderMesh.new()
+	ssm.top_radius = 0.018
+	ssm.bottom_radius = 0.018
+	ssm.height = 0.30
+	skewer_stick.mesh = ssm
+	skewer_stick.material_override = holo_mat
+	skewer_stick.position = Vector3(0.30, 0, 0)
+	skewer_stick.rotation.z = PI / 2.0
+	holo_pivot.add_child(skewer_stick)
+	var skewer_meat: MeshInstance3D = MeshInstance3D.new()
+	var smm: BoxMesh = BoxMesh.new()
+	smm.size = Vector3(0.20, 0.10, 0.10)
+	skewer_meat.mesh = smm
+	skewer_meat.material_override = holo_mat
+	skewer_meat.position = Vector3(0.30, 0, 0)
+	holo_pivot.add_child(skewer_meat)
+	# ---- Small chimney pipe behind the cart ----
+	var chimney: MeshInstance3D = MeshInstance3D.new()
+	var cmm: CylinderMesh = CylinderMesh.new()
+	cmm.top_radius = 0.07
+	cmm.bottom_radius = 0.10
+	cmm.height = 1.10
+	chimney.mesh = cmm
+	chimney.material_override = iron_mat
+	chimney.position = Vector3(-0.85, 1.95, 0.40)
+	pivot.add_child(chimney)
+	# Chimney brass top cap
+	var chim_cap: MeshInstance3D = MeshInstance3D.new()
+	var chcm: TorusMesh = TorusMesh.new()
+	chcm.inner_radius = 0.08
+	chcm.outer_radius = 0.14
+	chim_cap.mesh = chcm
+	chim_cap.material_override = brass_mat
+	chim_cap.position = Vector3(-0.85, 2.50, 0.40)
+	pivot.add_child(chim_cap)
+	# Chimney smoke particles
+	var chim_smoke: GPUParticles3D = GPUParticles3D.new()
+	chim_smoke.position = Vector3(-0.85, 2.65, 0.40)
+	chim_smoke.amount = 18
+	chim_smoke.lifetime = 3.0
+	var csmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	csmat.direction = Vector3(0, 1, 0)
+	csmat.spread = 16.0
+	csmat.initial_velocity_min = 0.6
+	csmat.initial_velocity_max = 1.0
+	csmat.gravity = Vector3(0.2, 0.4, 0)
+	csmat.scale_min = 0.12
+	csmat.scale_max = 0.24
+	csmat.color = Color(0.30, 0.25, 0.20, 0.65)
+	chim_smoke.process_material = csmat
+	var cssm: SphereMesh = SphereMesh.new()
+	cssm.radius = 0.10
+	cssm.height = 0.20
+	chim_smoke.draw_pass_1 = cssm
+	pivot.add_child(chim_smoke)
+	# ---- Warm hood OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.80, 0)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 2.0
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
+	# ---- Pulses + tweens ----
+	# Slow holo spin (the food platter rotates slowly)
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(holo_pivot, "rotation:y", TAU, 7.0)
+	# Holo bob
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(holo_pivot, "position:y", 2.10, 1.6).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(holo_pivot, "position:y", 1.80, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Holo amber pulse
+	var hpulse: Tween = pivot.create_tween().set_loops()
+	hpulse.tween_property(holo_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	hpulse.tween_property(holo_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
