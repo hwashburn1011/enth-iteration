@@ -95,6 +95,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_lava_bomb_scatter(geom)
 	_build_d9_geyser_observation_deck(geom)
 	_build_d9_vulcanologist_cinder_npc(town)
+	_build_d9_forge_memorial(geom)
 	print("[D9Builder] done")
 
 
@@ -7931,4 +7932,201 @@ func _build_d9_vulcanologist_cinder_npc(town: Node) -> void:
 	var lpulse: Tween = npc.create_tween().set_loops()
 	lpulse.tween_property(lens_mat, "emission_energy_multiplier", 8.0, 1.3).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(lens_mat, "emission_energy_multiplier", 5.0, 1.3).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_forge_memorial(geom: Node) -> void:
+	## Epic-9 T75: tall basalt obelisk monument honoring fallen smiths,
+	## ringed by 6 brass burning urns. Stepped basalt base + tapered
+	## obelisk shaft with embedded glowing rune stripe + crowning ember
+	## flame, surrounded by 6 brass urns each with steady flame, light,
+	## and rising ember motes. Adds narrative weight to D9's SW quadrant.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeMemorial"
+	pivot.position = D9_CENTER + Vector3(-18, 0, 14)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.18
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.45, 0.15, 0.04)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.45, 0.05)
+	rune_mat.emission_energy_multiplier = 6.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt base (3 stacked rings, descending size) ----
+	var base_steps: Array = [
+		{"r": 3.20, "h": 0.30, "y": 0.15},
+		{"r": 2.55, "h": 0.30, "y": 0.45},
+		{"r": 1.90, "h": 0.30, "y": 0.75},
+	]
+	for step in base_steps:
+		var s: MeshInstance3D = MeshInstance3D.new()
+		var smesh: CylinderMesh = CylinderMesh.new()
+		smesh.top_radius = step["r"]
+		smesh.bottom_radius = step["r"] + 0.10
+		smesh.height = step["h"]
+		s.mesh = smesh
+		s.material_override = basalt_mat
+		s.position = Vector3(0, step["y"], 0)
+		pivot.add_child(s)
+	# Base collision (covers all 3 steps as one cylinder)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.45, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cylsh: CylinderShape3D = CylinderShape3D.new()
+	cylsh.top_radius = 1.90
+	cylsh.bottom_radius = 3.20
+	cylsh.height = 0.90
+	cs.shape = cylsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# ---- Tapered obelisk shaft ----
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var shm: BoxMesh = BoxMesh.new()
+	shm.size = Vector3(1.20, 6.00, 1.20)
+	shaft.mesh = shm
+	shaft.material_override = basalt_mat
+	shaft.position = Vector3(0, 3.90, 0)
+	pivot.add_child(shaft)
+	# Shaft collision
+	var sb2: StaticBody3D = StaticBody3D.new()
+	sb2.position = Vector3(0, 3.90, 0)
+	var cs2: CollisionShape3D = CollisionShape3D.new()
+	var bsh: BoxShape3D = BoxShape3D.new()
+	bsh.size = Vector3(1.20, 6.00, 1.20)
+	cs2.shape = bsh
+	sb2.add_child(cs2)
+	pivot.add_child(sb2)
+	# Pyramid cap (using PrismMesh, rotated)
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var capm: PrismMesh = PrismMesh.new()
+	capm.size = Vector3(1.20, 0.90, 1.20)
+	cap.mesh = capm
+	cap.material_override = basalt_mat
+	cap.position = Vector3(0, 7.35, 0)
+	pivot.add_child(cap)
+	# Glowing rune stripe — vertical box embedded in the shaft front
+	var rune_stripe: MeshInstance3D = MeshInstance3D.new()
+	var rsm: BoxMesh = BoxMesh.new()
+	rsm.size = Vector3(0.20, 4.50, 0.06)
+	rune_stripe.mesh = rsm
+	rune_stripe.material_override = rune_mat
+	rune_stripe.position = Vector3(0, 3.90, -0.62)
+	pivot.add_child(rune_stripe)
+	# 4 rune crossbars on the stripe (small horizontal segments)
+	for ry in [2.40, 3.40, 4.40, 5.40]:
+		var cross: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.50, 0.10, 0.06)
+		cross.mesh = cmm
+		cross.material_override = rune_mat
+		cross.position = Vector3(0, ry, -0.62)
+		pivot.add_child(cross)
+	# Crowning ember flame on top of the cap
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var crm: SphereMesh = SphereMesh.new()
+	crm.radius = 0.30
+	crm.height = 0.65
+	crown.mesh = crm
+	crown.material_override = flame_mat
+	crown.position = Vector3(0, 8.10, 0)
+	pivot.add_child(crown)
+	# Crown OmniLight
+	var clt: OmniLight3D = OmniLight3D.new()
+	clt.position = Vector3(0, 8.10, 0)
+	clt.light_color = Color(1.0, 0.55, 0.15)
+	clt.light_energy = 4.0
+	clt.omni_range = 12.0
+	pivot.add_child(clt)
+	# ---- 6 brass burning urns around the base ring ----
+	for i in 6:
+		var ang: float = float(i) / 6.0 * TAU
+		var ux: float = cos(ang) * 4.20
+		var uz: float = sin(ang) * 4.20
+		# Urn body — wide bowl
+		var urn: MeshInstance3D = MeshInstance3D.new()
+		var urm: SphereMesh = SphereMesh.new()
+		urm.radius = 0.32
+		urm.height = 0.55
+		urn.mesh = urm
+		urn.material_override = brass_mat
+		urn.position = Vector3(ux, 0.30, uz)
+		urn.scale = Vector3(1.0, 0.85, 1.0)
+		pivot.add_child(urn)
+		# Urn neck — small cylinder
+		var neck: MeshInstance3D = MeshInstance3D.new()
+		var nmm: CylinderMesh = CylinderMesh.new()
+		nmm.top_radius = 0.22
+		nmm.bottom_radius = 0.20
+		nmm.height = 0.18
+		neck.mesh = nmm
+		neck.material_override = brass_mat
+		neck.position = Vector3(ux, 0.62, uz)
+		pivot.add_child(neck)
+		# Urn flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.20
+		flm.height = 0.42
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(ux, 0.85, uz)
+		pivot.add_child(flame)
+		# OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(ux, 0.85, uz)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.8
+		lt.omni_range = 5.0
+		pivot.add_child(lt)
+		# Rising ember motes
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = Vector3(ux, 1.00, uz)
+		motes.amount = 14
+		motes.lifetime = 2.0
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 14.0
+		pmat.initial_velocity_min = 0.4
+		pmat.initial_velocity_max = 0.9
+		pmat.gravity = Vector3(0, 0.3, 0)
+		pmat.scale_min = 0.04
+		pmat.scale_max = 0.08
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.03
+		psmesh.height = 0.06
+		motes.draw_pass_1 = psmesh
+		pivot.add_child(motes)
+	# Crown flame slow scale pulse (looks like the eternal flame breathing)
+	var crown_pulse: Tween = pivot.create_tween().set_loops()
+	crown_pulse.tween_property(crown, "scale", Vector3(1.20, 1.30, 1.20), 1.6).set_ease(Tween.EASE_IN_OUT)
+	crown_pulse.tween_property(crown, "scale", Vector3(0.95, 0.90, 0.95), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Rune pulse — slow breathe
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 8.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 4.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Urn flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 
