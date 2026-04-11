@@ -25577,6 +25577,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_pagoda_monk_npc()
 	# Epic-7 T80: falling leaves particles
 	_build_d7_falling_leaves(geom)
+	# Epic-7 T81: stone gargoyles
+	_build_d7_d7_gargoyles(geom)
+	# Epic-7 T82: cloud pavilion
+	_build_d7_cloud_pavilion(geom)
+	# Epic-7 T83: spirit dancer NPC
+	_build_d7_spirit_dancer_npc()
+	# Epic-7 T84: rocky outlook with telescope
+	_build_d7_outlook_telescope(geom)
+	# Epic-7 T85: stargazer NPC
+	_build_d7_d7_stargazer_npc()
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -31148,6 +31158,351 @@ func _build_d7_falling_leaves(geom: Node) -> void:
 	leaf_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	leaf_mesh.material = leaf_mat
 	geom.add_child(leaves)
+
+
+func _build_d7_d7_gargoyles(geom: Node) -> void:
+	## Epic-7 T81: row of 4 stone gargoyles on small pedestals — animal-headed
+	## crouching figures with wings.
+	var gargs: Node3D = Node3D.new()
+	gargs.name = "D7Gargoyles"
+	gargs.position = Vector3(D7_CENTER.x - 8.0, 0.0, 22.0)
+	geom.add_child(gargs)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.40, 0.30)
+	stone_mat.roughness = 0.92
+	for i in 4:
+		var garg: Node3D = Node3D.new()
+		garg.position = Vector3(i * 1.85, 0, 0)
+		gargs.add_child(garg)
+		# Stone pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.85, 0.85, 0.85)
+		ped.mesh = pm
+		ped.material_override = stone_mat
+		ped.position = Vector3(0, 0.42, 0)
+		garg.add_child(ped)
+		# Crouching body (sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.40
+		bm.height = 0.55
+		body.mesh = bm
+		body.material_override = stone_mat
+		body.position = Vector3(0, 1.0, 0)
+		body.scale = Vector3(1.0, 0.85, 1.0)
+		garg.add_child(body)
+		# Animal-style head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: BoxMesh = BoxMesh.new()
+		hm.size = Vector3(0.30, 0.30, 0.40)
+		head.mesh = hm
+		head.material_override = stone_mat
+		head.position = Vector3(0, 1.45, 0.18)
+		garg.add_child(head)
+		# 2 spiky horns/ears
+		for sx in [-0.10, 0.10]:
+			var horn: MeshInstance3D = MeshInstance3D.new()
+			var prm: PrismMesh = PrismMesh.new()
+			prm.size = Vector3(0.06, 0.18, 0.06)
+			horn.mesh = prm
+			horn.material_override = stone_mat
+			horn.position = Vector3(sx, 1.65, 0.10)
+			garg.add_child(horn)
+		# 2 small folded wings
+		for sx in [-0.30, 0.30]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: PrismMesh = PrismMesh.new()
+			wm.size = Vector3(0.10, 0.55, 0.18)
+			wing.mesh = wm
+			wing.material_override = stone_mat
+			wing.position = Vector3(sx, 1.10, -0.15)
+			wing.rotation_degrees = Vector3(-25, 0, 0)
+			garg.add_child(wing)
+		# Glowing red eyes
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.95, 0.20, 0.20)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.95, 0.20, 0.20)
+		eye_mat.emission_energy_multiplier = 3.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex in [-0.06, 0.06]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = 0.025
+			em.height = 0.05
+			eye.mesh = em
+			eye.material_override = eye_mat
+			eye.position = Vector3(ex, 1.45, 0.40)
+			garg.add_child(eye)
+		# Pedestal collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 1.85, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		garg.add_child(sb)
+
+
+func _build_d7_cloud_pavilion(geom: Node) -> void:
+	## Epic-7 T82: small floating cloud pavilion — translucent platform
+	## with pillars hovering above the ground.
+	var pav: Node3D = Node3D.new()
+	pav.name = "CloudPavilion"
+	pav.position = Vector3(D7_CENTER.x + 12.0, 2.40, 22.0)
+	geom.add_child(pav)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.85, 0.92, 1.0, 0.65)
+	stone_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.92, 1.0)
+	stone_mat.emission_energy_multiplier = 1.4
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.20
+	# Floating platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 1.85
+	pmm.bottom_radius = 2.20
+	pmm.height = 0.30
+	platform.mesh = pmm
+	platform.material_override = stone_mat
+	platform.position = Vector3(0, 0, 0)
+	pav.add_child(platform)
+	# 4 corner translucent pillars
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i + PI / 4.0
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm2: CylinderMesh = CylinderMesh.new()
+		pm2.top_radius = 0.10
+		pm2.bottom_radius = 0.14
+		pm2.height = 1.85
+		pillar.mesh = pm2
+		pillar.material_override = stone_mat
+		pillar.position = Vector3(cos(ang) * 1.40, 1.10, sin(ang) * 1.40)
+		pav.add_child(pillar)
+	# Roof dome
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 1.85
+	dm.height = 1.40
+	dome.mesh = dm
+	dome.material_override = stone_mat
+	dome.position = Vector3(0, 2.30, 0)
+	dome.scale = Vector3(1.0, 0.55, 1.0)
+	pav.add_child(dome)
+	# Slow hover bob
+	var tw: Tween = pav.create_tween().set_loops()
+	tw.tween_property(pav, "position:y", 2.85, 2.0)
+	tw.tween_property(pav, "position:y", 2.40, 2.0)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.85, 0.92, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.5
+	light.position = Vector3(0, 1.40, 0)
+	pav.add_child(light)
+	# Platform collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.20
+	cap.height = 0.30
+	cs.shape = cap
+	sb.add_child(cs)
+	pav.add_child(sb)
+
+
+func _build_d7_spirit_dancer_npc() -> void:
+	## Epic-7 T83: spirit dancer NPC — translucent flowing robe + raised
+	## arms + spinning rotation tween.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SpiritDancerSlot"
+	slot.position = Vector3(D7_CENTER.x + 12.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	# Custom-built dancer (no VillagerR3 — needs full rotation freedom)
+	var dancer: Node3D = Node3D.new()
+	dancer.name = "SpiritDancer"
+	slot.add_child(dancer)
+	# Translucent flowing robe (tapered cone)
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.30
+	rm.bottom_radius = 0.65
+	rm.height = 1.40
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.85, 1.0, 0.75)
+	robe_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.85, 0.65, 0.95)
+	robe_mat.emission_energy_multiplier = 1.4
+	robe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.85, 0)
+	dancer.add_child(robe)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.18
+	hm.height = 0.32
+	head.mesh = hm
+	head.material_override = robe_mat
+	head.position = Vector3(0, 1.85, 0)
+	dancer.add_child(head)
+	# 2 raised arms (long tapered prisms reaching upward)
+	for sx in [-0.30, 0.30]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: PrismMesh = PrismMesh.new()
+		am.size = Vector3(0.10, 0.85, 0.10)
+		arm.mesh = am
+		arm.material_override = robe_mat
+		arm.position = Vector3(sx, 2.0, 0)
+		arm.rotation_degrees = Vector3(0, 0, -25.0 if sx > 0 else 25.0)
+		dancer.add_child(arm)
+	# Spin tween
+	var tw: Tween = dancer.create_tween().set_loops()
+	tw.tween_property(dancer, "rotation_degrees:y", 360.0, 4.0)
+	tw.tween_property(dancer, "rotation_degrees:y", 0.0, 0.0)
+
+
+func _build_d7_outlook_telescope(geom: Node) -> void:
+	## Epic-7 T84: rocky outlook point with a brass telescope on a tripod.
+	var look: Node3D = Node3D.new()
+	look.name = "OutlookTelescope"
+	look.position = Vector3(D7_CENTER.x + 22.0, 0.0, 22.0)
+	geom.add_child(look)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Stone outlook platform
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(2.85, 0.30, 2.85)
+	pad.mesh = pm
+	pad.material_override = stone_mat
+	pad.position = Vector3(0, 0.15, 0)
+	look.add_child(pad)
+	# Brass telescope tripod (3 legs)
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	brass_mat.metallic = 0.85
+	brass_mat.roughness = 0.30
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.05
+		lm.height = 1.40
+		leg.mesh = lm
+		leg.material_override = brass_mat
+		leg.position = Vector3(cos(ang) * 0.30, 0.85, sin(ang) * 0.30)
+		leg.rotation = Vector3(deg_to_rad(15) * sin(ang), 0, deg_to_rad(15) * cos(ang))
+		look.add_child(leg)
+	# Telescope barrel (long angled cylinder)
+	var scope: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.10
+	sm.bottom_radius = 0.14
+	sm.height = 1.40
+	scope.mesh = sm
+	scope.material_override = brass_mat
+	scope.position = Vector3(0, 1.85, 0)
+	scope.rotation_degrees = Vector3(-25, 0, 0)
+	look.add_child(scope)
+	# Lens (small bright glass disc)
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: CylinderMesh = CylinderMesh.new()
+	lm.top_radius = 0.10
+	lm.bottom_radius = 0.10
+	lm.height = 0.04
+	lens.mesh = lm
+	var lens_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lens_mat.albedo_color = Color(0.40, 0.95, 1.0)
+	lens_mat.emission_enabled = true
+	lens_mat.emission = Color(0.40, 1.0, 1.0)
+	lens_mat.emission_energy_multiplier = 2.5
+	lens_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lens.material_override = lens_mat
+	lens.position = Vector3(0, 2.40, 0.55)
+	lens.rotation_degrees = Vector3(-25, 0, 0)
+	look.add_child(lens)
+	# Pad collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.15, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 0.30, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	look.add_child(sb)
+
+
+func _build_d7_d7_stargazer_npc() -> void:
+	## Epic-7 T85: D7 stargazer NPC — purple robe + tall pointed hat with
+	## small star symbols.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7StargazerSlot"
+	slot.position = Vector3(D7_CENTER.x + 24.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Stargazer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Skywise")
+	if "npc_id" in npc:
+		npc.set("npc_id", "stargazer_d7")
+	slot.add_child(npc)
+	# Purple robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.30, 0.18, 0.55)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.20, 0.65)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Tall pointed hat
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.40, 0.85, 0.40)
+	hat.mesh = hm
+	hat.material_override = robe_mat
+	hat.position = Vector3(0, 1.65, 0)
+	npc.add_child(hat)
+	# 4 small star sprinkles on the hat
+	var star_mat: StandardMaterial3D = StandardMaterial3D.new()
+	star_mat.albedo_color = Color(1.0, 0.95, 0.55)
+	star_mat.emission_enabled = true
+	star_mat.emission = Color(1.0, 0.95, 0.55)
+	star_mat.emission_energy_multiplier = 3.5
+	star_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var star: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.03
+		sm.height = 0.06
+		star.mesh = sm
+		star.material_override = star_mat
+		var ang: float = (TAU / 4.0) * i
+		star.position = Vector3(cos(ang) * 0.10, 1.55 + i * 0.18, sin(ang) * 0.10)
+		npc.add_child(star)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
