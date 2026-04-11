@@ -1530,6 +1530,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_cage_arena(geom)
 	# Epic-2 T50: second mini-boss — Corrupted Titan
 	_build_d2_corrupted_titan(geom)
+	# Epic-2 T51: power substation with sparking transformer
+	_build_d2_power_substation(geom)
+	# Epic-2 T52: decaying corpse pile (lore element)
+	_build_d2_corpse_pile(geom)
+	# Epic-2 T53: wrecked hover-truck
+	_build_d2_hover_truck_wreck(geom)
+	# Epic-2 T54: faction graffiti wall + symbol
+	_build_d2_faction_wall(geom)
+	# Epic-2 T55: hacker NPC with floating screens
+	_build_d2_hacker_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -11892,4 +11902,456 @@ func _build_d2_corrupted_titan(geom: Node) -> void:
 	label.font_size = 24
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	titan.add_child(label)
+
+
+func _build_d2_power_substation(geom: Node) -> void:
+	## Epic-2 T51: a power substation — large transformer box on a fenced
+	## platform with sparking insulators and warning signs.
+	var sub: Node3D = Node3D.new()
+	sub.name = "D2PowerSubstation"
+	sub.position = D2_CENTER + Vector3(-22, 0, 6)
+	geom.add_child(sub)
+	# Concrete platform
+	var plat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	plat_mat.albedo_color = Color(0.30, 0.32, 0.38)
+	plat_mat.metallic = 0.20
+	plat_mat.roughness = 0.65
+	var plat: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(2.40, 0.30, 2.40)
+	plat.mesh = pmesh
+	plat.position = Vector3(0, 0.15, 0)
+	plat.material_override = plat_mat
+	sub.add_child(plat)
+	# Transformer box (big rusted box)
+	var trans_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trans_mat.albedo_color = Color(0.40, 0.30, 0.18)
+	trans_mat.metallic = 0.40
+	trans_mat.roughness = 0.55
+	var trans: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.60, 1.85, 1.60)
+	trans.mesh = tmesh
+	trans.position = Vector3(0, 1.225, 0)
+	trans.material_override = trans_mat
+	sub.add_child(trans)
+	# 3 ceramic insulator stacks on top
+	var ceramic_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ceramic_mat.albedo_color = Color(0.85, 0.80, 0.70)
+	ceramic_mat.metallic = 0.20
+	ceramic_mat.roughness = 0.45
+	for ix: float in [-0.50, 0.0, 0.50]:
+		# 3 stacked discs
+		for s in 3:
+			var disc: MeshInstance3D = MeshInstance3D.new()
+			var dmesh: CylinderMesh = CylinderMesh.new()
+			dmesh.top_radius = 0.18 - s * 0.02
+			dmesh.bottom_radius = 0.20 - s * 0.02
+			dmesh.height = 0.18
+			disc.mesh = dmesh
+			disc.position = Vector3(ix, 2.30 + s * 0.20, 0)
+			disc.material_override = ceramic_mat
+			sub.add_child(disc)
+		# Top spark cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: SphereMesh = SphereMesh.new()
+		cmesh.radius = 0.10
+		cmesh.height = 0.20
+		cap.mesh = cmesh
+		cap.position = Vector3(ix, 2.95, 0)
+		var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cap_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		cap_mat.emission_enabled = true
+		cap_mat.emission = Color(0.55, 0.95, 1.0)
+		cap_mat.emission_energy_multiplier = 2.6
+		cap_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		cap.material_override = cap_mat
+		sub.add_child(cap)
+	# Spark particles from the center insulator
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 20
+	sparks.lifetime = 0.65
+	sparks.position = Vector3(0, 3.0, 0)
+	var spmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	spmat.emission_sphere_radius = 0.15
+	spmat.direction = Vector3(0, 1, 0)
+	spmat.spread = 90.0
+	spmat.initial_velocity_min = 1.4
+	spmat.initial_velocity_max = 2.2
+	spmat.gravity = Vector3(0, -3.0, 0)
+	spmat.scale_min = 0.04
+	spmat.scale_max = 0.10
+	spmat.color = Color(0.55, 0.95, 1.0, 1.0)
+	sparks.process_material = spmat
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.05
+	sm.height = 0.10
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(0.55, 0.95, 1.0)
+	sm_mat.emission_energy_multiplier = 2.6
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = sm_mat
+	sparks.draw_pass_1 = sm
+	sub.add_child(sparks)
+	# Warning sign on the front of transformer (yellow box with red text)
+	var warn: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: BoxMesh = BoxMesh.new()
+	wmesh.size = Vector3(0.55, 0.40, 0.04)
+	warn.mesh = wmesh
+	warn.position = Vector3(0, 1.40, 0.82)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(1.0, 0.85, 0.20)
+	wmat.emission_enabled = true
+	wmat.emission = Color(1.0, 0.95, 0.30)
+	wmat.emission_energy_multiplier = 1.4
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	warn.material_override = wmat
+	sub.add_child(warn)
+	var warn_label: Label3D = Label3D.new()
+	warn_label.text = "DANGER\nHIGH V"
+	warn_label.position = Vector3(0, 1.40, 0.86)
+	warn_label.modulate = Color(0.85, 0.10, 0.10)
+	warn_label.outline_size = 0
+	warn_label.font_size = 12
+	warn_label.no_depth_test = true
+	sub.add_child(warn_label)
+	# Collision around platform + transformer
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 3.30, 2.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.65, 0)
+	sb.add_child(cs)
+	sub.add_child(sb)
+
+
+func _build_d2_corpse_pile(geom: Node) -> void:
+	## Epic-2 T52: a small respectful pile of fallen NPC silhouettes — 3
+	## crumpled capsule bodies + 2 small Label3Ds with names. Lore element
+	## sells "people died fighting here". Pure decoration, no gore.
+	var pile: Node3D = Node3D.new()
+	pile.name = "D2CorpsePile"
+	pile.position = D2_CENTER + Vector3(13, 0, -14)
+	geom.add_child(pile)
+	var corpse_mat: StandardMaterial3D = StandardMaterial3D.new()
+	corpse_mat.albedo_color = Color(0.16, 0.10, 0.06)
+	corpse_mat.metallic = 0.10
+	corpse_mat.roughness = 0.85
+	var corpse_specs: Array = [
+		[Vector3(-0.5, 0.18, 0), Vector3(deg_to_rad(85), deg_to_rad(20), 0)],
+		[Vector3(0.4, 0.18, 0.3), Vector3(deg_to_rad(85), deg_to_rad(-30), deg_to_rad(15))],
+		[Vector3(0.0, 0.18, -0.4), Vector3(deg_to_rad(85), deg_to_rad(60), 0)],
+	]
+	for spec in corpse_specs:
+		var corpse: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: CapsuleMesh = CapsuleMesh.new()
+		cmesh.radius = 0.32
+		cmesh.height = 0.85
+		corpse.mesh = cmesh
+		corpse.position = spec[0]
+		corpse.rotation = spec[1]
+		corpse.material_override = corpse_mat
+		pile.add_child(corpse)
+	# Memorial banner stake
+	var stake_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stake_mat.albedo_color = Color(0.18, 0.16, 0.14)
+	stake_mat.metallic = 0.30
+	var stake: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.05
+	smesh.bottom_radius = 0.05
+	smesh.height = 1.40
+	stake.mesh = smesh
+	stake.position = Vector3(0, 0.70, 0.85)
+	stake.material_override = stake_mat
+	pile.add_child(stake)
+	# Tiny banner cloth
+	var banner: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.50, 0.30, 0.04)
+	banner.mesh = bm
+	banner.position = Vector3(0.30, 1.20, 0.85)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.55, 0.55, 0.65)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.65, 0.65, 0.75)
+	bmat.emission_energy_multiplier = 0.55
+	banner.material_override = bmat
+	pile.add_child(banner)
+	# Memorial text
+	var label: Label3D = Label3D.new()
+	label.text = "REMEMBER\nTHE FALLEN"
+	label.position = Vector3(0, 1.70, 0.85)
+	label.modulate = Color(0.85, 0.85, 0.95)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 13
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pile.add_child(label)
+
+
+func _build_d2_hover_truck_wreck(geom: Node) -> void:
+	## Epic-2 T53: a much larger wrecked hover-truck blocking part of the
+	## road. Long boxy body, 4 broken hover engines, cargo bay door open
+	## with broken crates spilling out.
+	var truck: Node3D = Node3D.new()
+	truck.name = "D2HoverTruckWreck"
+	truck.position = D2_CENTER + Vector3(8, 0, 4)
+	truck.rotation = Vector3(0, deg_to_rad(40), deg_to_rad(-12))
+	geom.add_child(truck)
+	# Cab
+	var cab_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cab_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	cab_mat.metallic = 0.85
+	cab_mat.roughness = 0.40
+	var cab: MeshInstance3D = MeshInstance3D.new()
+	var cab_mesh: BoxMesh = BoxMesh.new()
+	cab_mesh.size = Vector3(1.80, 1.20, 1.40)
+	cab.mesh = cab_mesh
+	cab.position = Vector3(2.20, 0.85, 0)
+	cab.material_override = cab_mat
+	truck.add_child(cab)
+	# Cargo body — long box
+	var cargo: MeshInstance3D = MeshInstance3D.new()
+	var crmesh: BoxMesh = BoxMesh.new()
+	crmesh.size = Vector3(3.40, 1.85, 1.85)
+	cargo.mesh = crmesh
+	cargo.position = Vector3(-0.50, 1.20, 0)
+	cargo.material_override = cab_mat
+	truck.add_child(cargo)
+	# Cyan windshield
+	var glass: MeshInstance3D = MeshInstance3D.new()
+	var gmesh: BoxMesh = BoxMesh.new()
+	gmesh.size = Vector3(0.10, 0.55, 1.20)
+	glass.mesh = gmesh
+	glass.position = Vector3(3.05, 1.20, 0)
+	var gmat: StandardMaterial3D = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.20, 0.50, 0.70, 0.55)
+	gmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	gmat.emission_enabled = true
+	gmat.emission = Color(0.30, 0.85, 1.0)
+	gmat.emission_energy_multiplier = 1.0
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glass.material_override = gmat
+	truck.add_child(glass)
+	# 4 hover engine pods underneath
+	var engine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	engine_mat.albedo_color = Color(0.30, 0.10, 0.06)
+	engine_mat.emission_enabled = true
+	engine_mat.emission = Color(1.0, 0.40, 0.20)
+	engine_mat.emission_energy_multiplier = 0.85
+	engine_mat.metallic = 0.55
+	for ox: float in [-1.5, 0.0, 1.5]:
+		for oz: float in [-0.85, 0.85]:
+			var pod: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.20
+			pmesh.bottom_radius = 0.30
+			pmesh.height = 0.40
+			pod.mesh = pmesh
+			pod.position = Vector3(ox, 0.20, oz)
+			pod.material_override = engine_mat
+			truck.add_child(pod)
+	# Cargo door open at the back — small angled panel
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var door_mesh: BoxMesh = BoxMesh.new()
+	door_mesh.size = Vector3(0.10, 1.85, 1.85)
+	door.mesh = door_mesh
+	door.position = Vector3(-2.30, 1.20, 0)
+	door.rotation = Vector3(0, 0, deg_to_rad(45))
+	door.material_override = cab_mat
+	truck.add_child(door)
+	# 3 spilled crates behind the truck
+	var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crate_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	crate_mat.metallic = 0.10
+	crate_mat.roughness = 0.65
+	for i in 3:
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cmesh2: BoxMesh = BoxMesh.new()
+		cmesh2.size = Vector3(0.55, 0.55, 0.55)
+		crate.mesh = cmesh2
+		crate.position = Vector3(-3.30 - i * 0.30, 0.30, randf_range(-0.55, 0.55))
+		crate.rotation = Vector3(0, deg_to_rad(randf_range(-30, 30)), 0)
+		crate.material_override = crate_mat
+		truck.add_child(crate)
+	# Collision around the cargo + cab
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.5, 2.4, 2.0)
+	cs.shape = cb
+	cs.position = Vector3(0.85, 1.20, 0)
+	sb.add_child(cs)
+	truck.add_child(sb)
+
+
+func _build_d2_faction_wall(geom: Node) -> void:
+	## Epic-2 T54: a tall stone faction wall painted with a glowing red
+	## faction symbol (X inside a circle). Marks territory of "the
+	## Outskirts gang".
+	var wall: Node3D = Node3D.new()
+	wall.name = "D2FactionWall"
+	wall.position = D2_CENTER + Vector3(-22, 0, -2)
+	geom.add_child(wall)
+	# Wall slab
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.16, 0.12)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.30, 4.0, 4.5)
+	slab.mesh = smesh
+	slab.position = Vector3(0, 2.0, 0)
+	slab.material_override = stone_mat
+	wall.add_child(slab)
+	# Painted symbol — circle made of small box segments
+	var sym_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sym_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	sym_mat.emission_enabled = true
+	sym_mat.emission = Color(1.0, 0.30, 0.30)
+	sym_mat.emission_energy_multiplier = 1.8
+	sym_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Circle of 16 small boxes
+	for i in 16:
+		var angle: float = (float(i) / 16.0) * TAU
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sgm: BoxMesh = BoxMesh.new()
+		sgm.size = Vector3(0.06, 0.20, 0.20)
+		seg.mesh = sgm
+		seg.position = Vector3(0.16, 2.0 + cos(angle) * 1.20, sin(angle) * 1.20)
+		seg.material_override = sym_mat
+		wall.add_child(seg)
+	# X across the circle (4 boxes forming 2 diagonal lines)
+	for i in 2:
+		var rot_z: float = deg_to_rad(45 if i == 0 else -45)
+		var x_bar: MeshInstance3D = MeshInstance3D.new()
+		var xm: BoxMesh = BoxMesh.new()
+		xm.size = Vector3(0.06, 0.20, 2.40)
+		x_bar.mesh = xm
+		x_bar.position = Vector3(0.16, 2.0, 0)
+		x_bar.rotation = Vector3(rot_z, 0, 0)
+		x_bar.material_override = sym_mat
+		wall.add_child(x_bar)
+	# Faction name graffiti below
+	var label: Label3D = Label3D.new()
+	label.text = "OUTSKIRTS"
+	label.position = Vector3(0.18, 0.55, 0)
+	label.rotation = Vector3(0, deg_to_rad(90), 0)
+	label.modulate = Color(1.0, 0.30, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 26
+	label.no_depth_test = true
+	wall.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.30, 4.0, 4.5)
+	cs.shape = cb
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	wall.add_child(sb)
+
+
+func _build_d2_hacker_npc() -> void:
+	## Epic-2 T55: a hacker NPC sitting cross-legged with 3 small floating
+	## holographic screens around them. Hooded body, glowing green visor,
+	## screens cycle through "code".
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var hacker: Node3D = Node3D.new()
+	hacker.name = "D2Hacker"
+	hacker.position = D2_CENTER + Vector3(-6, 0, 8)
+	slots.add_child(hacker)
+	# Body — short capsule (sitting)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.14, 0.10)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 0.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.45, 0)
+	body.material_override = bmat
+	hacker.add_child(body)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.40
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.0, 0)
+	hood.material_override = bmat
+	hacker.add_child(hood)
+	# Wide green visor strip
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vmesh: BoxMesh = BoxMesh.new()
+	vmesh.size = Vector3(0.50, 0.10, 0.04)
+	visor.mesh = vmesh
+	visor.position = Vector3(0, 0.95, 0.34)
+	var vmat: StandardMaterial3D = StandardMaterial3D.new()
+	vmat.albedo_color = Color(0.40, 1.0, 0.55)
+	vmat.emission_enabled = true
+	vmat.emission = Color(0.55, 1.0, 0.55)
+	vmat.emission_energy_multiplier = 2.6
+	vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = vmat
+	hacker.add_child(visor)
+	# 3 floating screens around the hacker
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.04, 0.10, 0.06, 0.85)
+	screen_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.40, 1.0, 0.55)
+	screen_mat.emission_energy_multiplier = 1.0
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var screen_specs: Array = [
+		[Vector3(-0.85, 1.40, 0.55), "0xFF\nMOV\nLDR"],
+		[Vector3(0.85, 1.40, 0.55), "01010\nERROR\n404"],
+		[Vector3(0.0, 1.85, 0.65), "ROOT\nGRANT"],
+	]
+	for spec in screen_specs:
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sgm: BoxMesh = BoxMesh.new()
+		sgm.size = Vector3(0.65, 0.45, 0.04)
+		screen.mesh = sgm
+		screen.position = spec[0]
+		screen.material_override = screen_mat
+		hacker.add_child(screen)
+		# Code text on the screen
+		var code: Label3D = Label3D.new()
+		code.text = spec[1]
+		code.position = (spec[0] as Vector3) + Vector3(0, 0, 0.04)
+		code.modulate = Color(0.55, 1.0, 0.55)
+		code.outline_size = 0
+		code.font_size = 12
+		code.no_depth_test = true
+		code.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		hacker.add_child(code)
+		# Bob screen
+		var bob: Tween = create_tween().set_loops()
+		var origin_y: float = (spec[0] as Vector3).y
+		bob.tween_property(screen, "position:y", origin_y + 0.10, 1.4).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(screen, "position:y", origin_y, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Hacker"
+	label.position = Vector3(0, 1.55, 0)
+	label.modulate = Color(0.55, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	hacker.add_child(label)
+
 
