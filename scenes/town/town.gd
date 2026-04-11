@@ -1788,6 +1788,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_altar_circle(geom)
 	# Epic-3 T75: mind crystal cluster
 	_build_d3_mind_crystals(geom)
+	# Epic-3 T76: ascending stone stairs to a high observation platform
+	_build_d3_ascending_stairs(geom)
+	# Epic-3 T77: grand telescope landmark
+	_build_d3_grand_telescope(geom)
+	# Epic-3 T78: hanging prayer chain mobile
+	_build_d3_prayer_chains(geom)
+	# Epic-3 T79: large dreamcatcher mobile
+	_build_d3_dreamcatcher(geom)
+	# Epic-3 T80: Starseer NPC
+	_build_d3_starseer_npc()
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -7070,6 +7080,347 @@ func _build_d3_mind_crystals(geom: Node) -> void:
 		var pulse: Tween = create_tween().set_loops()
 		pulse.tween_property(crystal, "scale", Vector3(1.30, 1.30, 1.30), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 		pulse.tween_property(crystal, "scale", Vector3(0.85, 0.85, 0.85), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_ascending_stairs(geom: Node) -> void:
+	## Epic-3 T76: ascending stone stairs leading up to a high observation
+	## platform — 6 wide steps + a square platform at the top.
+	var stair: Node3D = Node3D.new()
+	stair.name = "D3AscendingStairs"
+	stair.position = D3_CENTER + Vector3(20, 0, -16)
+	geom.add_child(stair)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.30
+	for i in 6:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.40, 0.30, 1.20)
+		step.mesh = sm
+		step.position = Vector3(0, 0.15 + i * 0.30, i * 1.20)
+		step.material_override = stone_mat
+		stair.add_child(step)
+		# Per-step collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.40, 0.30, 1.20)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.15 + i * 0.30, i * 1.20)
+		sb.add_child(cs)
+		stair.add_child(sb)
+	# Top platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(3.40, 0.30, 3.40)
+	platform.mesh = pm
+	platform.position = Vector3(0, 1.85, 8.40)
+	platform.material_override = stone_mat
+	stair.add_child(platform)
+	# Platform collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(3.40, 0.30, 3.40)
+	pcs.shape = pcb
+	pcs.position = Vector3(0, 1.85, 8.40)
+	psb.add_child(pcs)
+	stair.add_child(psb)
+
+
+func _build_d3_grand_telescope(geom: Node) -> void:
+	## Epic-3 T77: a grand telescope landmark on a tripod stand — large
+	## angled cylinder pointing at the sky portal.
+	var scope: Node3D = Node3D.new()
+	scope.name = "D3GrandTelescope"
+	scope.position = D3_CENTER + Vector3(-22, 0, 6)
+	geom.add_child(scope)
+	# Tripod stand — 3 legs
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	leg_mat.metallic = 0.85
+	leg_mat.roughness = 0.30
+	for i in 3:
+		var angle: float = (float(i) / 3.0) * TAU
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.07
+		lm.bottom_radius = 0.10
+		lm.height = 2.40
+		leg.mesh = lm
+		leg.position = Vector3(cos(angle) * 0.55, 1.20, sin(angle) * 0.55)
+		leg.rotation = Vector3(sin(angle) * deg_to_rad(20), 0, -cos(angle) * deg_to_rad(20))
+		leg.material_override = leg_mat
+		scope.add_child(leg)
+	# Telescope tube — long angled cylinder
+	var tube_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tube_mat.albedo_color = Color(0.20, 0.20, 0.28)
+	tube_mat.metallic = 0.85
+	tube_mat.roughness = 0.30
+	tube_mat.emission_enabled = true
+	tube_mat.emission = Color(0.85, 0.40, 1.0)
+	tube_mat.emission_energy_multiplier = 0.45
+	var tube: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.30
+	tm.bottom_radius = 0.40
+	tm.height = 2.85
+	tube.mesh = tm
+	tube.position = Vector3(0, 2.85, 0)
+	tube.rotation = Vector3(deg_to_rad(45), 0, 0)
+	tube.material_override = tube_mat
+	scope.add_child(tube)
+	# Glowing lens at the top end
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.30
+	lm.height = 0.60
+	lens.mesh = lm
+	lens.position = Vector3(0, 4.0, -1.0)
+	var lmat: StandardMaterial3D = StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.55, 0.95, 1.0)
+	lmat.emission_enabled = true
+	lmat.emission = Color(0.55, 0.95, 1.0)
+	lmat.emission_energy_multiplier = 3.0
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lens.material_override = lmat
+	scope.add_child(lens)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "GRAND TELESCOPE"
+	label.position = Vector3(0, 5.0, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	scope.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.65
+	cap.height = 2.40
+	cs.shape = cap
+	cs.position = Vector3(0, 1.20, 0)
+	sb.add_child(cs)
+	scope.add_child(sb)
+
+
+func _build_d3_prayer_chains(geom: Node) -> void:
+	## Epic-3 T78: a hanging prayer chain mobile — top horizontal bar
+	## with 5 vertical chains, each holding a colored prayer pendant.
+	var chains: Node3D = Node3D.new()
+	chains.name = "D3PrayerChains"
+	chains.position = D3_CENTER + Vector3(0, 4.5, 8)
+	geom.add_child(chains)
+	# Top bar
+	var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bar_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	bar_mat.metallic = 0.85
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.06
+	bm.bottom_radius = 0.06
+	bm.height = 2.85
+	bar.mesh = bm
+	bar.rotation = Vector3(0, 0, deg_to_rad(90))
+	bar.material_override = bar_mat
+	chains.add_child(bar)
+	# 5 hanging chains with pendants
+	var pendant_colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(1.0, 0.55, 0.20),
+		Color(0.45, 1.0, 0.55),
+		Color(0.85, 0.40, 1.0),
+		Color(1.0, 0.95, 0.30),
+	]
+	for i in 5:
+		var hx: float = -1.20 + i * 0.60
+		# Chain — thin cylinder
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.02
+		cm.bottom_radius = 0.02
+		cm.height = 1.20 + (i % 3) * 0.20
+		chain.mesh = cm
+		chain.position = Vector3(hx, -(0.60 + (i % 3) * 0.10), 0)
+		chain.material_override = bar_mat
+		chains.add_child(chain)
+		# Pendant at the bottom
+		var pendant: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: PrismMesh = PrismMesh.new()
+		pmesh.size = Vector3(0.18, 0.30, 0.18)
+		pendant.mesh = pmesh
+		pendant.position = Vector3(hx, -(1.20 + (i % 3) * 0.20), 0)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = pendant_colors[i]
+		pmat.emission_enabled = true
+		pmat.emission = pendant_colors[i]
+		pmat.emission_energy_multiplier = 2.4
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pendant.material_override = pmat
+		chains.add_child(pendant)
+	# Sway the entire mobile
+	var sway: Tween = create_tween().set_loops()
+	sway.tween_property(chains, "rotation:z", deg_to_rad(8), 1.6).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(chains, "rotation:z", deg_to_rad(-8), 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_dreamcatcher(geom: Node) -> void:
+	## Epic-3 T79: a large dreamcatcher mobile — torus rim with 8 thin
+	## emissive web threads forming an X pattern + 3 small hanging
+	## feathers below.
+	var catcher: Node3D = Node3D.new()
+	catcher.name = "D3Dreamcatcher"
+	catcher.position = D3_CENTER + Vector3(15, 4.5, -4)
+	geom.add_child(catcher)
+	# Outer torus rim
+	var rim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rim_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	rim_mat.metallic = 0.40
+	rim_mat.roughness = 0.55
+	rim_mat.emission_enabled = true
+	rim_mat.emission = Color(1.0, 0.65, 0.20)
+	rim_mat.emission_energy_multiplier = 0.85
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 0.85
+	rmesh.outer_radius = 1.0
+	rim.mesh = rmesh
+	rim.rotation = Vector3(deg_to_rad(90), 0, 0)
+	rim.material_override = rim_mat
+	catcher.add_child(rim)
+	# 8 thin web threads in radial pattern
+	var web_mat: StandardMaterial3D = StandardMaterial3D.new()
+	web_mat.albedo_color = Color(0.85, 0.95, 1.0)
+	web_mat.emission_enabled = true
+	web_mat.emission = Color(0.85, 0.95, 1.0)
+	web_mat.emission_energy_multiplier = 1.4
+	web_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var thread: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.04, 1.85, 0.04)
+		thread.mesh = tm
+		thread.position = Vector3(0, 0, 0)
+		thread.rotation = Vector3(0, 0, angle)
+		thread.material_override = web_mat
+		catcher.add_child(thread)
+	# 3 small hanging feathers below
+	for i in 3:
+		var feather: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.10, 0.55, 0.04)
+		feather.mesh = fm
+		feather.position = Vector3(-0.30 + i * 0.30, -1.40, 0)
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = [Color(1.0, 0.55, 0.20), Color(0.85, 0.40, 1.0), Color(0.55, 0.95, 1.0)][i]
+		fmat.emission_enabled = true
+		fmat.emission = fmat.albedo_color
+		fmat.emission_energy_multiplier = 0.85
+		feather.material_override = fmat
+		catcher.add_child(feather)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(catcher, "rotation:z", TAU, 12.0)
+
+
+func _build_d3_starseer_npc() -> void:
+	## Epic-3 T80: Starseer NPC standing on the high observation platform
+	## looking up at the sky portal. Has a long telescope held in one hand.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var seer: Node3D = Node3D.new()
+	seer.name = "D3Starseer"
+	seer.position = D3_CENTER + Vector3(20, 2.0, -8)
+	slots.add_child(seer)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.16, 0.30)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.30, 0.55, 0.95)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	seer.add_child(body)
+	# Star-patterned hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	seer.add_child(hood)
+	# 2 cyan eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.34)
+		eye.material_override = eye_mat
+		seer.add_child(eye)
+	# Long telescope held in front pointing upward
+	var scope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scope_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	scope_mat.metallic = 0.85
+	var scope: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.07
+	sm.bottom_radius = 0.10
+	sm.height = 1.40
+	scope.mesh = sm
+	scope.position = Vector3(0.40, 1.30, 0.30)
+	scope.rotation = Vector3(deg_to_rad(45), 0, 0)
+	scope.material_override = scope_mat
+	seer.add_child(scope)
+	# Glowing tip
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tm2: SphereMesh = SphereMesh.new()
+	tm2.radius = 0.10
+	tm2.height = 0.20
+	tip.mesh = tm2
+	tip.position = Vector3(0.40, 1.85, 0.85)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.55, 0.95, 1.0)
+	tmat.emission_enabled = true
+	tmat.emission = Color(0.55, 0.95, 1.0)
+	tmat.emission_energy_multiplier = 3.0
+	tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tip.material_override = tmat
+	seer.add_child(tip)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Starseer"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	seer.add_child(label)
 
 
 
