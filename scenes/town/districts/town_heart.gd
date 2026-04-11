@@ -20,6 +20,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_beacon_monument(geom)
 	_build_th_compass_plaza(geom)
 	_build_th_district_nameplates(geom)
+	_build_th_bench_ring(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -558,3 +559,103 @@ func _build_th_district_nameplates(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.45).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.45).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_bench_ring(geom: Node) -> void:
+	## Epic-10 T4: 8 stone benches arranged between the radial paths around
+	## the plaza perimeter. Each bench: 2 short basalt legs + long basalt
+	## seat slab + brass back rail + small under-seat glow strip. Player
+	## can sit/lean on them between district trips.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_BenchRing"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.45
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.45, 0.85, 1.0)
+	glow_mat.emission_energy_multiplier = 4.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Bench positions — between the radial paths (offset by half a sector)
+	for i in 8:
+		var ang: float = (float(i) + 0.5) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var bp: Vector3 = Vector3(dx * 11.50, 0, dz * 11.50)
+		var bgroup: Node3D = Node3D.new()
+		bgroup.name = "Bench_" + str(i)
+		bgroup.position = bp
+		# Face inward toward the beacon
+		bgroup.rotation.y = atan2(-dz, -dx) - PI / 2.0
+		pivot.add_child(bgroup)
+		# ---- 2 short basalt legs ----
+		for lx in [-0.95, 0.95]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.30, 0.55, 0.45)
+			leg.mesh = lm
+			leg.material_override = stone_mat
+			leg.position = Vector3(lx, 0.27, 0)
+			bgroup.add_child(leg)
+		# ---- Long basalt seat slab ----
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.40, 0.16, 0.65)
+		seat.mesh = sm
+		seat.material_override = stone_mat
+		seat.position = Vector3(0, 0.62, 0)
+		bgroup.add_child(seat)
+		# Bench collision (so player can stand on it)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.40, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(2.40, 0.80, 0.65)
+		cs.shape = bsh
+		sb.add_child(cs)
+		bgroup.add_child(sb)
+		# ---- Brass back rail (2 vertical posts + 1 horizontal top bar) ----
+		for rpx in [-1.05, 1.05]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: CylinderMesh = CylinderMesh.new()
+			pm.top_radius = 0.04
+			pm.bottom_radius = 0.05
+			pm.height = 0.55
+			post.mesh = pm
+			post.material_override = brass_mat
+			post.position = Vector3(rpx, 0.95, 0.30)
+			bgroup.add_child(post)
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(2.20, 0.06, 0.06)
+		rail.mesh = rm
+		rail.material_override = brass_mat
+		rail.position = Vector3(0, 1.20, 0.30)
+		bgroup.add_child(rail)
+		# ---- Small under-seat cyan glow strip ----
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(2.20, 0.05, 0.06)
+		glow.mesh = gm
+		glow.material_override = glow_mat
+		glow.position = Vector3(0, 0.50, -0.30)
+		bgroup.add_child(glow)
+	# Shared bench glow pulse
+	var gpulse: Tween = pivot.create_tween().set_loops()
+	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 6.0, 2.2).set_ease(Tween.EASE_IN_OUT)
+	gpulse.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 2.2).set_ease(Tween.EASE_IN_OUT)
