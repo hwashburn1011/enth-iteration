@@ -32851,6 +32851,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_great_forge_heart(geom)
 	# Epic-9 T4: Forge Master Vulcan hero NPC
 	_build_d9_forge_master_npc()
+	# Epic-9 T6: anvil row
+	_build_d9_anvil_row(geom)
+	# Epic-9 T7: apprentice smith NPC
+	_build_d9_apprentice_smith_npc()
+	# Epic-9 T8: quench barrels with steam
+	_build_d9_quench_barrels(geom)
+	# Epic-9 T9: coal piles
+	_build_d9_coal_piles(geom)
+	# Epic-9 T10: giant bellows
+	_build_d9_giant_bellows(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -40778,6 +40788,447 @@ func _build_d9_forge_master_npc() -> void:
 	slit.material_override = slit_mat
 	slit.position = Vector3(0, 1.95, 0.32)
 	npc.add_child(slit)
+
+
+func _build_d9_anvil_row(geom: Node) -> void:
+	## Epic-9 T6: row of 3 working anvils with hammers laid on top.
+	var row: Node3D = Node3D.new()
+	row.name = "D9AnvilRow"
+	row.position = Vector3(D9_CENTER.x - 14, 0, -6)
+	geom.add_child(row)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.20, 0.18, 0.20)
+	iron.metallic = 0.92
+	iron.roughness = 0.30
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	for i in range(3):
+		var anvil_root: Node3D = Node3D.new()
+		anvil_root.position = Vector3(i * 3.0, 0, 0)
+		row.add_child(anvil_root)
+		# Wooden stump base
+		var stump: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.40
+		sm.bottom_radius = 0.45
+		sm.height = 0.85
+		stump.mesh = sm
+		stump.material_override = wood
+		stump.position = Vector3(0, 0.42, 0)
+		anvil_root.add_child(stump)
+		# Anvil body (top trapezoid via prism + base box)
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bb: BoxMesh = BoxMesh.new()
+		bb.size = Vector3(0.50, 0.18, 0.30)
+		base.mesh = bb
+		base.material_override = iron
+		base.position = Vector3(0, 0.95, 0)
+		anvil_root.add_child(base)
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tb: BoxMesh = BoxMesh.new()
+		tb.size = Vector3(0.85, 0.20, 0.45)
+		top.mesh = tb
+		top.material_override = iron
+		top.position = Vector3(0, 1.16, 0)
+		anvil_root.add_child(top)
+		# Pointed horn (cone facing forward)
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var hcm: CylinderMesh = CylinderMesh.new()
+		hcm.top_radius = 0.0
+		hcm.bottom_radius = 0.16
+		hcm.height = 0.45
+		horn.mesh = hcm
+		horn.material_override = iron
+		horn.position = Vector3(0, 1.18, 0.45)
+		horn.rotation_degrees = Vector3(90, 0, 0)
+		anvil_root.add_child(horn)
+		# Hammer laid on top (haft + head)
+		var ham_root: Node3D = Node3D.new()
+		ham_root.position = Vector3(0, 1.30, 0)
+		ham_root.rotation_degrees = Vector3(0, float(i) * 30 - 30, 90)
+		anvil_root.add_child(ham_root)
+		var haft: MeshInstance3D = MeshInstance3D.new()
+		var hfm: CylinderMesh = CylinderMesh.new()
+		hfm.top_radius = 0.04
+		hfm.bottom_radius = 0.05
+		hfm.height = 0.65
+		haft.mesh = hfm
+		haft.material_override = wood
+		haft.position = Vector3(0, 0, 0)
+		ham_root.add_child(haft)
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hdb: BoxMesh = BoxMesh.new()
+		hdb.size = Vector3(0.30, 0.16, 0.16)
+		head.mesh = hdb
+		head.material_override = iron
+		head.position = Vector3(0, 0.40, 0)
+		ham_root.add_child(head)
+		# Glowing iron bar lying on the anvil top (orange emissive)
+		var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bar_mat.albedo_color = Color(1.0, 0.45, 0.10)
+		bar_mat.emission_enabled = true
+		bar_mat.emission = Color(1.0, 0.55, 0.18)
+		bar_mat.emission_energy_multiplier = 2.5
+		bar_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.50, 0.05, 0.07)
+		bar.mesh = bm
+		bar.material_override = bar_mat
+		bar.position = Vector3(0, 1.30, 0.05)
+		anvil_root.add_child(bar)
+		var pulse: Tween = bar.create_tween().set_loops()
+		pulse.tween_property(bar_mat, "emission_energy_multiplier", 4.0, 0.9 + float(i) * 0.2)
+		pulse.tween_property(bar_mat, "emission_energy_multiplier", 1.5, 0.9 + float(i) * 0.2)
+		# Per-anvil collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bs: BoxShape3D = BoxShape3D.new()
+		bs.size = Vector3(0.85, 1.40, 0.55)
+		cs.shape = bs
+		sb.add_child(cs)
+		anvil_root.add_child(sb)
+
+
+func _build_d9_apprentice_smith_npc() -> void:
+	## Epic-9 T7: apprentice smith NPC working at the anvil row.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ApprenticeSmithSlot"
+	slot.position = Vector3(D9_CENTER.x - 14, 0, -7.4)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ApprenticeSmith"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Apprentice Cinder")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_apprentice_smith")
+	slot.add_child(npc)
+	# Sooty leather smock (dark brown body)
+	var smock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	smock_mat.albedo_color = Color(0.30, 0.20, 0.12)
+	smock_mat.roughness = 0.85
+	var smock: MeshInstance3D = MeshInstance3D.new()
+	var sb: BoxMesh = BoxMesh.new()
+	sb.size = Vector3(0.85, 1.10, 0.55)
+	smock.mesh = sb
+	smock.material_override = smock_mat
+	smock.position = Vector3(0, 1.10, 0)
+	npc.add_child(smock)
+	# Belt (lighter band)
+	var belt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	belt_mat.albedo_color = Color(0.18, 0.12, 0.06)
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(0.95, 0.10, 0.65)
+	belt.mesh = bb
+	belt.material_override = belt_mat
+	belt.position = Vector3(0, 0.85, 0)
+	npc.add_child(belt)
+	# Brass belt buckle
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	var buckle: MeshInstance3D = MeshInstance3D.new()
+	var bkb: BoxMesh = BoxMesh.new()
+	bkb.size = Vector3(0.16, 0.12, 0.04)
+	buckle.mesh = bkb
+	buckle.material_override = brass
+	buckle.position = Vector3(0, 0.85, 0.34)
+	npc.add_child(buckle)
+	# Small hammer in right hand
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.90
+	iron.roughness = 0.30
+	var hammer_root: Node3D = Node3D.new()
+	hammer_root.position = Vector3(0.55, 1.05, 0.20)
+	hammer_root.rotation_degrees = Vector3(0, 0, -45)
+	npc.add_child(hammer_root)
+	var haft: MeshInstance3D = MeshInstance3D.new()
+	var hfm: CylinderMesh = CylinderMesh.new()
+	hfm.top_radius = 0.04
+	hfm.bottom_radius = 0.05
+	hfm.height = 0.55
+	haft.mesh = hfm
+	haft.material_override = wood
+	haft.position = Vector3(0, 0, 0)
+	hammer_root.add_child(haft)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdb: BoxMesh = BoxMesh.new()
+	hdb.size = Vector3(0.22, 0.14, 0.14)
+	head.mesh = hdb
+	head.material_override = iron
+	head.position = Vector3(0, 0.30, 0)
+	hammer_root.add_child(head)
+	# Hammer swing tween
+	var swing: Tween = hammer_root.create_tween().set_loops()
+	swing.tween_property(hammer_root, "rotation_degrees:z", -100.0, 0.4)
+	swing.tween_property(hammer_root, "rotation_degrees:z", -45.0, 0.4)
+	# Soot smudge cap (small cap)
+	var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.20, 0.15, 0.10)
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var ccm: CylinderMesh = CylinderMesh.new()
+	ccm.top_radius = 0.30
+	ccm.bottom_radius = 0.32
+	ccm.height = 0.16
+	cap.mesh = ccm
+	cap.material_override = cap_mat
+	cap.position = Vector3(0, 1.95, 0)
+	npc.add_child(cap)
+
+
+func _build_d9_quench_barrels(geom: Node) -> void:
+	## Epic-9 T8: 3 wooden water-filled quench barrels with rising steam.
+	var row: Node3D = Node3D.new()
+	row.name = "D9QuenchBarrels"
+	row.position = Vector3(D9_CENTER.x - 8, 0, -3)
+	geom.add_child(row)
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.28, 0.15)
+	wood.roughness = 0.85
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.20, 0.18, 0.18)
+	iron.metallic = 0.7
+	iron.roughness = 0.45
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.20, 0.45, 0.55, 0.85)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.metallic = 0.4
+	water_mat.roughness = 0.20
+	for i in range(3):
+		var barrel: Node3D = Node3D.new()
+		barrel.position = Vector3(i * 1.4, 0, 0)
+		row.add_child(barrel)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.50
+		bm.bottom_radius = 0.55
+		bm.height = 1.20
+		body.mesh = bm
+		body.material_override = wood
+		body.position = Vector3(0, 0.60, 0)
+		barrel.add_child(body)
+		# Iron bands
+		for sy in [0.20, 0.60, 1.00]:
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var tm: TorusMesh = TorusMesh.new()
+			tm.inner_radius = 0.50
+			tm.outer_radius = 0.56
+			band.mesh = tm
+			band.material_override = iron
+			band.position = Vector3(0, sy, 0)
+			barrel.add_child(band)
+		# Water surface (cylinder disc inside top)
+		var water: MeshInstance3D = MeshInstance3D.new()
+		var wcm: CylinderMesh = CylinderMesh.new()
+		wcm.top_radius = 0.46
+		wcm.bottom_radius = 0.46
+		wcm.height = 0.04
+		water.mesh = wcm
+		water.material_override = water_mat
+		water.position = Vector3(0, 1.14, 0)
+		barrel.add_child(water)
+		# Steam GPU particles
+		var steam: GPUParticles3D = GPUParticles3D.new()
+		steam.position = Vector3(0, 1.20, 0)
+		steam.amount = 30
+		steam.lifetime = 2.8
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+		pm.emission_ring_radius = 0.40
+		pm.emission_ring_inner_radius = 0.0
+		pm.emission_ring_height = 0.05
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 18.0
+		pm.initial_velocity_min = 0.45
+		pm.initial_velocity_max = 0.85
+		pm.gravity = Vector3(0, 0.30, 0)
+		pm.scale_min = 0.20
+		pm.scale_max = 0.45
+		pm.color = Color(0.85, 0.92, 0.95, 0.55)
+		steam.process_material = pm
+		var steam_mesh: SphereMesh = SphereMesh.new()
+		steam_mesh.radius = 0.18
+		steam_mesh.height = 0.36
+		steam.draw_pass_1 = steam_mesh
+		barrel.add_child(steam)
+		# Per-barrel collision
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(0, 0.60, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.55
+		cyl.height = 1.20
+		cs.shape = cyl
+		stb.add_child(cs)
+		barrel.add_child(stb)
+
+
+func _build_d9_coal_piles(geom: Node) -> void:
+	## Epic-9 T9: 4 piles of coal nuggets at the corners of the smithing area.
+	var piles: Node3D = Node3D.new()
+	piles.name = "D9CoalPiles"
+	piles.position = Vector3(D9_CENTER.x, 0, 0)
+	geom.add_child(piles)
+	var coal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coal_mat.albedo_color = Color(0.06, 0.05, 0.06)
+	coal_mat.metallic = 0.30
+	coal_mat.roughness = 0.55
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(0.85, 0.30, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.45, 0.12)
+	ember_mat.emission_energy_multiplier = 1.5
+	var spots: Array[Vector3] = [
+		Vector3(-12, 0, 8),
+		Vector3(12, 0, 8),
+		Vector3(-12, 0, -10),
+		Vector3(12, 0, -10),
+	]
+	for spot in spots:
+		var pile: Node3D = Node3D.new()
+		pile.position = spot
+		piles.add_child(pile)
+		# 7 coal nuggets stacked
+		for j in range(7):
+			var lump: MeshInstance3D = MeshInstance3D.new()
+			var sm: SphereMesh = SphereMesh.new()
+			sm.radius = 0.20 + randf() * 0.10
+			sm.height = 0.40 + randf() * 0.18
+			lump.mesh = sm
+			lump.material_override = coal_mat
+			lump.position = Vector3(
+				-0.35 + randf() * 0.7,
+				0.18 + float(j) * 0.18,
+				-0.35 + randf() * 0.7
+			)
+			pile.add_child(lump)
+		# 2 glowing embers nestled in the top
+		for k in range(2):
+			var ember: MeshInstance3D = MeshInstance3D.new()
+			var esm: SphereMesh = SphereMesh.new()
+			esm.radius = 0.10
+			esm.height = 0.20
+			ember.mesh = esm
+			ember.material_override = ember_mat
+			ember.position = Vector3(-0.15 + float(k) * 0.30, 1.40, 0)
+			pile.add_child(ember)
+		# Pile collision
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(0, 0.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.85
+		cyl.height = 1.30
+		cs.shape = cyl
+		stb.add_child(cs)
+		pile.add_child(stb)
+
+
+func _build_d9_giant_bellows(geom: Node) -> void:
+	## Epic-9 T10: pair of giant leather bellows with wooden frames pumping
+	## air into the great forge — wide leather body with iron bands and a
+	## subtle compress/expand tween.
+	var bellows: Node3D = Node3D.new()
+	bellows.name = "D9GiantBellows"
+	bellows.position = Vector3(D9_CENTER.x + 12, 0, -6)
+	geom.add_child(bellows)
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.42, 0.22, 0.10)
+	leather_mat.roughness = 0.85
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	wood_mat.roughness = 0.85
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.18, 0.18)
+	iron_mat.metallic = 0.8
+	iron_mat.roughness = 0.40
+	for sx in [-2.5, 2.5]:
+		var unit: Node3D = Node3D.new()
+		unit.position = Vector3(sx, 0, 0)
+		bellows.add_child(unit)
+		# Wooden top board
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tb: BoxMesh = BoxMesh.new()
+		tb.size = Vector3(1.85, 0.12, 1.20)
+		top.mesh = tb
+		top.material_override = wood_mat
+		top.position = Vector3(0, 1.85, 0)
+		unit.add_child(top)
+		# Wooden bottom board
+		var bot: MeshInstance3D = MeshInstance3D.new()
+		var bb: BoxMesh = BoxMesh.new()
+		bb.size = Vector3(1.85, 0.12, 1.20)
+		bot.mesh = bb
+		bot.material_override = wood_mat
+		bot.position = Vector3(0, 0.55, 0)
+		unit.add_child(bot)
+		# Leather body (thick prism between top and bottom)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bdb: BoxMesh = BoxMesh.new()
+		bdb.size = Vector3(1.65, 1.18, 1.05)
+		body.mesh = bdb
+		body.material_override = leather_mat
+		body.position = Vector3(0, 1.20, 0)
+		unit.add_child(body)
+		# Iron straps (3 horizontal bands across the leather body)
+		for sy in [0.85, 1.20, 1.55]:
+			var strap: MeshInstance3D = MeshInstance3D.new()
+			var sbm: BoxMesh = BoxMesh.new()
+			sbm.size = Vector3(1.70, 0.08, 1.10)
+			strap.mesh = sbm
+			strap.material_override = iron_mat
+			strap.position = Vector3(0, sy, 0)
+			unit.add_child(strap)
+		# Nozzle pointing toward the forge heart (cylindrical pipe out the back)
+		var nozzle: MeshInstance3D = MeshInstance3D.new()
+		var ncm: CylinderMesh = CylinderMesh.new()
+		ncm.top_radius = 0.16
+		ncm.bottom_radius = 0.20
+		ncm.height = 1.40
+		nozzle.mesh = ncm
+		nozzle.material_override = iron_mat
+		nozzle.position = Vector3(-0.85 if sx < 0 else 0.85, 1.20, 0)
+		nozzle.rotation_degrees = Vector3(0, 0, 90)
+		unit.add_child(nozzle)
+		# Long handle on top
+		var handle: MeshInstance3D = MeshInstance3D.new()
+		var hcm: CylinderMesh = CylinderMesh.new()
+		hcm.top_radius = 0.06
+		hcm.bottom_radius = 0.06
+		hcm.height = 2.00
+		handle.mesh = hcm
+		handle.material_override = wood_mat
+		handle.position = Vector3(0.90 if sx < 0 else -0.90, 2.10, 0)
+		handle.rotation_degrees = Vector3(0, 0, 75)
+		unit.add_child(handle)
+		# Compress tween — body scales y between 0.85 and 1.0
+		var tw: Tween = body.create_tween().set_loops()
+		var phase: float = 0.0 if sx < 0 else 0.6
+		tw.tween_property(body, "scale:y", 0.78, 1.4 + phase)
+		tw.tween_property(body, "scale:y", 1.0, 1.4 + phase)
+		# Per-bellows collision
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(0, 1.20, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bs: BoxShape3D = BoxShape3D.new()
+		bs.size = Vector3(1.85, 1.85, 1.20)
+		cs.shape = bs
+		stb.add_child(cs)
+		unit.add_child(stb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
