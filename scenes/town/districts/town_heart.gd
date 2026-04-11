@@ -50,6 +50,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_west_entry_arch(geom)
 	_build_th_food_cart(geom)
 	_build_th_food_cart_chef_npc(town)
+	_build_th_busker_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -6096,3 +6097,178 @@ func _build_th_food_cart_chef_npc(town: Node) -> void:
 	var dpulse: Tween = npc.create_tween().set_loops()
 	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_busker_npc(town: Node) -> void:
+	## Epic-10 T34: Busker Lyra — street musician NPC standing near the
+	## east bench area strumming a glowing data lyre. Long teal robe with
+	## brass collar trim, brass headband with feather plume, lyre held in
+	## both hands at chest height with strumming finger pivot. Floating
+	## music note holos drifting up from the lyre.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THBuskerLyraSlot"
+	# Stand near the east bench area at radius 11.5, between the E and SE benches
+	var ang: float = -PI / 8.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 11.50, 0, sin(ang) * 11.50)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THBuskerLyra"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Busker Lyra")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_busker_lyra")
+	# Face inward toward the beacon
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.18, 0.55, 0.55)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.18
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.85, 0.85)
+	robe_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Long teal robe ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.65, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.85, 0)
+	npc.add_child(robe)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.65, 0)
+	npc.add_child(collar)
+	# ---- Brass headband ----
+	var headband: MeshInstance3D = MeshInstance3D.new()
+	var hbm: TorusMesh = TorusMesh.new()
+	hbm.inner_radius = 0.30
+	hbm.outer_radius = 0.36
+	headband.mesh = hbm
+	headband.material_override = brass_mat
+	headband.position = Vector3(0, 1.95, 0)
+	headband.rotation.x = PI / 2.0
+	npc.add_child(headband)
+	# Feather plume on the side of the headband
+	var feather: MeshInstance3D = MeshInstance3D.new()
+	var fmm: PrismMesh = PrismMesh.new()
+	fmm.size = Vector3(0.10, 0.55, 0.06)
+	feather.mesh = fmm
+	feather.material_override = data_mat
+	feather.position = Vector3(0.30, 2.30, -0.10)
+	feather.rotation.z = -0.40
+	npc.add_child(feather)
+	# ---- Lyre held in both hands at chest height ----
+	# Lyre frame (small brass U-shape: bottom bar + 2 vertical posts)
+	var lyre_pivot: Node3D = Node3D.new()
+	lyre_pivot.position = Vector3(0, 1.10, -0.45)
+	npc.add_child(lyre_pivot)
+	# Lyre bottom bar
+	var bottom_bar: MeshInstance3D = MeshInstance3D.new()
+	var bbm: BoxMesh = BoxMesh.new()
+	bbm.size = Vector3(0.55, 0.12, 0.10)
+	bottom_bar.mesh = bbm
+	bottom_bar.material_override = brass_mat
+	bottom_bar.position = Vector3(0, 0, 0)
+	lyre_pivot.add_child(bottom_bar)
+	# 2 vertical posts (small angled prisms forming a U/V)
+	for px in [-0.25, 0.25]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.06, 0.55, 0.08)
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = Vector3(px * 1.10, 0.30, 0)
+		post.rotation.z = -px * 0.40
+		lyre_pivot.add_child(post)
+	# Top crossbar connecting the posts
+	var top_bar: MeshInstance3D = MeshInstance3D.new()
+	var tbm: BoxMesh = BoxMesh.new()
+	tbm.size = Vector3(0.65, 0.08, 0.10)
+	top_bar.mesh = tbm
+	top_bar.material_override = brass_mat
+	top_bar.position = Vector3(0, 0.65, 0)
+	lyre_pivot.add_child(top_bar)
+	# 5 glowing data string lines (small thin boxes vertically between bars)
+	for i in 5:
+		var sx: float = -0.20 + float(i) * 0.10
+		var string: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.02, 0.55, 0.02)
+		string.mesh = sm
+		string.material_override = data_mat
+		string.position = Vector3(sx, 0.32, -0.04)
+		lyre_pivot.add_child(string)
+	# ---- Strumming finger pivot — small brass box on rotation pivot ----
+	var strum_pivot: Node3D = Node3D.new()
+	strum_pivot.position = Vector3(0.50, 1.30, -0.35)
+	npc.add_child(strum_pivot)
+	var finger: MeshInstance3D = MeshInstance3D.new()
+	var fnm: BoxMesh = BoxMesh.new()
+	fnm.size = Vector3(0.10, 0.20, 0.10)
+	finger.mesh = fnm
+	finger.material_override = brass_mat
+	finger.position = Vector3(0, -0.18, 0)
+	strum_pivot.add_child(finger)
+	# ---- Floating music note holos drifting up from the lyre ----
+	var notes: GPUParticles3D = GPUParticles3D.new()
+	notes.position = Vector3(0, 1.55, -0.50)
+	notes.amount = 12
+	notes.lifetime = 2.6
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 14.0
+	pmat.initial_velocity_min = 0.4
+	pmat.initial_velocity_max = 0.9
+	pmat.gravity = Vector3(0, 0.10, 0)
+	pmat.scale_min = 0.06
+	pmat.scale_max = 0.12
+	pmat.color = Color(0.45, 0.85, 1.0, 1.0)
+	notes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.05
+	psmesh.height = 0.10
+	notes.draw_pass_1 = psmesh
+	npc.add_child(notes)
+	# ---- Subtle warm cyan OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.30, -0.30)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Strumming tween — finger sweeps up-and-down rapidly ----
+	var strum: Tween = npc.create_tween().set_loops()
+	strum.tween_property(strum_pivot, "rotation:x", -0.30, 0.20).set_ease(Tween.EASE_IN_OUT)
+	strum.tween_property(strum_pivot, "rotation:x", 0.30, 0.20).set_ease(Tween.EASE_IN_OUT)
+	strum.tween_property(strum_pivot, "rotation:x", -0.30, 0.20).set_ease(Tween.EASE_IN_OUT)
+	strum.tween_property(strum_pivot, "rotation:x", 0.30, 0.20).set_ease(Tween.EASE_IN_OUT)
+	strum.tween_property(strum_pivot, "rotation:x", 0.0, 0.30)
+	# String + feather + note pulse (shared data material)
+	var dpulse: Tween = npc.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
