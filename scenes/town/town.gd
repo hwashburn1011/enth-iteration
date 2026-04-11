@@ -2025,6 +2025,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_songbird_flock(geom)
 	# Epic-4 T90: blossom heart shrine
 	_build_d4_blossom_shrine(geom)
+	# Epic-4 T91: blossom drake — small flying spirit creature
+	_build_d4_blossom_drake(geom)
+	# Epic-4 T92: living flower clock with rotating petals
+	_build_d4_flower_clock(geom)
+	# Epic-4 T93: lovers bench under a small arch
+	_build_d4_lovers_bench(geom)
+	# Epic-4 T94: apprentice gardener NPC
+	_build_d4_apprentice_gardener_npc()
+	# Epic-4 T95: sunflower field
+	_build_d4_sunflower_field(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -7847,6 +7857,453 @@ func _build_d4_blossom_shrine(geom: Node) -> void:
 	cs.position = Vector3(0, 0.25, 0)
 	sb.add_child(cs)
 	shrine.add_child(sb)
+
+
+func _build_d4_blossom_drake(geom: Node) -> void:
+	## Epic-4 T91: small floating dragon spirit guarding the bloom — pink
+	## body, butterfly wings, long tail, gentle hover circling pattern.
+	var drake: Node3D = Node3D.new()
+	drake.name = "BlossomDrake"
+	drake.position = Vector3(D4_CENTER.x, 5.0, 0.0)
+	geom.add_child(drake)
+	# Pivot for circling
+	var pivot: Node3D = Node3D.new()
+	drake.add_child(pivot)
+	var body_root: Node3D = Node3D.new()
+	body_root.position = Vector3(7.0, 0, 0)
+	pivot.add_child(body_root)
+	# Body — pink elongated sphere
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.95, 0.55, 0.75)
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.95, 0.40, 0.65)
+	body_mat.emission_energy_multiplier = 0.45
+	body_mat.metallic = 0.20
+	body_mat.roughness = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.32
+	bm.height = 0.55
+	body.mesh = bm
+	body.material_override = body_mat
+	body.scale = Vector3(1.0, 0.85, 1.55)
+	body_root.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.20
+	hm.height = 0.34
+	head.mesh = hm
+	head.material_override = body_mat
+	head.position = Vector3(0, 0.10, 0.55)
+	body_root.add_child(head)
+	# Eyes (cyan)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.30, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 1.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.08, 0.08]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.04
+		em.height = 0.08
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 0.16, 0.71)
+		body_root.add_child(eye)
+	# 4 butterfly wings (large flat boxes)
+	var wing_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wing_mat.albedo_color = Color(0.95, 0.65, 0.85, 0.85)
+	wing_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wing_mat.emission_enabled = true
+	wing_mat.emission = Color(0.95, 0.40, 0.75)
+	wing_mat.emission_energy_multiplier = 0.85
+	for sx in [-1, 1]:
+		for sz in [-1, 1]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.50, 0.04, 0.35)
+			wing.mesh = wm
+			wing.material_override = wing_mat
+			wing.position = Vector3(sx * 0.32, 0.18, sz * 0.10)
+			body_root.add_child(wing)
+			# Wing flap
+			var twf: Tween = wing.create_tween().set_loops()
+			twf.tween_property(wing, "rotation_degrees:z", 35.0 * sx, 0.18)
+			twf.tween_property(wing, "rotation_degrees:z", -10.0 * sx, 0.18)
+	# Tail (3 segments)
+	for i in 3:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm2: SphereMesh = SphereMesh.new()
+		sm2.radius = 0.10 - i * 0.02
+		sm2.height = 0.20 - i * 0.04
+		seg.mesh = sm2
+		seg.material_override = body_mat
+		seg.position = Vector3(0, -0.05 + i * 0.04, -0.55 - i * 0.22)
+		body_root.add_child(seg)
+	# Pivot rotation tween
+	var trot: Tween = pivot.create_tween().set_loops()
+	trot.tween_property(pivot, "rotation_degrees:y", 360.0, 14.0)
+	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Body bob
+	var tb: Tween = body_root.create_tween().set_loops()
+	tb.tween_property(body_root, "position:y", 0.6, 1.6)
+	tb.tween_property(body_root, "position:y", 0.0, 1.6)
+
+
+func _build_d4_flower_clock(geom: Node) -> void:
+	## Epic-4 T92: living flower clock — round flowerbed face with 12 petal
+	## "hour markers" and a single rotating golden hour-hand petal.
+	var clock: Node3D = Node3D.new()
+	clock.name = "FlowerClock"
+	clock.position = Vector3(D4_CENTER.x + 0.0, 0.0, 12.0)
+	geom.add_child(clock)
+	# Base disc (dirt + grass ring)
+	var dirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dirt_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	dirt_mat.roughness = 0.95
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 2.20
+	dm.bottom_radius = 2.20
+	dm.height = 0.10
+	disc.mesh = dm
+	disc.material_override = dirt_mat
+	disc.position = Vector3(0, 0.05, 0)
+	clock.add_child(disc)
+	# Grass ring border
+	var grass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	grass_mat.albedo_color = Color(0.30, 0.65, 0.25)
+	grass_mat.emission_enabled = true
+	grass_mat.emission = Color(0.20, 0.55, 0.15)
+	grass_mat.emission_energy_multiplier = 0.18
+	grass_mat.roughness = 0.85
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 2.10
+	rm.outer_radius = 2.30
+	ring.mesh = rm
+	ring.material_override = grass_mat
+	ring.position = Vector3(0, 0.10, 0)
+	clock.add_child(ring)
+	# 12 petal hour markers
+	var petal_colors: Array = [
+		Color(0.95, 0.30, 0.40),
+		Color(0.95, 0.65, 0.30),
+		Color(0.95, 0.85, 0.30),
+		Color(0.30, 0.85, 0.40),
+	]
+	for i in 12:
+		var ang: float = (TAU / 12.0) * i - PI * 0.5
+		var petal: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.18
+		pm.height = 0.30
+		petal.mesh = pm
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = petal_colors[i % petal_colors.size()]
+		pmat.emission_enabled = true
+		pmat.emission = petal_colors[i % petal_colors.size()]
+		pmat.emission_energy_multiplier = 0.45
+		pmat.roughness = 0.55
+		petal.material_override = pmat
+		petal.position = Vector3(cos(ang) * 1.80, 0.20, sin(ang) * 1.80)
+		clock.add_child(petal)
+	# Hour-hand petal (golden, larger)
+	var hand: Node3D = Node3D.new()
+	hand.position = Vector3(0, 0.25, 0)
+	clock.add_child(hand)
+	var hand_petal: MeshInstance3D = MeshInstance3D.new()
+	var hpm: PrismMesh = PrismMesh.new()
+	hpm.size = Vector3(0.35, 0.10, 1.50)
+	hand_petal.mesh = hpm
+	var hand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hand_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	hand_mat.emission_enabled = true
+	hand_mat.emission = Color(0.95, 0.75, 0.15)
+	hand_mat.emission_energy_multiplier = 0.85
+	hand_mat.metallic = 0.55
+	hand_mat.roughness = 0.30
+	hand_petal.material_override = hand_mat
+	hand_petal.position = Vector3(0, 0.05, 0.75)
+	hand.add_child(hand_petal)
+	# Slow rotation tween (one full rotation per minute)
+	var tw: Tween = hand.create_tween().set_loops()
+	tw.tween_property(hand, "rotation_degrees:y", 360.0, 60.0)
+	tw.tween_property(hand, "rotation_degrees:y", 0.0, 0.0)
+	# Center sphere (axis)
+	var center: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.22
+	cm.height = 0.40
+	center.mesh = cm
+	center.material_override = hand_mat
+	center.position = Vector3(0, 0.30, 0)
+	clock.add_child(center)
+
+
+func _build_d4_lovers_bench(geom: Node) -> void:
+	## Epic-4 T93: ornate stone bench under a small flowering arch — perfect
+	## for the apprentice + courier scene later.
+	var bench: Node3D = Node3D.new()
+	bench.name = "LoversBench"
+	bench.position = Vector3(D4_CENTER.x + 6.0, 0.0, -12.0)
+	geom.add_child(bench)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.70, 0.65, 0.55)
+	stone_mat.roughness = 0.92
+	# Bench seat
+	var seat: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(2.20, 0.18, 0.55)
+	seat.mesh = sm
+	seat.material_override = stone_mat
+	seat.position = Vector3(0, 0.55, 0)
+	bench.add_child(seat)
+	# 2 legs
+	for sx in [-0.85, 0.85]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.30, 0.55, 0.45)
+		leg.mesh = lm
+		leg.material_override = stone_mat
+		leg.position = Vector3(sx, 0.27, 0)
+		bench.add_child(leg)
+	# Backrest with carved heart cutout (use a small heart of red emissive at center)
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bbm: BoxMesh = BoxMesh.new()
+	bbm.size = Vector3(2.20, 0.85, 0.10)
+	back.mesh = bbm
+	back.material_override = stone_mat
+	back.position = Vector3(0, 1.05, -0.25)
+	bench.add_child(back)
+	# Heart symbol (2 spheres + prism, glowing red)
+	var heart_mat: StandardMaterial3D = StandardMaterial3D.new()
+	heart_mat.albedo_color = Color(0.95, 0.30, 0.40)
+	heart_mat.emission_enabled = true
+	heart_mat.emission = Color(0.95, 0.20, 0.40)
+	heart_mat.emission_energy_multiplier = 1.6
+	for sx in [-0.10, 0.10]:
+		var lobe: MeshInstance3D = MeshInstance3D.new()
+		var lm2: SphereMesh = SphereMesh.new()
+		lm2.radius = 0.10
+		lm2.height = 0.18
+		lobe.mesh = lm2
+		lobe.material_override = heart_mat
+		lobe.position = Vector3(sx, 1.18, -0.18)
+		bench.add_child(lobe)
+	var pt: MeshInstance3D = MeshInstance3D.new()
+	var ptm: PrismMesh = PrismMesh.new()
+	ptm.size = Vector3(0.20, 0.16, 0.10)
+	pt.mesh = ptm
+	pt.material_override = heart_mat
+	pt.position = Vector3(0, 1.05, -0.18)
+	pt.rotation_degrees = Vector3(180, 0, 0)
+	bench.add_child(pt)
+	# Small flowering arch behind bench (2 thin pillars + curved blossom top)
+	var pillar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pillar_mat.albedo_color = Color(0.60, 0.55, 0.45)
+	pillar_mat.roughness = 0.90
+	for sx in [-1.20, 1.20]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.08
+		pm.bottom_radius = 0.10
+		pm.height = 2.20
+		pillar.mesh = pm
+		pillar.material_override = pillar_mat
+		pillar.position = Vector3(sx, 1.10, -0.45)
+		bench.add_child(pillar)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: TorusMesh = TorusMesh.new()
+	tm.inner_radius = 1.10
+	tm.outer_radius = 1.30
+	top.mesh = tm
+	top.material_override = pillar_mat
+	top.position = Vector3(0, 2.20, -0.45)
+	top.rotation_degrees = Vector3(90, 0, 0)
+	top.scale = Vector3(1.0, 1.0, 0.40)
+	bench.add_child(top)
+	# Pink blossoms on the arch
+	var blossom_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blossom_mat.albedo_color = Color(0.95, 0.55, 0.75)
+	blossom_mat.emission_enabled = true
+	blossom_mat.emission = Color(0.95, 0.40, 0.65)
+	blossom_mat.emission_energy_multiplier = 0.45
+	for i in 9:
+		var ang: float = lerp(PI, 0.0, float(i) / 8.0)
+		var blossom: MeshInstance3D = MeshInstance3D.new()
+		var bm2: SphereMesh = SphereMesh.new()
+		bm2.radius = 0.14
+		bm2.height = 0.24
+		blossom.mesh = bm2
+		blossom.material_override = blossom_mat
+		blossom.position = Vector3(cos(ang) * 1.20, 2.20 + sin(ang) * 1.20, -0.45)
+		bench.add_child(blossom)
+	# Bench collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.50, 0.55)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.75, 0)
+	sb.add_child(cs)
+	bench.add_child(sb)
+
+
+func _build_d4_apprentice_gardener_npc() -> void:
+	## Epic-4 T94: small apprentice gardener NPC with watering can.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ApprenticeGardenerSlot"
+	slot.position = Vector3(D4_CENTER.x + 5.5, 0.0, -12.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ApprenticeGardener"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sapling")
+	if "npc_id" in npc:
+		npc.set("npc_id", "apprentice_d4")
+	npc.scale = Vector3(0.80, 0.80, 0.80)
+	slot.add_child(npc)
+	# Watering can — body (cylinder) + spout (small cylinder)
+	var can_mat: StandardMaterial3D = StandardMaterial3D.new()
+	can_mat.albedo_color = Color(0.55, 0.60, 0.30)
+	can_mat.metallic = 0.50
+	can_mat.roughness = 0.45
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.18
+	bm.bottom_radius = 0.20
+	bm.height = 0.34
+	body.mesh = bm
+	body.material_override = can_mat
+	body.position = Vector3(0.45, 0.55, 0.10)
+	slot.add_child(body)
+	var spout: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.04
+	sm.bottom_radius = 0.06
+	sm.height = 0.40
+	spout.mesh = sm
+	spout.material_override = can_mat
+	spout.position = Vector3(0.70, 0.65, 0.10)
+	spout.rotation_degrees = Vector3(0, 0, -50)
+	slot.add_child(spout)
+	# Sapling (small green plant on head — tiny stem + 3 leaves)
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.30, 0.65, 0.25)
+	stem_mat.roughness = 0.80
+	var stem: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.025
+	stm.bottom_radius = 0.025
+	stm.height = 0.20
+	stem.mesh = stm
+	stem.material_override = stem_mat
+	stem.position = Vector3(0, 1.50, 0)
+	slot.add_child(stem)
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var leaf: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.08
+		lm.height = 0.10
+		leaf.mesh = lm
+		leaf.material_override = stem_mat
+		leaf.position = Vector3(cos(ang) * 0.10, 1.65, sin(ang) * 0.10)
+		leaf.scale = Vector3(1.5, 0.4, 0.7)
+		slot.add_child(leaf)
+
+
+func _build_d4_sunflower_field(geom: Node) -> void:
+	## Epic-4 T95: large sunflower field — 6×4 sunflowers with thick green
+	## stems, large yellow petal heads, dark centers, and a slight sway.
+	var field: Node3D = Node3D.new()
+	field.name = "SunflowerField"
+	field.position = Vector3(D4_CENTER.x - 12.0, 0.0, -16.0)
+	geom.add_child(field)
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.30, 0.55, 0.20)
+	stem_mat.roughness = 0.85
+	var petal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	petal_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	petal_mat.emission_enabled = true
+	petal_mat.emission = Color(0.95, 0.75, 0.15)
+	petal_mat.emission_energy_multiplier = 0.40
+	petal_mat.roughness = 0.55
+	var center_mat: StandardMaterial3D = StandardMaterial3D.new()
+	center_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	center_mat.roughness = 0.85
+	for r in 4:
+		for c in 6:
+			var stalk: Node3D = Node3D.new()
+			stalk.position = Vector3(c * 1.40, 0, r * 1.40)
+			field.add_child(stalk)
+			# Stem
+			var stem: MeshInstance3D = MeshInstance3D.new()
+			var stm: CylinderMesh = CylinderMesh.new()
+			stm.top_radius = 0.05
+			stm.bottom_radius = 0.07
+			stm.height = 1.95
+			stem.mesh = stm
+			stem.material_override = stem_mat
+			stem.position = Vector3(0, 0.97, 0)
+			stalk.add_child(stem)
+			# 2 leaves on the stem
+			for ly in [0.85, 1.30]:
+				var leaf: MeshInstance3D = MeshInstance3D.new()
+				var lm: SphereMesh = SphereMesh.new()
+				lm.radius = 0.20
+				lm.height = 0.14
+				leaf.mesh = lm
+				leaf.material_override = stem_mat
+				leaf.position = Vector3(0.18, ly, 0)
+				leaf.scale = Vector3(1.4, 0.35, 0.85)
+				stalk.add_child(leaf)
+			# Dark center disk
+			var center: MeshInstance3D = MeshInstance3D.new()
+			var cmm: CylinderMesh = CylinderMesh.new()
+			cmm.top_radius = 0.22
+			cmm.bottom_radius = 0.22
+			cmm.height = 0.08
+			center.mesh = cmm
+			center.material_override = center_mat
+			center.position = Vector3(0, 1.97, 0)
+			center.rotation_degrees = Vector3(15, 0, 0)
+			stalk.add_child(center)
+			# 8 petals around center
+			for i in 8:
+				var ang: float = (TAU / 8.0) * i
+				var petal: MeshInstance3D = MeshInstance3D.new()
+				var pmm: PrismMesh = PrismMesh.new()
+				pmm.size = Vector3(0.16, 0.06, 0.30)
+				petal.mesh = pmm
+				petal.material_override = petal_mat
+				petal.position = Vector3(cos(ang) * 0.32, 1.97, sin(ang) * 0.32)
+				petal.rotation = Vector3(0, ang + PI * 0.5, deg_to_rad(15))
+				stalk.add_child(petal)
+			# Slight sway tween
+			var tw: Tween = stalk.create_tween().set_loops()
+			tw.tween_property(stalk, "rotation_degrees:z", 3.0, 1.6 + randf() * 0.6)
+			tw.tween_property(stalk, "rotation_degrees:z", -3.0, 1.6 + randf() * 0.6)
+			# Stem collision
+			var sb: StaticBody3D = StaticBody3D.new()
+			sb.position = Vector3(0, 0.97, 0)
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.08
+			cap.height = 1.95
+			cs.shape = cap
+			sb.add_child(cs)
+			stalk.add_child(sb)
 
 
 
