@@ -92,6 +92,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_champion_herald_npc(town)
 	_build_th_sky_ceremonial_banners(geom)
 	_build_th_sky_aurora_ribbon(geom)
+	_build_th_plaza_visitor_trio(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -13990,3 +13991,275 @@ func _build_th_sky_aurora_ribbon(geom: Node) -> void:
 	lt.light_energy = 1.40
 	lt.omni_range = 12.0
 	pivot.add_child(lt)
+
+
+func _build_th_plaza_visitor_trio(town: Node) -> void:
+	## Epic-10 T76: Plaza Visitor Trio — 3 stationary visitor NPCs scattered
+	## around the central fountain area to add social density. A cyan-cloaked
+	## traveler, an amber-robed scholar, and a violet-robed pilgrim. Each
+	## with a different idle animation (head-bow, hand-tilt, breathing sway).
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	# 3 visitors at slightly different angles around the fountain at radius 5.5
+	var visitors: Array = [
+		{
+			"name": "Traveler Wisp",
+			"id": "th_visitor_traveler",
+			"angle": PI * 0.65,
+			"radius": 5.0,
+			"color": Color(0.30, 0.65, 0.95),  # cyan
+			"trim_color": Color(0.55, 0.95, 1.0),
+			"theme": "traveler",
+		},
+		{
+			"name": "Scholar Sable",
+			"id": "th_visitor_scholar",
+			"angle": -PI * 0.85,
+			"radius": 5.4,
+			"color": Color(0.85, 0.55, 0.18),  # amber
+			"trim_color": Color(1.0, 0.65, 0.20),
+			"theme": "scholar",
+		},
+		{
+			"name": "Pilgrim Vesper",
+			"id": "th_visitor_pilgrim",
+			"angle": PI * 0.10,
+			"radius": 5.6,
+			"color": Color(0.55, 0.30, 0.85),  # violet
+			"trim_color": Color(0.75, 0.45, 1.0),
+			"theme": "pilgrim",
+		},
+	]
+	for v in visitors:
+		var npc: Node = npc_scene.instantiate()
+		npc.name = "Visitor_" + str(v["id"])
+		var px: float = cos(v["angle"]) * v["radius"]
+		var pz: float = sin(v["angle"]) * v["radius"]
+		if npc is Node3D:
+			(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+			# Face the central fountain (toward town center)
+			(npc as Node3D).rotation.y = atan2(-px, -pz)
+		if "npc_name" in npc:
+			npc.set("npc_name", v["name"])
+		if "npc_id" in npc:
+			npc.set("npc_id", v["id"])
+		town.add_child(npc)
+		# ---- Cosmetic overlay ----
+		var ovl: Node3D = Node3D.new()
+		ovl.name = "VisitorOverlay"
+		if npc is Node3D:
+			(npc as Node3D).add_child(ovl)
+		# Materials
+		var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+		robe_mat.albedo_color = v["color"]
+		robe_mat.metallic = 0.10
+		robe_mat.roughness = 0.85
+		robe_mat.emission_enabled = true
+		robe_mat.emission = v["trim_color"] * 0.6
+		robe_mat.emission_energy_multiplier = 0.30
+		var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+		trim_mat.albedo_color = v["trim_color"]
+		trim_mat.metallic = 0.30
+		trim_mat.roughness = 0.45
+		trim_mat.emission_enabled = true
+		trim_mat.emission = v["trim_color"]
+		trim_mat.emission_energy_multiplier = 1.40
+		var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+		brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+		brass_mat.metallic = 0.95
+		brass_mat.roughness = 0.30
+		brass_mat.emission_enabled = true
+		brass_mat.emission = Color(1.0, 0.55, 0.12)
+		brass_mat.emission_energy_multiplier = 0.55
+		var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skin_mat.albedo_color = Color(0.85, 0.78, 0.65)
+		skin_mat.roughness = 0.85
+		var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+		glow_mat.albedo_color = v["trim_color"]
+		glow_mat.emission_enabled = true
+		glow_mat.emission = v["trim_color"]
+		glow_mat.emission_energy_multiplier = 5.0
+		glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		# Robe body
+		var robe: MeshInstance3D = MeshInstance3D.new()
+		var rmm: BoxMesh = BoxMesh.new()
+		rmm.size = Vector3(0.92, 1.85, 0.55)
+		robe.mesh = rmm
+		robe.material_override = robe_mat
+		robe.position = Vector3(0, 1.00, 0)
+		ovl.add_child(robe)
+		# Hem flare
+		var hem: MeshInstance3D = MeshInstance3D.new()
+		var hmm: CylinderMesh = CylinderMesh.new()
+		hmm.top_radius = 0.45
+		hmm.bottom_radius = 0.62
+		hmm.height = 0.55
+		hem.mesh = hmm
+		hem.material_override = robe_mat
+		hem.position = Vector3(0, 0.30, 0)
+		ovl.add_child(hem)
+		# Trim chest band
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmm: BoxMesh = BoxMesh.new()
+		tmm.size = Vector3(0.95, 0.06, 0.58)
+		trim.mesh = tmm
+		trim.material_override = trim_mat
+		trim.position = Vector3(0, 1.42, 0)
+		ovl.add_child(trim)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hdm: SphereMesh = SphereMesh.new()
+		hdm.radius = 0.20
+		hdm.height = 0.42
+		head.mesh = hdm
+		head.material_override = skin_mat
+		head.position = Vector3(0, 1.95, 0)
+		ovl.add_child(head)
+		# 2 cyan eye dots
+		for s in [-1.0, 1.0]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emm: SphereMesh = SphereMesh.new()
+			emm.radius = 0.025
+			emm.height = 0.05
+			eye.mesh = emm
+			var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+			eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+			eye_mat.emission_enabled = true
+			eye_mat.emission = Color(0.55, 0.95, 1.0)
+			eye_mat.emission_energy_multiplier = 5.0
+			eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			eye.material_override = eye_mat
+			eye.position = Vector3(0.07 * s, 1.97, 0.18)
+			ovl.add_child(eye)
+		# Theme-specific accessory
+		if v["theme"] == "traveler":
+			# Cyan-cloak hood (sphere over head)
+			var hood: MeshInstance3D = MeshInstance3D.new()
+			var hdmm: SphereMesh = SphereMesh.new()
+			hdmm.radius = 0.28
+			hdmm.height = 0.45
+			hood.mesh = hdmm
+			hood.material_override = robe_mat
+			hood.position = Vector3(0, 2.00, -0.05)
+			ovl.add_child(hood)
+			# Brass walking staff (held in left hand)
+			var staff: MeshInstance3D = MeshInstance3D.new()
+			var stm: CylinderMesh = CylinderMesh.new()
+			stm.top_radius = 0.030
+			stm.bottom_radius = 0.040
+			stm.height = 1.95
+			staff.mesh = stm
+			staff.material_override = brass_mat
+			staff.position = Vector3(-0.40, 1.05, 0.05)
+			ovl.add_child(staff)
+			# Cyan staff orb
+			var orb: MeshInstance3D = MeshInstance3D.new()
+			var omm: SphereMesh = SphereMesh.new()
+			omm.radius = 0.10
+			omm.height = 0.20
+			orb.mesh = omm
+			orb.material_override = glow_mat
+			orb.position = Vector3(-0.40, 2.05, 0.05)
+			ovl.add_child(orb)
+			# Orb pulse
+			var op: Tween = ovl.create_tween().set_loops()
+			op.tween_property(glow_mat, "emission_energy_multiplier", 7.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+			op.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+			# Slight shoulder lean (idle traveler stance)
+			var lean: Tween = ovl.create_tween().set_loops()
+			lean.tween_property(ovl, "rotation:z", 0.025, 2.0).set_ease(Tween.EASE_IN_OUT)
+			lean.tween_property(ovl, "rotation:z", -0.025, 2.0).set_ease(Tween.EASE_IN_OUT)
+		elif v["theme"] == "scholar":
+			# Floating amber book (held forward at chest height)
+			var book: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.32, 0.40, 0.05)
+			book.mesh = bm
+			book.material_override = robe_mat
+			book.position = Vector3(0, 1.30, -0.32)
+			book.rotation.x = -0.35
+			ovl.add_child(book)
+			# Brass page glow
+			var page: MeshInstance3D = MeshInstance3D.new()
+			var pgm: BoxMesh = BoxMesh.new()
+			pgm.size = Vector3(0.28, 0.36, 0.02)
+			page.mesh = pgm
+			page.material_override = glow_mat
+			page.position = Vector3(0, 1.32, -0.34)
+			page.rotation.x = -0.35
+			ovl.add_child(page)
+			# Brass book clasp
+			var clasp: MeshInstance3D = MeshInstance3D.new()
+			var clm: SphereMesh = SphereMesh.new()
+			clm.radius = 0.04
+			clm.height = 0.08
+			clasp.mesh = clm
+			clasp.material_override = brass_mat
+			clasp.position = Vector3(0, 1.50, -0.38)
+			ovl.add_child(clasp)
+			# Page glow pulse (reading)
+			var rp: Tween = ovl.create_tween().set_loops()
+			rp.tween_property(glow_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+			rp.tween_property(glow_mat, "emission_energy_multiplier", 3.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+			# Slow head-bow (reading)
+			var bow: Tween = ovl.create_tween().set_loops()
+			bow.tween_property(head, "rotation:x", 0.20, 2.4).set_ease(Tween.EASE_IN_OUT)
+			bow.tween_property(head, "rotation:x", 0.05, 2.4).set_ease(Tween.EASE_IN_OUT)
+		else:
+			# pilgrim — folded hands at chest, prayer pose
+			# Hand fist 1
+			var hand1: MeshInstance3D = MeshInstance3D.new()
+			var hm1: SphereMesh = SphereMesh.new()
+			hm1.radius = 0.07
+			hm1.height = 0.14
+			hand1.mesh = hm1
+			hand1.material_override = skin_mat
+			hand1.position = Vector3(-0.05, 1.32, -0.30)
+			ovl.add_child(hand1)
+			var hand2: MeshInstance3D = MeshInstance3D.new()
+			var hm2: SphereMesh = SphereMesh.new()
+			hm2.radius = 0.07
+			hm2.height = 0.14
+			hand2.mesh = hm2
+			hand2.material_override = skin_mat
+			hand2.position = Vector3(0.05, 1.32, -0.30)
+			ovl.add_child(hand2)
+			# Floating violet prayer orb between the hands
+			var pray_orb: MeshInstance3D = MeshInstance3D.new()
+			var pm: SphereMesh = SphereMesh.new()
+			pm.radius = 0.07
+			pm.height = 0.14
+			pray_orb.mesh = pm
+			pray_orb.material_override = glow_mat
+			pray_orb.position = Vector3(0, 1.45, -0.34)
+			ovl.add_child(pray_orb)
+			# Pendant chain visible
+			var chain: MeshInstance3D = MeshInstance3D.new()
+			var chm: CylinderMesh = CylinderMesh.new()
+			chm.top_radius = 0.01
+			chm.bottom_radius = 0.01
+			chm.height = 0.30
+			chain.mesh = chm
+			chain.material_override = brass_mat
+			chain.position = Vector3(0, 1.55, -0.32)
+			ovl.add_child(chain)
+			# Orb pulse
+			var pp: Tween = ovl.create_tween().set_loops()
+			pp.tween_property(glow_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+			pp.tween_property(glow_mat, "emission_energy_multiplier", 3.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+			# Slight forward bow (reverence)
+			var rev: Tween = ovl.create_tween().set_loops()
+			rev.tween_property(ovl, "rotation:x", 0.06, 2.4).set_ease(Tween.EASE_IN_OUT)
+			rev.tween_property(ovl, "rotation:x", -0.02, 2.4).set_ease(Tween.EASE_IN_OUT)
+		# Subtle warm light from each visitor
+		var lt2: OmniLight3D = OmniLight3D.new()
+		lt2.position = Vector3(0, 1.55, 0)
+		lt2.light_color = v["trim_color"]
+		lt2.light_energy = 1.0
+		lt2.omni_range = 2.8
+		ovl.add_child(lt2)
+		# Slow body breathing (universal)
+		var breath: Tween = ovl.create_tween().set_loops()
+		breath.tween_property(robe, "scale:y", 1.012, 2.2).set_ease(Tween.EASE_IN_OUT)
+		breath.tween_property(robe, "scale:y", 0.992, 2.2).set_ease(Tween.EASE_IN_OUT)
