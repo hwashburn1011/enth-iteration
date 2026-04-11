@@ -34,6 +34,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_ambient_data_motes(geom)
 	_build_th_vendor_npc(town)
 	_build_th_combat_trainer_npc(town)
+	_build_th_cartographer_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -2963,3 +2964,201 @@ func _build_th_combat_trainer_npc(town: Node) -> void:
 	var apulse: Tween = npc.create_tween().set_loops()
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_cartographer_npc(town: Node) -> void:
+	## Epic-10 T18: Cartographer Atlas — scholarly NPC at the district map
+	## kiosk on the NE radial path. Long blue robe with brass trim, brass
+	## monocle eyepiece, oversized scroll tube on his back, and a pointing
+	## right hand on a pivot doing a tutorial-style "map gesture".
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THCartographerAtlasSlot"
+	# Stand beside the district map kiosk on the NE radial path
+	var ang: float = PI / 4.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 7.6, 0, sin(ang) * 7.6)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THCartographerAtlas"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Cartographer Atlas")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_cartographer_atlas")
+	# Face the kiosk (toward beacon center, perpendicular to radial direction)
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.18, 0.30, 0.55)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.18
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.55, 1.0)
+	robe_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var paper_mat: StandardMaterial3D = StandardMaterial3D.new()
+	paper_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	paper_mat.roughness = 0.85
+	paper_mat.emission_enabled = true
+	paper_mat.emission = Color(1.0, 0.65, 0.20)
+	paper_mat.emission_energy_multiplier = 0.30
+	# ---- Long blue robe ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.75, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.90, 0)
+	npc.add_child(robe)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.80, 0)
+	npc.add_child(collar)
+	# Vertical brass robe trim down the chest
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var seamesh: BoxMesh = BoxMesh.new()
+	seamesh.size = Vector3(0.16, 1.65, 0.06)
+	seam.mesh = seamesh
+	seam.material_override = brass_mat
+	seam.position = Vector3(0, 0.95, -0.30)
+	npc.add_child(seam)
+	# Brass shoulder pauldrons (small)
+	for sx in [-0.55, 0.55]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.18
+		pm.height = 0.34
+		paul.mesh = pm
+		paul.material_override = brass_mat
+		paul.position = Vector3(sx, 1.65, 0)
+		paul.scale = Vector3(1.0, 0.55, 1.0)
+		npc.add_child(paul)
+	# ---- Brass monocle eyepiece on the right side of the head ----
+	var monocle_frame: MeshInstance3D = MeshInstance3D.new()
+	var mfm: TorusMesh = TorusMesh.new()
+	mfm.inner_radius = 0.10
+	mfm.outer_radius = 0.14
+	monocle_frame.mesh = mfm
+	monocle_frame.material_override = brass_mat
+	monocle_frame.position = Vector3(0.18, 1.92, -0.30)
+	monocle_frame.rotation.y = PI / 2.0
+	npc.add_child(monocle_frame)
+	# Glowing monocle lens
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.09
+	lm.height = 0.10
+	lens.mesh = lm
+	lens.material_override = data_mat
+	lens.position = Vector3(0.18, 1.92, -0.30)
+	lens.scale = Vector3(1.0, 1.0, 0.30)
+	npc.add_child(lens)
+	# Monocle chain (small thin cylinder draping down to the collar)
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var chm: CylinderMesh = CylinderMesh.new()
+	chm.top_radius = 0.012
+	chm.bottom_radius = 0.012
+	chm.height = 0.55
+	chain.mesh = chm
+	chain.material_override = brass_mat
+	chain.position = Vector3(0.30, 1.65, -0.30)
+	chain.rotation.z = -0.4
+	npc.add_child(chain)
+	# ---- Oversized scroll tube on his back ----
+	var tube: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.10
+	tm.bottom_radius = 0.10
+	tm.height = 1.10
+	tube.mesh = tm
+	tube.material_override = brass_mat
+	tube.position = Vector3(0, 1.30, 0.30)
+	tube.rotation.z = -0.30
+	npc.add_child(tube)
+	# Scroll paper sticking out the top of the tube
+	var scroll: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.08
+	sm.bottom_radius = 0.08
+	sm.height = 0.45
+	scroll.mesh = sm
+	scroll.material_override = paper_mat
+	scroll.position = Vector3(0.18, 1.95, 0.30)
+	scroll.rotation.z = -0.30
+	npc.add_child(scroll)
+	# Tube end caps (brass disc on top + bottom)
+	for cy in [0.78, 1.85]:
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cpm: CylinderMesh = CylinderMesh.new()
+		cpm.top_radius = 0.13
+		cpm.bottom_radius = 0.13
+		cpm.height = 0.06
+		cap.mesh = cpm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0, cy, 0.30 + (cy - 1.30) * 0.30)
+		npc.add_child(cap)
+	# ---- Left arm at his side ----
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.18, 0.85, 0.18)
+	left_arm.mesh = lam
+	left_arm.material_override = robe_mat
+	left_arm.position = Vector3(-0.55, 1.05, 0)
+	npc.add_child(left_arm)
+	# ---- Right arm pointing at the kiosk on a pivot ----
+	var point_pivot: Node3D = Node3D.new()
+	point_pivot.position = Vector3(0.55, 1.50, 0)
+	npc.add_child(point_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = robe_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	point_pivot.add_child(right_arm)
+	# Pointing finger box at the end of the arm
+	var finger: MeshInstance3D = MeshInstance3D.new()
+	var fmm: BoxMesh = BoxMesh.new()
+	fmm.size = Vector3(0.12, 0.30, 0.10)
+	finger.mesh = fmm
+	finger.material_override = brass_mat
+	finger.position = Vector3(0, -0.95, 0)
+	point_pivot.add_child(finger)
+	# Initial pose — arm raised pointing forward
+	point_pivot.rotation.x = -1.20
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.65, -0.20)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Map gesture tween — arm sweeps left-right + slight nod ----
+	var gesture: Tween = npc.create_tween().set_loops()
+	gesture.tween_property(point_pivot, "rotation:y", -0.40, 1.4).set_ease(Tween.EASE_IN_OUT)
+	gesture.tween_property(point_pivot, "rotation:y", 0.40, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Monocle lens pulse
+	var lpulse: Tween = npc.create_tween().set_loops()
+	lpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
