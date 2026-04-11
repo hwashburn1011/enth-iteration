@@ -82,6 +82,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_memorial_mourner_npc(town)
 	_build_th_wishing_pond(geom)
 	_build_th_pond_caretaker_npc(town)
+	_build_th_botanical_conservatory(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -11672,3 +11673,244 @@ func _build_th_pond_caretaker_npc(town: Node) -> void:
 	var breath: Tween = ovl.create_tween().set_loops()
 	breath.tween_property(ovl, "scale:y", 1.012, 2.2).set_ease(Tween.EASE_IN_OUT)
 	breath.tween_property(ovl, "scale:y", 0.992, 2.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_botanical_conservatory(geom: Node) -> void:
+	## Epic-10 T66: Botanical Conservatory Dome — small glass-dome structure
+	## in the NNE mid-plaza. A circular brass-rimmed planter holds 4 exotic
+	## data plants with crystalline leaves, enclosed by a translucent
+	## hemispherical glass dome. Pulsing aura inside, sparkle particles drift
+	## upward. Balances the NNW wishing pond on the opposite side.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_BotanicalConservatory"
+	# NNE position at radius 11.5, angle ~PI*0.38 (between N and NE)
+	var ang_pos: float = PI * 0.38
+	var rad_pos: float = 11.5
+	var px_p: float = cos(ang_pos) * rad_pos
+	var pz_p: float = sin(ang_pos) * rad_pos
+	pivot.position = TOWN_CENTER + Vector3(px_p, 0, pz_p)
+	pivot.rotation.y = atan2(-px_p, -pz_p)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.46, 0.55)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.55, 0.85, 1.0, 0.22)
+	glass_mat.metallic = 0.10
+	glass_mat.roughness = 0.05
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.55, 0.95, 1.0)
+	glass_mat.emission_energy_multiplier = 0.40
+	glass_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var soil_mat: StandardMaterial3D = StandardMaterial3D.new()
+	soil_mat.albedo_color = Color(0.25, 0.18, 0.12)
+	soil_mat.roughness = 0.95
+	# ---- Stone footing pad ----
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 1.85
+	pmm.bottom_radius = 2.05
+	pmm.height = 0.20
+	pad.mesh = pmm
+	pad.material_override = stone_mat
+	pad.position = Vector3(0, 0.10, 0)
+	pivot.add_child(pad)
+	# Brass rim
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rtm: TorusMesh = TorusMesh.new()
+	rtm.inner_radius = 1.78
+	rtm.outer_radius = 1.92
+	rim.mesh = rtm
+	rim.material_override = brass_mat
+	rim.position = Vector3(0, 0.22, 0)
+	rim.rotation.x = PI / 2.0
+	pivot.add_child(rim)
+	# Inner planter (lower disc with soil)
+	var planter: MeshInstance3D = MeshInstance3D.new()
+	var pltm: CylinderMesh = CylinderMesh.new()
+	pltm.top_radius = 1.55
+	pltm.bottom_radius = 1.55
+	pltm.height = 0.08
+	planter.mesh = pltm
+	planter.material_override = soil_mat
+	planter.position = Vector3(0, 0.24, 0)
+	pivot.add_child(planter)
+	# Collision (player can't walk through)
+	var sb: StaticBody3D = StaticBody3D.new()
+	pivot.add_child(sb)
+	var col: CollisionShape3D = CollisionShape3D.new()
+	var cs: CylinderShape3D = CylinderShape3D.new()
+	cs.radius = 1.95
+	cs.height = 2.40
+	col.shape = cs
+	col.position = Vector3(0, 1.20, 0)
+	sb.add_child(col)
+	# ---- 4 brass support columns (vertical glass dome ribs) ----
+	for i in range(4):
+		var ang: float = float(i) * (PI / 2.0) + PI / 4.0
+		var col_m: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.05
+		cmm.bottom_radius = 0.06
+		cmm.height = 1.80
+		col_m.mesh = cmm
+		col_m.material_override = brass_mat
+		col_m.position = Vector3(cos(ang) * 1.78, 1.20, sin(ang) * 1.78)
+		pivot.add_child(col_m)
+	# ---- Glass dome (hemisphere via SphereMesh, top half only) ----
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 1.80
+	dmm.height = 3.60
+	dmm.is_hemisphere = true
+	dome.mesh = dmm
+	dome.material_override = glass_mat
+	dome.position = Vector3(0, 0.30, 0)
+	pivot.add_child(dome)
+	# Brass ring at the top of the dome
+	var top_ring: MeshInstance3D = MeshInstance3D.new()
+	var trtm: TorusMesh = TorusMesh.new()
+	trtm.inner_radius = 0.18
+	trtm.outer_radius = 0.26
+	top_ring.mesh = trtm
+	top_ring.material_override = brass_mat
+	top_ring.position = Vector3(0, 2.10, 0)
+	top_ring.rotation.x = PI / 2.0
+	pivot.add_child(top_ring)
+	# Brass finial spike on top
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fmm: PrismMesh = PrismMesh.new()
+	fmm.size = Vector3(0.12, 0.45, 0.12)
+	finial.mesh = fmm
+	finial.material_override = brass_mat
+	finial.position = Vector3(0, 2.36, 0)
+	pivot.add_child(finial)
+	# ---- 4 exotic data plants inside ----
+	var plant_palette: Array[Color] = [
+		Color(0.45, 0.95, 0.50),  # cyan-green
+		Color(1.0, 0.55, 0.85),   # pink
+		Color(0.55, 0.85, 1.0),   # cyan
+		Color(0.95, 0.85, 0.30),  # gold
+	]
+	for j in range(4):
+		var ang2: float = float(j) * (PI / 2.0) + PI / 4.0
+		var plant_pivot: Node3D = Node3D.new()
+		plant_pivot.position = Vector3(cos(ang2) * 0.85, 0.30, sin(ang2) * 0.85)
+		pivot.add_child(plant_pivot)
+		# Plant pot
+		var pot: MeshInstance3D = MeshInstance3D.new()
+		var potm: CylinderMesh = CylinderMesh.new()
+		potm.top_radius = 0.18
+		potm.bottom_radius = 0.14
+		potm.height = 0.18
+		pot.mesh = potm
+		pot.material_override = brass_mat
+		pot.position = Vector3(0, 0.09, 0)
+		plant_pivot.add_child(pot)
+		# Plant stem
+		var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stem_mat.albedo_color = Color(0.25, 0.55, 0.30)
+		stem_mat.roughness = 0.75
+		stem_mat.emission_enabled = true
+		stem_mat.emission = Color(0.30, 0.85, 0.40)
+		stem_mat.emission_energy_multiplier = 0.40
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var stmm: CylinderMesh = CylinderMesh.new()
+		stmm.top_radius = 0.025
+		stmm.bottom_radius = 0.035
+		stmm.height = 0.85
+		stem.mesh = stmm
+		stem.material_override = stem_mat
+		stem.position = Vector3(0, 0.60, 0)
+		plant_pivot.add_child(stem)
+		# Crystalline leaves (3 prisms angled outward)
+		var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+		leaf_mat.albedo_color = plant_palette[j]
+		leaf_mat.metallic = 0.40
+		leaf_mat.roughness = 0.25
+		leaf_mat.emission_enabled = true
+		leaf_mat.emission = plant_palette[j]
+		leaf_mat.emission_energy_multiplier = 2.5
+		for k in range(3):
+			var lang: float = float(k) * (TAU / 3.0) + float(j) * 0.4
+			var leaf: MeshInstance3D = MeshInstance3D.new()
+			var lmm: PrismMesh = PrismMesh.new()
+			lmm.size = Vector3(0.10, 0.32, 0.05)
+			leaf.mesh = lmm
+			leaf.material_override = leaf_mat
+			leaf.position = Vector3(cos(lang) * 0.10, 1.00, sin(lang) * 0.10)
+			leaf.rotation.z = sin(lang) * 0.55
+			leaf.rotation.x = -cos(lang) * 0.55
+			plant_pivot.add_child(leaf)
+		# Crowning bloom (sphere)
+		var bloom_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bloom_mat.albedo_color = plant_palette[j] * 1.2
+		bloom_mat.emission_enabled = true
+		bloom_mat.emission = plant_palette[j] * 1.3
+		bloom_mat.emission_energy_multiplier = 5.5
+		bloom_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var bloom: MeshInstance3D = MeshInstance3D.new()
+		var bmm: SphereMesh = SphereMesh.new()
+		bmm.radius = 0.12
+		bmm.height = 0.24
+		bloom.mesh = bmm
+		bloom.material_override = bloom_mat
+		bloom.position = Vector3(0, 1.18, 0)
+		plant_pivot.add_child(bloom)
+		# Bloom pulse (phase offset)
+		var phase: float = float(j) * 0.40
+		var bp: Tween = plant_pivot.create_tween().set_loops()
+		bp.tween_interval(phase)
+		bp.tween_property(bloom_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+		bp.tween_property(bloom_mat, "emission_energy_multiplier", 3.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+		# Slight stem sway
+		var sw: Tween = plant_pivot.create_tween().set_loops()
+		sw.tween_interval(phase * 0.5)
+		sw.tween_property(plant_pivot, "rotation:z", 0.04, 1.4).set_ease(Tween.EASE_IN_OUT)
+		sw.tween_property(plant_pivot, "rotation:z", -0.04, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- Sparkle particles drifting upward inside the dome ----
+	var sparkle: GPUParticles3D = GPUParticles3D.new()
+	var sp: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	sp.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	sp.emission_sphere_radius = 1.0
+	sp.direction = Vector3(0, 1, 0)
+	sp.spread = 25.0
+	sp.gravity = Vector3(0, 0.15, 0)
+	sp.initial_velocity_min = 0.15
+	sp.initial_velocity_max = 0.40
+	sp.scale_min = 0.025
+	sp.scale_max = 0.055
+	sp.color = Color(0.65, 0.95, 1.0, 0.85)
+	sparkle.process_material = sp
+	var spm: SphereMesh = SphereMesh.new()
+	spm.radius = 0.025
+	spm.height = 0.05
+	sparkle.draw_pass_1 = spm
+	sparkle.amount = 24
+	sparkle.lifetime = 3.0
+	sparkle.position = Vector3(0, 0.80, 0)
+	pivot.add_child(sparkle)
+	# ---- Inner aura light ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.30, 0)
+	lt.light_color = Color(0.55, 0.95, 1.0)
+	lt.light_energy = 1.85
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
+	# Subtle dome glass emission breathing
+	var gp: Tween = pivot.create_tween().set_loops()
+	gp.tween_property(glass_mat, "emission_energy_multiplier", 0.65, 2.4).set_ease(Tween.EASE_IN_OUT)
+	gp.tween_property(glass_mat, "emission_energy_multiplier", 0.30, 2.4).set_ease(Tween.EASE_IN_OUT)
