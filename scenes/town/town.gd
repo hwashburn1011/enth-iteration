@@ -32824,6 +32824,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_tentacle_silhouettes(geom)
 	# Epic-8 T95: warning siren post
 	_build_d8_warning_siren(geom)
+	# Epic-8 T96: welcome banner
+	_build_d8_welcome_banner(geom)
+	# Epic-8 T97: storm fog ambient
+	_build_d8_storm_fog(geom)
+	# Epic-8 T98: dock plaque
+	_build_d8_finale_plaque(geom)
+	# Epic-8 T99: boss arena fortifications
+	_build_d8_boss_arena_fortifications(geom)
+	# Epic-8 T100: TIDE LEVIATHAN finale boss
+	_build_d8_tide_leviathan(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -39772,6 +39782,514 @@ func _build_d8_warning_siren(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	siren.add_child(sb)
+
+
+func _build_d8_welcome_banner(geom: Node) -> void:
+	## Epic-8 T96: welcome banner — large rope-strung canvas at the harbor
+	## entrance reading "TIDAL HARBOR" with a billowing wind tween.
+	var banner: Node3D = Node3D.new()
+	banner.name = "D8WelcomeBanner"
+	banner.position = Vector3(D8_CENTER.x - 18, 0, 0)
+	geom.add_child(banner)
+	# Two tall posts
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	post_mat.roughness = 0.85
+	for sx in [-3.5, 3.5]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.15
+		pcm.bottom_radius = 0.20
+		pcm.height = 5.5
+		post.mesh = pcm
+		post.material_override = post_mat
+		post.position = Vector3(sx, 2.75, 0)
+		banner.add_child(post)
+		# Per-post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.75, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.22
+		cap.height = 5.5
+		cs.shape = cap
+		sb.add_child(cs)
+		banner.add_child(sb)
+	# Top rope
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.78, 0.65, 0.40)
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rcm: CylinderMesh = CylinderMesh.new()
+	rcm.top_radius = 0.05
+	rcm.bottom_radius = 0.05
+	rcm.height = 7.0
+	rope.mesh = rcm
+	rope.material_override = rope_mat
+	rope.position = Vector3(0, 5.30, 0)
+	rope.rotation_degrees = Vector3(0, 0, 90)
+	banner.add_child(rope)
+	# Canvas (cyan-trimmed cream banner)
+	var canvas_mat: StandardMaterial3D = StandardMaterial3D.new()
+	canvas_mat.albedo_color = Color(0.92, 0.88, 0.72)
+	canvas_mat.emission_enabled = true
+	canvas_mat.emission = Color(0.85, 0.80, 0.65)
+	canvas_mat.emission_energy_multiplier = 0.35
+	canvas_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var canvas: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(6.5, 1.85, 0.06)
+	canvas.mesh = cb
+	canvas.material_override = canvas_mat
+	canvas.position = Vector3(0, 4.20, 0)
+	banner.add_child(canvas)
+	# Cyan trim strips
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.30, 0.85, 0.95)
+	trim_mat.emission_energy_multiplier = 1.4
+	for sy in [0.85, -0.85]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tb: BoxMesh = BoxMesh.new()
+		tb.size = Vector3(6.5, 0.10, 0.07)
+		trim.mesh = tb
+		trim.material_override = trim_mat
+		trim.position = Vector3(0, 4.20 + sy, 0.01)
+		banner.add_child(trim)
+	# Title label
+	var label: Label3D = Label3D.new()
+	label.text = "TIDAL HARBOR"
+	label.font_size = 80
+	label.modulate = Color(0.10, 0.20, 0.45)
+	label.outline_size = 8
+	label.outline_modulate = Color(0.30, 0.85, 0.95)
+	label.position = Vector3(0, 4.20, 0.10)
+	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	banner.add_child(label)
+	# Billow tween
+	var billow: Tween = canvas.create_tween().set_loops()
+	billow.tween_property(canvas, "rotation_degrees:x", 4.0, 1.8)
+	billow.tween_property(canvas, "rotation_degrees:x", -4.0, 1.8)
+
+
+func _build_d8_storm_fog(geom: Node) -> void:
+	## Epic-8 T97: storm fog ambient — large translucent dark gray fog volume
+	## hanging low over the harbor with slow drift, plus a few violet
+	## lightning-aftermath particles.
+	var fog: Node3D = Node3D.new()
+	fog.name = "D8StormFog"
+	fog.position = Vector3(D8_CENTER.x + 40, 1.5, 0)
+	geom.add_child(fog)
+	var fog_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fog_mat.albedo_color = Color(0.30, 0.32, 0.40, 0.30)
+	fog_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fog_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 wide low-lying fog discs
+	var positions: Array[Vector3] = [
+		Vector3(0, 0, 0),
+		Vector3(15, 0, 8),
+		Vector3(-15, 0, -8),
+		Vector3(8, 0, -12),
+	]
+	for i in range(positions.size()):
+		var disc: MeshInstance3D = MeshInstance3D.new()
+		var dcm: CylinderMesh = CylinderMesh.new()
+		dcm.top_radius = 12.0 + float(i) * 1.5
+		dcm.bottom_radius = 12.0 + float(i) * 1.5
+		dcm.height = 0.85
+		disc.mesh = dcm
+		disc.material_override = fog_mat
+		disc.position = positions[i]
+		fog.add_child(disc)
+		var drift: Tween = disc.create_tween().set_loops()
+		drift.tween_property(disc, "position", positions[i] + Vector3(2.0, 0.20, 1.5), 5.0 + float(i) * 0.5)
+		drift.tween_property(disc, "position", positions[i], 5.0 + float(i) * 0.5)
+	# Violet ember particles
+	var emb: GPUParticles3D = GPUParticles3D.new()
+	emb.position = Vector3(0, 6, 0)
+	emb.amount = 60
+	emb.lifetime = 4.0
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(20, 1, 12)
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 30.0
+	pm.initial_velocity_min = 0.20
+	pm.initial_velocity_max = 0.55
+	pm.gravity = Vector3(0, -0.4, 0)
+	pm.scale_min = 0.06
+	pm.scale_max = 0.14
+	pm.color = Color(0.65, 0.35, 0.95, 0.85)
+	emb.process_material = pm
+	var ember_mesh: SphereMesh = SphereMesh.new()
+	ember_mesh.radius = 0.08
+	ember_mesh.height = 0.16
+	emb.draw_pass_1 = ember_mesh
+	fog.add_child(emb)
+
+
+func _build_d8_finale_plaque(geom: Node) -> void:
+	## Epic-8 T98: dock plaque — bronze marker at the entrance to the boss
+	## arena dedicated to harbor history.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "D8FinalePlaque"
+	plaque.position = Vector3(D8_CENTER.x + 65, 0, 4)
+	geom.add_child(plaque)
+	# Stone base
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.52, 0.50)
+	stone_mat.roughness = 0.9
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(1.40, 0.85, 0.55)
+	base.mesh = bb
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.42, 0)
+	plaque.add_child(base)
+	# Bronze plaque face
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.65, 0.45, 0.18)
+	bronze_mat.metallic = 0.92
+	bronze_mat.roughness = 0.30
+	bronze_mat.emission_enabled = true
+	bronze_mat.emission = Color(0.65, 0.45, 0.18)
+	bronze_mat.emission_energy_multiplier = 0.35
+	var face: MeshInstance3D = MeshInstance3D.new()
+	var fb: BoxMesh = BoxMesh.new()
+	fb.size = Vector3(1.20, 0.65, 0.05)
+	face.mesh = fb
+	face.material_override = bronze_mat
+	face.position = Vector3(0, 0.65, 0.30)
+	plaque.add_child(face)
+	# Inscription label
+	var label: Label3D = Label3D.new()
+	label.text = "TIDAL HARBOR\nWHERE TIDES KEEP TIME"
+	label.font_size = 40
+	label.modulate = Color(0.20, 0.10, 0.05)
+	label.position = Vector3(0, 0.65, 0.34)
+	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	plaque.add_child(label)
+	# Plaque collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(1.40, 0.85, 0.55)
+	cs.shape = bs
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_d8_boss_arena_fortifications(geom: Node) -> void:
+	## Epic-8 T99: ring of stone breakwater pillars and chain barriers around
+	## the boss arena, plus four corner braziers with violet flame.
+	var fort: Node3D = Node3D.new()
+	fort.name = "D8BossArenaFortifications"
+	fort.position = Vector3(D8_CENTER.x + 70, 0, -2)
+	geom.add_child(fort)
+	# 12 stone breakwater pillars in a wide ring
+	var stone: StandardMaterial3D = StandardMaterial3D.new()
+	stone.albedo_color = Color(0.40, 0.42, 0.45)
+	stone.roughness = 0.92
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.18, 0.18, 0.20)
+	iron.metallic = 0.85
+	iron.roughness = 0.50
+	for i in range(12):
+		var ang: float = float(i) * (TAU / 12.0)
+		var radius: float = 12.5
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.50
+		pcm.bottom_radius = 0.65
+		pcm.height = 2.40
+		pillar.mesh = pcm
+		pillar.material_override = stone
+		pillar.position = Vector3(cos(ang) * radius, 1.20, sin(ang) * radius)
+		fort.add_child(pillar)
+		# Iron cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var ccm: CylinderMesh = CylinderMesh.new()
+		ccm.top_radius = 0.60
+		ccm.bottom_radius = 0.60
+		ccm.height = 0.18
+		cap.mesh = ccm
+		cap.material_override = iron
+		cap.position = Vector3(cos(ang) * radius, 2.50, sin(ang) * radius)
+		fort.add_child(cap)
+		# Per-pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(cos(ang) * radius, 1.20, sin(ang) * radius)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+		cap_shape.radius = 0.65
+		cap_shape.height = 2.40
+		cs.shape = cap_shape
+		sb.add_child(cs)
+		fort.add_child(sb)
+	# Chain links between adjacent pillars (low torus per gap)
+	for i in range(12):
+		var ang_a: float = float(i) * (TAU / 12.0)
+		var ang_b: float = float(i + 1) * (TAU / 12.0)
+		var mid: Vector3 = Vector3(
+			(cos(ang_a) + cos(ang_b)) * 0.5 * 12.5,
+			0.85,
+			(sin(ang_a) + sin(ang_b)) * 0.5 * 12.5
+		)
+		var link: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 0.20
+		tm.outer_radius = 0.30
+		link.mesh = tm
+		link.material_override = iron
+		link.position = mid
+		link.rotation_degrees = Vector3(90, -rad_to_deg((ang_a + ang_b) * 0.5), 0)
+		fort.add_child(link)
+	# 4 corner braziers with violet flame
+	var brazier_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brazier_mat.albedo_color = Color(0.30, 0.30, 0.32)
+	brazier_mat.metallic = 0.7
+	brazier_mat.roughness = 0.45
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(0.55, 0.30, 0.95)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(0.65, 0.35, 0.95)
+	flame_mat.emission_energy_multiplier = 3.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in range(4):
+		var ang: float = float(i) * (TAU / 4.0) + PI / 4.0
+		var pos: Vector3 = Vector3(cos(ang) * 14.5, 0, sin(ang) * 14.5)
+		# Bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bcm: CylinderMesh = CylinderMesh.new()
+		bcm.top_radius = 0.55
+		bcm.bottom_radius = 0.30
+		bcm.height = 0.45
+		bowl.mesh = bcm
+		bowl.material_override = brazier_mat
+		bowl.position = pos + Vector3(0, 1.90, 0)
+		fort.add_child(bowl)
+		# Tripod legs (3 cylinders)
+		for l in range(3):
+			var lang: float = float(l) * (TAU / 3.0)
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lcm: CylinderMesh = CylinderMesh.new()
+			lcm.top_radius = 0.06
+			lcm.bottom_radius = 0.08
+			lcm.height = 1.85
+			leg.mesh = lcm
+			leg.material_override = brazier_mat
+			leg.position = pos + Vector3(cos(lang) * 0.30, 0.90, sin(lang) * 0.30)
+			leg.rotation_degrees = Vector3(rad_to_deg(sin(lang) * 0.18), 0, -rad_to_deg(cos(lang) * 0.18))
+			fort.add_child(leg)
+		# Flame core (sphere)
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fsm: SphereMesh = SphereMesh.new()
+		fsm.radius = 0.40
+		fsm.height = 0.85
+		flame.mesh = fsm
+		flame.material_override = flame_mat
+		flame.position = pos + Vector3(0, 2.40, 0)
+		fort.add_child(flame)
+		var pulse: Tween = flame.create_tween().set_loops()
+		pulse.tween_property(flame, "scale", Vector3(1.20, 1.30, 1.20), 0.7)
+		pulse.tween_property(flame, "scale", Vector3(0.90, 0.85, 0.90), 0.7)
+		# Violet light
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.light_color = Color(0.65, 0.35, 0.95)
+		lt.light_energy = 2.5
+		lt.omni_range = 8.0
+		lt.position = pos + Vector3(0, 2.40, 0)
+		fort.add_child(lt)
+
+
+func _build_d8_tide_leviathan(geom: Node) -> void:
+	## Epic-8 T100 FINALE: TIDE LEVIATHAN — massive serpentine sea boss with
+	## 8 dark body segments arching above the whirlpool, glowing single eye,
+	## fanged maw, dorsal spines, and a billboard title with dark aura.
+	var boss: Node3D = Node3D.new()
+	boss.name = "D8TideLeviathan"
+	boss.position = Vector3(D8_CENTER.x + 70, 0, -2)
+	geom.add_child(boss)
+	# Body materials
+	var hide_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hide_mat.albedo_color = Color(0.06, 0.10, 0.18)
+	hide_mat.metallic = 0.55
+	hide_mat.roughness = 0.40
+	var rim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rim_mat.albedo_color = Color(0.25, 0.55, 0.85)
+	rim_mat.emission_enabled = true
+	rim_mat.emission = Color(0.30, 0.65, 0.95)
+	rim_mat.emission_energy_multiplier = 1.8
+	rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var spine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spine_mat.albedo_color = Color(0.55, 0.30, 0.95)
+	spine_mat.emission_enabled = true
+	spine_mat.emission = Color(0.65, 0.35, 0.95)
+	spine_mat.emission_energy_multiplier = 2.2
+	spine_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body: 8 spheres arching up out of the water
+	var seg_count: int = 8
+	for i in range(seg_count):
+		var t: float = float(i) / float(seg_count - 1)
+		var arch_x: float = -8.0 + t * 16.0
+		var arch_y: float = 1.0 + sin(t * PI) * 4.5
+		var arch_z: float = sin(t * PI * 0.5) * 2.5
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var ssm: SphereMesh = SphereMesh.new()
+		var rad: float = 1.30 - t * 0.55
+		ssm.radius = rad
+		ssm.height = rad * 2.0
+		seg.mesh = ssm
+		seg.material_override = hide_mat
+		seg.position = Vector3(arch_x, arch_y, arch_z)
+		boss.add_child(seg)
+		# Rim glow ring around segment
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rtm: TorusMesh = TorusMesh.new()
+		rtm.inner_radius = rad
+		rtm.outer_radius = rad + 0.10
+		rim.mesh = rtm
+		rim.material_override = rim_mat
+		rim.position = Vector3(arch_x, arch_y, arch_z)
+		rim.rotation_degrees = Vector3(0, 0, 90)
+		boss.add_child(rim)
+		# Dorsal spine (prism)
+		var spine: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.18, 0.85 - t * 0.30, 0.30)
+		spine.mesh = spm
+		spine.material_override = spine_mat
+		spine.position = Vector3(arch_x, arch_y + rad + 0.20, arch_z)
+		boss.add_child(spine)
+		# Per-segment slow bob
+		var bob: Tween = seg.create_tween().set_loops()
+		var phase: float = float(i) * 0.25
+		var ybase: float = arch_y
+		bob.tween_property(seg, "position:y", ybase + 0.40, 1.5 + phase)
+		bob.tween_property(seg, "position:y", ybase, 1.5 + phase)
+	# Head: large dark sphere with details
+	var head: Node3D = Node3D.new()
+	head.position = Vector3(-9.0, 4.5, 0.5)
+	boss.add_child(head)
+	var head_mesh: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 1.85
+	hsm.height = 3.4
+	head_mesh.mesh = hsm
+	head_mesh.material_override = hide_mat
+	head_mesh.scale = Vector3(1.30, 1.0, 1.0)
+	head.add_child(head_mesh)
+	# Single glowing cyclops eye
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.75, 0.25)
+	eye_mat.emission_energy_multiplier = 4.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var esm: SphereMesh = SphereMesh.new()
+	esm.radius = 0.55
+	esm.height = 1.10
+	eye.mesh = esm
+	eye.material_override = eye_mat
+	eye.position = Vector3(-1.55, 0.30, 0)
+	head.add_child(eye)
+	var eye_pulse: Tween = eye.create_tween().set_loops()
+	eye_pulse.tween_property(eye_mat, "emission_energy_multiplier", 6.5, 1.0)
+	eye_pulse.tween_property(eye_mat, "emission_energy_multiplier", 3.5, 1.0)
+	# Eye light
+	var eye_lt: OmniLight3D = OmniLight3D.new()
+	eye_lt.light_color = Color(1.0, 0.75, 0.25)
+	eye_lt.light_energy = 5.0
+	eye_lt.omni_range = 14.0
+	eye_lt.position = Vector3(-1.85, 0.30, 0)
+	head.add_child(eye_lt)
+	# Fanged maw: 6 cone fangs around a dark mouth
+	var fang_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fang_mat.albedo_color = Color(0.92, 0.88, 0.78)
+	fang_mat.roughness = 0.4
+	for i in range(6):
+		var ang: float = float(i) * (TAU / 6.0) - PI / 2.0
+		var fang: MeshInstance3D = MeshInstance3D.new()
+		var fcm: CylinderMesh = CylinderMesh.new()
+		fcm.top_radius = 0.0
+		fcm.bottom_radius = 0.14
+		fcm.height = 0.55
+		fang.mesh = fcm
+		fang.material_override = fang_mat
+		fang.position = Vector3(-2.10, -0.55 + cos(ang) * 0.35, sin(ang) * 0.50)
+		fang.rotation_degrees = Vector3(0, 0, 90 + cos(ang) * 12.0)
+		head.add_child(fang)
+	# Two side horns
+	for sz in [-1, 1]:
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var hcm: CylinderMesh = CylinderMesh.new()
+		hcm.top_radius = 0.0
+		hcm.bottom_radius = 0.30
+		hcm.height = 1.40
+		horn.mesh = hcm
+		horn.material_override = spine_mat
+		horn.position = Vector3(-0.60, 1.40, sz * 1.20)
+		horn.rotation_degrees = Vector3(rad_to_deg(sz * 0.45), 0, 25)
+		head.add_child(horn)
+	# Slow head sway
+	var sway: Tween = head.create_tween().set_loops()
+	sway.tween_property(head, "rotation_degrees:y", 12.0, 2.0)
+	sway.tween_property(head, "rotation_degrees:y", -12.0, 2.0)
+	# Dark aura particles
+	var aura: GPUParticles3D = GPUParticles3D.new()
+	aura.position = Vector3(0, 4, 0)
+	aura.amount = 120
+	aura.lifetime = 3.0
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(10, 3, 4)
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 35.0
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.85
+	pm.gravity = Vector3(0, -0.10, 0)
+	pm.scale_min = 0.18
+	pm.scale_max = 0.40
+	pm.color = Color(0.25, 0.10, 0.45, 0.70)
+	aura.process_material = pm
+	var aura_mesh: SphereMesh = SphereMesh.new()
+	aura_mesh.radius = 0.18
+	aura_mesh.height = 0.36
+	aura.draw_pass_1 = aura_mesh
+	boss.add_child(aura)
+	# Title billboard label
+	var title: Label3D = Label3D.new()
+	title.text = "TIDE LEVIATHAN"
+	title.font_size = 96
+	title.modulate = Color(0.30, 0.85, 0.95)
+	title.outline_size = 12
+	title.outline_modulate = Color(0.10, 0.05, 0.20)
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 9.5, 0)
+	boss.add_child(title)
+	# Boss arena dim atmosphere light (cyan rim from above)
+	var atmos: DirectionalLight3D = DirectionalLight3D.new()
+	atmos.light_color = Color(0.30, 0.55, 0.95)
+	atmos.light_energy = 0.45
+	atmos.position = Vector3(0, 12, 0)
+	atmos.rotation_degrees = Vector3(-65, 25, 0)
+	boss.add_child(atmos)
+	# Heavy collision (5 capsules along the body for combat)
+	for i in range(5):
+		var t: float = float(i) / 4.0
+		var arch_x: float = -8.0 + t * 16.0
+		var arch_y: float = 1.0 + sin(t * PI) * 4.5
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(arch_x, arch_y, sin(t * PI * 0.5) * 2.5)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 1.20 - t * 0.40
+		cap.height = 2.40
+		cs.shape = cap
+		sb.add_child(cs)
+		boss.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
