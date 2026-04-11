@@ -83,6 +83,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_wishing_pond(geom)
 	_build_th_pond_caretaker_npc(town)
 	_build_th_botanical_conservatory(geom)
+	_build_th_botanist_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -11914,3 +11915,228 @@ func _build_th_botanical_conservatory(geom: Node) -> void:
 	var gp: Tween = pivot.create_tween().set_loops()
 	gp.tween_property(glass_mat, "emission_energy_multiplier", 0.65, 2.4).set_ease(Tween.EASE_IN_OUT)
 	gp.tween_property(glass_mat, "emission_energy_multiplier", 0.30, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_botanist_npc(town: Node) -> void:
+	## Epic-10 T67: Botanist Verdant NPC — botanist NPC standing beside the
+	## conservatory dome with a glowing magnifying lens, examining the data
+	## plants. Brown gardening apron over a green robe, leather gloves,
+	## small notebook tucked under one arm. Slow examining sway.
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node = npc_scene.instantiate()
+	npc.name = "Botanist_Verdant"
+	# Position: just outside the conservatory dome (NNE radius 11.5, ang ~PI*0.38)
+	# Slightly inward toward plaza, offset to one side
+	var ang_pos: float = PI * 0.38
+	var rad_pos: float = 9.40
+	var px: float = cos(ang_pos) * rad_pos - 0.85
+	var pz: float = sin(ang_pos) * rad_pos - 0.45
+	if npc is Node3D:
+		(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+		# Face the conservatory dome
+		var dome_x: float = cos(ang_pos) * 11.5
+		var dome_z: float = sin(ang_pos) * 11.5
+		(npc as Node3D).rotation.y = atan2(dome_x - px, dome_z - pz)
+	if "npc_name" in npc:
+		npc.set("npc_name", "Botanist Verdant")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_botanist")
+	town.add_child(npc)
+	# ---- Cosmetic overlay ----
+	var ovl: Node3D = Node3D.new()
+	ovl.name = "BotanistOverlay"
+	if npc is Node3D:
+		(npc as Node3D).add_child(ovl)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.20, 0.50, 0.30)
+	robe_mat.metallic = 0.10
+	robe_mat.roughness = 0.85
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.85, 0.40)
+	robe_mat.emission_energy_multiplier = 0.25
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.42, 0.28, 0.18)
+	apron_mat.metallic = 0.05
+	apron_mat.roughness = 0.92
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.85, 0.78, 0.65)
+	skin_mat.roughness = 0.85
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.45, 0.95, 0.55)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.50, 0.95, 0.55)
+	glow_mat.emission_energy_multiplier = 5.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Green robe (torso + legs)
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(0.92, 1.85, 0.55)
+	robe.mesh = rmm
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 1.00, 0)
+	ovl.add_child(robe)
+	# Brown apron (front of robe)
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var apm: BoxMesh = BoxMesh.new()
+	apm.size = Vector3(0.85, 1.20, 0.06)
+	apron.mesh = apm
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 1.00, -0.32)
+	ovl.add_child(apron)
+	# Apron pocket (small front box)
+	var pocket: MeshInstance3D = MeshInstance3D.new()
+	var pkm: BoxMesh = BoxMesh.new()
+	pkm.size = Vector3(0.40, 0.28, 0.08)
+	pocket.mesh = pkm
+	pocket.material_override = apron_mat
+	pocket.position = Vector3(0, 0.80, -0.36)
+	ovl.add_child(pocket)
+	# Brass apron tie clasp
+	var clasp: MeshInstance3D = MeshInstance3D.new()
+	var clm: SphereMesh = SphereMesh.new()
+	clm.radius = 0.07
+	clm.height = 0.14
+	clasp.mesh = clm
+	clasp.material_override = brass_mat
+	clasp.position = Vector3(0, 1.55, -0.34)
+	ovl.add_child(clasp)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.20
+	hdm.height = 0.42
+	head.mesh = hdm
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.95, 0)
+	ovl.add_child(head)
+	# Sun hat (wide brim straw hat)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.78, 0.62, 0.32)
+	hat_mat.roughness = 0.92
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brmm: CylinderMesh = CylinderMesh.new()
+	brmm.top_radius = 0.42
+	brmm.bottom_radius = 0.42
+	brmm.height = 0.04
+	brim.mesh = brmm
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 2.18, 0)
+	ovl.add_child(brim)
+	# Hat top dome
+	var hat_top: MeshInstance3D = MeshInstance3D.new()
+	var htm: CylinderMesh = CylinderMesh.new()
+	htm.top_radius = 0.18
+	htm.bottom_radius = 0.22
+	htm.height = 0.18
+	hat_top.mesh = htm
+	hat_top.material_override = hat_mat
+	hat_top.position = Vector3(0, 2.30, 0)
+	ovl.add_child(hat_top)
+	# Two cyan eye dots
+	for s in [-1.0, 1.0]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emm: SphereMesh = SphereMesh.new()
+		emm.radius = 0.025
+		emm.height = 0.05
+		eye.mesh = emm
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_energy_multiplier = 5.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = eye_mat
+		eye.position = Vector3(0.07 * s, 1.97, 0.18)
+		ovl.add_child(eye)
+	# ---- Magnifying lens (held forward in right hand) ----
+	var lens_pivot: Node3D = Node3D.new()
+	lens_pivot.position = Vector3(0.28, 1.45, -0.45)
+	lens_pivot.rotation.x = -0.20
+	ovl.add_child(lens_pivot)
+	# Lens handle (cylinder)
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hndm: CylinderMesh = CylinderMesh.new()
+	hndm.top_radius = 0.025
+	hndm.bottom_radius = 0.030
+	hndm.height = 0.30
+	handle.mesh = hndm
+	handle.material_override = brass_mat
+	handle.position = Vector3(0, 0, 0)
+	handle.rotation.x = PI / 2.0
+	lens_pivot.add_child(handle)
+	# Lens rim (torus)
+	var lrim: MeshInstance3D = MeshInstance3D.new()
+	var lrm: TorusMesh = TorusMesh.new()
+	lrm.inner_radius = 0.10
+	lrm.outer_radius = 0.13
+	lrim.mesh = lrm
+	lrim.material_override = brass_mat
+	lrim.position = Vector3(0, 0, -0.18)
+	lrim.rotation.x = PI / 2.0
+	lens_pivot.add_child(lrim)
+	# Lens glass disc
+	var lens_glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lens_glass_mat.albedo_color = Color(0.55, 0.95, 1.0, 0.55)
+	lens_glass_mat.metallic = 0.20
+	lens_glass_mat.roughness = 0.10
+	lens_glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	lens_glass_mat.emission_enabled = true
+	lens_glass_mat.emission = Color(0.55, 0.95, 1.0)
+	lens_glass_mat.emission_energy_multiplier = 1.40
+	var lens_glass: MeshInstance3D = MeshInstance3D.new()
+	var lgm: CylinderMesh = CylinderMesh.new()
+	lgm.top_radius = 0.10
+	lgm.bottom_radius = 0.10
+	lgm.height = 0.02
+	lens_glass.mesh = lgm
+	lens_glass.material_override = lens_glass_mat
+	lens_glass.position = Vector3(0, 0, -0.18)
+	lens_glass.rotation.x = PI / 2.0
+	lens_pivot.add_child(lens_glass)
+	# ---- Notebook tucked under left arm ----
+	var book: MeshInstance3D = MeshInstance3D.new()
+	var bkm: BoxMesh = BoxMesh.new()
+	bkm.size = Vector3(0.22, 0.32, 0.05)
+	book.mesh = bkm
+	book.material_override = apron_mat
+	book.position = Vector3(-0.35, 1.10, -0.05)
+	book.rotation.z = -0.20
+	ovl.add_child(book)
+	# Tiny brass page corner glow on book
+	var corner: MeshInstance3D = MeshInstance3D.new()
+	var crm: SphereMesh = SphereMesh.new()
+	crm.radius = 0.03
+	crm.height = 0.06
+	corner.mesh = crm
+	corner.material_override = glow_mat
+	corner.position = Vector3(-0.30, 1.25, -0.05)
+	ovl.add_child(corner)
+	# Subtle warm light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.20)
+	lt.light_color = Color(0.55, 0.95, 0.65)
+	lt.light_energy = 1.1
+	lt.omni_range = 3.2
+	ovl.add_child(lt)
+	# ---- Examining sway: lens hand moves slightly up and down ----
+	var stir: Tween = lens_pivot.create_tween().set_loops()
+	stir.tween_property(lens_pivot, "rotation:x", -0.12, 1.6).set_ease(Tween.EASE_IN_OUT)
+	stir.tween_property(lens_pivot, "rotation:x", -0.32, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Lens emission pulse (faint heartbeat as it scans)
+	var lpulse: Tween = lens_pivot.create_tween().set_loops()
+	lpulse.tween_property(lens_glass_mat, "emission_energy_multiplier", 2.4, 1.0).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(lens_glass_mat, "emission_energy_multiplier", 1.0, 1.0).set_ease(Tween.EASE_IN_OUT)
+	# Slow body breathing
+	var breath: Tween = ovl.create_tween().set_loops()
+	breath.tween_property(ovl, "scale:y", 1.012, 2.0).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(ovl, "scale:y", 0.992, 2.0).set_ease(Tween.EASE_IN_OUT)
