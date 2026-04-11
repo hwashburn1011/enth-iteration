@@ -1550,6 +1550,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_data_packets(geom)
 	# Epic-2 T60: defensive turret base
 	_build_d2_turret(geom)
+	# Epic-2 T61: floating architecture debris field overhead
+	_build_d2_floating_debris(geom)
+	# Epic-2 T62: suspended power lines spanning the district
+	_build_d2_power_lines(geom)
+	# Epic-2 T63: quarantine zone with biohazard tape barrier
+	_build_d2_quarantine_zone(geom)
+	# Epic-2 T64: crashed lander pod with deployable ramp
+	_build_d2_lander_pod(geom)
+	# Epic-2 T65: info broker NPC at a small data table
+	_build_d2_info_broker_npc()
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -12758,4 +12768,427 @@ func _build_d2_turret(geom: Node) -> void:
 	turret.add_child(sb)
 
 
+func _build_d2_floating_debris(geom: Node) -> void:
+	## Epic-2 T61: 8 large slabs of cracked architecture floating overhead
+	## as if torn from a broken world. Each is a tilted slab on a slow
+	## bobbing tween, scattered across the district.
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 88
+	for i in 8:
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		slab.name = "D2FloatingSlab_%d" % i
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(rng.randf_range(1.4, 2.6), rng.randf_range(0.20, 0.55), rng.randf_range(1.4, 2.6))
+		slab.mesh = smesh
+		slab.position = D2_CENTER + Vector3(
+			rng.randf_range(-22, 22),
+			rng.randf_range(8, 14),
+			rng.randf_range(-16, 16)
+		)
+		slab.rotation = Vector3(
+			deg_to_rad(rng.randf_range(-25, 25)),
+			deg_to_rad(rng.randf_range(0, 360)),
+			deg_to_rad(rng.randf_range(-25, 25))
+		)
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.16, 0.13, 0.10)
+		mat.metallic = 0.30
+		mat.roughness = 0.65
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.40, 0.20)
+		mat.emission_energy_multiplier = 0.30
+		slab.material_override = mat
+		geom.add_child(slab)
+		# Slow bob + drift
+		var origin: Vector3 = slab.position
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(slab, "position", origin + Vector3(0, 0.55, 0), 2.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(slab, "position", origin, 2.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		# Slow lazy rotation
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(slab, "rotation:y", slab.rotation.y + TAU, 16.0 + i * 1.5)
+
+
+func _build_d2_power_lines(geom: Node) -> void:
+	## Epic-2 T62: 3 suspended power lines running across the district from
+	## tall metal poles. Each line is a thin sagging cylinder + small spark
+	## that periodically slides along the wire.
+	var pole_specs: Array = [
+		[D2_CENTER + Vector3(-22, 0, -14), D2_CENTER + Vector3(22, 0, -14)],
+		[D2_CENTER + Vector3(-22, 0, 0), D2_CENTER + Vector3(22, 0, 0)],
+		[D2_CENTER + Vector3(-22, 0, 14), D2_CENTER + Vector3(22, 0, 14)],
+	]
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	pole_mat.roughness = 0.30
+	for i in pole_specs.size():
+		var from: Vector3 = pole_specs[i][0]
+		var to: Vector3 = pole_specs[i][1]
+		# 2 metal poles at the endpoints
+		for endpoint in [from, to]:
+			var pole: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.10
+			pmesh.bottom_radius = 0.14
+			pmesh.height = 6.0
+			pole.mesh = pmesh
+			pole.position = endpoint + Vector3(0, 3.0, 0)
+			pole.material_override = pole_mat
+			geom.add_child(pole)
+			# Cross arm
+			var arm: MeshInstance3D = MeshInstance3D.new()
+			var amesh: BoxMesh = BoxMesh.new()
+			amesh.size = Vector3(1.40, 0.10, 0.10)
+			arm.mesh = amesh
+			arm.position = endpoint + Vector3(0, 5.85, 0)
+			arm.material_override = pole_mat
+			geom.add_child(arm)
+			# Collision per pole
+			var sb: StaticBody3D = StaticBody3D.new()
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.20
+			cap.height = 6.0
+			cs.shape = cap
+			cs.position = endpoint + Vector3(0, 3.0, 0)
+			sb.add_child(cs)
+			geom.add_child(sb)
+		# Power line — long thin cylinder slightly sagging at the middle
+		var line: MeshInstance3D = MeshInstance3D.new()
+		line.name = "D2PowerLine_%d" % i
+		var dist: float = from.distance_to(to)
+		var lmesh: CylinderMesh = CylinderMesh.new()
+		lmesh.top_radius = 0.04
+		lmesh.bottom_radius = 0.04
+		lmesh.height = dist
+		line.mesh = lmesh
+		line.position = (from + to) * 0.5 + Vector3(0, 5.50, 0)
+		line.rotation = Vector3(0, 0, deg_to_rad(90))
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = Color(0.05, 0.05, 0.10)
+		lmat.metallic = 0.55
+		line.material_override = lmat
+		geom.add_child(line)
+		# Spark traveling along the line
+		var spark: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.10
+		sm.height = 0.20
+		spark.mesh = sm
+		spark.position = from + Vector3(0, 5.50, 0)
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(0.55, 0.95, 1.0)
+		smat.emission_enabled = true
+		smat.emission = Color(0.55, 0.95, 1.0)
+		smat.emission_energy_multiplier = 3.0
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		spark.material_override = smat
+		geom.add_child(spark)
+		var travel: Tween = create_tween().set_loops()
+		travel.tween_property(spark, "position", to + Vector3(0, 5.50, 0), 5.0 + i * 0.4).set_ease(Tween.EASE_IN_OUT)
+		travel.tween_property(spark, "position", from + Vector3(0, 5.50, 0), 5.0 + i * 0.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d2_quarantine_zone(geom: Node) -> void:
+	## Epic-2 T63: a quarantine zone marked off with yellow biohazard tape
+	## stretched between 4 metal posts forming a square. Inside the zone,
+	## a single sealed container with a hazard symbol.
+	var zone: Node3D = Node3D.new()
+	zone.name = "D2QuarantineZone"
+	zone.position = D2_CENTER + Vector3(-15, 0, 0)
+	geom.add_child(zone)
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	# 4 corner posts forming a 3x3 square
+	var post_offsets: Array[Vector3] = [
+		Vector3(-1.5, 0, -1.5),
+		Vector3(1.5, 0, -1.5),
+		Vector3(-1.5, 0, 1.5),
+		Vector3(1.5, 0, 1.5),
+	]
+	for off in post_offsets:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.07
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 1.40
+		post.mesh = pmesh
+		post.position = off + Vector3(0, 0.70, 0)
+		post.material_override = post_mat
+		zone.add_child(post)
+	# Yellow biohazard tape between posts at 2 heights
+	var tape_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tape_mat.albedo_color = Color(1.0, 0.85, 0.20)
+	tape_mat.emission_enabled = true
+	tape_mat.emission = Color(1.0, 0.95, 0.30)
+	tape_mat.emission_energy_multiplier = 1.4
+	tape_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 sides x 2 heights = 8 tape segments
+	var tape_specs: Array = [
+		[Vector3(0, 0, -1.5), Vector3(3.0, 0.10, 0.05)],
+		[Vector3(0, 0, 1.5), Vector3(3.0, 0.10, 0.05)],
+		[Vector3(-1.5, 0, 0), Vector3(0.05, 0.10, 3.0)],
+		[Vector3(1.5, 0, 0), Vector3(0.05, 0.10, 3.0)],
+	]
+	for spec in tape_specs:
+		for ty: float in [0.55, 1.10]:
+			var tape: MeshInstance3D = MeshInstance3D.new()
+			var tmesh: BoxMesh = BoxMesh.new()
+			tmesh.size = spec[1]
+			tape.mesh = tmesh
+			var p: Vector3 = spec[0]
+			p.y = ty
+			tape.position = p
+			tape.material_override = tape_mat
+			zone.add_child(tape)
+	# Sealed container at the center with hazard symbol
+	var container_mat: StandardMaterial3D = StandardMaterial3D.new()
+	container_mat.albedo_color = Color(0.18, 0.20, 0.24)
+	container_mat.metallic = 0.85
+	container_mat.roughness = 0.40
+	var container: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.0, 0.85, 0.85)
+	container.mesh = cmesh
+	container.position = Vector3(0, 0.42, 0)
+	container.material_override = container_mat
+	zone.add_child(container)
+	# Hazard symbol on the front
+	var hazard: Label3D = Label3D.new()
+	hazard.text = "☣"
+	hazard.position = Vector3(0, 0.42, 0.45)
+	hazard.modulate = Color(1.0, 0.95, 0.30)
+	hazard.outline_modulate = Color(0, 0, 0, 0.85)
+	hazard.outline_size = 4
+	hazard.font_size = 36
+	hazard.no_depth_test = true
+	zone.add_child(hazard)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "QUARANTINE"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(1.0, 0.85, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	zone.add_child(label)
+	# Collision around container
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.0, 0.85, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.42, 0)
+	sb.add_child(cs)
+	zone.add_child(sb)
+
+
+func _build_d2_lander_pod(geom: Node) -> void:
+	## Epic-2 T64: a crashed lander pod — egg-shaped capsule with 4 landing
+	## legs splayed outward, hatch open with a deployable ramp dropped to
+	## the ground, glowing cyan interior visible.
+	var pod: Node3D = Node3D.new()
+	pod.name = "D2LanderPod"
+	pod.position = D2_CENTER + Vector3(18, 0, 8)
+	pod.rotation = Vector3(0, deg_to_rad(-30), deg_to_rad(8))
+	geom.add_child(pod)
+	# Capsule body
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.55, 0.55, 0.65)
+	hull_mat.metallic = 0.85
+	hull_mat.roughness = 0.30
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 1.10
+	hmesh.height = 2.80
+	hull.mesh = hmesh
+	hull.position = Vector3(0, 1.40, 0)
+	hull.scale = Vector3(0.85, 1.0, 0.85)
+	hull.material_override = hull_mat
+	pod.add_child(hull)
+	# 4 landing legs splayed
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	leg_mat.metallic = 0.85
+	leg_mat.roughness = 0.30
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: CylinderMesh = CylinderMesh.new()
+		lmesh.top_radius = 0.10
+		lmesh.bottom_radius = 0.14
+		lmesh.height = 1.40
+		leg.mesh = lmesh
+		leg.position = Vector3(cos(angle) * 0.85, 0.45, sin(angle) * 0.85)
+		# Splay outward
+		leg.rotation = Vector3(sin(angle) * deg_to_rad(20), 0, -cos(angle) * deg_to_rad(20))
+		leg.material_override = leg_mat
+		pod.add_child(leg)
+		# Foot pad
+		var foot: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: CylinderMesh = CylinderMesh.new()
+		fmesh.top_radius = 0.18
+		fmesh.bottom_radius = 0.18
+		fmesh.height = 0.06
+		foot.mesh = fmesh
+		foot.position = Vector3(cos(angle) * 1.20, 0.05, sin(angle) * 1.20)
+		foot.material_override = leg_mat
+		pod.add_child(foot)
+	# Open hatch — flat box at the front rotated outward
+	var hatch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hatch_mat.albedo_color = Color(0.20, 0.50, 0.70, 0.55)
+	hatch_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	hatch_mat.emission_enabled = true
+	hatch_mat.emission = Color(0.55, 0.95, 1.0)
+	hatch_mat.emission_energy_multiplier = 1.6
+	hatch_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var hatch: MeshInstance3D = MeshInstance3D.new()
+	var ha_mesh: BoxMesh = BoxMesh.new()
+	ha_mesh.size = Vector3(1.20, 1.40, 0.06)
+	hatch.mesh = ha_mesh
+	hatch.position = Vector3(0.30, 1.40, 0.95)
+	hatch.rotation = Vector3(0, deg_to_rad(60), 0)
+	hatch.material_override = hatch_mat
+	pod.add_child(hatch)
+	# Ramp — long flat box from hatch to the ground
+	var ramp: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(1.20, 0.06, 1.85)
+	ramp.mesh = rmesh
+	ramp.position = Vector3(0, 0.40, 1.85)
+	ramp.rotation = Vector3(deg_to_rad(15), 0, 0)
+	ramp.material_override = hull_mat
+	pod.add_child(ramp)
+	# Glowing cyan interior light visible through hatch
+	var interior: OmniLight3D = OmniLight3D.new()
+	interior.position = Vector3(0, 1.40, 0)
+	interior.light_color = Color(0.55, 0.95, 1.0)
+	interior.light_energy = 1.6
+	interior.omni_range = 4.0
+	pod.add_child(interior)
+	# Collision around the body
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.0
+	cap.height = 2.40
+	cs.shape = cap
+	cs.position = Vector3(0, 1.40, 0)
+	sb.add_child(cs)
+	pod.add_child(sb)
+
+
+func _build_d2_info_broker_npc() -> void:
+	## Epic-2 T65: an info broker NPC standing behind a small data table
+	## with a holographic file folder floating above it. The "trade
+	## information for credits" archetype.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var broker: Node3D = Node3D.new()
+	broker.name = "D2InfoBroker"
+	broker.position = D2_CENTER + Vector3(-10, 0, -2)
+	slots.add_child(broker)
+	# Table
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.18, 0.16, 0.12)
+	table_mat.metallic = 0.40
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(1.20, 0.85, 0.55)
+	table.mesh = tmesh
+	table.position = Vector3(0, 0.42, 0.65)
+	table.material_override = table_mat
+	broker.add_child(table)
+	# Floating holographic file folder above the table
+	var folder: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: BoxMesh = BoxMesh.new()
+	fmesh.size = Vector3(0.85, 0.55, 0.04)
+	folder.mesh = fmesh
+	folder.position = Vector3(0, 1.30, 0.65)
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.95, 0.85, 0.30, 0.85)
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fmat.emission_enabled = true
+	fmat.emission = Color(1.0, 0.95, 0.40)
+	fmat.emission_energy_multiplier = 1.8
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	folder.material_override = fmat
+	broker.add_child(folder)
+	# Bob the folder
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(folder, "position:y", 1.45, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(folder, "position:y", 1.30, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(folder, "rotation:y", TAU, 6.0)
+	# Body — slim figure
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.18, 0.30)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.45
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.40, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.36
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	broker.add_child(body)
+	# Top hat (small cylinder)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: CylinderMesh = CylinderMesh.new()
+	hmesh.top_radius = 0.30
+	hmesh.bottom_radius = 0.30
+	hmesh.height = 0.45
+	hat.mesh = hmesh
+	hat.position = Vector3(0, 1.62, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.05, 0.04, 0.10)
+	hmat.metallic = 0.30
+	hmat.roughness = 0.55
+	hat.material_override = hmat
+	broker.add_child(hat)
+	# Hat brim
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brmesh: CylinderMesh = CylinderMesh.new()
+	brmesh.top_radius = 0.45
+	brmesh.bottom_radius = 0.45
+	brmesh.height = 0.05
+	brim.mesh = brmesh
+	brim.position = Vector3(0, 1.40, 0)
+	brim.material_override = hmat
+	broker.add_child(brim)
+	# 2 yellow eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.95, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.95, 0.30)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.30, 0.30)
+		eye.material_override = eye_mat
+		broker.add_child(eye)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Info Broker"
+	label.position = Vector3(0, 2.10, 0)
+	label.modulate = Color(1.0, 0.95, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	broker.add_child(label)
 
