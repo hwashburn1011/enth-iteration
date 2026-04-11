@@ -17150,6 +17150,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_street_cat(geom)
 	# Epic-6 T25: vending machine row
 	_build_d6_vending_machines(geom)
+	# Epic-6 T26: dance club entrance
+	_build_d6_dance_club(geom)
+	# Epic-6 T27: club bouncer NPC
+	_build_d6_bouncer_npc()
+	# Epic-6 T28: street performer NPC
+	_build_d6_street_performer_npc()
+	# Epic-6 T29: graffiti walls
+	_build_d6_graffiti_walls(geom)
+	# Epic-6 T30: power transformer
+	_build_d6_power_transformer(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -19152,6 +19162,451 @@ func _build_d6_vending_machines(geom: Node) -> void:
 		cs.shape = cb
 		sb.add_child(cs)
 		machine.add_child(sb)
+
+
+func _build_d6_dance_club(geom: Node) -> void:
+	## Epic-6 T26: dance club entrance — dark facade with pulsing magenta
+	## door arch + 2 strobe lights flanking + thumping speaker boxes.
+	var club: Node3D = Node3D.new()
+	club.name = "DanceClub"
+	club.position = Vector3(D6_CENTER.x - 22.0, 0.0, 14.0)
+	geom.add_child(club)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.05, 0.15)
+	dark_mat.metallic = 0.30
+	dark_mat.roughness = 0.55
+	# Facade wall
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(5.50, 4.20, 0.40)
+	wall.mesh = wm
+	wall.material_override = dark_mat
+	wall.position = Vector3(0, 2.10, -1.20)
+	club.add_child(wall)
+	# Side walls
+	for sx in [-2.55, 2.55]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.40, 4.20, 2.85)
+		side.mesh = swm
+		side.material_override = dark_mat
+		side.position = Vector3(sx, 2.10, 0)
+		club.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(5.50, 0.20, 3.10)
+	roof.mesh = rm
+	roof.material_override = dark_mat
+	roof.position = Vector3(0, 4.30, 0)
+	club.add_child(roof)
+	# Door arch (dark interior)
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(1.85, 2.85, 0.10)
+	door.mesh = dm
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.05, 0.02, 0.10)
+	door_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	door.material_override = door_mat
+	door.position = Vector3(0, 1.55, 1.45)
+	club.add_child(door)
+	# Magenta arch tube around the door
+	var arch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	arch_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	arch_mat.emission_enabled = true
+	arch_mat.emission = Color(0.95, 0.20, 0.85)
+	arch_mat.emission_energy_multiplier = 4.0
+	arch_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for w in [
+		{"size": Vector3(2.10, 0.10, 0.06), "pos": Vector3(0, 0.10, 1.50)},
+		{"size": Vector3(2.10, 0.10, 0.06), "pos": Vector3(0, 3.10, 1.50)},
+		{"size": Vector3(0.10, 3.0, 0.06), "pos": Vector3(-1.0, 1.55, 1.50)},
+		{"size": Vector3(0.10, 3.0, 0.06), "pos": Vector3( 1.0, 1.55, 1.50)},
+	]:
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = w["size"]
+		tube.mesh = tm
+		tube.material_override = arch_mat
+		tube.position = w["pos"]
+		club.add_child(tube)
+	# 2 strobe lights flanking the door
+	for sx in [-2.20, 2.20]:
+		var strobe: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.18
+		sm.height = 0.32
+		strobe.mesh = sm
+		var strobe_mat: StandardMaterial3D = StandardMaterial3D.new()
+		strobe_mat.albedo_color = Color(0.95, 0.95, 1.0)
+		strobe_mat.emission_enabled = true
+		strobe_mat.emission = Color(0.95, 0.95, 1.0)
+		strobe_mat.emission_energy_multiplier = 4.0
+		strobe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		strobe.material_override = strobe_mat
+		strobe.position = Vector3(sx, 3.40, 1.45)
+		club.add_child(strobe)
+		# Strobe flicker
+		var tw: Tween = strobe.create_tween().set_loops()
+		tw.tween_property(strobe, "scale", Vector3.ONE * 1.40, 0.10)
+		tw.tween_property(strobe, "scale", Vector3.ONE * 0.30, 0.10)
+		tw.tween_interval(0.10)
+	# 2 speaker boxes on the ground beside the entrance
+	var speaker_mat: StandardMaterial3D = StandardMaterial3D.new()
+	speaker_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	speaker_mat.metallic = 0.55
+	speaker_mat.roughness = 0.55
+	for sx in [-2.20, 2.20]:
+		var spk: MeshInstance3D = MeshInstance3D.new()
+		var spm: BoxMesh = BoxMesh.new()
+		spm.size = Vector3(0.85, 1.40, 0.85)
+		spk.mesh = spm
+		spk.material_override = speaker_mat
+		spk.position = Vector3(sx * 0.80, 0.70, 1.65)
+		club.add_child(spk)
+		# Speaker cone (dark sphere)
+		var cone: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.22
+		cm.height = 0.40
+		cone.mesh = cm
+		var cone_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cone_mat.albedo_color = Color(0.20, 0.18, 0.22)
+		cone.material_override = cone_mat
+		cone.position = Vector3(sx * 0.80, 0.95, 2.05)
+		cone.scale = Vector3(1.0, 1.0, 0.30)
+		club.add_child(cone)
+		# Subtle pulse (bass)
+		var ts: Tween = cone.create_tween().set_loops()
+		ts.tween_property(cone, "scale", Vector3(1.05, 1.05, 0.40), 0.20)
+		ts.tween_property(cone, "scale", Vector3(0.95, 0.95, 0.30), 0.20)
+	# Massive magenta light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 4.0
+	light.omni_range = 9.0
+	light.position = Vector3(0, 1.85, 1.45)
+	club.add_child(light)
+	# Light pulse
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 5.5, 0.40)
+	twl.tween_property(light, "light_energy", 3.5, 0.40)
+	# Club collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 4.20, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	club.add_child(sb)
+
+
+func _build_d6_bouncer_npc() -> void:
+	## Epic-6 T27: club bouncer NPC — large frame, sunglasses, arms crossed,
+	## standing in front of the club door.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BouncerSlot"
+	slot.position = Vector3(D6_CENTER.x - 22.0, 0.0, 16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Bouncer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Vault")
+	if "npc_id" in npc:
+		npc.set("npc_id", "bouncer_d6")
+	npc.scale = Vector3(1.20, 1.10, 1.20)
+	slot.add_child(npc)
+	# Big black suit
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.95, 1.20, 0.55)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.10, 0.08, 0.12)
+	suit_mat.roughness = 0.55
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.60, 0)
+	npc.add_child(suit)
+	# Black sunglasses
+	var shades: MeshInstance3D = MeshInstance3D.new()
+	var smm: BoxMesh = BoxMesh.new()
+	smm.size = Vector3(0.40, 0.10, 0.06)
+	shades.mesh = smm
+	var shades_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shades_mat.albedo_color = Color(0.05, 0.05, 0.08)
+	shades_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	shades.material_override = shades_mat
+	shades.position = Vector3(0, 1.40, 0.21)
+	npc.add_child(shades)
+	# Crossed arms (2 horizontal box arms in front of chest)
+	for sx in [-0.20, 0.20]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.55, 0.18, 0.18)
+		arm.mesh = am
+		arm.material_override = suit_mat
+		arm.position = Vector3(sx * 0.20, 0.85, 0.30)
+		arm.rotation_degrees = Vector3(0, 0, 12.0 if sx > 0 else -12.0)
+		npc.add_child(arm)
+	# Earpiece (small white sphere on ear)
+	var earpiece: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.05
+	em.height = 0.10
+	earpiece.mesh = em
+	var ear_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ear_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	earpiece.material_override = ear_mat
+	earpiece.position = Vector3(0.18, 1.40, 0)
+	npc.add_child(earpiece)
+
+
+func _build_d6_street_performer_npc() -> void:
+	## Epic-6 T28: street performer NPC dancing — colorful jumpsuit + arm
+	## raise tween animation. Hat on the ground for tips.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "StreetPerformerSlot"
+	slot.position = Vector3(D6_CENTER.x - 4.0, 0.0, -10.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "StreetPerformer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Strobe")
+	if "npc_id" in npc:
+		npc.set("npc_id", "performer_d6")
+	slot.add_child(npc)
+	# Colorful jumpsuit (split bright colors)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.65, 0.55, 0.40)
+	top.mesh = tm
+	var top_mat: StandardMaterial3D = StandardMaterial3D.new()
+	top_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	top_mat.emission_enabled = true
+	top_mat.emission = Color(0.95, 0.30, 0.85)
+	top_mat.emission_energy_multiplier = 0.55
+	top_mat.roughness = 0.55
+	top.material_override = top_mat
+	top.position = Vector3(0, 0.85, 0)
+	npc.add_child(top)
+	# Lower half (different color)
+	var bottom: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.65, 0.55, 0.40)
+	bottom.mesh = bm
+	var bot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bot_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	bot_mat.emission_enabled = true
+	bot_mat.emission = Color(0.30, 1.0, 1.0)
+	bot_mat.emission_energy_multiplier = 0.55
+	bot_mat.roughness = 0.55
+	bottom.material_override = bot_mat
+	bottom.position = Vector3(0, 0.30, 0)
+	npc.add_child(bottom)
+	# Hat on ground for tips (small cylinder + flat brim)
+	var hat_brim: MeshInstance3D = MeshInstance3D.new()
+	var hbm: CylinderMesh = CylinderMesh.new()
+	hbm.top_radius = 0.30
+	hbm.bottom_radius = 0.30
+	hbm.height = 0.04
+	hat_brim.mesh = hbm
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	hat_mat.metallic = 0.30
+	hat_brim.material_override = hat_mat
+	hat_brim.position = Vector3(0.85, 0.04, 0.20)
+	npc.add_child(hat_brim)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.20
+	hm.bottom_radius = 0.20
+	hm.height = 0.30
+	hat.mesh = hm
+	hat.material_override = hat_mat
+	hat.position = Vector3(0.85, 0.18, 0.20)
+	npc.add_child(hat)
+	# Few coin sparkles in hat
+	var coin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coin_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	coin_mat.emission_enabled = true
+	coin_mat.emission = Color(1.0, 0.85, 0.30)
+	coin_mat.emission_energy_multiplier = 1.4
+	coin_mat.metallic = 0.85
+	coin_mat.roughness = 0.10
+	for i in 4:
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.04
+		cmm.bottom_radius = 0.04
+		cmm.height = 0.02
+		coin.mesh = cmm
+		coin.material_override = coin_mat
+		coin.position = Vector3(0.85 + randf_range(-0.10, 0.10), 0.32, 0.20 + randf_range(-0.10, 0.10))
+		npc.add_child(coin)
+	# Dance: tilt body left/right
+	var tw: Tween = npc.create_tween().set_loops()
+	tw.tween_property(npc, "rotation_degrees:z", 8.0, 0.30)
+	tw.tween_property(npc, "rotation_degrees:z", -8.0, 0.30)
+
+
+func _build_d6_graffiti_walls(geom: Node) -> void:
+	## Epic-6 T29: 4 graffiti walls — small dark walls with bright colored
+	## emissive splash decals.
+	var walls: Node3D = Node3D.new()
+	walls.name = "GraffitiWalls"
+	walls.position = Vector3(D6_CENTER.x + 28.0, 0.0, -16.0)
+	geom.add_child(walls)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.18, 0.15, 0.20)
+	dark_mat.roughness = 0.85
+	var splash_colors: Array = [
+		Color(0.95, 0.20, 0.85),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.30),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 4:
+		var wall: Node3D = Node3D.new()
+		wall.position = Vector3(i * 2.40, 0, 0)
+		walls.add_child(wall)
+		# Wall slab
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.20, 3.40, 0.30)
+		slab.mesh = sm
+		slab.material_override = dark_mat
+		slab.position = Vector3(0, 1.70, 0)
+		wall.add_child(slab)
+		# Random splashes
+		for s in 5:
+			var splash: MeshInstance3D = MeshInstance3D.new()
+			var spm: SphereMesh = SphereMesh.new()
+			spm.radius = 0.30 + randf() * 0.20
+			spm.height = 0.18
+			splash.mesh = spm
+			var col: Color = splash_colors[(i + s) % 4]
+			var splash_mat: StandardMaterial3D = StandardMaterial3D.new()
+			splash_mat.albedo_color = col
+			splash_mat.emission_enabled = true
+			splash_mat.emission = col
+			splash_mat.emission_energy_multiplier = 1.4
+			splash_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			splash.material_override = splash_mat
+			splash.position = Vector3(
+				randf_range(-0.85, 0.85),
+				0.55 + randf_range(0, 2.40),
+				0.18
+			)
+			splash.scale = Vector3(1.0, 0.85, 0.10)
+			wall.add_child(splash)
+		# Wall collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.70, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.20, 3.40, 0.30)
+		cs.shape = cb
+		sb.add_child(cs)
+		wall.add_child(sb)
+
+
+func _build_d6_power_transformer(geom: Node) -> void:
+	## Epic-6 T30: tall electrical power transformer — metal box on a
+	## concrete pad with an arcing cyan electricity sphere on top.
+	var trans: Node3D = Node3D.new()
+	trans.name = "PowerTransformer"
+	trans.position = Vector3(D6_CENTER.x + 14.0, 0.0, 18.0)
+	geom.add_child(trans)
+	var concrete_mat: StandardMaterial3D = StandardMaterial3D.new()
+	concrete_mat.albedo_color = Color(0.40, 0.42, 0.45)
+	concrete_mat.roughness = 0.92
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.38)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Concrete pad
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(2.20, 0.20, 1.85)
+	pad.mesh = pm
+	pad.material_override = concrete_mat
+	pad.position = Vector3(0, 0.10, 0)
+	trans.add_child(pad)
+	# Main transformer box
+	var box: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.85, 2.40, 1.40)
+	box.mesh = bm
+	box.material_override = metal_mat
+	box.position = Vector3(0, 1.40, 0)
+	trans.add_child(box)
+	# Caution stripes (yellow/black warning)
+	for i in 3:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.85, 0.10, 0.04)
+		stripe.mesh = sm
+		var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stripe_mat.albedo_color = Color(0.95, 0.85, 0.20) if i % 2 == 0 else Color(0.10, 0.08, 0.10)
+		stripe_mat.emission_enabled = true
+		stripe_mat.emission = Color(0.95, 0.85, 0.20) if i % 2 == 0 else Color(0.0, 0.0, 0.0)
+		stripe_mat.emission_energy_multiplier = 0.65
+		stripe.material_override = stripe_mat
+		stripe.position = Vector3(0, 0.85 + i * 0.18, 0.72)
+		trans.add_child(stripe)
+	# Arcing electricity sphere on top
+	var arc: MeshInstance3D = MeshInstance3D.new()
+	var am: SphereMesh = SphereMesh.new()
+	am.radius = 0.35
+	am.height = 0.65
+	arc.mesh = am
+	var arc_mat: StandardMaterial3D = StandardMaterial3D.new()
+	arc_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.85)
+	arc_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	arc_mat.emission_enabled = true
+	arc_mat.emission = Color(0.30, 1.0, 1.0)
+	arc_mat.emission_energy_multiplier = 4.0
+	arc_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arc.material_override = arc_mat
+	arc.position = Vector3(0, 2.85, 0)
+	trans.add_child(arc)
+	# Arc flicker
+	var tw: Tween = arc.create_tween().set_loops()
+	tw.tween_property(arc, "scale", Vector3(1.20, 1.20, 1.20), 0.10)
+	tw.tween_property(arc, "scale", Vector3(0.85, 0.85, 0.85), 0.10)
+	# Arc OmniLight
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.85, 0)
+	trans.add_child(light)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 3.5, 0.10)
+	twl.tween_property(light, "light_energy", 2.5, 0.10)
+	# Box collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.40, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 2.40, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	trans.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
