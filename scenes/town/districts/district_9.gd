@@ -103,6 +103,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_lava_brook_bridge(geom)
 	_build_d9_basalt_monolith_ridge(geom)
 	_build_d9_obsidian_shard_field(geom)
+	_build_d9_forge_imp_pack(geom)
 	print("[D9Builder] done")
 
 
@@ -9241,4 +9242,121 @@ func _build_d9_obsidian_shard_field(geom: Node) -> void:
 	var cpulse: Tween = pivot.create_tween().set_loops()
 	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_forge_imp_pack(geom: Node) -> void:
+	## Epic-9 T83: 4 forge imp creatures hovering near the geyser as wild
+	## forge fauna. Each imp is a small floating molten body with a
+	## glowing core, two stubby arms, two tiny eye-glows, ember tail
+	## particles, and a hover bob + drift loop. Combat-preview enemies
+	## that establish "wild forge fauna" in central D9.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ForgeImpPack"
+	pivot.position = D9_CENTER + Vector3(56, 0, -6)
+	geom.add_child(pivot)
+	# Shared materials
+	var molten_mat: StandardMaterial3D = StandardMaterial3D.new()
+	molten_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	molten_mat.emission_enabled = true
+	molten_mat.emission = Color(1.0, 0.45, 0.05)
+	molten_mat.emission_energy_multiplier = 5.5
+	molten_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var rind_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rind_mat.albedo_color = Color(0.18, 0.10, 0.06)
+	rind_mat.metallic = 0.30
+	rind_mat.roughness = 0.85
+	rind_mat.emission_enabled = true
+	rind_mat.emission = Color(0.85, 0.30, 0.05)
+	rind_mat.emission_energy_multiplier = 0.45
+	# Place 4 imps in a loose ring around the geyser
+	var imp_positions: Array = [
+		Vector3(2.50, 1.20, 0.0),
+		Vector3(-2.50, 1.40, 1.5),
+		Vector3(0.0, 1.10, -2.50),
+		Vector3(1.80, 1.30, -1.80),
+	]
+	for i in imp_positions.size():
+		var ip: Vector3 = imp_positions[i]
+		# Imp pivot — root for hover and drift
+		var imp: Node3D = Node3D.new()
+		imp.name = "ForgeImp_" + str(i)
+		imp.position = ip
+		pivot.add_child(imp)
+		# ---- Outer charred rind shell ----
+		var shell: MeshInstance3D = MeshInstance3D.new()
+		var shm: SphereMesh = SphereMesh.new()
+		shm.radius = 0.35
+		shm.height = 0.65
+		shell.mesh = shm
+		shell.material_override = rind_mat
+		shell.position = Vector3(0, 0, 0)
+		imp.add_child(shell)
+		# ---- Inner glowing molten core (smaller, brighter) ----
+		var core: MeshInstance3D = MeshInstance3D.new()
+		var cmm: SphereMesh = SphereMesh.new()
+		cmm.radius = 0.22
+		cmm.height = 0.40
+		core.mesh = cmm
+		core.material_override = molten_mat
+		core.position = Vector3(0, 0, 0)
+		imp.add_child(core)
+		# ---- Two stubby arms — small bent boxes ----
+		for ax in [-0.40, 0.40]:
+			var arm: MeshInstance3D = MeshInstance3D.new()
+			var amm: BoxMesh = BoxMesh.new()
+			amm.size = Vector3(0.10, 0.10, 0.30)
+			arm.mesh = amm
+			arm.material_override = rind_mat
+			arm.position = Vector3(ax, -0.05, 0)
+			arm.rotation.z = 0.50 * sign(ax)
+			imp.add_child(arm)
+		# ---- Two tiny eye-glow dots on the front face ----
+		for ex in [-0.10, 0.10]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = 0.04
+			em.height = 0.08
+			eye.mesh = em
+			eye.material_override = molten_mat
+			eye.position = Vector3(ex, 0.05, -0.32)
+			imp.add_child(eye)
+		# ---- Ember tail particles trailing below ----
+		var tail: GPUParticles3D = GPUParticles3D.new()
+		tail.position = Vector3(0, -0.30, 0)
+		tail.amount = 14
+		tail.lifetime = 1.4
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, -1, 0)
+		pmat.spread = 18.0
+		pmat.initial_velocity_min = 0.5
+		pmat.initial_velocity_max = 1.0
+		pmat.gravity = Vector3(0, -1.5, 0)
+		pmat.scale_min = 0.05
+		pmat.scale_max = 0.10
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		tail.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.04
+		psmesh.height = 0.08
+		tail.draw_pass_1 = psmesh
+		imp.add_child(tail)
+		# ---- Per-imp OmniLight ----
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 0, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.8
+		lt.omni_range = 4.5
+		imp.add_child(lt)
+		# ---- Hover bob (per-imp Y oscillation, varied period) ----
+		var bob_period: float = 1.2 + float(i) * 0.18
+		var bob: Tween = imp.create_tween().set_loops()
+		bob.tween_property(imp, "position:y", ip.y + 0.40, bob_period).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(imp, "position:y", ip.y - 0.10, bob_period).set_ease(Tween.EASE_IN_OUT)
+		# ---- Slow yaw spin so the imps face different directions over time ----
+		var spin: Tween = imp.create_tween().set_loops()
+		spin.tween_property(imp, "rotation:y", TAU, 4.5 + float(i) * 0.5)
+	# Shared molten core pulse
+	var mpulse: Tween = pivot.create_tween().set_loops()
+	mpulse.tween_property(molten_mat, "emission_energy_multiplier", 7.5, 1.2).set_ease(Tween.EASE_IN_OUT)
+	mpulse.tween_property(molten_mat, "emission_energy_multiplier", 4.0, 1.2).set_ease(Tween.EASE_IN_OUT)
 
