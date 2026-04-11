@@ -1353,6 +1353,16 @@ func _build_east_plaza() -> void:
 	_build_announcement_speakers(geom)
 	# Epic-1 T65: small statue garden — 4 mini ancestor busts around AI statue
 	_build_statue_garden(geom)
+	# Epic-1 T66: large radial floor decals around plaza center
+	_build_radial_floor_decals(geom)
+	# Epic-1 T67: hovering food vendor cart
+	_build_food_cart(geom)
+	# Epic-1 T68: ambient coin/currency drop animations
+	_build_coin_drops(geom)
+	# Epic-1 T69: tournament pit overhead spotlights
+	_build_pit_spotlights(geom)
+	# Epic-1 T70: ambient floating data-flake snow particles over the plaza
+	_build_data_snow(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -5184,3 +5194,322 @@ func _build_statue_garden(geom: Node) -> void:
 		cs.position = Vector3(0, 0.70, 0)
 		sb.add_child(cs)
 		bust.add_child(sb)
+
+
+func _build_radial_floor_decals(geom: Node) -> void:
+	## Epic-1 T66: 3 concentric flat torus rings on the plaza floor at the
+	## central market core. Sells the "circular plaza" feel and ties the
+	## eye toward the center fountain. Slowly rotates each at different rates.
+	var center := Vector3(32, 0.04, 0)
+	var ring_specs: Array = [
+		[2.6, 2.85, Color(0.30, 0.85, 1.0), 60.0],
+		[4.2, 4.45, Color(0.85, 0.40, 1.0), -90.0],
+		[6.0, 6.30, Color(0.45, 0.95, 0.65), 120.0],
+	]
+	for spec in ring_specs:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		ring.name = "EastPlazaRadialDecal_%d" % int(spec[0] * 10)
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = spec[0]
+		rmesh.outer_radius = spec[1]
+		ring.mesh = rmesh
+		ring.position = center
+		var color: Color = spec[2]
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(color.r * 0.30, color.g * 0.30, color.b * 0.30)
+		rmat.emission_enabled = true
+		rmat.emission = color
+		rmat.emission_energy_multiplier = 1.4
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override = rmat
+		geom.add_child(ring)
+		# 8 small "tick marks" arrayed around the ring
+		var tick_count: int = 8
+		for t in tick_count:
+			var angle: float = (float(t) / tick_count) * TAU
+			var radius: float = (spec[0] + spec[1]) * 0.5
+			var tick: MeshInstance3D = MeshInstance3D.new()
+			var tmesh: BoxMesh = BoxMesh.new()
+			tmesh.size = Vector3(0.30, 0.05, 0.10)
+			tick.mesh = tmesh
+			tick.position = Vector3(cos(angle) * radius, 0.02, sin(angle) * radius)
+			tick.rotation = Vector3(0, -angle, 0)
+			tick.material_override = rmat
+			ring.add_child(tick)
+		# Slow rotation
+		var period: float = float(spec[3])
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(ring, "rotation:y", TAU * sign(period), abs(period))
+
+
+func _build_food_cart(geom: Node) -> void:
+	## Epic-1 T67: hovering food vendor cart on the south plaza axis. A
+	## wheeled stall body floating just above the ground (no legs visible)
+	## with a striped awning and 3 plates of glowing data-snacks on top.
+	var cart: Node3D = Node3D.new()
+	cart.name = "EastPlazaFoodCart"
+	cart.position = Vector3(28, 0, 16)
+	geom.add_child(cart)
+	# Cart body
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.35, 0.18, 0.06)
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.95, 0.55, 0.20)
+	body_mat.emission_energy_multiplier = 0.40
+	body_mat.metallic = 0.30
+	body_mat.roughness = 0.55
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(2.0, 0.85, 1.0)
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.85, 0)
+	body.material_override = body_mat
+	cart.add_child(body)
+	# Hover glow underneath
+	var hover: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: CylinderMesh = CylinderMesh.new()
+	hmesh.top_radius = 0.85
+	hmesh.bottom_radius = 0.85
+	hmesh.height = 0.05
+	hover.mesh = hmesh
+	hover.position = Vector3(0, 0.30, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.30, 0.85, 1.0, 0.6)
+	hmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	hmat.emission_enabled = true
+	hmat.emission = Color(0.55, 0.95, 1.0)
+	hmat.emission_energy_multiplier = 1.8
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	hover.material_override = hmat
+	cart.add_child(hover)
+	# Bob the body slightly to suggest hovering
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(body, "position:y", 0.92, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(body, "position:y", 0.85, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Striped awning above
+	var awning_mat: StandardMaterial3D = StandardMaterial3D.new()
+	awning_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	awning_mat.emission_enabled = true
+	awning_mat.emission = Color(0.95, 0.40, 0.30)
+	awning_mat.emission_energy_multiplier = 0.95
+	awning_mat.metallic = 0.10
+	awning_mat.roughness = 0.55
+	var awning: MeshInstance3D = MeshInstance3D.new()
+	var amesh: BoxMesh = BoxMesh.new()
+	amesh.size = Vector3(2.4, 0.10, 1.4)
+	awning.mesh = amesh
+	awning.position = Vector3(0, 1.85, 0)
+	awning.material_override = awning_mat
+	cart.add_child(awning)
+	# 4 thin support posts from cart to awning
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.20, 0.20, 0.22)
+	post_mat.metallic = 0.85
+	for ox: float in [-0.95, 0.95]:
+		for oz: float in [-0.45, 0.45]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.04
+			pmesh.bottom_radius = 0.04
+			pmesh.height = 0.50
+			post.mesh = pmesh
+			post.position = Vector3(ox, 1.55, oz)
+			post.material_override = post_mat
+			cart.add_child(post)
+	# 3 glowing snack plates on top of cart
+	var snack_colors: Array[Color] = [
+		Color(0.45, 0.95, 0.65),
+		Color(0.95, 0.65, 0.20),
+		Color(0.85, 0.40, 1.0),
+	]
+	for i in 3:
+		var plate: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.18
+		pmesh.bottom_radius = 0.18
+		pmesh.height = 0.08
+		plate.mesh = pmesh
+		plate.position = Vector3(-0.6 + i * 0.6, 1.35, 0)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		var color: Color = snack_colors[i]
+		pmat.albedo_color = Color(color.r * 0.40, color.g * 0.40, color.b * 0.40)
+		pmat.emission_enabled = true
+		pmat.emission = color
+		pmat.emission_energy_multiplier = 1.4
+		pmat.metallic = 0.30
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		plate.material_override = pmat
+		cart.add_child(plate)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "DATA EATS"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.55, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	cart.add_child(label)
+	# Collision around body
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.0, 1.6, 1.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.85, 0)
+	sb.add_child(cs)
+	cart.add_child(sb)
+
+
+func _build_coin_drops(geom: Node) -> void:
+	## Epic-1 T68: 5 ambient coin-drop animations scattered through the
+	## plaza — small gold coins that endlessly fall, fade out near the floor,
+	## and reset to the top. Pure ambient sparkle.
+	var positions: Array[Vector3] = [
+		Vector3(27, 4, -8),
+		Vector3(34, 4, 4),
+		Vector3(38, 4, -10),
+		Vector3(42, 4, 8),
+		Vector3(30, 4, 12),
+	]
+	for i in positions.size():
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		coin.name = "EastPlazaCoinDrop_%d" % i
+		var cmesh: CylinderMesh = CylinderMesh.new()
+		cmesh.top_radius = 0.12
+		cmesh.bottom_radius = 0.12
+		cmesh.height = 0.05
+		coin.mesh = cmesh
+		coin.position = positions[i]
+		coin.rotation = Vector3(deg_to_rad(90), 0, 0)
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.95, 0.75, 0.25)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.85, 0.30)
+		cmat.emission_energy_multiplier = 1.6
+		cmat.metallic = 0.85
+		cmat.roughness = 0.20
+		coin.material_override = cmat
+		geom.add_child(coin)
+		# Continuous fall + spin
+		var origin: Vector3 = positions[i]
+		var fall: Tween = create_tween().set_loops()
+		var fall_speed: float = 2.4 + i * 0.3
+		fall.tween_property(coin, "position", origin + Vector3(0, -3.5, 0), fall_speed).set_ease(Tween.EASE_IN)
+		fall.tween_property(coin, "position", origin, 0.05)
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(coin, "rotation:z", TAU, 0.6)
+
+
+func _build_pit_spotlights(geom: Node) -> void:
+	## Epic-1 T69: 2 overhead spotlights illuminating the tournament pit at
+	## (40, 0, 12). Each is a high-mounted lamp on a tall pole + an actual
+	## SpotLight3D casting downward + a rotating cone beam mesh for visibility.
+	var pit_center := Vector3(40, 0, 12)
+	for i in 2:
+		var pole_root: Node3D = Node3D.new()
+		pole_root.name = "EastPlazaPitSpotlight_%d" % i
+		var off: Vector3 = Vector3(-4 if i == 0 else 4, 0, 0)
+		pole_root.position = pit_center + off
+		geom.add_child(pole_root)
+		# Tall pole
+		var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+		pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+		pole_mat.metallic = 0.85
+		pole_mat.roughness = 0.30
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.10
+		pmesh.bottom_radius = 0.14
+		pmesh.height = 6.5
+		pole.mesh = pmesh
+		pole.position = Vector3(0, 3.25, 0)
+		pole.material_override = pole_mat
+		pole_root.add_child(pole)
+		# Lamp head
+		var lamp: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: BoxMesh = BoxMesh.new()
+		lmesh.size = Vector3(0.55, 0.30, 0.55)
+		lamp.mesh = lmesh
+		lamp.position = Vector3(0, 6.55, 0)
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = Color(0.85, 0.85, 0.95)
+		lmat.emission_enabled = true
+		lmat.emission = Color(1.0, 0.95, 0.80)
+		lmat.emission_energy_multiplier = 2.0
+		lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		lamp.material_override = lmat
+		pole_root.add_child(lamp)
+		# Spot light
+		var spot: SpotLight3D = SpotLight3D.new()
+		spot.position = Vector3(0, 6.40, 0)
+		spot.rotation = Vector3(deg_to_rad(-90), 0, 0)
+		spot.light_energy = 2.5
+		spot.light_color = Color(1.0, 0.95, 0.80)
+		spot.spot_range = 12.0
+		spot.spot_angle = 32.0
+		spot.spot_attenuation = 1.4
+		pole_root.add_child(spot)
+		# Visible cone beam
+		var beam: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CylinderMesh = CylinderMesh.new()
+		bmesh.top_radius = 0.10
+		bmesh.bottom_radius = 2.40
+		bmesh.height = 6.4
+		beam.mesh = bmesh
+		beam.position = Vector3(0, 3.20, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(1.0, 0.95, 0.80, 0.10)
+		bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		bmat.emission_enabled = true
+		bmat.emission = Color(1.0, 0.95, 0.80)
+		bmat.emission_energy_multiplier = 0.45
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		beam.material_override = bmat
+		pole_root.add_child(beam)
+		# Collision on pole
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.25
+		cap.height = 6.5
+		cs.shape = cap
+		cs.position = Vector3(0, 3.25, 0)
+		sb.add_child(cs)
+		pole_root.add_child(sb)
+
+
+func _build_data_snow(geom: Node) -> void:
+	## Epic-1 T70: ambient floating "data flake" particles drifting down
+	## across the entire plaza. Tiny cyan diamonds, slow descent, no gravity.
+	## Sells the "we're inside a simulation" feel.
+	var snow: GPUParticles3D = GPUParticles3D.new()
+	snow.name = "EastPlazaDataSnow"
+	snow.position = Vector3(32, 8, 0)
+	snow.amount = 80
+	snow.lifetime = 8.0
+	snow.preprocess = 4.0
+	var smat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	smat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	smat.emission_box_extents = Vector3(11, 0.5, 19)
+	smat.direction = Vector3(0, -1, 0)
+	smat.spread = 8.0
+	smat.initial_velocity_min = 0.45
+	smat.initial_velocity_max = 0.85
+	smat.gravity = Vector3.ZERO
+	smat.scale_min = 0.06
+	smat.scale_max = 0.14
+	smat.color = Color(0.55, 0.95, 1.0, 1.0)
+	snow.process_material = smat
+	var flake: PrismMesh = PrismMesh.new()
+	flake.size = Vector3(0.10, 0.10, 0.10)
+	var flake_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flake_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	flake_mat.emission_enabled = true
+	flake_mat.emission = Color(0.55, 0.95, 1.0)
+	flake_mat.emission_energy_multiplier = 1.8
+	flake_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flake.material = flake_mat
+	snow.draw_pass_1 = flake
+	geom.add_child(snow)
+
