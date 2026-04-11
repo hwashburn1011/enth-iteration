@@ -83,6 +83,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_ore_vein_cliff(geom)
 	_build_d9_mine_foreman_npc(town)
 	_build_d9_hammer_target_dummy(geom)
+	_build_d9_lava_ferry_boat(geom)
 	print("[D9Builder] done")
 
 
@@ -5861,5 +5862,131 @@ func _build_d9_hammer_target_dummy(geom: Node) -> void:
 	cs.shape = cyl
 	stb.add_child(cs)
 	pivot.add_child(stb)
+
+
+func _build_d9_lava_ferry_boat(geom: Node) -> void:
+	## Epic-9 T63: small iron skiff floating on the cascade pool, ferries
+	## ore cargo across. Slow drift along the pool surface from one bank
+	## to the other, with rocking idle bob and a glowing cargo crate.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_LavaFerryBoat"
+	pivot.position = D9_CENTER + Vector3(50, 0.30, 5)
+	geom.add_child(pivot)
+	# Iron hull material
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	hull_mat.metallic = 0.85
+	hull_mat.roughness = 0.40
+	hull_mat.emission_enabled = true
+	hull_mat.emission = Color(1.0, 0.30, 0.05)
+	hull_mat.emission_energy_multiplier = 0.45
+	# Hull — wide flat box
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(2.40, 0.30, 1.20)
+	hull.mesh = hm
+	hull.material_override = hull_mat
+	hull.position = Vector3(0, 0.20, 0)
+	pivot.add_child(hull)
+	# Bow prow — pointed prism on the front
+	var prow: MeshInstance3D = MeshInstance3D.new()
+	var prm: PrismMesh = PrismMesh.new()
+	prm.size = Vector3(0.55, 0.30, 0.95)
+	prow.mesh = prm
+	prow.material_override = hull_mat
+	prow.position = Vector3(1.45, 0.20, 0)
+	prow.rotation.z = -PI / 2.0
+	pivot.add_child(prow)
+	# 4 hull rivets along each side (small unshaded amber dots)
+	var rivet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rivet_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	rivet_mat.emission_enabled = true
+	rivet_mat.emission = Color(1.0, 0.55, 0.10)
+	rivet_mat.emission_energy_multiplier = 4.0
+	rivet_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-0.85, -0.30, 0.30, 0.85]:
+		for sz in [-0.55, 0.55]:
+			var rivet: MeshInstance3D = MeshInstance3D.new()
+			var rm: SphereMesh = SphereMesh.new()
+			rm.radius = 0.04
+			rm.height = 0.08
+			rivet.mesh = rm
+			rivet.material_override = rivet_mat
+			rivet.position = Vector3(sx, 0.30, sz)
+			pivot.add_child(rivet)
+	# Cargo crate amidships — wood box with glowing ore inside
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.80
+	var crate: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 0.55, 0.85)
+	crate.mesh = cm
+	crate.material_override = wood_mat
+	crate.position = Vector3(0, 0.65, 0)
+	pivot.add_child(crate)
+	# Glowing ore chunks on top of crate
+	var ore_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ore_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ore_mat.emission_enabled = true
+	ore_mat.emission = Color(1.0, 0.55, 0.10)
+	ore_mat.emission_energy_multiplier = 5.0
+	ore_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var ore: MeshInstance3D = MeshInstance3D.new()
+		var osm: SphereMesh = SphereMesh.new()
+		osm.radius = 0.16 + float(i % 2) * 0.05
+		osm.height = 0.30 + float(i % 2) * 0.06
+		ore.mesh = osm
+		ore.material_override = ore_mat
+		ore.position = Vector3(-0.25 + float(i) * 0.25, 1.05, 0)
+		pivot.add_child(ore)
+	# Mast at the stern
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var msm: CylinderMesh = CylinderMesh.new()
+	msm.top_radius = 0.04
+	msm.bottom_radius = 0.05
+	msm.height = 1.50
+	mast.mesh = msm
+	mast.material_override = hull_mat
+	mast.position = Vector3(-1.00, 1.10, 0)
+	pivot.add_child(mast)
+	# Mast lamp at the top — unshaded amber sphere
+	var lamp: MeshInstance3D = MeshInstance3D.new()
+	var lmm: SphereMesh = SphereMesh.new()
+	lmm.radius = 0.12
+	lmm.height = 0.24
+	lamp.mesh = lmm
+	var lamp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lamp_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	lamp_mat.emission_enabled = true
+	lamp_mat.emission = Color(1.0, 0.65, 0.20)
+	lamp_mat.emission_energy_multiplier = 7.0
+	lamp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lamp.material_override = lamp_mat
+	lamp.position = Vector3(-1.00, 1.95, 0)
+	pivot.add_child(lamp)
+	# Lamp light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(-1.00, 1.95, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.6
+	lt.omni_range = 6.5
+	pivot.add_child(lt)
+	# Slow drift along X across the cascade pool (loop)
+	var origin: Vector3 = pivot.position
+	var drift: Tween = pivot.create_tween().set_loops()
+	drift.tween_property(pivot, "position:x", origin.x + 8.0, 12.0).set_ease(Tween.EASE_IN_OUT)
+	drift.tween_property(pivot, "rotation:y", PI, 0.8)
+	drift.tween_property(pivot, "position:x", origin.x, 12.0).set_ease(Tween.EASE_IN_OUT)
+	drift.tween_property(pivot, "rotation:y", 0.0, 0.8)
+	# Idle rocking bob
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(hull, "position:y", 0.28, 1.6).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(hull, "position:y", 0.16, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Mast lamp pulse
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(lamp_mat, "emission_energy_multiplier", 9.0, 1.1).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(lamp_mat, "emission_energy_multiplier", 5.0, 1.1).set_ease(Tween.EASE_IN_OUT)
 
 
