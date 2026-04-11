@@ -66,6 +66,8 @@ func _ready() -> void:
 	_populate_npcs()
 	_update_town_state()
 	_add_ambient_particles()
+	# R6 epic-1: build East Plaza district expansion (data market)
+	_build_east_plaza()
 	# R5 round-30: clamp baked-GLB hot emissions (lantern flames at 80.0)
 	# down to a HDR-safe value to prevent bloom blowout. Discovered via the
 	# round-30 emission survey across all 3 main scenes.
@@ -1182,3 +1184,309 @@ func _setup_demo_end_trigger() -> void:
 		return
 	if GameManager.should_trigger_demo_end():
 		GameManager.trigger_demo_end()
+
+
+# ============================================================================
+# R6 Epic-1: East Plaza district expansion
+# ============================================================================
+# Adds a new playable district east of the original town boundary, doubling
+# the playable area. East Plaza is a digital data market — orange/cyan
+# faction palette, holographic kiosks, queue bollards, ambient market chatter
+# particles. Anchored at center (32, 0, 0) with 18m radius.
+
+const EAST_PLAZA_CENTER: Vector3 = Vector3(32, 0, 0)
+
+
+func _build_east_plaza() -> void:
+	var geom: Node = get_node_or_null("Geometry")
+	if geom == null:
+		return
+	# Step 1: extend the playable boundary east. The original BoundaryEast is
+	# at x=20 and we want the player to walk to x=44 (center + 12). Push the
+	# existing boundary out and add new north/south boundaries that span the
+	# extension.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 44.0
+	# Step 2: ground extension — a separate cyan grid plane stitched to the
+	# main town ground at x=20. Extends from x=20 to x=44, z=-20 to z=20.
+	_build_east_plaza_ground(geom)
+	# Step 3: connecting path from main town to plaza
+	_build_east_plaza_path(geom)
+	# Step 4: data terminal centerpiece (procedural mesh, no GLB needed)
+	_build_data_terminal(geom, EAST_PLAZA_CENTER)
+	# Step 5: 4 holographic kiosks around the centerpiece
+	_build_kiosks(geom)
+	# Step 6: queue bollards forming a market line
+	_build_queue_bollards(geom)
+	# Step 7: ambient market particles (orange/cyan code dust)
+	_build_market_particles(geom)
+	# Step 8: 4 plaza lights
+	_build_plaza_lights(geom)
+	# Step 9: data merchant NPC (placeholder + interaction)
+	_build_data_merchant_npc()
+
+
+func _build_east_plaza_ground(geom: Node) -> void:
+	## Cyan grid floor extension stitched to main town ground at x=20.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(24, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.name = "EastPlazaGround"
+	ground.mesh = plane
+	ground.position = Vector3(32, 0, 0)
+	# Reuse the same digital grid shader as the main ground for visual continuity
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, depth_draw_opaque, cull_back;
+uniform vec3 base_color : source_color = vec3(0.04, 0.06, 0.10);
+uniform vec3 grid_color : source_color = vec3(0.85, 0.45, 0.15);
+uniform vec3 hex_color : source_color = vec3(0.45, 0.20, 0.05);
+uniform float grid_scale = 12.0;
+uniform float grid_thickness = 0.04;
+uniform float pulse_speed = 0.6;
+void fragment() {
+	vec2 uv = UV * grid_scale;
+	vec2 g = abs(fract(uv) - 0.5);
+	float line = step(0.5 - grid_thickness, max(g.x, g.y));
+	vec2 g5 = abs(fract(uv * 0.2) - 0.5);
+	float lane = step(0.5 - grid_thickness * 0.6, max(g5.x, g5.y));
+	float pulse = 0.6 + 0.4 * sin(TIME * pulse_speed + uv.x * 0.4 + uv.y * 0.3);
+	vec3 col = base_color;
+	col = mix(col, hex_color, lane * 0.55);
+	col = mix(col, grid_color * pulse, line * 0.85);
+	ALBEDO = col;
+	EMISSION = col * 0.75;
+}
+"""
+	var mat: ShaderMaterial = ShaderMaterial.new()
+	mat.shader = shader
+	ground.material_override = mat
+	geom.add_child(ground)
+	# Collision under the ground extension
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var box: BoxShape3D = BoxShape3D.new()
+	box.size = Vector3(24, 0.2, 40)
+	shape.shape = box
+	shape.position = Vector3(0, -0.1, 0)
+	body.add_child(shape)
+	ground.add_child(body)
+
+
+func _build_east_plaza_path(geom: Node) -> void:
+	## Glowing data lane stitching main town ground (x=20) to plaza center (x=32)
+	var path: CSGBox3D = CSGBox3D.new()
+	path.size = Vector3(12, 0.02, 3)
+	path.position = Vector3(26, 0.01, 0)
+	path.material = _make_dirt_path_material()
+	geom.add_child(path)
+
+
+func _build_data_terminal(geom: Node, center: Vector3) -> void:
+	## Procedural data terminal — hexagonal pillar with glowing top dome
+	var terminal_root: Node3D = Node3D.new()
+	terminal_root.name = "EastPlazaDataTerminal"
+	terminal_root.position = center
+	geom.add_child(terminal_root)
+	# Hex pillar base
+	var pillar: MeshInstance3D = MeshInstance3D.new()
+	var pillar_mesh: CylinderMesh = CylinderMesh.new()
+	pillar_mesh.top_radius = 0.5
+	pillar_mesh.bottom_radius = 0.7
+	pillar_mesh.height = 1.6
+	pillar_mesh.radial_segments = 6
+	pillar.mesh = pillar_mesh
+	pillar.position = Vector3(0, 0.8, 0)
+	var pillar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pillar_mat.albedo_color = Color(0.10, 0.16, 0.22)
+	pillar_mat.emission_enabled = true
+	pillar_mat.emission = Color(0.85, 0.45, 0.15)
+	pillar_mat.emission_energy_multiplier = 0.45
+	pillar_mat.metallic = 0.7
+	pillar_mat.roughness = 0.35
+	pillar.material_override = pillar_mat
+	terminal_root.add_child(pillar)
+	# Glowing dome on top
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dome_mesh: SphereMesh = SphereMesh.new()
+	dome_mesh.radius = 0.55
+	dome_mesh.height = 0.7
+	dome_mesh.is_hemisphere = true
+	dome.mesh = dome_mesh
+	dome.position = Vector3(0, 1.6, 0)
+	var dome_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dome_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	dome_mat.emission_enabled = true
+	dome_mat.emission = Color(1.0, 0.55, 0.10)
+	dome_mat.emission_energy_multiplier = 2.5
+	dome_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dome.material_override = dome_mat
+	terminal_root.add_child(dome)
+	# Spinning ring decoration
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var ring_mesh: TorusMesh = TorusMesh.new()
+	ring_mesh.inner_radius = 0.7
+	ring_mesh.outer_radius = 0.85
+	ring_mesh.rings = 16
+	ring_mesh.ring_segments = 16
+	ring.mesh = ring_mesh
+	ring.position = Vector3(0, 1.2, 0)
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.2, 0.6, 0.85)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(0.3, 0.7, 1.0)
+	ring_mat.emission_energy_multiplier = 1.8
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = ring_mat
+	terminal_root.add_child(ring)
+	# Spin animation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(ring, "rotation:y", TAU, 8.0)
+	# Collision
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var col_box: BoxShape3D = BoxShape3D.new()
+	col_box.size = Vector3(1.4, 2.2, 1.4)
+	shape.shape = col_box
+	shape.position = Vector3(0, 1.1, 0)
+	body.add_child(shape)
+	terminal_root.add_child(body)
+
+
+func _build_kiosks(geom: Node) -> void:
+	## 4 holographic kiosks arranged around the data terminal
+	var positions: Array[Vector3] = [
+		Vector3(28, 0, -4), Vector3(36, 0, -4),
+		Vector3(28, 0, 4), Vector3(36, 0, 4),
+	]
+	for pos in positions:
+		var kiosk: Node3D = Node3D.new()
+		kiosk.position = pos
+		geom.add_child(kiosk)
+		# Stand
+		var stand: MeshInstance3D = MeshInstance3D.new()
+		var stand_mesh: BoxMesh = BoxMesh.new()
+		stand_mesh.size = Vector3(0.6, 0.8, 0.4)
+		stand.mesh = stand_mesh
+		stand.position = Vector3(0, 0.4, 0)
+		var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stand_mat.albedo_color = Color(0.12, 0.18, 0.26)
+		stand_mat.emission_enabled = true
+		stand_mat.emission = Color(0.15, 0.55, 0.75)
+		stand_mat.emission_energy_multiplier = 0.4
+		stand_mat.metallic = 0.6
+		stand.material_override = stand_mat
+		kiosk.add_child(stand)
+		# Holographic panel
+		var holo: MeshInstance3D = MeshInstance3D.new()
+		var holo_mesh: BoxMesh = BoxMesh.new()
+		holo_mesh.size = Vector3(0.7, 0.55, 0.04)
+		holo.mesh = holo_mesh
+		holo.position = Vector3(0, 1.1, 0)
+		var holo_mat: StandardMaterial3D = StandardMaterial3D.new()
+		holo_mat.albedo_color = Color(0.25, 0.7, 0.95, 0.55)
+		holo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		holo_mat.emission_enabled = true
+		holo_mat.emission = Color(0.35, 0.8, 1.0)
+		holo_mat.emission_energy_multiplier = 2.2
+		holo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		holo.material_override = holo_mat
+		kiosk.add_child(holo)
+		# Collision
+		var body: StaticBody3D = StaticBody3D.new()
+		var shape: CollisionShape3D = CollisionShape3D.new()
+		var box: BoxShape3D = BoxShape3D.new()
+		box.size = Vector3(0.7, 1.5, 0.5)
+		shape.shape = box
+		shape.position = Vector3(0, 0.75, 0)
+		body.add_child(shape)
+		kiosk.add_child(body)
+
+
+func _build_queue_bollards(geom: Node) -> void:
+	## Short cyan posts forming a queue path leading to the data terminal
+	for i: int in range(0, 6):
+		var bollard: MeshInstance3D = MeshInstance3D.new()
+		var b_mesh: CylinderMesh = CylinderMesh.new()
+		b_mesh.top_radius = 0.08
+		b_mesh.bottom_radius = 0.10
+		b_mesh.height = 0.7
+		bollard.mesh = b_mesh
+		bollard.position = Vector3(28 - i * 0.8, 0.35, 7)
+		var b_mat: StandardMaterial3D = StandardMaterial3D.new()
+		b_mat.albedo_color = Color(0.10, 0.18, 0.26)
+		b_mat.emission_enabled = true
+		b_mat.emission = Color(0.20, 0.65, 0.90)
+		b_mat.emission_energy_multiplier = 0.7
+		bollard.material_override = b_mat
+		geom.add_child(bollard)
+
+
+func _build_market_particles(geom: Node) -> void:
+	## Ambient orange + cyan code dust drifting through the plaza
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 60
+	particles.lifetime = 6.0
+	particles.position = Vector3(32, 2.0, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(10, 1.5, 18)
+	pmat.direction = Vector3(0, -1, 0)
+	pmat.gravity = Vector3(0, -0.15, 0)
+	pmat.initial_velocity_min = 0.1
+	pmat.initial_velocity_max = 0.3
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.12
+	pmat.color = Color(0.95, 0.55, 0.15, 0.6)
+	particles.process_material = pmat
+	var dot_mesh: SphereMesh = SphereMesh.new()
+	dot_mesh.radius = 0.04
+	dot_mesh.height = 0.08
+	particles.draw_pass_1 = dot_mesh
+	geom.add_child(particles)
+
+
+func _build_plaza_lights(geom: Node) -> void:
+	## 4 amber omni lights anchored at the kiosk corners
+	for pos in [Vector3(28, 2.5, -4), Vector3(36, 2.5, -4), Vector3(28, 2.5, 4), Vector3(36, 2.5, 4)]:
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = pos
+		light.light_color = Color(1.0, 0.65, 0.35)
+		light.light_energy = 1.4
+		light.omni_range = 8.0
+		light.omni_attenuation = 1.5
+		geom.add_child(light)
+
+
+func _build_data_merchant_npc() -> void:
+	## Place a stationary glowing orb NPC at the kiosk row. No dialogue
+	## logic yet — that's a future task. For now: visible orb with name label.
+	var merchant: Node3D = Node3D.new()
+	merchant.name = "EastPlazaDataMerchant"
+	merchant.position = Vector3(32, 0.5, -7)
+	add_child(merchant)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var sphere: SphereMesh = SphereMesh.new()
+	sphere.radius = 0.4
+	sphere.height = 0.8
+	body.mesh = sphere
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.95, 0.55, 0.15)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.6, 0.2)
+	mat.emission_energy_multiplier = 0.8
+	mat.metallic = 0.4
+	body.material_override = mat
+	merchant.add_child(body)
+	# Floating name label
+	var label: Label3D = Label3D.new()
+	label.text = "Data Merchant"
+	label.position = Vector3(0, 1.4, 0)
+	label.modulate = Color(1.0, 0.7, 0.3)
+	label.outline_modulate = Color(0, 0, 0, 0.8)
+	label.outline_size = 6
+	label.font_size = 24
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	merchant.add_child(label)
