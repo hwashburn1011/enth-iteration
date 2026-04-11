@@ -21,6 +21,11 @@ extends CharacterBody3D
 var target_player: Node3D = null
 var spawn_position: Vector3 = Vector3.ZERO
 var is_invulnerable: bool = false
+## Seconds remaining before this enemy is allowed to start its next attack.
+## Decremented by EnemyChaseState; set on EnemyAttackState.exit() so the
+## per-type attack_cooldown actually gates the next swing instead of being
+## dead data. Without this, chase→attack→chase→attack chains every ~0.6s.
+var attack_cooldown_remaining: float = 0.0
 var _health_bar_bg: MeshInstance3D = null
 var _health_bar_fill: MeshInstance3D = null
 var _health_bar_timer: float = 0.0

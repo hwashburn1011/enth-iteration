@@ -65,3 +65,5 @@ func exit() -> void:
 	var enemy = player
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false
+	# Seed post-attack cooldown so chase state has to wait before re-attacking.
+	enemy.attack_cooldown_remaining = attack_cooldown

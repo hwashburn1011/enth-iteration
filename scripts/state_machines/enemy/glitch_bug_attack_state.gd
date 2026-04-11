@@ -92,6 +92,7 @@ func exit() -> void:
 	enemy.hitbox_component.deactivate()
 	_hitbox_enabled = false
 	_set_telegraph_flash(enemy, false)
+	enemy.attack_cooldown_remaining = attack_cooldown
 
 
 func _set_telegraph_flash(enemy: CharacterBody3D, flash: bool) -> void:

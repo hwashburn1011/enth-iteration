@@ -66,6 +66,7 @@ func physics_update(delta: float) -> void:
 func exit() -> void:
 	var enemy = player
 	_set_glow(enemy, false)
+	enemy.attack_cooldown_remaining = attack_cooldown
 
 
 func _fire_projectile(enemy: CharacterBody3D) -> void:
