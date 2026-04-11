@@ -62,6 +62,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_west_approach_road(geom)
 	_build_th_south_approach_road(geom)
 	_build_th_waystones(geom)
+	_build_th_sky_trams(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -8059,3 +8060,131 @@ func _build_th_waystones(geom: Node) -> void:
 	var bpulse: Tween = pivot.create_tween().set_loops()
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 10.0, 1.5).set_ease(Tween.EASE_IN_OUT)
 	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 6.5, 1.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_sky_trams(geom: Node) -> void:
+	## Epic-10 T46: 2 small floating sky-tram cable cars sliding back and
+	## forth along the sky data highway diagonals between corner towers
+	## (NE bell tower ↔ SW forge brazier, NW archive tower ↔ SE
+	## observatory). Each tram: brass cabin with cyan window strip,
+	## hanging brass arm + iron gripper attached to the diagonal beam,
+	## glowing cyan headlight. Position tween slides each tram along
+	## its full diagonal back and forth.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SkyTrams"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Same corner endpoints as the sky data highway (T40)
+	var ne: Vector3 = Vector3(cos(PI / 4.0) * 16.50, 18.0, sin(PI / 4.0) * 16.50)
+	var nw: Vector3 = Vector3(cos(3.0 * PI / 4.0) * 16.50, 16.0, sin(3.0 * PI / 4.0) * 16.50)
+	var sw: Vector3 = Vector3(cos(5.0 * PI / 4.0) * 16.50, 7.0, sin(5.0 * PI / 4.0) * 16.50)
+	var se_pos: Vector3 = Vector3(cos(7.0 * PI / 4.0) * 16.50, 4.0, sin(7.0 * PI / 4.0) * 16.50)
+	var tram_pairs: Array = [
+		{"a": ne, "b": sw, "period": 16.0},
+		{"a": nw, "b": se_pos, "period": 18.0},
+	]
+	for tp in tram_pairs:
+		var a: Vector3 = tp["a"]
+		var b: Vector3 = tp["b"]
+		var period: float = tp["period"]
+		var tgroup: Node3D = Node3D.new()
+		tgroup.name = "SkyTram"
+		# Start at the midpoint
+		tgroup.position = (a + b) * 0.5
+		# Face along the diagonal
+		tgroup.look_at_from_position((a + b) * 0.5, b, Vector3.UP)
+		pivot.add_child(tgroup)
+		# ---- Brass cabin body ----
+		var cabin: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(1.20, 0.85, 0.85)
+		cabin.mesh = cm
+		cabin.material_override = brass_mat
+		cabin.position = Vector3(0, 0, 0)
+		tgroup.add_child(cabin)
+		# Cyan window strip wrapping the cabin (front + back faces)
+		for wz in [-0.45, 0.45]:
+			var window: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(1.00, 0.30, 0.04)
+			window.mesh = wm
+			window.material_override = data_mat
+			window.position = Vector3(0, 0.15, wz)
+			tgroup.add_child(window)
+		# Side window strips (left + right)
+		for wx in [-0.65, 0.65]:
+			var sw_window: MeshInstance3D = MeshInstance3D.new()
+			var swm: BoxMesh = BoxMesh.new()
+			swm.size = Vector3(0.04, 0.30, 0.65)
+			sw_window.mesh = swm
+			sw_window.material_override = data_mat
+			sw_window.position = Vector3(wx, 0.15, 0)
+			tgroup.add_child(sw_window)
+		# Brass roof trim
+		var roof: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(1.30, 0.10, 0.95)
+		roof.mesh = rm
+		roof.material_override = brass_mat
+		roof.position = Vector3(0, 0.50, 0)
+		tgroup.add_child(roof)
+		# ---- Hanging brass arm + iron gripper attached to the beam above ----
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var arm_m: BoxMesh = BoxMesh.new()
+		arm_m.size = Vector3(0.10, 0.85, 0.10)
+		arm.mesh = arm_m
+		arm.material_override = brass_mat
+		arm.position = Vector3(0, 0.95, 0)
+		tgroup.add_child(arm)
+		# Iron gripper claw at the top of the arm
+		var gripper: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(0.30, 0.18, 0.30)
+		gripper.mesh = gm
+		gripper.material_override = iron_mat
+		gripper.position = Vector3(0, 1.45, 0)
+		tgroup.add_child(gripper)
+		# ---- Glowing cyan headlight on the front of the cabin ----
+		var headlight: MeshInstance3D = MeshInstance3D.new()
+		var hlm: SphereMesh = SphereMesh.new()
+		hlm.radius = 0.10
+		hlm.height = 0.20
+		headlight.mesh = hlm
+		headlight.material_override = data_mat
+		headlight.position = Vector3(0, 0, -0.50)
+		tgroup.add_child(headlight)
+		# Headlight OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 0, -0.55)
+		lt.light_color = Color(0.45, 0.85, 1.0)
+		lt.light_energy = 2.5
+		lt.omni_range = 8.0
+		tgroup.add_child(lt)
+		# ---- Slide tween — tram slides A → B → A on a loop ----
+		# Use position tween (the tram is at the midpoint, slides to A then to B)
+		var slide: Tween = pivot.create_tween().set_loops()
+		slide.tween_property(tgroup, "position", a, period * 0.5).set_ease(Tween.EASE_IN_OUT)
+		slide.tween_property(tgroup, "position", b, period).set_ease(Tween.EASE_IN_OUT)
+		slide.tween_property(tgroup, "position", (a + b) * 0.5, period * 0.5).set_ease(Tween.EASE_IN_OUT)
+	# Shared cyan pulse for windows + headlights
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
