@@ -67,6 +67,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_practice_weapon_stand(geom)
 	_build_d9_cooling_rack(geom)
 	_build_d9_lava_forge_cracks(geom)
+	_build_d9_chained_anvil_totem(geom)
 	print("[D9Builder] done")
 
 
@@ -4010,5 +4011,87 @@ func _build_d9_lava_forge_cracks(geom: Node) -> void:
 		crack.position = Vector3(cos(angle) * dist, 0, sin(angle) * dist)
 		crack.rotation.y = angle
 		pivot.add_child(crack)
+
+
+func _build_d9_chained_anvil_totem(geom: Node) -> void:
+	## Epic-9 T47: massive iron anvil hoisted on a 4-pillar chained scaffold
+	## marking the entrance to the mid-boss arena. The warning monument.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ChainedAnvilTotem"
+	pivot.position = D9_CENTER + Vector3(20, 0, -6)
+	geom.add_child(pivot)
+	# Stone pedestal base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.6
+	bm.bottom_radius = 1.85
+	bm.height = 1.1
+	base.mesh = bm
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.12, 0.10, 0.09)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.85
+	base.material_override = bmat
+	base.position = Vector3(0, 0.55, 0)
+	pivot.add_child(base)
+	# 4 chain pillars
+	var pillar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pillar_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	pillar_mat.metallic = 0.65
+	pillar_mat.roughness = 0.45
+	for i in 4:
+		var ang: float = (TAU / 4.0) * float(i) + PI / 4.0
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmsh: BoxMesh = BoxMesh.new()
+		pmsh.size = Vector3(0.30, 4.5, 0.30)
+		pillar.mesh = pmsh
+		pillar.material_override = pillar_mat
+		pillar.position = Vector3(cos(ang) * 1.45, 2.35, sin(ang) * 1.45)
+		pivot.add_child(pillar)
+	# Suspended anvil at the top
+	var anvil: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(2.10, 0.85, 1.20)
+	anvil.mesh = am
+	var amat: StandardMaterial3D = StandardMaterial3D.new()
+	amat.albedo_color = Color(0.16, 0.12, 0.10)
+	amat.metallic = 0.85
+	amat.roughness = 0.30
+	amat.emission_enabled = true
+	amat.emission = Color(1.0, 0.40, 0.10)
+	amat.emission_energy_multiplier = 0.8
+	anvil.material_override = amat
+	anvil.position = Vector3(0, 4.10, 0)
+	pivot.add_child(anvil)
+	# Anvil horn nub on the side
+	var horn: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.50, 0.65, 1.10)
+	horn.mesh = hm
+	horn.material_override = amat
+	horn.position = Vector3(1.20, 4.10, 0)
+	horn.rotation.z = -PI / 2.0
+	pivot.add_child(horn)
+	# Sway the anvil slowly on the chains
+	var sway: Tween = pivot.create_tween().set_loops()
+	sway.tween_property(anvil, "rotation:z", 0.06, 2.4).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(anvil, "rotation:z", -0.06, 2.4).set_ease(Tween.EASE_IN_OUT)
+	# Amber light from the heated anvil
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 4.50, 0)
+	lt.light_color = Color(1.0, 0.45, 0.15)
+	lt.light_energy = 2.6
+	lt.omni_range = 12.0
+	pivot.add_child(lt)
+	# Solid base collision so the player can't walk through the totem
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.height = 1.1
+	cyl.radius = 1.85
+	cs.shape = cyl
+	stb.add_child(cs)
+	pivot.add_child(stb)
 
 
