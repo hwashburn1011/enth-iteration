@@ -45,6 +45,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_bell_tower(geom)
 	_build_th_archive_tower(geom)
 	_build_th_forge_brazier_monument(geom)
+	_build_th_observatory_dome(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -5090,3 +5091,242 @@ func _build_th_forge_brazier_monument(geom: Node) -> void:
 	var apulse: Tween = pivot.create_tween().set_loops()
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_observatory_dome(geom: Node) -> void:
+	## Epic-10 T29: short observatory dome at the SE outer corner of the
+	## plaza, completing the 4-corner outer landmark ring. 3-step basalt
+	## platform with brass top trim, half-sphere brass dome roof with
+	## radial seams, central tall brass telescope on a tripod pointed
+	## skyward + slow swivel tween, 6 floating cyan star points around the
+	## dome rim, and 4 small corner data crystals on the platform.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_ObservatoryDome"
+	# SE outer corner at radius ~16.5
+	var ang: float = 7.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 16.50, 0, sin(ang) * 16.50)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	# ---- 3-step basalt platform ----
+	var base1: MeshInstance3D = MeshInstance3D.new()
+	var b1m: CylinderMesh = CylinderMesh.new()
+	b1m.top_radius = 3.40
+	b1m.bottom_radius = 3.50
+	b1m.height = 0.45
+	base1.mesh = b1m
+	base1.material_override = stone_mat
+	base1.position = Vector3(0, 0.22, 0)
+	pivot.add_child(base1)
+	var base2: MeshInstance3D = MeshInstance3D.new()
+	var b2m: CylinderMesh = CylinderMesh.new()
+	b2m.top_radius = 2.90
+	b2m.bottom_radius = 2.95
+	b2m.height = 0.40
+	base2.mesh = b2m
+	base2.material_override = stone_mat
+	base2.position = Vector3(0, 0.65, 0)
+	pivot.add_child(base2)
+	var base3: MeshInstance3D = MeshInstance3D.new()
+	var b3m: CylinderMesh = CylinderMesh.new()
+	b3m.top_radius = 2.50
+	b3m.bottom_radius = 2.55
+	b3m.height = 0.35
+	base3.mesh = b3m
+	base3.material_override = stone_mat
+	base3.position = Vector3(0, 1.02, 0)
+	pivot.add_child(base3)
+	# Combined platform collision (cylinder)
+	var plat_sb: StaticBody3D = StaticBody3D.new()
+	plat_sb.position = Vector3(0, 0.60, 0)
+	var plat_cs: CollisionShape3D = CollisionShape3D.new()
+	var plat_cyl: CylinderShape3D = CylinderShape3D.new()
+	plat_cyl.top_radius = 2.50
+	plat_cyl.bottom_radius = 3.50
+	plat_cyl.height = 1.20
+	plat_cs.shape = plat_cyl
+	plat_sb.add_child(plat_cs)
+	pivot.add_child(plat_sb)
+	# Brass top trim torus
+	var top_trim: MeshInstance3D = MeshInstance3D.new()
+	var ttm: TorusMesh = TorusMesh.new()
+	ttm.inner_radius = 2.40
+	ttm.outer_radius = 2.65
+	top_trim.mesh = ttm
+	top_trim.material_override = brass_mat
+	top_trim.position = Vector3(0, 1.22, 0)
+	pivot.add_child(top_trim)
+	# ---- Half-sphere brass dome roof ----
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 2.55
+	dmm.height = 5.10
+	dome.mesh = dmm
+	dome.material_override = brass_mat
+	dome.position = Vector3(0, 2.00, 0)
+	dome.scale = Vector3(1.0, 0.55, 1.0)
+	pivot.add_child(dome)
+	# 6 radial dome seams (small box stripes from base to top)
+	for i in 6:
+		var sang: float = float(i) / 6.0 * TAU
+		var dx: float = cos(sang)
+		var dz: float = sin(sang)
+		var seam: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.10, 1.40, 0.06)
+		seam.mesh = sm
+		seam.material_override = brass_mat
+		seam.position = Vector3(dx * 1.30, 2.55, dz * 1.30)
+		seam.rotation.y = sang
+		seam.rotation.x = -PI / 6.0 + sin(sang) * 0.10
+		pivot.add_child(seam)
+	# Top finial sphere
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fmm: SphereMesh = SphereMesh.new()
+	fmm.radius = 0.18
+	fmm.height = 0.36
+	finial.mesh = fmm
+	finial.material_override = data_mat
+	finial.position = Vector3(0, 3.55, 0)
+	pivot.add_child(finial)
+	# ---- Tall brass telescope on a tripod (centered, pointed skyward) ----
+	# Telescope pivot for swivel animation
+	var scope_pivot: Node3D = Node3D.new()
+	scope_pivot.position = Vector3(0, 1.30, 0)
+	pivot.add_child(scope_pivot)
+	# Tripod legs (3 angled iron cylinders)
+	for i in 3:
+		var ang_t: float = float(i) / 3.0 * TAU
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.05
+		lm.bottom_radius = 0.07
+		lm.height = 1.30
+		leg.mesh = lm
+		leg.material_override = iron_mat
+		leg.position = Vector3(cos(ang_t) * 0.30, 0.55, sin(ang_t) * 0.30)
+		leg.rotation = Vector3(sin(ang_t) * 0.30, 0, -cos(ang_t) * 0.30)
+		scope_pivot.add_child(leg)
+	# Tripod head — small brass box
+	var t_head: MeshInstance3D = MeshInstance3D.new()
+	var thm: BoxMesh = BoxMesh.new()
+	thm.size = Vector3(0.40, 0.18, 0.40)
+	t_head.mesh = thm
+	t_head.material_override = brass_mat
+	t_head.position = Vector3(0, 1.20, 0)
+	scope_pivot.add_child(t_head)
+	# Telescope tube — long brass cylinder, angled upward 60 degrees
+	var tube_pivot: Node3D = Node3D.new()
+	tube_pivot.position = Vector3(0, 1.30, 0)
+	scope_pivot.add_child(tube_pivot)
+	var tube: MeshInstance3D = MeshInstance3D.new()
+	var tum: CylinderMesh = CylinderMesh.new()
+	tum.top_radius = 0.18
+	tum.bottom_radius = 0.22
+	tum.height = 2.40
+	tube.mesh = tum
+	tube.material_override = brass_mat
+	tube.position = Vector3(0, 1.05, 0)
+	tube_pivot.add_child(tube)
+	# Tube brass band wraps
+	for ty in [0.35, 1.05, 1.75]:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: TorusMesh = TorusMesh.new()
+		bdm.inner_radius = 0.18
+		bdm.outer_radius = 0.26
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, ty, 0)
+		band.rotation.x = PI / 2.0
+		tube_pivot.add_child(band)
+	# Tube top objective lens (glowing cyan disc)
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: CylinderMesh = CylinderMesh.new()
+	lm.top_radius = 0.18
+	lm.bottom_radius = 0.18
+	lm.height = 0.06
+	lens.mesh = lm
+	lens.material_override = data_mat
+	lens.position = Vector3(0, 2.30, 0)
+	tube_pivot.add_child(lens)
+	# Tube bottom eyepiece (small brass cylinder)
+	var eyepiece: MeshInstance3D = MeshInstance3D.new()
+	var em: CylinderMesh = CylinderMesh.new()
+	em.top_radius = 0.10
+	em.bottom_radius = 0.10
+	em.height = 0.20
+	eyepiece.mesh = em
+	eyepiece.material_override = brass_mat
+	eyepiece.position = Vector3(0, -0.20, 0)
+	tube_pivot.add_child(eyepiece)
+	# Angle the tube upward 60 degrees so the telescope points to the sky
+	tube_pivot.rotation.x = -PI / 3.0
+	# ---- 6 floating cyan star points around the dome rim ----
+	var star_pivot: Node3D = Node3D.new()
+	star_pivot.position = Vector3(0, 3.30, 0)
+	pivot.add_child(star_pivot)
+	for i in 6:
+		var sang2: float = float(i) / 6.0 * TAU
+		var dx: float = cos(sang2)
+		var dz: float = sin(sang2)
+		var star: MeshInstance3D = MeshInstance3D.new()
+		var smm: SphereMesh = SphereMesh.new()
+		smm.radius = 0.10
+		smm.height = 0.20
+		star.mesh = smm
+		star.material_override = data_mat
+		star.position = Vector3(dx * 1.85, 0, dz * 1.85)
+		star_pivot.add_child(star)
+	# ---- 4 small corner data crystals on the platform ----
+	for cpx in [-1.85, 1.85]:
+		for cpz in [-1.85, 1.85]:
+			var crystal: MeshInstance3D = MeshInstance3D.new()
+			var crm: PrismMesh = PrismMesh.new()
+			crm.size = Vector3(0.20, 0.55, 0.20)
+			crystal.mesh = crm
+			crystal.material_override = data_mat
+			crystal.position = Vector3(cpx, 1.50, cpz)
+			pivot.add_child(crystal)
+	# ---- Strong cyan dome OmniLight ----
+	var dome_lt: OmniLight3D = OmniLight3D.new()
+	dome_lt.position = Vector3(0, 3.00, 0)
+	dome_lt.light_color = Color(0.55, 0.90, 1.0)
+	dome_lt.light_energy = 4.0
+	dome_lt.omni_range = 14.0
+	pivot.add_child(dome_lt)
+	# ---- Pulses + tweens ----
+	# Slow telescope swivel — entire scope_pivot rotates around Y
+	var swivel: Tween = pivot.create_tween().set_loops()
+	swivel.tween_property(scope_pivot, "rotation:y", 0.50, 4.0).set_ease(Tween.EASE_IN_OUT)
+	swivel.tween_property(scope_pivot, "rotation:y", -0.50, 4.0).set_ease(Tween.EASE_IN_OUT)
+	# Slow star ring spin around the dome
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(star_pivot, "rotation:y", TAU, 10.0)
+	# Shared cyan data pulse
+	var dpulse2: Tween = pivot.create_tween().set_loops()
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
