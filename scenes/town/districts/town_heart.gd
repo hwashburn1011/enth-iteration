@@ -63,6 +63,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_south_approach_road(geom)
 	_build_th_waystones(geom)
 	_build_th_sky_trams(geom)
+	_build_th_data_tree_grove(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -8188,3 +8189,138 @@ func _build_th_sky_trams(geom: Node) -> void:
 	var dpulse: Tween = pivot.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_data_tree_grove(geom: Node) -> void:
+	## Epic-10 T47: 8 stylized brass-and-cyan crystal data trees scattered
+	## around the plaza perimeter at radius 14.5 (between the lampposts at
+	## 13.2 and the corner monuments at 16.5). Each tree: brass trunk with
+	## tapered widening at the base, 5 glowing cyan crystal leaf clusters
+	## arranged in a canopy at the top, and a small basalt root mound.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_DataTreeGrove"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	leaf_mat.emission_enabled = true
+	leaf_mat.emission = Color(0.45, 0.85, 1.0)
+	leaf_mat.emission_energy_multiplier = 6.5
+	leaf_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 8 trees at varied angles around the plaza perimeter, slightly offset from
+	# the lamppost positions so they don't collide
+	for i in 8:
+		var ang: float = (float(i) + 0.25) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var tp: Vector3 = Vector3(dx * 14.50, 0, dz * 14.50)
+		var tgroup: Node3D = Node3D.new()
+		tgroup.name = "DataTree_" + str(i)
+		tgroup.position = tp
+		pivot.add_child(tgroup)
+		# ---- Small basalt root mound at the base ----
+		var mound: MeshInstance3D = MeshInstance3D.new()
+		var mm: SphereMesh = SphereMesh.new()
+		mm.radius = 0.55
+		mm.height = 0.40
+		mound.mesh = mm
+		mound.material_override = stone_mat
+		mound.position = Vector3(0, 0.20, 0)
+		mound.scale = Vector3(1.0, 0.55, 1.0)
+		tgroup.add_child(mound)
+		# Mound collision
+		var mound_sb: StaticBody3D = StaticBody3D.new()
+		mound_sb.position = Vector3(0, 0.20, 0)
+		var mound_cs: CollisionShape3D = CollisionShape3D.new()
+		var mound_cyl: CylinderShape3D = CylinderShape3D.new()
+		mound_cyl.top_radius = 0.40
+		mound_cyl.bottom_radius = 0.55
+		mound_cyl.height = 0.40
+		mound_cs.shape = mound_cyl
+		mound_sb.add_child(mound_cs)
+		tgroup.add_child(mound_sb)
+		# ---- Brass trunk (tapered cylinder, widening at the base) ----
+		var trunk: MeshInstance3D = MeshInstance3D.new()
+		var trm: CylinderMesh = CylinderMesh.new()
+		trm.top_radius = 0.10
+		trm.bottom_radius = 0.22
+		trm.height = 3.20
+		trunk.mesh = trm
+		trunk.material_override = brass_mat
+		trunk.position = Vector3(0, 1.85, 0)
+		tgroup.add_child(trunk)
+		# Trunk collision
+		var trunk_sb: StaticBody3D = StaticBody3D.new()
+		trunk_sb.position = Vector3(0, 1.85, 0)
+		var trunk_cs: CollisionShape3D = CollisionShape3D.new()
+		var trunk_cyl: CylinderShape3D = CylinderShape3D.new()
+		trunk_cyl.top_radius = 0.15
+		trunk_cyl.bottom_radius = 0.22
+		trunk_cyl.height = 3.20
+		trunk_cs.shape = trunk_cyl
+		trunk_sb.add_child(trunk_cs)
+		tgroup.add_child(trunk_sb)
+		# ---- 3 brass branch wraps along the trunk for visual texture ----
+		for by in [1.20, 2.30, 3.20]:
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var bdm: TorusMesh = TorusMesh.new()
+			bdm.inner_radius = 0.13
+			bdm.outer_radius = 0.18
+			band.mesh = bdm
+			band.material_override = brass_mat
+			band.position = Vector3(0, by, 0)
+			tgroup.add_child(band)
+		# ---- 5 glowing cyan crystal leaf clusters arranged at the top ----
+		var canopy_pivot: Node3D = Node3D.new()
+		canopy_pivot.position = Vector3(0, 3.65, 0)
+		tgroup.add_child(canopy_pivot)
+		# Center large crystal
+		var center_crystal: MeshInstance3D = MeshInstance3D.new()
+		var ccm: PrismMesh = PrismMesh.new()
+		ccm.size = Vector3(0.50, 0.95, 0.50)
+		center_crystal.mesh = ccm
+		center_crystal.material_override = leaf_mat
+		center_crystal.position = Vector3(0, 0.30, 0)
+		canopy_pivot.add_child(center_crystal)
+		# 4 angled side crystal leaves around the center
+		for j in 4:
+			var lang: float = float(j) / 4.0 * TAU
+			var leaf: MeshInstance3D = MeshInstance3D.new()
+			var lm: PrismMesh = PrismMesh.new()
+			lm.size = Vector3(0.32, 0.70, 0.32)
+			leaf.mesh = lm
+			leaf.material_override = leaf_mat
+			leaf.position = Vector3(cos(lang) * 0.45, 0.10, sin(lang) * 0.45)
+			leaf.rotation.y = lang
+			leaf.rotation.z = -0.40
+			canopy_pivot.add_child(leaf)
+		# Per-tree subtle OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 3.85, 0)
+		lt.light_color = Color(0.55, 0.90, 1.0)
+		lt.light_energy = 1.4
+		lt.omni_range = 4.5
+		tgroup.add_child(lt)
+		# Per-tree slow canopy spin (very subtle, organic feel)
+		var spin: Tween = tgroup.create_tween().set_loops()
+		var spin_dir: float = 1.0 if i % 2 == 0 else -1.0
+		spin.tween_property(canopy_pivot, "rotation:y", spin_dir * TAU, 18.0 + float(i) * 0.5)
+	# Shared leaf cyan pulse
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 8.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 5.0, 2.0).set_ease(Tween.EASE_IN_OUT)
