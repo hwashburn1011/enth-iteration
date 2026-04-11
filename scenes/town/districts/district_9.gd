@@ -98,6 +98,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_memorial(geom)
 	_build_d9_memorial_keeper_ash_npc(town)
 	_build_d9_collapsed_skyforge_ruin(geom)
+	_build_d9_salvager_rax_npc(town)
 	print("[D9Builder] done")
 
 
@@ -8557,4 +8558,217 @@ func _build_d9_collapsed_skyforge_ruin(geom: Node) -> void:
 	var creak: Tween = pivot.create_tween().set_loops()
 	creak.tween_property(crane_arm, "rotation:z", 0.32, 2.6).set_ease(Tween.EASE_IN_OUT)
 	creak.tween_property(crane_arm, "rotation:z", 0.28, 2.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_salvager_rax_npc(town: Node) -> void:
+	## Epic-9 T77b/T78: Salvager Rax — scrapper NPC working the collapsed
+	## sky-forge ironworks ruin. Patchwork leather coat + scrap-iron
+	## shoulder plate, sack of salvaged ingots over one shoulder, head
+	## torch lamp on a brass headband, prybar in hand. Bent forward
+	## scavenging pose with a periodic dig motion.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9SalvagerRaxSlot"
+	# Stand inside the ruin, near the cracked anvil (ruin at -22, -16; anvil at +0.5, -0.5)
+	slot.position = Vector3(D9_CENTER.x - 21, 0, -16.5)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9SalvagerRax"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Salvager Rax")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_salvager_rax")
+	# Face into the ruin
+	npc.rotation.y = -PI / 2.0
+	# Bent-forward scavenging pose
+	npc.rotation.x = 0.18
+	slot.add_child(npc)
+	# ---- Patchwork leather coat ----
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	coat_mat.roughness = 0.92
+	coat_mat.metallic = 0.10
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.55, 0.18, 0.05)
+	coat_mat.emission_energy_multiplier = 0.18
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.00, 1.30, 0.55)
+	coat.mesh = cmesh
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.00, 0)
+	npc.add_child(coat)
+	# 3 patchwork leather "patch" boxes on the coat (different shades)
+	var patch_specs: Array = [
+		{"pos": Vector3(-0.30, 1.20, -0.30), "size": Vector3(0.30, 0.25, 0.04), "color": Color(0.40, 0.22, 0.10)},
+		{"pos": Vector3(0.25, 0.95, -0.30), "size": Vector3(0.25, 0.30, 0.04), "color": Color(0.22, 0.13, 0.06)},
+		{"pos": Vector3(0.05, 0.65, -0.30), "size": Vector3(0.40, 0.18, 0.04), "color": Color(0.35, 0.20, 0.08)},
+	]
+	for p in patch_specs:
+		var patch_mat: StandardMaterial3D = StandardMaterial3D.new()
+		patch_mat.albedo_color = p["color"]
+		patch_mat.roughness = 0.90
+		patch_mat.metallic = 0.10
+		var patch: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = p["size"]
+		patch.mesh = pmm
+		patch.material_override = patch_mat
+		patch.position = p["pos"]
+		npc.add_child(patch)
+	# ---- Scrap-iron shoulder plate (left shoulder) ----
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.50
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.30
+	var pauldron: MeshInstance3D = MeshInstance3D.new()
+	var paum: SphereMesh = SphereMesh.new()
+	paum.radius = 0.22
+	paum.height = 0.42
+	pauldron.mesh = paum
+	pauldron.material_override = iron_mat
+	pauldron.position = Vector3(-0.55, 1.55, 0)
+	pauldron.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(pauldron)
+	# Scrap rivets on the pauldron (3 small brass dots)
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	for rx in [-0.65, -0.55, -0.45]:
+		var rv: MeshInstance3D = MeshInstance3D.new()
+		var rvm: SphereMesh = SphereMesh.new()
+		rvm.radius = 0.04
+		rvm.height = 0.08
+		rv.mesh = rvm
+		rv.material_override = brass_mat
+		rv.position = Vector3(rx, 1.62, 0.18)
+		npc.add_child(rv)
+	# ---- Sack of salvaged ingots over the right shoulder ----
+	var sack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sack_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	sack_mat.roughness = 0.95
+	sack_mat.metallic = 0.05
+	var sack: MeshInstance3D = MeshInstance3D.new()
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.30
+	sm.height = 0.55
+	sack.mesh = sm
+	sack.material_override = sack_mat
+	sack.position = Vector3(0.50, 1.40, 0.20)
+	sack.scale = Vector3(0.95, 1.20, 0.85)
+	npc.add_child(sack)
+	# Sack rope strap across his chest
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rope_m: BoxMesh = BoxMesh.new()
+	rope_m.size = Vector3(0.04, 0.95, 0.04)
+	rope.mesh = rope_m
+	rope.material_override = sack_mat
+	rope.position = Vector3(0.10, 1.30, -0.28)
+	rope.rotation.z = 0.40
+	npc.add_child(rope)
+	# 2 glowing ingot tips poking out of the sack
+	var ingot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ingot_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ingot_mat.emission_enabled = true
+	ingot_mat.emission = Color(1.0, 0.55, 0.10)
+	ingot_mat.emission_energy_multiplier = 5.0
+	ingot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ix in [-0.05, 0.10]:
+		var ing: MeshInstance3D = MeshInstance3D.new()
+		var im: BoxMesh = BoxMesh.new()
+		im.size = Vector3(0.10, 0.18, 0.10)
+		ing.mesh = im
+		ing.material_override = ingot_mat
+		ing.position = Vector3(0.50 + ix, 1.65, 0.22)
+		npc.add_child(ing)
+	# ---- Brass headband + head torch lamp ----
+	var headband: MeshInstance3D = MeshInstance3D.new()
+	var hbm: TorusMesh = TorusMesh.new()
+	hbm.inner_radius = 0.30
+	hbm.outer_radius = 0.36
+	headband.mesh = hbm
+	headband.material_override = brass_mat
+	headband.position = Vector3(0, 1.85, 0)
+	headband.rotation.x = PI / 2.0
+	npc.add_child(headband)
+	# Head lamp — small brass cylinder + bright unshaded amber lens
+	var lamp_housing: MeshInstance3D = MeshInstance3D.new()
+	var lhm: CylinderMesh = CylinderMesh.new()
+	lhm.top_radius = 0.10
+	lhm.bottom_radius = 0.10
+	lhm.height = 0.12
+	lamp_housing.mesh = lhm
+	lamp_housing.material_override = brass_mat
+	lamp_housing.position = Vector3(0, 1.92, -0.30)
+	lamp_housing.rotation.x = PI / 2.0
+	npc.add_child(lamp_housing)
+	var lamp_lens: MeshInstance3D = MeshInstance3D.new()
+	var llm: SphereMesh = SphereMesh.new()
+	llm.radius = 0.09
+	llm.height = 0.18
+	lamp_lens.mesh = llm
+	var lamp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lamp_mat.albedo_color = Color(1.0, 0.95, 0.55)
+	lamp_mat.emission_enabled = true
+	lamp_mat.emission = Color(1.0, 0.95, 0.60)
+	lamp_mat.emission_energy_multiplier = 9.0
+	lamp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lamp_lens.material_override = lamp_mat
+	lamp_lens.position = Vector3(0, 1.92, -0.40)
+	npc.add_child(lamp_lens)
+	# Head lamp OmniLight
+	var hlt: OmniLight3D = OmniLight3D.new()
+	hlt.position = Vector3(0, 1.92, -0.45)
+	hlt.light_color = Color(1.0, 0.85, 0.45)
+	hlt.light_energy = 2.6
+	hlt.omni_range = 5.5
+	npc.add_child(hlt)
+	# ---- Prybar in hand — long iron bar with hooked end ----
+	# Prybar pivot for dig animation
+	var prybar_pivot: Node3D = Node3D.new()
+	prybar_pivot.position = Vector3(0.40, 1.20, -0.35)
+	npc.add_child(prybar_pivot)
+	var bar_shaft: MeshInstance3D = MeshInstance3D.new()
+	var bsm: CylinderMesh = CylinderMesh.new()
+	bsm.top_radius = 0.04
+	bsm.bottom_radius = 0.05
+	bsm.height = 1.05
+	bar_shaft.mesh = bsm
+	bar_shaft.material_override = iron_mat
+	bar_shaft.position = Vector3(0, -0.45, 0)
+	prybar_pivot.add_child(bar_shaft)
+	# Hooked tip
+	var bar_hook: MeshInstance3D = MeshInstance3D.new()
+	var bhm: BoxMesh = BoxMesh.new()
+	bhm.size = Vector3(0.20, 0.10, 0.06)
+	bar_hook.mesh = bhm
+	bar_hook.material_override = iron_mat
+	bar_hook.position = Vector3(0.10, -0.95, 0)
+	bar_hook.rotation.z = -0.40
+	prybar_pivot.add_child(bar_hook)
+	# Prybar dig tween — quick down-and-up like he's prying
+	var dig: Tween = npc.create_tween().set_loops()
+	dig.tween_property(prybar_pivot, "rotation:x", 0.45, 0.55).set_ease(Tween.EASE_OUT)
+	dig.tween_property(prybar_pivot, "rotation:x", -0.05, 0.30).set_ease(Tween.EASE_IN)
+	dig.tween_property(prybar_pivot, "rotation:x", -0.05, 0.50)
+	# Ingot pulse
+	var ipulse: Tween = npc.create_tween().set_loops()
+	ipulse.tween_property(ingot_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	ipulse.tween_property(ingot_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Lamp slow flicker
+	var lflick: Tween = npc.create_tween().set_loops()
+	lflick.tween_property(lamp_mat, "emission_energy_multiplier", 11.0, 0.45).set_ease(Tween.EASE_IN_OUT)
+	lflick.tween_property(lamp_mat, "emission_energy_multiplier", 8.0, 0.45).set_ease(Tween.EASE_IN_OUT)
 
