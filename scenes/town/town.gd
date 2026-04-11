@@ -1440,6 +1440,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_broken_tower(geom)
 	# Epic-2 T5: wandering survivor NPC
 	_build_d2_survivor_npc()
+	# Epic-2 T6: crashed data ship wreckage landmark
+	_build_d2_crashed_ship(geom)
+	# Epic-2 T7: 3 glitch enemies pacing the perimeter (decorative)
+	_build_d2_glitch_enemies(geom)
+	# Epic-2 T8: 4 broken flickering street lamps
+	_build_d2_flicker_lamps(geom)
+	# Epic-2 T9: hardware junk pile (broken servers + cables)
+	_build_d2_junk_pile(geom)
+	# Epic-2 T10: abandoned roadside terminal kiosk
+	_build_d2_abandoned_kiosk(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -8054,4 +8064,427 @@ func _build_central_globbler_landmark(geom: Node) -> void:
 	landmark_light.omni_range = 25.0
 	landmark_light.omni_attenuation = 1.4
 	pivot.add_child(landmark_light)
+
+
+func _build_d2_crashed_ship(geom: Node) -> void:
+	## Epic-2 T6: a large crashed data ship wreckage near the D2 center.
+	## Tilted hull (a wide angled box) with broken wing fins, exposed
+	## glowing engine core, and impact debris scattered around it.
+	var ship: Node3D = Node3D.new()
+	ship.name = "D2CrashedShip"
+	ship.position = D2_CENTER + Vector3(8, 0, 8)
+	ship.rotation = Vector3(deg_to_rad(-12), deg_to_rad(35), deg_to_rad(-8))
+	geom.add_child(ship)
+	# Hull material — dark armored grey
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.16, 0.18, 0.22)
+	hull_mat.metallic = 0.85
+	hull_mat.roughness = 0.40
+	# Main fuselage — tapered box (we use a prism for the front)
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(6.0, 1.6, 2.4)
+	hull.mesh = hmesh
+	hull.position = Vector3(0, 0.95, 0)
+	hull.material_override = hull_mat
+	ship.add_child(hull)
+	# Tapered nose (prism)
+	var nose: MeshInstance3D = MeshInstance3D.new()
+	var nmesh: PrismMesh = PrismMesh.new()
+	nmesh.size = Vector3(2.4, 1.6, 2.4)
+	nose.mesh = nmesh
+	nose.position = Vector3(4.20, 0.95, 0)
+	nose.rotation = Vector3(0, deg_to_rad(90), 0)
+	nose.material_override = hull_mat
+	ship.add_child(nose)
+	# 2 wing fins
+	for sz: float in [-1.6, 1.6]:
+		var fin: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: BoxMesh = BoxMesh.new()
+		fmesh.size = Vector3(2.6, 0.30, 1.2)
+		fin.mesh = fmesh
+		fin.position = Vector3(-0.5, 1.0, sz)
+		fin.rotation = Vector3(0, 0, deg_to_rad(15 if sz > 0 else -15))
+		fin.material_override = hull_mat
+		ship.add_child(fin)
+	# Exposed engine core at the back — sphere
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: SphereMesh = SphereMesh.new()
+	cmesh.radius = 0.55
+	cmesh.height = 1.10
+	core.mesh = cmesh
+	core.position = Vector3(-3.4, 0.95, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.40, 0.20)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.55, 0.25)
+	cmat.emission_energy_multiplier = 2.6
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = cmat
+	ship.add_child(core)
+	var core_pulse: Tween = create_tween().set_loops()
+	core_pulse.tween_property(core, "scale", Vector3(1.20, 1.20, 1.20), 0.85).set_ease(Tween.EASE_IN_OUT)
+	core_pulse.tween_property(core, "scale", Vector3(1.0, 1.0, 1.0), 0.85).set_ease(Tween.EASE_IN_OUT)
+	# Cyan cockpit window
+	var cockpit: MeshInstance3D = MeshInstance3D.new()
+	var cock_mesh: BoxMesh = BoxMesh.new()
+	cock_mesh.size = Vector3(1.4, 0.40, 1.4)
+	cockpit.mesh = cock_mesh
+	cockpit.position = Vector3(2.40, 1.85, 0)
+	var cock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cock_mat.albedo_color = Color(0.20, 0.50, 0.70, 0.55)
+	cock_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cock_mat.emission_enabled = true
+	cock_mat.emission = Color(0.30, 0.85, 1.0)
+	cock_mat.emission_energy_multiplier = 1.4
+	cock_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	cockpit.material_override = cock_mat
+	ship.add_child(cockpit)
+	# Smoke from the engine
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.amount = 30
+	smoke.lifetime = 3.5
+	smoke.position = Vector3(-3.4, 1.5, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.30
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 25.0
+	pmat.initial_velocity_min = 0.85
+	pmat.initial_velocity_max = 1.4
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.30
+	pmat.scale_max = 0.65
+	pmat.color = Color(0.40, 0.40, 0.50, 0.55)
+	smoke.process_material = pmat
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.30
+	sm_mesh.height = 0.60
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.40, 0.40, 0.50, 0.55)
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mesh.material = sm_mat
+	smoke.draw_pass_1 = sm_mesh
+	ship.add_child(smoke)
+	# Collision around hull
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(8.0, 2.5, 3.5)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.0, 0)
+	sb.add_child(cs)
+	ship.add_child(sb)
+
+
+func _build_d2_glitch_enemies(geom: Node) -> void:
+	## Epic-2 T7: 3 procedural "glitch enemy" decorative critters pacing
+	## the D2 perimeter. Each is a small angular sphere with magenta eyes
+	## that hops on a tween — telegraphs combat danger ahead without
+	## actually wiring up enemy AI yet.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-4, 0, 12),
+		D2_CENTER + Vector3(15, 0, -8),
+		D2_CENTER + Vector3(20, 0, 14),
+	]
+	for i in positions.size():
+		var enemy: Node3D = Node3D.new()
+		enemy.name = "D2GlitchEnemy_%d" % i
+		enemy.position = positions[i]
+		geom.add_child(enemy)
+		# Faceted body — use prism (3-sided) for jagged look
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: PrismMesh = PrismMesh.new()
+		bmesh.size = Vector3(0.85, 0.85, 0.85)
+		body.mesh = bmesh
+		body.position = Vector3(0, 0.50, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.40, 0.10, 0.30)
+		bmat.emission_enabled = true
+		bmat.emission = Color(1.0, 0.30, 0.55)
+		bmat.emission_energy_multiplier = 1.4
+		bmat.metallic = 0.40
+		bmat.roughness = 0.30
+		body.material_override = bmat
+		enemy.add_child(body)
+		# 2 magenta eyes
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(1.0, 0.30, 0.55)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(1.0, 0.40, 0.65)
+		eye_mat.emission_energy_multiplier = 2.6
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex: float in [-0.15, 0.15]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emesh: SphereMesh = SphereMesh.new()
+			emesh.radius = 0.07
+			emesh.height = 0.14
+			eye.mesh = emesh
+			eye.position = Vector3(ex, 0.65, 0.30)
+			eye.material_override = eye_mat
+			enemy.add_child(eye)
+		# Hop tween + spin
+		var hop: Tween = create_tween().set_loops()
+		hop.tween_property(body, "position:y", 1.10, 0.45).set_ease(Tween.EASE_OUT)
+		hop.tween_property(body, "position:y", 0.50, 0.35).set_ease(Tween.EASE_IN)
+		hop.tween_interval(0.4 + i * 0.2)
+		# Slow patrol path
+		var origin: Vector3 = positions[i]
+		var patrol: Tween = create_tween().set_loops()
+		patrol.tween_property(enemy, "position", origin + Vector3(2, 0, 2), 3.0)
+		patrol.tween_property(enemy, "position", origin + Vector3(-2, 0, 2), 3.0)
+		patrol.tween_property(enemy, "position", origin + Vector3(-2, 0, -2), 3.0)
+		patrol.tween_property(enemy, "position", origin, 3.0)
+
+
+func _build_d2_flicker_lamps(geom: Node) -> void:
+	## Epic-2 T8: 4 broken street lamps across D2 with flickering on/off
+	## tweens and slightly leaning angles. Sells "the power's failing here".
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-15, 0, -10),
+		D2_CENTER + Vector3(-5, 0, 14),
+		D2_CENTER + Vector3(10, 0, -14),
+		D2_CENTER + Vector3(20, 0, 6),
+	]
+	for i in positions.size():
+		var lamp: Node3D = Node3D.new()
+		lamp.name = "D2FlickerLamp_%d" % i
+		lamp.position = positions[i]
+		lamp.rotation = Vector3(deg_to_rad(randf_range(-12, 12)), 0, deg_to_rad(randf_range(-12, 12)))
+		geom.add_child(lamp)
+		# Pole
+		var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+		pole_mat.albedo_color = Color(0.10, 0.10, 0.12)
+		pole_mat.metallic = 0.85
+		pole_mat.roughness = 0.50
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.07
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 3.4
+		pole.mesh = pmesh
+		pole.position = Vector3(0, 1.7, 0)
+		pole.material_override = pole_mat
+		lamp.add_child(pole)
+		# Lamp head box at top
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: BoxMesh = BoxMesh.new()
+		hmesh.size = Vector3(0.45, 0.30, 0.45)
+		head.mesh = hmesh
+		head.position = Vector3(0, 3.55, 0)
+		head.material_override = pole_mat
+		lamp.add_child(head)
+		# Bulb (the flicker light)
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: SphereMesh = SphereMesh.new()
+		bmesh.radius = 0.16
+		bmesh.height = 0.32
+		bulb.mesh = bmesh
+		bulb.position = Vector3(0, 3.30, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(1.0, 0.85, 0.55)
+		bmat.emission_enabled = true
+		bmat.emission = Color(1.0, 0.85, 0.55)
+		bmat.emission_energy_multiplier = 2.0
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bulb.material_override = bmat
+		lamp.add_child(bulb)
+		# Real light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = Vector3(0, 3.30, 0)
+		light.light_color = Color(1.0, 0.85, 0.55)
+		light.light_energy = 1.4
+		light.omni_range = 6.0
+		lamp.add_child(light)
+		# Flicker visibility on bulb + light together
+		var flicker: Tween = create_tween().set_loops()
+		flicker.tween_interval(0.4 + randf() * 1.5)
+		flicker.tween_property(bulb, "visible", false, 0.0)
+		flicker.tween_property(light, "visible", false, 0.0)
+		flicker.tween_interval(0.08)
+		flicker.tween_property(bulb, "visible", true, 0.0)
+		flicker.tween_property(light, "visible", true, 0.0)
+		flicker.tween_interval(0.05)
+		flicker.tween_property(bulb, "visible", false, 0.0)
+		flicker.tween_property(light, "visible", false, 0.0)
+		flicker.tween_interval(0.18)
+		flicker.tween_property(bulb, "visible", true, 0.0)
+		flicker.tween_property(light, "visible", true, 0.0)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 3.4
+		cs.shape = cap
+		cs.position = Vector3(0, 1.7, 0)
+		sb.add_child(cs)
+		lamp.add_child(sb)
+
+
+func _build_d2_junk_pile(geom: Node) -> void:
+	## Epic-2 T9: a heap of broken hardware — stacked crushed boxes, loose
+	## cables coiling out, the occasional emissive flicker. Tells the
+	## "this place is a junkyard" story instantly.
+	var pile: Node3D = Node3D.new()
+	pile.name = "D2JunkPile"
+	pile.position = D2_CENTER + Vector3(-6, 0, -14)
+	geom.add_child(pile)
+	# 6 stacked broken boxes at random sizes/orientations
+	var server_mat: StandardMaterial3D = StandardMaterial3D.new()
+	server_mat.albedo_color = Color(0.18, 0.20, 0.24)
+	server_mat.metallic = 0.65
+	server_mat.roughness = 0.50
+	var server_specs: Array = [
+		[Vector3(0, 0.30, 0), Vector3(1.4, 0.55, 0.85), Vector3(0, 0, 0)],
+		[Vector3(0.5, 0.85, 0.2), Vector3(1.0, 0.40, 0.85), Vector3(0, 0, deg_to_rad(8))],
+		[Vector3(-0.3, 1.20, -0.2), Vector3(0.85, 0.45, 0.70), Vector3(0, deg_to_rad(15), deg_to_rad(-12))],
+		[Vector3(0.7, 0.30, -0.7), Vector3(0.65, 0.55, 0.65), Vector3(0, deg_to_rad(35), 0)],
+		[Vector3(-0.6, 0.30, 0.5), Vector3(0.85, 0.55, 0.70), Vector3(0, deg_to_rad(-20), 0)],
+		[Vector3(0.2, 1.65, 0.0), Vector3(0.65, 0.40, 0.50), Vector3(0, 0, deg_to_rad(20))],
+	]
+	for spec in server_specs:
+		var server: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = spec[1]
+		server.mesh = smesh
+		server.position = spec[0]
+		server.rotation = spec[2]
+		server.material_override = server_mat
+		pile.add_child(server)
+		# Small status LED on each (red or green)
+		var led: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: SphereMesh = SphereMesh.new()
+		lmesh.radius = 0.04
+		lmesh.height = 0.08
+		led.mesh = lmesh
+		var spec_size: Vector3 = spec[1]
+		led.position = (spec[0] as Vector3) + Vector3(0, 0, spec_size.z * 0.5 + 0.04)
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		var c: Color = Color(1.0, 0.30, 0.30) if randi() % 2 == 0 else Color(0.30, 1.0, 0.40)
+		lmat.albedo_color = c
+		lmat.emission_enabled = true
+		lmat.emission = c
+		lmat.emission_energy_multiplier = 2.6
+		lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		led.material_override = lmat
+		pile.add_child(led)
+	# Loose cables — 3 thin cylinders snaking out
+	var cable_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cable_mat.albedo_color = Color(0.10, 0.10, 0.12)
+	cable_mat.metallic = 0.30
+	for c in 3:
+		var cable: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: CylinderMesh = CylinderMesh.new()
+		cmesh.top_radius = 0.04
+		cmesh.bottom_radius = 0.04
+		cmesh.height = 1.2 + c * 0.3
+		cable.mesh = cmesh
+		var angle: float = (float(c) / 3.0) * TAU
+		cable.position = Vector3(cos(angle) * 0.85, 0.10, sin(angle) * 0.85)
+		cable.rotation = Vector3(deg_to_rad(85), angle, 0)
+		cable.material_override = cable_mat
+		pile.add_child(cable)
+	# Collision around the whole pile
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.6, 2.0, 2.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.0, 0)
+	sb.add_child(cs)
+	pile.add_child(sb)
+
+
+func _build_d2_abandoned_kiosk(geom: Node) -> void:
+	## Epic-2 T10: an abandoned roadside terminal kiosk. The screen is dark
+	## and cracked, the structure is leaning, and a "OUT OF ORDER" tag
+	## flickers above it.
+	var kiosk: Node3D = Node3D.new()
+	kiosk.name = "D2AbandonedKiosk"
+	kiosk.position = D2_CENTER + Vector3(-10, 0, -2)
+	kiosk.rotation = Vector3(0, 0, deg_to_rad(-6))
+	geom.add_child(kiosk)
+	# Stand
+	var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stand_mat.albedo_color = Color(0.18, 0.16, 0.14)
+	stand_mat.metallic = 0.55
+	stand_mat.roughness = 0.55
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.70, 1.40, 0.50)
+	stand.mesh = smesh
+	stand.position = Vector3(0, 0.70, 0)
+	stand.material_override = stand_mat
+	kiosk.add_child(stand)
+	# Cracked dark screen
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var scr_mesh: BoxMesh = BoxMesh.new()
+	scr_mesh.size = Vector3(0.55, 0.50, 0.04)
+	screen.mesh = scr_mesh
+	screen.position = Vector3(0, 1.20, 0.27)
+	var scr_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scr_mat.albedo_color = Color(0.04, 0.05, 0.08)
+	scr_mat.emission_enabled = true
+	scr_mat.emission = Color(0.20, 0.20, 0.30)
+	scr_mat.emission_energy_multiplier = 0.30
+	scr_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = scr_mat
+	kiosk.add_child(screen)
+	# Diagonal crack across the screen
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(0.95, 0.95, 1.0)
+	crack_mat.emission_enabled = true
+	crack_mat.emission = Color(0.95, 0.95, 1.0)
+	crack_mat.emission_energy_multiplier = 1.4
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 2:
+		var crack: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.50, 0.02, 0.01)
+		crack.mesh = cmesh
+		crack.position = Vector3(0, 1.20 + i * 0.05, 0.30)
+		crack.rotation = Vector3(0, 0, deg_to_rad(-25 + i * 15))
+		crack.material_override = crack_mat
+		kiosk.add_child(crack)
+	# OUT OF ORDER hanging tag above the kiosk
+	var tag: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.85, 0.30, 0.05)
+	tag.mesh = tmesh
+	tag.position = Vector3(0, 2.0, 0.30)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.85, 0.20, 0.20)
+	tmat.emission_enabled = true
+	tmat.emission = Color(1.0, 0.30, 0.20)
+	tmat.emission_energy_multiplier = 1.4
+	tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tag.material_override = tmat
+	kiosk.add_child(tag)
+	# Tag label
+	var label: Label3D = Label3D.new()
+	label.text = "OUT OF\nORDER"
+	label.position = Vector3(0, 2.0, 0.34)
+	label.modulate = Color(1, 1, 1)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 14
+	label.no_depth_test = true
+	kiosk.add_child(label)
+	# Flicker tag
+	var flicker: Tween = create_tween().set_loops()
+	flicker.tween_property(tmat, "emission_energy_multiplier", 0.3, 0.4).set_ease(Tween.EASE_IN_OUT)
+	flicker.tween_property(tmat, "emission_energy_multiplier", 1.6, 0.3).set_ease(Tween.EASE_IN_OUT)
+	flicker.tween_interval(1.0 + randf() * 1.0)
+	# Collision around stand
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.70, 1.40, 0.50)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	kiosk.add_child(sb)
+
 
