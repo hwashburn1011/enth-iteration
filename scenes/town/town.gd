@@ -8825,6 +8825,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_meteorologist_npc()
 	# Epic-5 T30: ice fog particles
 	_build_d5_ice_fog(geom)
+	# Epic-5 T31: dog sled
+	_build_d5_dog_sled(geom)
+	# Epic-5 T32: husky team pulling the sled
+	_build_d5_husky_team(geom)
+	# Epic-5 T33: musher NPC
+	_build_d5_musher_npc()
+	# Epic-5 T34: snow fort
+	_build_d5_snow_fort(geom)
+	# Epic-5 T35: aurora curtain in the sky
+	_build_d5_aurora_curtain(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -10992,6 +11002,385 @@ func _build_d5_ice_fog(geom: Node) -> void:
 	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	fog_mesh.material = fmat
 	geom.add_child(fog)
+
+
+func _build_d5_dog_sled(geom: Node) -> void:
+	## Epic-5 T31: traditional wooden dog sled — long curved runners,
+	## a cargo basket, and a vertical handle for the musher.
+	var sled: Node3D = Node3D.new()
+	sled.name = "DogSled"
+	sled.position = Vector3(D5_CENTER.x - 6.0, 0.0, 16.0)
+	geom.add_child(sled)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# 2 long runners
+	for sz in [-0.45, 0.45]:
+		var runner: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(2.40, 0.10, 0.18)
+		runner.mesh = rm
+		runner.material_override = wood_mat
+		runner.position = Vector3(0, 0.10, sz)
+		sled.add_child(runner)
+		# Curved front (small angled box)
+		var curl: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(0.45, 0.10, 0.18)
+		curl.mesh = cm
+		curl.material_override = wood_mat
+		curl.position = Vector3(1.30, 0.25, sz)
+		curl.rotation_degrees = Vector3(0, 0, 30)
+		sled.add_child(curl)
+	# Cargo basket (low box)
+	var basket: MeshInstance3D = MeshInstance3D.new()
+	var bmm: BoxMesh = BoxMesh.new()
+	bmm.size = Vector3(2.0, 0.40, 0.85)
+	basket.mesh = bmm
+	basket.material_override = wood_mat
+	basket.position = Vector3(0, 0.40, 0)
+	sled.add_child(basket)
+	# Side rails on basket
+	for sz in [-0.40, 0.40]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rmm: BoxMesh = BoxMesh.new()
+		rmm.size = Vector3(2.0, 0.10, 0.06)
+		rail.mesh = rmm
+		rail.material_override = wood_mat
+		rail.position = Vector3(0, 0.65, sz)
+		sled.add_child(rail)
+	# Vertical musher handle (tall U-shape via 2 posts + crossbar)
+	for sx in [-0.85, -0.85]:
+		pass  # placeholder so structure stays clean
+	for sz_pair in [Vector3(-0.95, 0.85, -0.40), Vector3(-0.95, 0.85, 0.40)]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.05
+		pmm.bottom_radius = 0.06
+		pmm.height = 0.85
+		post.mesh = pmm
+		post.material_override = wood_mat
+		post.position = sz_pair
+		sled.add_child(post)
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: CylinderMesh = CylinderMesh.new()
+	cbm.top_radius = 0.05
+	cbm.bottom_radius = 0.05
+	cbm.height = 0.85
+	crossbar.mesh = cbm
+	crossbar.material_override = wood_mat
+	crossbar.position = Vector3(-0.95, 1.30, 0)
+	crossbar.rotation_degrees = Vector3(90, 0, 0)
+	sled.add_child(crossbar)
+	# Cargo blanket (red/blue)
+	var blanket: MeshInstance3D = MeshInstance3D.new()
+	var blm: BoxMesh = BoxMesh.new()
+	blm.size = Vector3(1.85, 0.10, 0.75)
+	blanket.mesh = blm
+	var blanket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blanket_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	blanket_mat.roughness = 0.85
+	blanket.material_override = blanket_mat
+	blanket.position = Vector3(0, 0.65, 0)
+	sled.add_child(blanket)
+	# Sled collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 1.30, 1.10)
+	cs.shape = cb
+	cs.position = Vector3(-0.20, 0.65, 0)
+	sb.add_child(cs)
+	sled.add_child(sb)
+
+
+func _build_d5_husky_team(geom: Node) -> void:
+	## Epic-5 T32: 4 sled huskies in a 2-by-2 harness in front of the sled.
+	## Black/white/grey fur, tongue out, tails up, mild bobbing.
+	var team: Node3D = Node3D.new()
+	team.name = "HuskyTeam"
+	team.position = Vector3(D5_CENTER.x - 3.5, 0.0, 16.0)
+	geom.add_child(team)
+	var fur_colors: Array = [
+		Color(0.30, 0.30, 0.30),
+		Color(0.92, 0.92, 0.88),
+		Color(0.55, 0.55, 0.55),
+		Color(0.85, 0.85, 0.80),
+	]
+	var positions: Array = [
+		Vector3(0.0, 0, -0.45),
+		Vector3(0.0, 0,  0.45),
+		Vector3(1.4, 0, -0.45),
+		Vector3(1.4, 0,  0.45),
+	]
+	for i in 4:
+		var husky: Node3D = Node3D.new()
+		husky.position = positions[i]
+		team.add_child(husky)
+		var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+		fur_mat.albedo_color = fur_colors[i]
+		fur_mat.roughness = 0.85
+		var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+		white_mat.albedo_color = Color(0.92, 0.92, 0.88)
+		white_mat.roughness = 0.85
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.22
+		bm.height = 0.40
+		body.mesh = bm
+		body.material_override = fur_mat
+		body.position = Vector3(0, 0.32, 0)
+		body.scale = Vector3(0.85, 0.75, 1.45)
+		husky.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.16
+		hm.height = 0.28
+		head.mesh = hm
+		head.material_override = fur_mat
+		head.position = Vector3(0, 0.45, 0.30)
+		husky.add_child(head)
+		# White muzzle
+		var muzzle: MeshInstance3D = MeshInstance3D.new()
+		var mm: BoxMesh = BoxMesh.new()
+		mm.size = Vector3(0.10, 0.08, 0.16)
+		muzzle.mesh = mm
+		muzzle.material_override = white_mat
+		muzzle.position = Vector3(0, 0.42, 0.42)
+		husky.add_child(muzzle)
+		# 2 ears (small prisms)
+		for sx in [-0.08, 0.08]:
+			var ear: MeshInstance3D = MeshInstance3D.new()
+			var em: PrismMesh = PrismMesh.new()
+			em.size = Vector3(0.06, 0.10, 0.04)
+			ear.mesh = em
+			ear.material_override = fur_mat
+			ear.position = Vector3(sx, 0.58, 0.30)
+			husky.add_child(ear)
+		# 4 legs
+		for lx in [-0.10, 0.10]:
+			for lz in [-0.18, 0.18]:
+				var leg: MeshInstance3D = MeshInstance3D.new()
+				var lm: CylinderMesh = CylinderMesh.new()
+				lm.top_radius = 0.04
+				lm.bottom_radius = 0.04
+				lm.height = 0.30
+				leg.mesh = lm
+				leg.material_override = fur_mat
+				leg.position = Vector3(lx, 0.15, lz)
+				husky.add_child(leg)
+		# Tail (curved up cylinder)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.04
+		tm.bottom_radius = 0.06
+		tm.height = 0.28
+		tail.mesh = tm
+		tail.material_override = fur_mat
+		tail.position = Vector3(0, 0.42, -0.32)
+		tail.rotation_degrees = Vector3(45, 0, 0)
+		husky.add_child(tail)
+		# Eyes (cyan glow — huskies have icy eyes)
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.40, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.40, 1.0, 1.0)
+		eye_mat.emission_energy_multiplier = 1.6
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex in [-0.06, 0.06]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emm: SphereMesh = SphereMesh.new()
+			emm.radius = 0.025
+			emm.height = 0.05
+			eye.mesh = emm
+			eye.material_override = eye_mat
+			eye.position = Vector3(ex, 0.48, 0.42)
+			husky.add_child(eye)
+		# Bobbing tween (subtle running idle)
+		var tw: Tween = husky.create_tween().set_loops()
+		tw.tween_property(husky, "position:y", 0.04, 0.20 + randf() * 0.10)
+		tw.tween_property(husky, "position:y", 0.0, 0.20 + randf() * 0.10)
+	# Harness ropes (4 long thin cylinders from huskies back to sled)
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	rope_mat.roughness = 0.85
+	for sz in [-0.45, 0.45]:
+		for x_offset in [0.0, 1.4]:
+			var rope: MeshInstance3D = MeshInstance3D.new()
+			var rm: CylinderMesh = CylinderMesh.new()
+			rm.top_radius = 0.018
+			rm.bottom_radius = 0.018
+			rm.height = 1.30
+			rope.mesh = rm
+			rope.material_override = rope_mat
+			rope.position = Vector3(x_offset - 1.3, 0.40, sz)
+			rope.rotation_degrees = Vector3(0, 0, 90)
+			team.add_child(rope)
+
+
+func _build_d5_musher_npc() -> void:
+	## Epic-5 T33: musher NPC standing at the back handle of the sled.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MusherSlot"
+	slot.position = Vector3(D5_CENTER.x - 7.2, 0.0, 16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Musher"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Cobalt")
+	if "npc_id" in npc:
+		npc.set("npc_id", "musher_d5")
+	slot.add_child(npc)
+	# Heavy black parka
+	var parka: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.75, 1.10, 0.50)
+	parka.mesh = pmm
+	var parka_mat: StandardMaterial3D = StandardMaterial3D.new()
+	parka_mat.albedo_color = Color(0.15, 0.20, 0.25)
+	parka_mat.roughness = 0.85
+	parka.material_override = parka_mat
+	parka.position = Vector3(0, 0.60, 0)
+	npc.add_child(parka)
+	# Goggles strip across face (yellow tinted)
+	var goggles: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(0.40, 0.10, 0.06)
+	goggles.mesh = gm
+	var gog_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gog_mat.albedo_color = Color(0.95, 0.85, 0.20, 0.85)
+	gog_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	gog_mat.emission_enabled = true
+	gog_mat.emission = Color(0.95, 0.85, 0.20)
+	gog_mat.emission_energy_multiplier = 1.4
+	gog_mat.metallic = 0.55
+	gog_mat.roughness = 0.20
+	goggles.material_override = gog_mat
+	goggles.position = Vector3(0, 1.42, 0.20)
+	npc.add_child(goggles)
+	# Fur hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.26
+	hm.height = 0.45
+	hood.mesh = hm
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.30, 0.30, 0.30)
+	fur_mat.roughness = 0.95
+	hood.material_override = fur_mat
+	hood.position = Vector3(0, 1.45, -0.05)
+	npc.add_child(hood)
+
+
+func _build_d5_snow_fort(geom: Node) -> void:
+	## Epic-5 T34: small snow fort — circular wall of stacked snow blocks
+	## with crenellated top and a low entrance gap, made of pure white emissive
+	## snow material. Fits the playful "kids built it" feel of D5.
+	var fort: Node3D = Node3D.new()
+	fort.name = "SnowFort"
+	fort.position = Vector3(D5_CENTER.x - 16.0, 0.0, 4.0)
+	geom.add_child(fort)
+	var snow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	snow_mat.albedo_color = Color(0.95, 0.97, 1.0)
+	snow_mat.emission_enabled = true
+	snow_mat.emission = Color(0.75, 0.90, 1.0)
+	snow_mat.emission_energy_multiplier = 0.30
+	snow_mat.roughness = 0.55
+	# 12 wall segments forming a circle, with a gap at the front (4 segments)
+	for i in 12:
+		if i >= 5 and i <= 7:
+			continue  # entrance gap
+		var ang: float = (TAU / 12.0) * i
+		var block: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.10, 1.40, 0.85)
+		block.mesh = bm
+		block.material_override = snow_mat
+		block.position = Vector3(cos(ang) * 2.85, 0.70, sin(ang) * 2.85)
+		block.rotation = Vector3(0, -ang + PI * 0.5, 0)
+		fort.add_child(block)
+		# Crenellation (small block on top, every other position)
+		if i % 2 == 0:
+			var cren: MeshInstance3D = MeshInstance3D.new()
+			var cm: BoxMesh = BoxMesh.new()
+			cm.size = Vector3(0.55, 0.45, 0.85)
+			cren.mesh = cm
+			cren.material_override = snow_mat
+			cren.position = Vector3(cos(ang) * 2.85, 1.62, sin(ang) * 2.85)
+			cren.rotation = Vector3(0, -ang + PI * 0.5, 0)
+			fort.add_child(cren)
+		# Block collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(cos(ang) * 2.85, 0.70, sin(ang) * 2.85)
+		sb.rotation = Vector3(0, -ang + PI * 0.5, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.10, 1.40, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		fort.add_child(sb)
+	# Stack of snowballs in the center (ammunition pile)
+	var pile_positions: Array = [
+		Vector3(-0.30, 0.20, 0.0),
+		Vector3( 0.30, 0.20, 0.0),
+		Vector3( 0.0, 0.20, 0.30),
+		Vector3( 0.0, 0.20, -0.30),
+		Vector3( 0.0, 0.55, 0.0),
+	]
+	for p in pile_positions:
+		var ball: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.20
+		bm.height = 0.36
+		ball.mesh = bm
+		ball.material_override = snow_mat
+		ball.position = p
+		fort.add_child(ball)
+
+
+func _build_d5_aurora_curtain(geom: Node) -> void:
+	## Epic-5 T35: massive arching aurora curtain in the sky over D5 —
+	## wide translucent multicolor sheet hovering at high altitude.
+	var aurora: Node3D = Node3D.new()
+	aurora.name = "AuroraCurtain"
+	aurora.position = Vector3(D5_CENTER.x, 14.0, 0.0)
+	geom.add_child(aurora)
+	# 5 long curving sheets at different heights/colors
+	var sheet_colors: Array = [
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.85, 0.95),
+		Color(0.55, 0.40, 0.95),
+		Color(0.30, 0.75, 0.65),
+		Color(0.40, 0.85, 1.0),
+	]
+	for i in 5:
+		var sheet: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(48.0, 0.10, 2.40)
+		sheet.mesh = sm
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(sheet_colors[i].r, sheet_colors[i].g, sheet_colors[i].b, 0.45)
+		smat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		smat.emission_enabled = true
+		smat.emission = sheet_colors[i]
+		smat.emission_energy_multiplier = 1.6
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sheet.material_override = smat
+		sheet.position = Vector3(0, i * 0.85, -8.0 + i * 1.40)
+		sheet.rotation_degrees = Vector3(0, 0, sin(i) * 8.0)
+		aurora.add_child(sheet)
+		# Slow drift / shimmer (rotate slightly back and forth)
+		var tw: Tween = sheet.create_tween().set_loops()
+		tw.tween_property(sheet, "rotation_degrees:z", 12.0 + i, 6.0 + i * 0.4)
+		tw.tween_property(sheet, "rotation_degrees:z", -12.0 - i, 6.0 + i * 0.4)
 
 
 
