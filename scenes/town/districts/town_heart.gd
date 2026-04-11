@@ -36,6 +36,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_combat_trainer_npc(town)
 	_build_th_cartographer_npc(town)
 	_build_th_shrine_keeper_npc(town)
+	_build_th_quest_master_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -3336,3 +3337,183 @@ func _build_th_shrine_keeper_npc(town: Node) -> void:
 func pivot_set_axis_x(n: Node3D) -> void:
 	## Helper: rotate a torus 90 degrees around X so it lies flat (horizontal halo).
 	n.rotation.x = PI / 2.0
+
+
+func _build_th_quest_master_npc(town: Node) -> void:
+	## Epic-10 T20: Quest Master Echo — courier-style NPC standing beside
+	## the quest board on the SE radial path. Brown leather field jacket
+	## with brass shoulder straps, courier satchel slung across the chest,
+	## brass clipboard held in left hand, right hand pointing at the
+	## quest board with a slow tap-and-trace gesture.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THQuestMasterEchoSlot"
+	# Stand beside the quest board on the SE radial path
+	var ang: float = PI / 4.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 7.6, 0, sin(ang) * 7.6)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THQuestMasterEcho"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Quest Master Echo")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_quest_master_echo")
+	# Face the quest board (toward beacon center along the radial line)
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.30, 0.20, 0.12)
+	jacket_mat.roughness = 0.85
+	jacket_mat.metallic = 0.18
+	jacket_mat.emission_enabled = true
+	jacket_mat.emission = Color(0.55, 0.30, 0.10)
+	jacket_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.18, 0.10, 0.06)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	# ---- Brown leather field jacket ----
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jmesh: BoxMesh = BoxMesh.new()
+	jmesh.size = Vector3(1.05, 1.45, 0.55)
+	jacket.mesh = jmesh
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 1.10, 0)
+	npc.add_child(jacket)
+	# Brass shoulder straps (small box pads)
+	for sx in [-0.45, 0.45]:
+		var strap: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(0.30, 0.10, 0.55)
+		strap.mesh = stm
+		strap.material_override = brass_mat
+		strap.position = Vector3(sx, 1.78, 0)
+		npc.add_child(strap)
+	# Brass front collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(1.05, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.85, 0)
+	npc.add_child(collar)
+	# 3 brass front buttons down the chest
+	for by in [1.55, 1.30, 1.05]:
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.05
+		bm.height = 0.10
+		btn.mesh = bm
+		btn.material_override = brass_mat
+		btn.position = Vector3(0, by, -0.30)
+		npc.add_child(btn)
+	# ---- Courier satchel slung across the chest (diagonal box) ----
+	var satchel_strap: MeshInstance3D = MeshInstance3D.new()
+	var sasm: BoxMesh = BoxMesh.new()
+	sasm.size = Vector3(0.10, 1.30, 0.06)
+	satchel_strap.mesh = sasm
+	satchel_strap.material_override = leather_mat
+	satchel_strap.position = Vector3(0, 1.40, -0.32)
+	satchel_strap.rotation.z = 0.45
+	npc.add_child(satchel_strap)
+	# Satchel bag (slung at his right hip)
+	var satchel: MeshInstance3D = MeshInstance3D.new()
+	var sbm: BoxMesh = BoxMesh.new()
+	sbm.size = Vector3(0.50, 0.45, 0.18)
+	satchel.mesh = sbm
+	satchel.material_override = leather_mat
+	satchel.position = Vector3(0.55, 0.90, -0.05)
+	npc.add_child(satchel)
+	# Satchel brass clasp
+	var clasp: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.16, 0.10, 0.06)
+	clasp.mesh = clm
+	clasp.material_override = brass_mat
+	clasp.position = Vector3(0.55, 1.05, -0.16)
+	npc.add_child(clasp)
+	# ---- Brass clipboard held in left hand at chest height ----
+	var clipboard: MeshInstance3D = MeshInstance3D.new()
+	var clbm: BoxMesh = BoxMesh.new()
+	clbm.size = Vector3(0.40, 0.55, 0.06)
+	clipboard.mesh = clbm
+	clipboard.material_override = brass_mat
+	clipboard.position = Vector3(-0.55, 1.20, -0.30)
+	clipboard.rotation.x = -0.20
+	npc.add_child(clipboard)
+	# Glowing notes stripe on the clipboard
+	var notes: MeshInstance3D = MeshInstance3D.new()
+	var nm: BoxMesh = BoxMesh.new()
+	nm.size = Vector3(0.30, 0.10, 0.04)
+	notes.mesh = nm
+	notes.material_override = data_mat
+	notes.position = Vector3(-0.55, 1.25, -0.34)
+	notes.rotation.x = -0.20
+	npc.add_child(notes)
+	# ---- Right arm pointing at the board on a pivot ----
+	var point_pivot: Node3D = Node3D.new()
+	point_pivot.position = Vector3(0.55, 1.55, 0)
+	npc.add_child(point_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = jacket_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	point_pivot.add_child(right_arm)
+	# Pointing finger box at the end of the arm
+	var finger: MeshInstance3D = MeshInstance3D.new()
+	var fmm: BoxMesh = BoxMesh.new()
+	fmm.size = Vector3(0.12, 0.30, 0.10)
+	finger.mesh = fmm
+	finger.material_override = brass_mat
+	finger.position = Vector3(0, -0.95, 0)
+	point_pivot.add_child(finger)
+	# Glowing fingertip dot (data)
+	var fingertip: MeshInstance3D = MeshInstance3D.new()
+	var ftm: SphereMesh = SphereMesh.new()
+	ftm.radius = 0.05
+	ftm.height = 0.10
+	fingertip.mesh = ftm
+	fingertip.material_override = data_mat
+	fingertip.position = Vector3(0, -1.10, 0)
+	point_pivot.add_child(fingertip)
+	# Initial pose — arm raised forward in tutorial gesture
+	point_pivot.rotation.x = -1.20
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.30)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Tap-and-trace gesture tween — finger taps then traces along the board ----
+	var trace: Tween = npc.create_tween().set_loops()
+	trace.tween_property(point_pivot, "rotation:x", -1.40, 0.30).set_ease(Tween.EASE_OUT)
+	trace.tween_property(point_pivot, "rotation:x", -1.10, 0.30).set_ease(Tween.EASE_IN)
+	trace.tween_property(point_pivot, "rotation:y", 0.30, 1.0).set_ease(Tween.EASE_IN_OUT)
+	trace.tween_property(point_pivot, "rotation:y", -0.30, 1.0).set_ease(Tween.EASE_IN_OUT)
+	trace.tween_property(point_pivot, "rotation:y", 0.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+	# Notes + fingertip pulse
+	var dpulse: Tween = npc.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
