@@ -8945,6 +8945,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_tablet_shrine(geom)
 	# Epic-5 T90: small ice elemental creature
 	_build_d5_ice_elemental(geom)
+	# Epic-5 T91: glacier crab creature
+	_build_d5_glacier_crab(geom)
+	# Epic-5 T92: cryo terminal kiosk
+	_build_d5_cryo_kiosk(geom)
+	# Epic-5 T93: hopeful seeker NPC
+	_build_d5_seeker_npc()
+	# Epic-5 T94: cryosleep medical pod row
+	_build_d5_cryosleep_pods(geom)
+	# Epic-5 T95: starlight projector
+	_build_d5_starlight_projector(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -16160,6 +16170,439 @@ func _build_d5_ice_elemental(geom: Node) -> void:
 	var ts: Tween = elemental.create_tween().set_loops()
 	ts.tween_property(elemental, "rotation_degrees:y", 360.0, 10.0)
 	ts.tween_property(elemental, "rotation_degrees:y", 0.0, 0.0)
+
+
+func _build_d5_glacier_crab(geom: Node) -> void:
+	## Epic-5 T91: glacier crab — pale blue crustacean with 6 legs, 2 large
+	## claws, and an ice-shell back. Side-step shuffling animation.
+	var crab: Node3D = Node3D.new()
+	crab.name = "GlacierCrab"
+	crab.position = Vector3(D5_CENTER.x + 16.0, 0.0, 12.0)
+	geom.add_child(crab)
+	var shell_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shell_mat.albedo_color = Color(0.55, 0.78, 0.92)
+	shell_mat.emission_enabled = true
+	shell_mat.emission = Color(0.40, 0.65, 0.85)
+	shell_mat.emission_energy_multiplier = 0.30
+	shell_mat.metallic = 0.45
+	shell_mat.roughness = 0.30
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.35, 0.50, 0.65)
+	leg_mat.metallic = 0.30
+	leg_mat.roughness = 0.45
+	# Body shell (large flat sphere)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.65
+	bm.height = 0.85
+	body.mesh = bm
+	body.material_override = shell_mat
+	body.position = Vector3(0, 0.55, 0)
+	body.scale = Vector3(1.0, 0.45, 1.20)
+	crab.add_child(body)
+	# 2 small eye stalks
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.18, 0.18]:
+		var stalk: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.025
+		stm.bottom_radius = 0.025
+		stm.height = 0.20
+		stalk.mesh = stm
+		stalk.material_override = leg_mat
+		stalk.position = Vector3(ex, 0.85, 0.30)
+		crab.add_child(stalk)
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 0.97, 0.30)
+		crab.add_child(eye)
+	# 2 large claws (front)
+	for sx in [-0.55, 0.55]:
+		var claw_arm: MeshInstance3D = MeshInstance3D.new()
+		var cam: CylinderMesh = CylinderMesh.new()
+		cam.top_radius = 0.08
+		cam.bottom_radius = 0.08
+		cam.height = 0.55
+		claw_arm.mesh = cam
+		claw_arm.material_override = leg_mat
+		claw_arm.position = Vector3(sx, 0.55, 0.55)
+		claw_arm.rotation_degrees = Vector3(0, 0, 90)
+		crab.add_child(claw_arm)
+		# Claw pincer (large sphere segment with prism teeth)
+		var pincer: MeshInstance3D = MeshInstance3D.new()
+		var prm: SphereMesh = SphereMesh.new()
+		prm.radius = 0.22
+		prm.height = 0.40
+		pincer.mesh = prm
+		pincer.material_override = shell_mat
+		pincer.position = Vector3(sx + sx * 0.3, 0.55, 0.85)
+		pincer.scale = Vector3(0.85, 0.85, 1.20)
+		crab.add_child(pincer)
+	# 6 walking legs (3 each side)
+	for side_idx in 2:
+		var sx: float = -0.50 + side_idx * 1.0
+		for i in 3:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.04
+			lm.bottom_radius = 0.04
+			lm.height = 0.55
+			leg.mesh = lm
+			leg.material_override = leg_mat
+			leg.position = Vector3(sx, 0.30, -0.30 + i * 0.30)
+			leg.rotation_degrees = Vector3(0, 0, 50.0 if sx > 0 else -50.0)
+			crab.add_child(leg)
+	# Side-step shuffle tween
+	var tw: Tween = crab.create_tween().set_loops()
+	tw.tween_property(crab, "position:x", D5_CENTER.x + 18.0, 2.0)
+	tw.tween_property(crab, "position:x", D5_CENTER.x + 14.0, 2.0)
+	# Body bob
+	var tb: Tween = body.create_tween().set_loops()
+	tb.tween_property(body, "position:y", 0.62, 0.40)
+	tb.tween_property(body, "position:y", 0.55, 0.40)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 0.55, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	crab.add_child(sb)
+
+
+func _build_d5_cryo_kiosk(geom: Node) -> void:
+	## Epic-5 T92: cryo terminal kiosk — interactive standing terminal with
+	## a glowing cyan screen, used as a save point hint location.
+	var kiosk: Node3D = Node3D.new()
+	kiosk.name = "CryoKiosk"
+	kiosk.position = Vector3(D5_CENTER.x - 26.0, 0.0, 6.0)
+	geom.add_child(kiosk)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Pedestal base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.85, 0.30, 0.85)
+	base.mesh = bm
+	base.material_override = metal_mat
+	base.position = Vector3(0, 0.15, 0)
+	kiosk.add_child(base)
+	# Stand column
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.55, 1.40, 0.55)
+	col.mesh = cm
+	col.material_override = metal_mat
+	col.position = Vector3(0, 1.0, 0)
+	kiosk.add_child(col)
+	# Screen housing (angled box)
+	var screen_box: MeshInstance3D = MeshInstance3D.new()
+	var sbm: BoxMesh = BoxMesh.new()
+	sbm.size = Vector3(0.85, 0.65, 0.18)
+	screen_box.mesh = sbm
+	screen_box.material_override = metal_mat
+	screen_box.position = Vector3(0, 1.85, 0.20)
+	screen_box.rotation_degrees = Vector3(-25, 0, 0)
+	kiosk.add_child(screen_box)
+	# Glowing screen
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var scm: BoxMesh = BoxMesh.new()
+	scm.size = Vector3(0.75, 0.55, 0.04)
+	screen.mesh = scm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.40, 0.95, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 1.0, 1.0)
+	screen_mat.emission_energy_multiplier = 3.0
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 1.85, 0.30)
+	screen.rotation_degrees = Vector3(-25, 0, 0)
+	kiosk.add_child(screen)
+	# Label
+	var label: Label3D = Label3D.new()
+	label.text = "CRYO TERMINAL\n\n[SAVE POINT]\n0xCACHE_05"
+	label.modulate = Color(0.05, 0.10, 0.20)
+	label.outline_modulate = Color(0.40, 0.95, 1.0)
+	label.outline_size = 4
+	label.font_size = 32
+	label.pixel_size = 0.0035
+	label.position = Vector3(0, 1.85, 0.34)
+	label.rotation_degrees = Vector3(-25, 0, 0)
+	kiosk.add_child(label)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 1.85, 0.50)
+	kiosk.add_child(light)
+	# Kiosk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 2.0, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	kiosk.add_child(sb)
+
+
+func _build_d5_seeker_npc() -> void:
+	## Epic-5 T93: hopeful seeker NPC — young traveler in pale blue cloak,
+	## looking up toward the aurora curtain with hands clasped.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "HopefulSeekerSlot"
+	slot.position = Vector3(D5_CENTER.x - 8.0, 0.0, -4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "HopefulSeeker"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Lumen")
+	if "npc_id" in npc:
+		npc.set("npc_id", "seeker_d5")
+	slot.add_child(npc)
+	# Pale blue cloak
+	var cloak: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	cloak.mesh = cm
+	var cloak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloak_mat.albedo_color = Color(0.55, 0.85, 0.95)
+	cloak_mat.emission_enabled = true
+	cloak_mat.emission = Color(0.40, 0.85, 0.95)
+	cloak_mat.emission_energy_multiplier = 0.30
+	cloak_mat.roughness = 0.65
+	cloak.material_override = cloak_mat
+	cloak.position = Vector3(0, 0.60, 0)
+	npc.add_child(cloak)
+	# Hood drawn back
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.22
+	hm.height = 0.40
+	hood.mesh = hm
+	hood.material_override = cloak_mat
+	hood.position = Vector3(0, 1.30, -0.18)
+	hood.scale = Vector3(0.85, 0.45, 0.85)
+	npc.add_child(hood)
+	# Held small star fragment (small bright sphere clasped at chest)
+	var star: MeshInstance3D = MeshInstance3D.new()
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.10
+	sm.height = 0.20
+	star.mesh = sm
+	var star_mat: StandardMaterial3D = StandardMaterial3D.new()
+	star_mat.albedo_color = Color(1.0, 0.95, 0.65)
+	star_mat.emission_enabled = true
+	star_mat.emission = Color(1.0, 0.85, 0.45)
+	star_mat.emission_energy_multiplier = 4.0
+	star_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	star.material_override = star_mat
+	star.position = Vector3(0, 0.85, 0.25)
+	npc.add_child(star)
+	# Star pulse
+	var tw: Tween = star.create_tween().set_loops()
+	tw.tween_property(star, "scale", Vector3.ONE * 1.20, 0.85)
+	tw.tween_property(star, "scale", Vector3.ONE * 0.85, 0.85)
+	# Star light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.55)
+	light.light_energy = 1.4
+	light.omni_range = 3.0
+	light.position = Vector3(0, 0.85, 0.25)
+	npc.add_child(light)
+
+
+func _build_d5_cryosleep_pods(geom: Node) -> void:
+	## Epic-5 T94: row of 4 horizontal cryosleep medical pods — like the
+	## standing cryo pods but laid down with sleeping subjects inside.
+	var row: Node3D = Node3D.new()
+	row.name = "CryosleepPods"
+	row.position = Vector3(D5_CENTER.x - 22.0, 0.0, 14.0)
+	geom.add_child(row)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.50, 0.60)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.55, 0.85, 1.0, 0.55)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.40, 0.85, 1.0)
+	glass_mat.emission_energy_multiplier = 0.85
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.10
+	var subject_mat: StandardMaterial3D = StandardMaterial3D.new()
+	subject_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.65)
+	subject_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	subject_mat.emission_enabled = true
+	subject_mat.emission = Color(0.30, 0.95, 1.0)
+	subject_mat.emission_energy_multiplier = 1.4
+	subject_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var pod: Node3D = Node3D.new()
+		pod.position = Vector3(0, 0, i * 1.40)
+		row.add_child(pod)
+		# Metal cradle (low box)
+		var cradle: MeshInstance3D = MeshInstance3D.new()
+		var crm: BoxMesh = BoxMesh.new()
+		crm.size = Vector3(2.20, 0.30, 0.85)
+		cradle.mesh = crm
+		cradle.material_override = metal_mat
+		cradle.position = Vector3(0, 0.15, 0)
+		pod.add_child(cradle)
+		# Glass dome (long flat sphere)
+		var dome: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 1.10
+		dm.height = 1.85
+		dome.mesh = dm
+		dome.material_override = glass_mat
+		dome.position = Vector3(0, 0.55, 0)
+		dome.scale = Vector3(1.0, 0.30, 0.45)
+		pod.add_child(dome)
+		# Sleeping subject silhouette
+		var subject: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.85
+		sm.height = 0.55
+		subject.mesh = sm
+		subject.material_override = subject_mat
+		subject.position = Vector3(0, 0.40, 0)
+		subject.scale = Vector3(0.85, 0.35, 0.40)
+		pod.add_child(subject)
+		# Status LED at the head end
+		var led_mat: StandardMaterial3D = StandardMaterial3D.new()
+		led_mat.albedo_color = Color(0.30, 1.0, 0.55)
+		led_mat.emission_enabled = true
+		led_mat.emission = Color(0.30, 1.0, 0.55)
+		led_mat.emission_energy_multiplier = 3.5
+		led_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var led: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.05
+		lm.height = 0.10
+		led.mesh = lm
+		led.material_override = led_mat
+		led.position = Vector3(-0.85, 0.35, 0.32)
+		pod.add_child(led)
+		# Slow LED pulse
+		var tw: Tween = led.create_tween().set_loops()
+		tw.tween_interval(i * 0.35)
+		tw.tween_property(led, "scale", Vector3.ONE * 1.50, 0.85)
+		tw.tween_property(led, "scale", Vector3.ONE * 0.85, 0.85)
+		# Pod collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.30, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(2.20, 0.65, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		pod.add_child(sb)
+
+
+func _build_d5_starlight_projector(geom: Node) -> void:
+	## Epic-5 T95: starlight projector — small dish device casting an
+	## upward cone of starry blue light + 12 floating glow stars.
+	var proj: Node3D = Node3D.new()
+	proj.name = "StarlightProjector"
+	proj.position = Vector3(D5_CENTER.x + 14.0, 0.0, 18.0)
+	geom.add_child(proj)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Tripod stand (3 legs)
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.05
+		lm.height = 1.30
+		leg.mesh = lm
+		leg.material_override = metal_mat
+		leg.position = Vector3(cos(ang) * 0.40, 0.65, sin(ang) * 0.40)
+		leg.rotation_degrees = Vector3(deg_to_rad(15) * sin(ang) * 60.0, 0, deg_to_rad(15) * cos(ang) * 60.0)
+		proj.add_child(leg)
+	# Dish on top (half sphere)
+	var dish: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 0.40
+	dmm.height = 0.40
+	dish.mesh = dmm
+	dish.material_override = metal_mat
+	dish.position = Vector3(0, 1.35, 0)
+	dish.scale = Vector3(1.0, 0.45, 1.0)
+	proj.add_child(dish)
+	# Upward beam cone
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 1.40
+	beam_m.bottom_radius = 0.20
+	beam_m.height = 7.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(0.40, 0.65, 0.95, 0.30)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(0.40, 0.75, 1.0)
+	beam_mat.emission_energy_multiplier = 1.4
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(0, 5.05, 0)
+	proj.add_child(beam)
+	# 12 floating star points around the beam
+	var star_mat: StandardMaterial3D = StandardMaterial3D.new()
+	star_mat.albedo_color = Color(1.0, 1.0, 0.85)
+	star_mat.emission_enabled = true
+	star_mat.emission = Color(1.0, 0.95, 0.75)
+	star_mat.emission_energy_multiplier = 3.5
+	star_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 12:
+		var ang: float = (TAU / 12.0) * i + randf() * 0.4
+		var radius: float = randf_range(0.40, 1.30)
+		var star: MeshInstance3D = MeshInstance3D.new()
+		var smm: SphereMesh = SphereMesh.new()
+		smm.radius = 0.05
+		smm.height = 0.10
+		star.mesh = smm
+		star.material_override = star_mat
+		var star_y: float = randf_range(2.20, 7.85)
+		star.position = Vector3(cos(ang) * radius, star_y, sin(ang) * radius)
+		proj.add_child(star)
+		# Slow drift up + reset
+		var tw: Tween = star.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(star, "position:y", star_y + 1.20, 3.0)
+		tw.tween_property(star, "position:y", star_y, 0.0)
+	# Tripod collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.50
+	cap.height = 1.65
+	cs.shape = cap
+	sb.add_child(cs)
+	proj.add_child(sb)
 
 
 
