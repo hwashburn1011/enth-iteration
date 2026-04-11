@@ -1460,6 +1460,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_falling_sparks(geom)
 	# Epic-2 T15: scavenger NPC picking through junk
 	_build_d2_scavenger_npc()
+	# Epic-2 T16: combat trial pit (sunken arena with hazard rim)
+	_build_d2_trial_pit(geom)
+	# Epic-2 T17: mercenary tent camp with weapon rack
+	_build_d2_mercenary_tent(geom)
+	# Epic-2 T18: yellow caution stripes painted on the ground
+	_build_d2_caution_stripes(geom)
+	# Epic-2 T19: black market merchant NPC
+	_build_d2_black_market_npc()
+	# Epic-2 T20: hovering watchtower with sweeping searchlight
+	_build_d2_watchtower(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -8801,4 +8811,433 @@ func _build_d2_scavenger_npc() -> void:
 	scav.add_child(label)
 
 
+func _build_d2_trial_pit(geom: Node) -> void:
+	## Epic-2 T16: a sunken combat trial pit at D2 center+(15, 0, 0).
+	## A 6m wide cylinder hole rimmed by a glowing orange torus + 4 spike
+	## hazards around the rim. The center has 2 placeholder enemy spawn
+	## markers (small red glowing pads).
+	var pit: Node3D = Node3D.new()
+	pit.name = "D2TrialPit"
+	pit.position = D2_CENTER + Vector3(15, 0, 0)
+	geom.add_child(pit)
+	# Wide flat dark disc as the pit floor (sunken slightly)
+	var floor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	floor_mat.albedo_color = Color(0.10, 0.06, 0.04)
+	floor_mat.metallic = 0.45
+	floor_mat.roughness = 0.55
+	floor_mat.emission_enabled = true
+	floor_mat.emission = Color(0.85, 0.30, 0.10)
+	floor_mat.emission_energy_multiplier = 0.35
+	var pit_floor: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: CylinderMesh = CylinderMesh.new()
+	fmesh.top_radius = 3.0
+	fmesh.bottom_radius = 3.0
+	fmesh.height = 0.10
+	pit_floor.mesh = fmesh
+	pit_floor.position = Vector3(0, 0.06, 0)
+	pit_floor.material_override = floor_mat
+	pit.add_child(pit_floor)
+	# Glowing rim torus
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 3.0
+	rmesh.outer_radius = 3.30
+	rim.mesh = rmesh
+	rim.position = Vector3(0, 0.12, 0)
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(1.0, 0.40, 0.10)
+	rmat.emission_enabled = true
+	rmat.emission = Color(1.0, 0.55, 0.15)
+	rmat.emission_energy_multiplier = 1.8
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rim.material_override = rmat
+	pit.add_child(rim)
+	# Pulse the rim
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(rmat, "emission_energy_multiplier", 2.6, 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(rmat, "emission_energy_multiplier", 1.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	# 4 spike hazards around the rim (n/s/e/w)
+	var spike_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spike_mat.albedo_color = Color(0.16, 0.18, 0.22)
+	spike_mat.metallic = 0.85
+	spike_mat.roughness = 0.30
+	spike_mat.emission_enabled = true
+	spike_mat.emission = Color(1.0, 0.40, 0.20)
+	spike_mat.emission_energy_multiplier = 0.45
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var smesh: PrismMesh = PrismMesh.new()
+		smesh.size = Vector3(0.40, 1.40, 0.40)
+		spike.mesh = smesh
+		spike.position = Vector3(cos(angle) * 3.40, 0.70, sin(angle) * 3.40)
+		spike.material_override = spike_mat
+		pit.add_child(spike)
+		# Collision on each spike
+		var sp_sb: StaticBody3D = StaticBody3D.new()
+		var sp_cs: CollisionShape3D = CollisionShape3D.new()
+		var sp_cb: BoxShape3D = BoxShape3D.new()
+		sp_cb.size = Vector3(0.40, 1.40, 0.40)
+		sp_cs.shape = sp_cb
+		sp_cs.position = Vector3(cos(angle) * 3.40, 0.70, sin(angle) * 3.40)
+		sp_sb.add_child(sp_cs)
+		pit.add_child(sp_sb)
+	# 2 placeholder enemy spawn pads (small red glowing discs in the floor)
+	for sx: float in [-0.85, 0.85]:
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.40
+		pmesh.bottom_radius = 0.40
+		pmesh.height = 0.06
+		pad.mesh = pmesh
+		pad.position = Vector3(sx, 0.13, 0)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(1.0, 0.20, 0.20)
+		pmat.emission_enabled = true
+		pmat.emission = Color(1.0, 0.40, 0.30)
+		pmat.emission_energy_multiplier = 1.8
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pad.material_override = pmat
+		pit.add_child(pad)
+	# Floating "TRIAL PIT" label
+	var label: Label3D = Label3D.new()
+	label.text = "TRIAL PIT"
+	label.position = Vector3(0, 2.2, 0)
+	label.modulate = Color(1.0, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	pit.add_child(label)
+
+
+func _build_d2_mercenary_tent(geom: Node) -> void:
+	## Epic-2 T17: a mercenary camp tent with a weapon rack out front.
+	## Brown fabric tent (slanted box) on 4 posts with a small rack of
+	## 3 weapons (different colored emissive blades).
+	var camp: Node3D = Node3D.new()
+	camp.name = "D2MercenaryCamp"
+	camp.position = D2_CENTER + Vector3(8, 0, -10)
+	geom.add_child(camp)
+	# 4 corner posts
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.20, 0.16, 0.10)
+	post_mat.metallic = 0.30
+	for ox: float in [-1.4, 1.4]:
+		for oz: float in [-1.0, 1.0]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.06
+			pmesh.bottom_radius = 0.08
+			pmesh.height = 2.4
+			post.mesh = pmesh
+			post.position = Vector3(ox, 1.20, oz)
+			post.material_override = post_mat
+			camp.add_child(post)
+	# Tent fabric — angled triangular box
+	var fabric_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fabric_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	fabric_mat.emission_enabled = true
+	fabric_mat.emission = Color(0.85, 0.55, 0.20)
+	fabric_mat.emission_energy_multiplier = 0.30
+	fabric_mat.metallic = 0.10
+	fabric_mat.roughness = 0.65
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: PrismMesh = PrismMesh.new()
+	rmesh.size = Vector3(3.2, 1.0, 2.4)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 2.85, 0)
+	roof.material_override = fabric_mat
+	camp.add_child(roof)
+	# Side fabric panels (back wall)
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(3.0, 2.4, 0.06)
+	back.mesh = bmesh
+	back.position = Vector3(0, 1.20, -1.0)
+	back.material_override = fabric_mat
+	camp.add_child(back)
+	# Weapon rack — horizontal bar mounted in front
+	var rack_root: Node3D = Node3D.new()
+	rack_root.position = Vector3(0, 1.20, 1.20)
+	camp.add_child(rack_root)
+	var rack_bar: MeshInstance3D = MeshInstance3D.new()
+	var rb_mesh: CylinderMesh = CylinderMesh.new()
+	rb_mesh.top_radius = 0.05
+	rb_mesh.bottom_radius = 0.05
+	rb_mesh.height = 2.6
+	rack_bar.mesh = rb_mesh
+	rack_bar.rotation = Vector3(0, 0, deg_to_rad(90))
+	rack_bar.material_override = post_mat
+	rack_root.add_child(rack_bar)
+	# 3 hanging weapons (vertical thin bars + colored blade tips)
+	var weapon_specs: Array = [
+		[-0.85, Color(0.55, 0.95, 1.0)],
+		[0.0, Color(1.0, 0.40, 0.20)],
+		[0.85, Color(0.85, 0.40, 1.0)],
+	]
+	for spec in weapon_specs:
+		var hilt: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: CylinderMesh = CylinderMesh.new()
+		hmesh.top_radius = 0.04
+		hmesh.bottom_radius = 0.04
+		hmesh.height = 0.45
+		hilt.mesh = hmesh
+		hilt.position = Vector3(spec[0], -0.30, 0)
+		hilt.material_override = post_mat
+		rack_root.add_child(hilt)
+		# Blade
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var bldmesh: BoxMesh = BoxMesh.new()
+		bldmesh.size = Vector3(0.05, 0.85, 0.04)
+		blade.mesh = bldmesh
+		blade.position = Vector3(spec[0], -0.95, 0)
+		var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+		var c: Color = spec[1]
+		blade_mat.albedo_color = c
+		blade_mat.emission_enabled = true
+		blade_mat.emission = c
+		blade_mat.emission_energy_multiplier = 1.8
+		blade_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		blade.material_override = blade_mat
+		rack_root.add_child(blade)
+	# Tent label
+	var label: Label3D = Label3D.new()
+	label.text = "MERC CAMP"
+	label.position = Vector3(0, 3.5, 0)
+	label.modulate = Color(1.0, 0.65, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	camp.add_child(label)
+	# Collision around the tent
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.2, 2.4, 2.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.20, 0)
+	sb.add_child(cs)
+	camp.add_child(sb)
+
+
+func _build_d2_caution_stripes(geom: Node) -> void:
+	## Epic-2 T18: 8 yellow caution stripes painted on the D2 ground in
+	## front of the trial pit, marking the danger zone. Each is a thin
+	## emissive box at a 45-degree angle.
+	var center := D2_CENTER + Vector3(15, 0.06, 5)
+	var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stripe_mat.albedo_color = Color(1.0, 0.85, 0.20)
+	stripe_mat.emission_enabled = true
+	stripe_mat.emission = Color(1.0, 0.95, 0.30)
+	stripe_mat.emission_energy_multiplier = 1.6
+	stripe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 8:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		stripe.name = "D2CautionStripe_%d" % i
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.85, 0.05, 0.20)
+		stripe.mesh = smesh
+		stripe.position = center + Vector3(-2.8 + i * 0.80, 0, 0)
+		stripe.rotation = Vector3(0, deg_to_rad(45), 0)
+		stripe.material_override = stripe_mat
+		geom.add_child(stripe)
+
+
+func _build_d2_black_market_npc() -> void:
+	## Epic-2 T19: Black market merchant NPC standing inside the merc tent.
+	## Hooded figure with a glowing red eye and a gold coin pouch belt.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var bm: Node3D = Node3D.new()
+	bm.name = "D2BlackMarketMerchant"
+	bm.position = D2_CENTER + Vector3(8, 0, -10.5)
+	slots.add_child(bm)
+	# Body capsule — dark cloak
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.20
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.65, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.10, 0.14)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.65
+	body.material_override = bmat
+	bm.add_child(body)
+	# Hood (wider sphere)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.45, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.06, 0.06, 0.10)
+	hmat.metallic = 0.30
+	hmat.roughness = 0.65
+	hood.material_override = hmat
+	bm.add_child(hood)
+	# Single red glowing eye (cyclops style)
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var emesh: SphereMesh = SphereMesh.new()
+	emesh.radius = 0.10
+	emesh.height = 0.20
+	eye.mesh = emesh
+	eye.position = Vector3(0, 1.32, 0.34)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(1.0, 0.20, 0.20)
+	emat.emission_enabled = true
+	emat.emission = Color(1.0, 0.30, 0.30)
+	emat.emission_energy_multiplier = 3.0
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = emat
+	bm.add_child(eye)
+	# Gold coin pouch belt
+	var pouch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pouch_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	pouch_mat.emission_enabled = true
+	pouch_mat.emission = Color(1.0, 0.75, 0.25)
+	pouch_mat.emission_energy_multiplier = 1.0
+	pouch_mat.metallic = 0.85
+	for i in 3:
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: SphereMesh = SphereMesh.new()
+		cmesh.radius = 0.08
+		cmesh.height = 0.16
+		coin.mesh = cmesh
+		coin.position = Vector3(-0.20 + i * 0.20, 0.55, 0.30)
+		coin.material_override = pouch_mat
+		bm.add_child(coin)
+	# Pulse the eye
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(emat, "emission_energy_multiplier", 4.0, 1.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(emat, "emission_energy_multiplier", 2.0, 1.0).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Black Market"
+	label.position = Vector3(0, 1.95, 0)
+	label.modulate = Color(1.0, 0.30, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	bm.add_child(label)
+
+
+func _build_d2_watchtower(geom: Node) -> void:
+	## Epic-2 T20: a tall watchtower with a hovering top platform and a
+	## sweeping searchlight (real SpotLight3D rotating on a tween). Sells
+	## "this place is being watched" without spawning hostile guards.
+	var tower: Node3D = Node3D.new()
+	tower.name = "D2Watchtower"
+	tower.position = D2_CENTER + Vector3(20, 0, -16)
+	geom.add_child(tower)
+	# Tall narrow column
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.14, 0.12)
+	stone_mat.metallic = 0.45
+	stone_mat.roughness = 0.55
+	var column: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: CylinderMesh = CylinderMesh.new()
+	cmesh.top_radius = 0.30
+	cmesh.bottom_radius = 0.40
+	cmesh.height = 8.0
+	column.mesh = cmesh
+	column.position = Vector3(0, 4.0, 0)
+	column.material_override = stone_mat
+	tower.add_child(column)
+	# Top platform — wider disc
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 1.20
+	pmesh.bottom_radius = 1.0
+	pmesh.height = 0.40
+	platform.mesh = pmesh
+	platform.position = Vector3(0, 8.20, 0)
+	platform.material_override = stone_mat
+	tower.add_child(platform)
+	# Cabin on top — small box
+	var cabin: MeshInstance3D = MeshInstance3D.new()
+	var cab_mesh: BoxMesh = BoxMesh.new()
+	cab_mesh.size = Vector3(1.40, 1.0, 1.40)
+	cabin.mesh = cab_mesh
+	cabin.position = Vector3(0, 8.95, 0)
+	cabin.material_override = stone_mat
+	tower.add_child(cabin)
+	# Cyan window slits on the cabin
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(0.55, 0.95, 1.0)
+	window_mat.emission_energy_multiplier = 1.6
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx: float in [-0.71, 0.71]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		wmesh.size = Vector3(0.04, 0.30, 0.85)
+		win.mesh = wmesh
+		win.position = Vector3(sx, 8.95, 0)
+		win.material_override = window_mat
+		tower.add_child(win)
+	# Sweeping searchlight pivot mounted on top of cabin
+	var spot_pivot: Node3D = Node3D.new()
+	spot_pivot.position = Vector3(0, 9.65, 0)
+	tower.add_child(spot_pivot)
+	# Searchlight body
+	var spot_body: MeshInstance3D = MeshInstance3D.new()
+	var sb_mesh: CylinderMesh = CylinderMesh.new()
+	sb_mesh.top_radius = 0.20
+	sb_mesh.bottom_radius = 0.30
+	sb_mesh.height = 0.45
+	spot_body.mesh = sb_mesh
+	spot_body.position = Vector3(0, 0, 0.30)
+	spot_body.rotation = Vector3(deg_to_rad(70), 0, 0)
+	spot_body.material_override = stone_mat
+	spot_pivot.add_child(spot_body)
+	# Real spotlight + visible cone beam pointed downward+forward
+	var spot: SpotLight3D = SpotLight3D.new()
+	spot.position = Vector3(0, -0.10, 0.40)
+	spot.rotation = Vector3(deg_to_rad(-70), 0, 0)
+	spot.light_color = Color(1.0, 0.95, 0.65)
+	spot.light_energy = 4.0
+	spot.spot_range = 18.0
+	spot.spot_angle = 26.0
+	spot.spot_attenuation = 1.4
+	spot_pivot.add_child(spot)
+	# Visible cone
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_mesh: CylinderMesh = CylinderMesh.new()
+	beam_mesh.top_radius = 0.20
+	beam_mesh.bottom_radius = 3.40
+	beam_mesh.height = 9.0
+	beam.mesh = beam_mesh
+	beam.position = Vector3(0, -4.0, 1.6)
+	beam.rotation = Vector3(deg_to_rad(20), 0, 0)
+	var bm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bm_mat.albedo_color = Color(1.0, 0.95, 0.65, 0.10)
+	bm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bm_mat.emission_enabled = true
+	bm_mat.emission = Color(1.0, 0.95, 0.65)
+	bm_mat.emission_energy_multiplier = 0.45
+	bm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = bm_mat
+	spot_pivot.add_child(beam)
+	# Sweeping rotation tween
+	var sweep: Tween = create_tween().set_loops()
+	sweep.tween_property(spot_pivot, "rotation:y", deg_to_rad(60), 4.0).set_ease(Tween.EASE_IN_OUT)
+	sweep.tween_property(spot_pivot, "rotation:y", deg_to_rad(-60), 4.0).set_ease(Tween.EASE_IN_OUT)
+	# Collision around column
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.45
+	cap.height = 8.0
+	cs.shape = cap
+	cs.position = Vector3(0, 4.0, 0)
+	sb.add_child(cs)
+	tower.add_child(sb)
 
