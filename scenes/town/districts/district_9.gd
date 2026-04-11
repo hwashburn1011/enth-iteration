@@ -75,6 +75,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_sentry_mech(geom)
 	_build_d9_molten_cascade(geom)
 	_build_d9_forge_priestess_npc(town)
+	_build_d9_basalt_stepping_stones(geom)
 	print("[D9Builder] done")
 
 
@@ -4906,5 +4907,69 @@ func _build_d9_forge_priestess_npc(town: Node) -> void:
 	lt.light_energy = 2.6
 	lt.omni_range = 6.5
 	npc.add_child(lt)
+
+
+func _build_d9_basalt_stepping_stones(geom: Node) -> void:
+	## Epic-9 T55: 7 basalt stepping stones crossing the cascade pool from
+	## the priestess platform to the base of the cascade. Each stone has
+	## subtle ember underglow + collision so the player can walk across.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BasaltSteppingStones"
+	pivot.position = D9_CENTER + Vector3(54, 0, 8)
+	geom.add_child(pivot)
+	# Material — dark basalt with faint ember underlight
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(1.0, 0.35, 0.08)
+	stone_mat.emission_energy_multiplier = 0.55
+	# 7 stones in a gentle arc from pool edge to cascade base
+	for i in 7:
+		var t: float = float(i) / 6.0
+		var angle: float = lerp(-PI * 0.55, -PI * 0.05, t)
+		var radius: float = 2.85
+		var pos: Vector3 = Vector3(cos(angle) * radius, 0.05, sin(angle) * radius - 1.80)
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.42 + (float(i % 3) * 0.05)
+		sm.bottom_radius = 0.50 + (float(i % 3) * 0.05)
+		sm.height = 0.30
+		stone.mesh = sm
+		stone.material_override = stone_mat
+		stone.position = pos
+		stone.rotation.y = float(i) * 0.42
+		pivot.add_child(stone)
+		# Small embers ring decoration around each stone base
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var trm: TorusMesh = TorusMesh.new()
+		trm.inner_radius = sm.top_radius * 0.95
+		trm.outer_radius = sm.top_radius * 1.05
+		ring.mesh = trm
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(1.0, 0.55, 0.10)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.55, 0.10)
+		rmat.emission_energy_multiplier = 3.5
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override = rmat
+		ring.position = pos + Vector3(0, 0.16, 0)
+		ring.rotation.x = PI / 2.0
+		pivot.add_child(ring)
+		# Step collision so player can walk on top
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = pos
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.height = 0.30
+		cyl.radius = sm.bottom_radius
+		cs.shape = cyl
+		stb.add_child(cs)
+		pivot.add_child(stb)
+		# Per-step ember pulse on the ring (staggered)
+		var pulse: Tween = pivot.create_tween().set_loops()
+		pulse.tween_property(rmat, "emission_energy_multiplier", 5.0, 1.1 + float(i) * 0.12).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(rmat, "emission_energy_multiplier", 2.5, 1.1 + float(i) * 0.12).set_ease(Tween.EASE_IN_OUT)
 
 
