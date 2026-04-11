@@ -8,14 +8,14 @@
 [sub_resource type="Resource" id="entry_cpu"]
 script = ExtResource("2_entry")
 item_base = ExtResource("3_core")
-drop_chance = 0.08
+drop_chance = 0.14
 min_quantity = 1
 max_quantity = 1
 
 [sub_resource type="Resource" id="entry_bandwidth"]
 script = ExtResource("2_entry")
 item_base = ExtResource("4_chip")
-drop_chance = 0.12
+drop_chance = 0.18
 min_quantity = 1
 max_quantity = 1
 
