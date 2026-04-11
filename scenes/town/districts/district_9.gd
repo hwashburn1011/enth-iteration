@@ -93,6 +93,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_apprentice_brun_npc(town)
 	_build_d9_molten_geyser(geom)
 	_build_d9_lava_bomb_scatter(geom)
+	_build_d9_geyser_observation_deck(geom)
 	print("[D9Builder] done")
 
 
@@ -7553,4 +7554,231 @@ func _build_d9_lava_bomb_scatter(geom: Node) -> void:
 	var cpulse: Tween = pivot.create_tween().set_loops()
 	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_geyser_observation_deck(geom: Node) -> void:
+	## Epic-9 T73: raised basalt observation deck overlooking the molten
+	## geyser. Hex-ish basalt platform with collision, brass-capped iron
+	## post-and-rail safety perimeter (open back for entry), instrument
+	## tripod with a glowing readout disc + brass focus ring, two corner
+	## braziers, and a small wall plaque with the guild crest.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_GeyserObservationDeck"
+	# Place to the south side of the geyser (geyser at +60, -10), facing it
+	pivot.position = D9_CENTER + Vector3(60, 0, -2)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.18
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.45, 0.15, 0.04)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.40
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Raised basalt platform ----
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 3.20
+	dm.bottom_radius = 3.40
+	dm.height = 0.55
+	deck.mesh = dm
+	deck.material_override = basalt_mat
+	deck.position = Vector3(0, 0.28, 0)
+	pivot.add_child(deck)
+	# Deck collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.28, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cylsh: CylinderShape3D = CylinderShape3D.new()
+	cylsh.top_radius = 3.30
+	cylsh.bottom_radius = 3.40
+	cylsh.height = 0.55
+	cs.shape = cylsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# Glowing magma seam ring around the deck rim
+	var rim_seam: MeshInstance3D = MeshInstance3D.new()
+	var rsm: TorusMesh = TorusMesh.new()
+	rsm.inner_radius = 3.10
+	rsm.outer_radius = 3.30
+	rim_seam.mesh = rsm
+	rim_seam.material_override = amber_mat
+	rim_seam.position = Vector3(0, 0.58, 0)
+	pivot.add_child(rim_seam)
+	# ---- Iron post-and-rail safety perimeter (8 posts around the rim) ----
+	# Skip 2 posts on the back (south) side to leave an entry gap
+	var post_count: int = 8
+	for i in post_count:
+		# Skip posts roughly behind the deck (near +Z, the entry side)
+		if i == 0 or i == 7:
+			continue
+		var ang: float = float(i) / float(post_count) * TAU
+		var px: float = cos(ang) * 3.05
+		var pz: float = sin(ang) * 3.05
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.09
+		pm.height = 1.10
+		post.mesh = pm
+		post.material_override = iron_mat
+		post.position = Vector3(px, 1.05, pz)
+		pivot.add_child(post)
+		# Brass post cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: SphereMesh = SphereMesh.new()
+		capm.radius = 0.09
+		capm.height = 0.18
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(px, 1.65, pz)
+		pivot.add_child(cap)
+	# Top rail — torus around the perimeter (visible all around, the gap is just visual)
+	var rail: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 2.95
+	rmesh.outer_radius = 3.15
+	rail.mesh = rmesh
+	rail.material_override = iron_mat
+	rail.position = Vector3(0, 1.50, 0)
+	pivot.add_child(rail)
+	# ---- Instrument tripod (center of deck, facing geyser) ----
+	# Tripod legs (3 angled cylinders)
+	var tripod_pivot: Node3D = Node3D.new()
+	tripod_pivot.position = Vector3(0, 0.55, -0.5)
+	pivot.add_child(tripod_pivot)
+	for i in 3:
+		var ang: float = float(i) / 3.0 * TAU
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.05
+		lm.height = 1.20
+		leg.mesh = lm
+		leg.material_override = brass_mat
+		leg.position = Vector3(cos(ang) * 0.20, 0.55, sin(ang) * 0.20)
+		# Splay outward from vertical
+		leg.rotation = Vector3(sin(ang) * 0.20, 0, -cos(ang) * 0.20)
+		tripod_pivot.add_child(leg)
+	# Tripod head — small brass box
+	var t_head: MeshInstance3D = MeshInstance3D.new()
+	var thm: BoxMesh = BoxMesh.new()
+	thm.size = Vector3(0.30, 0.18, 0.30)
+	t_head.mesh = thm
+	t_head.material_override = brass_mat
+	t_head.position = Vector3(0, 1.20, 0)
+	tripod_pivot.add_child(t_head)
+	# Readout disc — glowing amber dial
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var disc_m: CylinderMesh = CylinderMesh.new()
+	disc_m.top_radius = 0.18
+	disc_m.bottom_radius = 0.18
+	disc_m.height = 0.05
+	disc.mesh = disc_m
+	disc.material_override = amber_mat
+	disc.position = Vector3(0, 1.30, -0.20)
+	disc.rotation.x = PI / 2.0
+	tripod_pivot.add_child(disc)
+	# Brass focus ring around the disc
+	var focus: MeshInstance3D = MeshInstance3D.new()
+	var focm: TorusMesh = TorusMesh.new()
+	focm.inner_radius = 0.18
+	focm.outer_radius = 0.24
+	focus.mesh = focm
+	focus.material_override = brass_mat
+	focus.position = Vector3(0, 1.30, -0.20)
+	tripod_pivot.add_child(focus)
+	# Disc indicator needle — small unshaded amber bar that rotates
+	var needle: MeshInstance3D = MeshInstance3D.new()
+	var nm: BoxMesh = BoxMesh.new()
+	nm.size = Vector3(0.02, 0.18, 0.02)
+	needle.mesh = nm
+	needle.material_override = amber_mat
+	needle.position = Vector3(0, 1.30, -0.22)
+	tripod_pivot.add_child(needle)
+	# ---- Two corner braziers ----
+	for bx in [-2.40, 2.40]:
+		var bp: Vector3 = Vector3(bx, 0.55, 1.80)
+		# Brazier post
+		var bpost: MeshInstance3D = MeshInstance3D.new()
+		var bpm: CylinderMesh = CylinderMesh.new()
+		bpm.top_radius = 0.10
+		bpm.bottom_radius = 0.14
+		bpm.height = 0.85
+		bpost.mesh = bpm
+		bpost.material_override = brass_mat
+		bpost.position = bp + Vector3(0, 0.42, 0)
+		pivot.add_child(bpost)
+		# Brazier bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bowm: SphereMesh = SphereMesh.new()
+		bowm.radius = 0.20
+		bowm.height = 0.35
+		bowl.mesh = bowm
+		bowl.material_override = brass_mat
+		bowl.position = bp + Vector3(0, 0.92, 0)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		pivot.add_child(bowl)
+		# Flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.18
+		flm.height = 0.36
+		flame.mesh = flm
+		flame.material_override = amber_mat
+		flame.position = bp + Vector3(0, 1.10, 0)
+		pivot.add_child(flame)
+		# OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = bp + Vector3(0, 1.10, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 2.0
+		lt.omni_range = 5.0
+		pivot.add_child(lt)
+	# ---- Wall plaque (small brass plate with crest) ----
+	var plaque: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(0.85, 0.50, 0.06)
+	plaque.mesh = plm
+	plaque.material_override = brass_mat
+	plaque.position = Vector3(0, 1.10, 2.95)
+	pivot.add_child(plaque)
+	# Crest torus on the plaque
+	var crest: MeshInstance3D = MeshInstance3D.new()
+	var ctm: TorusMesh = TorusMesh.new()
+	ctm.inner_radius = 0.10
+	ctm.outer_radius = 0.18
+	crest.mesh = ctm
+	crest.material_override = amber_mat
+	crest.position = Vector3(0, 1.10, 2.92)
+	crest.rotation.x = PI / 2.0
+	pivot.add_child(crest)
+	# Needle rotation tween — slow sweep like reading lava pressure
+	var nspin: Tween = pivot.create_tween().set_loops()
+	nspin.tween_property(needle, "rotation:z", PI / 2.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+	nspin.tween_property(needle, "rotation:z", -PI / 2.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+	# Disc + rim pulse
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
