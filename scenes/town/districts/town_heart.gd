@@ -43,6 +43,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_welcome_arch(geom)
 	_build_th_district_tribute_statues(geom)
 	_build_th_bell_tower(geom)
+	_build_th_archive_tower(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -4630,3 +4631,214 @@ func _build_th_bell_tower(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_archive_tower(geom: Node) -> void:
+	## Epic-10 T27: tall archive tower at the NW outer corner of the
+	## plaza, complementing the bell tower visually. Stepped basalt base,
+	## 14m hexagon-style shaft (2.4m wide) with 6 brass band wraps + 6
+	## glowing window slits, brass dome roof with finial, 6 floating
+	## holographic data scroll discs spinning around the dome, and 4
+	## corner data lanterns at the top.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_ArchiveTower"
+	# NW outer corner at radius ~16.5
+	var ang: float = 3.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 16.50, 0, sin(ang) * 16.50)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt base (3 levels) ----
+	var base1: MeshInstance3D = MeshInstance3D.new()
+	var b1m: BoxMesh = BoxMesh.new()
+	b1m.size = Vector3(3.50, 0.55, 3.50)
+	base1.mesh = b1m
+	base1.material_override = stone_mat
+	base1.position = Vector3(0, 0.27, 0)
+	pivot.add_child(base1)
+	var base2: MeshInstance3D = MeshInstance3D.new()
+	var b2m: BoxMesh = BoxMesh.new()
+	b2m.size = Vector3(3.00, 0.45, 3.00)
+	base2.mesh = b2m
+	base2.material_override = stone_mat
+	base2.position = Vector3(0, 0.77, 0)
+	pivot.add_child(base2)
+	var base3: MeshInstance3D = MeshInstance3D.new()
+	var b3m: BoxMesh = BoxMesh.new()
+	b3m.size = Vector3(2.55, 0.40, 2.55)
+	base3.mesh = b3m
+	base3.material_override = stone_mat
+	base3.position = Vector3(0, 1.20, 0)
+	pivot.add_child(base3)
+	# Combined base collision
+	var base_sb: StaticBody3D = StaticBody3D.new()
+	base_sb.position = Vector3(0, 0.70, 0)
+	var base_cs: CollisionShape3D = CollisionShape3D.new()
+	var base_bsh: BoxShape3D = BoxShape3D.new()
+	base_bsh.size = Vector3(3.50, 1.40, 3.50)
+	base_cs.shape = base_bsh
+	base_sb.add_child(base_cs)
+	pivot.add_child(base_sb)
+	# ---- 14m hexagon-style cylinder shaft ----
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 1.20
+	sm.bottom_radius = 1.20
+	sm.height = 14.00
+	shaft.mesh = sm
+	shaft.material_override = stone_mat
+	shaft.position = Vector3(0, 8.40, 0)
+	pivot.add_child(shaft)
+	# Shaft collision
+	var shaft_sb: StaticBody3D = StaticBody3D.new()
+	shaft_sb.position = Vector3(0, 8.40, 0)
+	var shaft_cs: CollisionShape3D = CollisionShape3D.new()
+	var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
+	shaft_cyl.top_radius = 1.20
+	shaft_cyl.bottom_radius = 1.20
+	shaft_cyl.height = 14.00
+	shaft_cs.shape = shaft_cyl
+	shaft_sb.add_child(shaft_cs)
+	pivot.add_child(shaft_sb)
+	# ---- 6 brass band wraps (torus rings) ----
+	for by in [3.00, 5.40, 7.80, 10.20, 12.60, 14.80]:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: TorusMesh = TorusMesh.new()
+		bdm.inner_radius = 1.18
+		bdm.outer_radius = 1.32
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, by, 0)
+		pivot.add_child(band)
+	# ---- 6 glowing window slits arranged around the shaft (one per side) ----
+	for i in 6:
+		var w_ang: float = float(i) / 6.0 * TAU
+		var dx: float = cos(w_ang)
+		var dz: float = sin(w_ang)
+		var window: MeshInstance3D = MeshInstance3D.new()
+		var wmm: BoxMesh = BoxMesh.new()
+		wmm.size = Vector3(0.30, 1.10, 0.05)
+		window.mesh = wmm
+		window.material_override = data_mat
+		window.position = Vector3(dx * 1.22, 9.00, dz * 1.22)
+		window.rotation.y = w_ang + PI / 2.0
+		pivot.add_child(window)
+	# ---- Brass dome roof (sphere top half) ----
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 1.55
+	dmm.height = 3.10
+	dome.mesh = dmm
+	dome.material_override = brass_mat
+	dome.position = Vector3(0, 16.20, 0)
+	dome.scale = Vector3(1.0, 0.55, 1.0)
+	pivot.add_child(dome)
+	# Dome top finial — small prism + cyan dot
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fmm: PrismMesh = PrismMesh.new()
+	fmm.size = Vector3(0.35, 0.85, 0.35)
+	finial.mesh = fmm
+	finial.material_override = brass_mat
+	finial.position = Vector3(0, 17.55, 0)
+	pivot.add_child(finial)
+	var finial_dot: MeshInstance3D = MeshInstance3D.new()
+	var fdm: SphereMesh = SphereMesh.new()
+	fdm.radius = 0.14
+	fdm.height = 0.28
+	finial_dot.mesh = fdm
+	finial_dot.material_override = data_mat
+	finial_dot.position = Vector3(0, 18.10, 0)
+	pivot.add_child(finial_dot)
+	# ---- 6 floating holographic data scroll discs spinning around the dome ----
+	# All children of a spin pivot so the whole ring rotates
+	var scroll_pivot: Node3D = Node3D.new()
+	scroll_pivot.position = Vector3(0, 16.30, 0)
+	pivot.add_child(scroll_pivot)
+	for i in 6:
+		var s_ang: float = float(i) / 6.0 * TAU
+		var dx: float = cos(s_ang)
+		var dz: float = sin(s_ang)
+		# Disc body — small flat cylinder
+		var disc: MeshInstance3D = MeshInstance3D.new()
+		var dscm: CylinderMesh = CylinderMesh.new()
+		dscm.top_radius = 0.32
+		dscm.bottom_radius = 0.32
+		dscm.height = 0.08
+		disc.mesh = dscm
+		disc.material_override = data_mat
+		disc.position = Vector3(dx * 2.20, 0, dz * 2.20)
+		# Stand the disc on edge facing outward (rotate so its face points along the radial)
+		disc.rotation.x = PI / 2.0
+		disc.rotation.y = s_ang
+		scroll_pivot.add_child(disc)
+		# Brass disc rim torus
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.30
+		rmm.outer_radius = 0.36
+		rim.mesh = rmm
+		rim.material_override = brass_mat
+		rim.position = Vector3(dx * 2.22, 0, dz * 2.22)
+		rim.rotation.y = s_ang + PI / 2.0
+		scroll_pivot.add_child(rim)
+	# ---- 4 corner data lanterns at the top of the shaft ----
+	for cpx in [-1.00, 1.00]:
+		for cpz in [-1.00, 1.00]:
+			# Lantern bracket
+			var bracket: MeshInstance3D = MeshInstance3D.new()
+			var bktm: BoxMesh = BoxMesh.new()
+			bktm.size = Vector3(0.18, 0.65, 0.18)
+			bracket.mesh = bktm
+			bracket.material_override = brass_mat
+			bracket.position = Vector3(cpx, 14.95, cpz)
+			pivot.add_child(bracket)
+			# Lantern bulb (unshaded cyan sphere)
+			var bulb: MeshInstance3D = MeshInstance3D.new()
+			var blm: SphereMesh = SphereMesh.new()
+			blm.radius = 0.18
+			blm.height = 0.36
+			bulb.mesh = blm
+			bulb.material_override = data_mat
+			bulb.position = Vector3(cpx, 15.30, cpz)
+			pivot.add_child(bulb)
+			# Lantern OmniLight
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(cpx, 15.30, cpz)
+			lt.light_color = Color(0.45, 0.85, 1.0)
+			lt.light_energy = 2.6
+			lt.omni_range = 8.5
+			pivot.add_child(lt)
+	# ---- Strong central dome OmniLight ----
+	var dome_lt: OmniLight3D = OmniLight3D.new()
+	dome_lt.position = Vector3(0, 16.50, 0)
+	dome_lt.light_color = Color(0.55, 0.90, 1.0)
+	dome_lt.light_energy = 4.0
+	dome_lt.omni_range = 16.0
+	pivot.add_child(dome_lt)
+	# ---- Pulses + scroll spin tween ----
+	# Slow scroll ring spin (the 6 scroll discs orbit the dome)
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(scroll_pivot, "rotation:y", TAU, 12.0)
+	# Window + scroll + lantern data pulse (shared material)
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
