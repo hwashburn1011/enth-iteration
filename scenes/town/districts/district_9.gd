@@ -89,6 +89,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_guildmaster_vorn_npc(town)
 	_build_d9_guildhall_banners(geom)
 	_build_d9_guildhall_approach_path(geom)
+	_build_d9_guildhall_training_yard(geom)
 	print("[D9Builder] done")
 
 
@@ -6824,6 +6825,314 @@ func _build_d9_guildhall_approach_path(geom: Node) -> void:
 	seam_pulse.tween_property(seam_mat, "emission_energy_multiplier", 6.0, 2.2).set_ease(Tween.EASE_IN_OUT)
 	seam_pulse.tween_property(seam_mat, "emission_energy_multiplier", 3.5, 2.2).set_ease(Tween.EASE_IN_OUT)
 	# Brazier flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_guildhall_training_yard(geom: Node) -> void:
+	## Epic-9 T69: small fenced training yard tucked beside the forge
+	## guildhall. Iron post-and-rail fence enclosing a sand pit, a weapon
+	## rack with 4 unshaded amber weapons, a wooden sparring dummy with a
+	## glowing chest core, and a brass corner brazier. Deepens the guild
+	## quarter without needing interior geometry.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_GuildhallTrainingYard"
+	# Yard sits to the east side of the guildhall (guildhall at +38, -16; yard +46, -18)
+	pivot.position = D9_CENTER + Vector3(46, 0.0, -18)
+	geom.add_child(pivot)
+	# ---- Yard footprint: ~5.5 x 5.5 ----
+	# Sand pit floor — slightly raised dusty tan slab
+	var sand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sand_mat.albedo_color = Color(0.42, 0.30, 0.18)
+	sand_mat.roughness = 0.95
+	sand_mat.emission_enabled = true
+	sand_mat.emission = Color(0.55, 0.25, 0.05)
+	sand_mat.emission_energy_multiplier = 0.20
+	var sand: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(5.40, 0.10, 5.40)
+	sand.mesh = sm
+	sand.material_override = sand_mat
+	sand.position = Vector3(0, 0.05, 0)
+	pivot.add_child(sand)
+	# ---- Iron post-and-rail fence (6 posts + 4 rails) ----
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.40
+	# 4 corner posts + 2 mid posts on the open (front) side
+	var post_positions: Array = [
+		Vector3(-2.70, 0, -2.70),
+		Vector3(2.70, 0, -2.70),
+		Vector3(-2.70, 0, 2.70),
+		Vector3(2.70, 0, 2.70),
+		Vector3(0.0, 0, 2.70),
+		Vector3(-2.70, 0, 0.0),
+	]
+	for pp in post_positions:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.09
+		pm.height = 1.10
+		post.mesh = pm
+		post.material_override = iron_mat
+		post.position = pp + Vector3(0, 0.55, 0)
+		pivot.add_child(post)
+		# Brass post cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.09
+		cm.height = 0.18
+		cap.mesh = cm
+		var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+		brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+		brass_mat.metallic = 0.95
+		brass_mat.roughness = 0.30
+		brass_mat.emission_enabled = true
+		brass_mat.emission = Color(1.0, 0.50, 0.10)
+		brass_mat.emission_energy_multiplier = 0.55
+		cap.material_override = brass_mat
+		cap.position = pp + Vector3(0, 1.18, 0)
+		pivot.add_child(cap)
+	# Top rails — back, left, right (front is open as the yard entry)
+	var rail_specs: Array = [
+		# back rail
+		{"size": Vector3(5.50, 0.08, 0.08), "pos": Vector3(0, 0.85, -2.70)},
+		# left rail
+		{"size": Vector3(0.08, 0.08, 5.50), "pos": Vector3(-2.70, 0.85, 0)},
+		# right rail
+		{"size": Vector3(0.08, 0.08, 5.50), "pos": Vector3(2.70, 0.85, 0)},
+		# front partial rails (one on each side, with a gap in the middle)
+		{"size": Vector3(2.20, 0.08, 0.08), "pos": Vector3(-1.65, 0.85, 2.70)},
+		{"size": Vector3(2.20, 0.08, 0.08), "pos": Vector3(1.65, 0.85, 2.70)},
+	]
+	for rs in rail_specs:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = rs["size"]
+		rail.mesh = rm
+		rail.material_override = iron_mat
+		rail.position = rs["pos"]
+		pivot.add_child(rail)
+	# ---- Weapon rack along the back wall ----
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.80
+	# Rack base
+	var rack_base: MeshInstance3D = MeshInstance3D.new()
+	var rbm: BoxMesh = BoxMesh.new()
+	rbm.size = Vector3(2.40, 0.18, 0.40)
+	rack_base.mesh = rbm
+	rack_base.material_override = wood_mat
+	rack_base.position = Vector3(0, 0.20, -2.40)
+	pivot.add_child(rack_base)
+	# Rack back vertical board
+	var rack_back: MeshInstance3D = MeshInstance3D.new()
+	var rbk: BoxMesh = BoxMesh.new()
+	rbk.size = Vector3(2.40, 1.10, 0.06)
+	rack_back.mesh = rbk
+	rack_back.material_override = wood_mat
+	rack_back.position = Vector3(0, 0.85, -2.55)
+	pivot.add_child(rack_back)
+	# 4 unshaded amber weapons hanging on the rack
+	var weapon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	weapon_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	weapon_mat.emission_enabled = true
+	weapon_mat.emission = Color(1.0, 0.50, 0.10)
+	weapon_mat.emission_energy_multiplier = 5.0
+	weapon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Sword 1 — long box
+	var w1: MeshInstance3D = MeshInstance3D.new()
+	var w1m: BoxMesh = BoxMesh.new()
+	w1m.size = Vector3(0.10, 1.05, 0.06)
+	w1.mesh = w1m
+	w1.material_override = weapon_mat
+	w1.position = Vector3(-0.85, 0.95, -2.50)
+	pivot.add_child(w1)
+	# Spear — long thin cylinder
+	var w2: MeshInstance3D = MeshInstance3D.new()
+	var w2m: CylinderMesh = CylinderMesh.new()
+	w2m.top_radius = 0.04
+	w2m.bottom_radius = 0.04
+	w2m.height = 1.20
+	w2.mesh = w2m
+	w2.material_override = weapon_mat
+	w2.position = Vector3(-0.30, 0.90, -2.50)
+	pivot.add_child(w2)
+	# Mace — short shaft + sphere head
+	var w3_shaft: MeshInstance3D = MeshInstance3D.new()
+	var w3sm: CylinderMesh = CylinderMesh.new()
+	w3sm.top_radius = 0.04
+	w3sm.bottom_radius = 0.05
+	w3sm.height = 0.85
+	w3_shaft.mesh = w3sm
+	w3_shaft.material_override = weapon_mat
+	w3_shaft.position = Vector3(0.30, 0.80, -2.50)
+	pivot.add_child(w3_shaft)
+	var w3_head: MeshInstance3D = MeshInstance3D.new()
+	var w3hm: SphereMesh = SphereMesh.new()
+	w3hm.radius = 0.12
+	w3hm.height = 0.24
+	w3_head.mesh = w3hm
+	w3_head.material_override = weapon_mat
+	w3_head.position = Vector3(0.30, 1.30, -2.50)
+	pivot.add_child(w3_head)
+	# Axe — short box for handle + prism for blade
+	var w4_h: MeshInstance3D = MeshInstance3D.new()
+	var w4hm: CylinderMesh = CylinderMesh.new()
+	w4hm.top_radius = 0.04
+	w4hm.bottom_radius = 0.05
+	w4hm.height = 0.95
+	w4_h.mesh = w4hm
+	w4_h.material_override = weapon_mat
+	w4_h.position = Vector3(0.85, 0.85, -2.50)
+	pivot.add_child(w4_h)
+	var w4_blade: MeshInstance3D = MeshInstance3D.new()
+	var w4bm: PrismMesh = PrismMesh.new()
+	w4bm.size = Vector3(0.30, 0.30, 0.10)
+	w4_blade.mesh = w4bm
+	w4_blade.material_override = weapon_mat
+	w4_blade.position = Vector3(0.95, 1.25, -2.50)
+	w4_blade.rotation.z = -PI / 2.0
+	pivot.add_child(w4_blade)
+	# ---- Wooden sparring dummy with glowing chest core ----
+	var dummy_pivot: Node3D = Node3D.new()
+	dummy_pivot.position = Vector3(0, 0, 0.5)
+	pivot.add_child(dummy_pivot)
+	# Base post
+	var dummy_post: MeshInstance3D = MeshInstance3D.new()
+	var dpm: CylinderMesh = CylinderMesh.new()
+	dpm.top_radius = 0.10
+	dpm.bottom_radius = 0.14
+	dpm.height = 0.85
+	dummy_post.mesh = dpm
+	dummy_post.material_override = wood_mat
+	dummy_post.position = Vector3(0, 0.42, 0)
+	dummy_pivot.add_child(dummy_post)
+	# Body
+	var dummy_body: MeshInstance3D = MeshInstance3D.new()
+	var dbm: BoxMesh = BoxMesh.new()
+	dbm.size = Vector3(0.65, 0.95, 0.40)
+	dummy_body.mesh = dbm
+	dummy_body.material_override = wood_mat
+	dummy_body.position = Vector3(0, 1.30, 0)
+	dummy_pivot.add_child(dummy_body)
+	# Arms — sticking out boxes
+	for ax in [-0.55, 0.55]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var amesh: BoxMesh = BoxMesh.new()
+		amesh.size = Vector3(0.50, 0.16, 0.16)
+		arm.mesh = amesh
+		arm.material_override = wood_mat
+		arm.position = Vector3(ax, 1.45, 0)
+		dummy_pivot.add_child(arm)
+	# Head — small sphere
+	var dummy_head: MeshInstance3D = MeshInstance3D.new()
+	var dhm: SphereMesh = SphereMesh.new()
+	dhm.radius = 0.18
+	dhm.height = 0.36
+	dummy_head.mesh = dhm
+	dummy_head.material_override = wood_mat
+	dummy_head.position = Vector3(0, 2.00, 0)
+	dummy_pivot.add_child(dummy_head)
+	# Glowing chest core — unshaded amber sphere
+	var core_mat: StandardMaterial3D = StandardMaterial3D.new()
+	core_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	core_mat.emission_enabled = true
+	core_mat.emission = Color(1.0, 0.55, 0.10)
+	core_mat.emission_energy_multiplier = 6.0
+	core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var corem: SphereMesh = SphereMesh.new()
+	corem.radius = 0.14
+	corem.height = 0.28
+	core.mesh = corem
+	core.material_override = core_mat
+	core.position = Vector3(0, 1.30, -0.22)
+	dummy_pivot.add_child(core)
+	# Dummy collision so player can swing on it
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var caps: CapsuleShape3D = CapsuleShape3D.new()
+	caps.radius = 0.40
+	caps.height = 1.80
+	cs.shape = caps
+	sb.add_child(cs)
+	dummy_pivot.add_child(sb)
+	# Dummy idle wobble — slow back-and-forth lean
+	var wobble: Tween = dummy_pivot.create_tween().set_loops()
+	wobble.tween_property(dummy_pivot, "rotation:x", 0.05, 1.4).set_ease(Tween.EASE_IN_OUT)
+	wobble.tween_property(dummy_pivot, "rotation:x", -0.05, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# ---- Brass corner brazier ----
+	var brass_mat2: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat2.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat2.metallic = 0.95
+	brass_mat2.roughness = 0.30
+	brass_mat2.emission_enabled = true
+	brass_mat2.emission = Color(1.0, 0.50, 0.10)
+	brass_mat2.emission_energy_multiplier = 0.55
+	var braz_pos: Vector3 = Vector3(2.30, 0, -2.30)
+	var brazier: MeshInstance3D = MeshInstance3D.new()
+	var brzm: CylinderMesh = CylinderMesh.new()
+	brzm.top_radius = 0.18
+	brzm.bottom_radius = 0.10
+	brzm.height = 1.10
+	brazier.mesh = brzm
+	brazier.material_override = brass_mat2
+	brazier.position = braz_pos + Vector3(0, 0.55, 0)
+	pivot.add_child(brazier)
+	# Brazier flame
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame: MeshInstance3D = MeshInstance3D.new()
+	var flm: SphereMesh = SphereMesh.new()
+	flm.radius = 0.22
+	flm.height = 0.45
+	flame.mesh = flm
+	flame.material_override = flame_mat
+	flame.position = braz_pos + Vector3(0, 1.25, 0)
+	pivot.add_child(flame)
+	# Brazier OmniLight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = braz_pos + Vector3(0, 1.30, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.6
+	lt.omni_range = 6.0
+	pivot.add_child(lt)
+	# Brazier ember motes
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = braz_pos + Vector3(0, 1.40, 0)
+	motes.amount = 18
+	motes.lifetime = 2.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 12.0
+	pmat.initial_velocity_min = 0.5
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3(0, 0.3, 0)
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# Core pulse + flame flicker tweens
+	var corep: Tween = pivot.create_tween().set_loops()
+	corep.tween_property(core_mat, "emission_energy_multiplier", 8.0, 1.2).set_ease(Tween.EASE_IN_OUT)
+	corep.tween_property(core_mat, "emission_energy_multiplier", 4.0, 1.2).set_ease(Tween.EASE_IN_OUT)
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.4).set_ease(Tween.EASE_IN_OUT)
