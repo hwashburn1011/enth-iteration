@@ -85,6 +85,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_botanical_conservatory(geom)
 	_build_th_botanist_npc(town)
 	_build_th_constellation_map(geom)
+	_build_th_stargazer_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -12378,3 +12379,234 @@ func _build_th_constellation_map(geom: Node) -> void:
 	sk.lifetime = 3.0
 	sk.position = Vector3(0, 2.30, 0)
 	pivot.add_child(sk)
+
+
+func _build_th_stargazer_npc(town: Node) -> void:
+	## Epic-10 T69: Stargazer Astrid NPC — astronomer NPC standing beside the
+	## 3D Constellation Map, looking up through a small brass telescope.
+	## Indigo robe with cyan star-embroidery, brass spaulder, telescope held
+	## in both hands tilted upward toward the holographic constellation.
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node = npc_scene.instantiate()
+	npc.name = "Stargazer_Astrid"
+	# Position: just beside the constellation map (WSW radius 11.5, ang ~PI*1.15)
+	var ang_pos: float = PI * 1.15
+	var rad_pos: float = 9.40
+	var px: float = cos(ang_pos) * rad_pos + 0.85
+	var pz: float = sin(ang_pos) * rad_pos + 0.45
+	if npc is Node3D:
+		(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+		# Face the constellation map (which is at WSW r=11.5)
+		var map_x: float = cos(ang_pos) * 11.5
+		var map_z: float = sin(ang_pos) * 11.5
+		(npc as Node3D).rotation.y = atan2(map_x - px, map_z - pz)
+	if "npc_name" in npc:
+		npc.set("npc_name", "Stargazer Astrid")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_stargazer")
+	town.add_child(npc)
+	# ---- Cosmetic overlay ----
+	var ovl: Node3D = Node3D.new()
+	ovl.name = "StargazerOverlay"
+	if npc is Node3D:
+		(npc as Node3D).add_child(ovl)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.12, 0.10, 0.30)
+	robe_mat.metallic = 0.10
+	robe_mat.roughness = 0.85
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.45, 0.85)
+	robe_mat.emission_energy_multiplier = 0.30
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	trim_mat.metallic = 0.30
+	trim_mat.roughness = 0.45
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 1.85
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.85, 0.78, 0.65)
+	skin_mat.roughness = 0.85
+	# Indigo star robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(0.92, 1.85, 0.55)
+	robe.mesh = rmm
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 1.00, 0)
+	ovl.add_child(robe)
+	# Robe hem flare
+	var hem: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.45
+	hmm.bottom_radius = 0.62
+	hmm.height = 0.55
+	hem.mesh = hmm
+	hem.material_override = robe_mat
+	hem.position = Vector3(0, 0.30, 0)
+	ovl.add_child(hem)
+	# Star embroidery dots scattered on the robe (5 small cyan stars)
+	var star_positions: Array[Vector3] = [
+		Vector3(-0.20, 1.30, -0.30),
+		Vector3(0.25, 1.10, -0.30),
+		Vector3(0.10, 0.85, -0.30),
+		Vector3(-0.25, 0.95, -0.30),
+		Vector3(0.18, 1.45, -0.30),
+	]
+	for sp_pos in star_positions:
+		var star: MeshInstance3D = MeshInstance3D.new()
+		var smm: SphereMesh = SphereMesh.new()
+		smm.radius = 0.025
+		smm.height = 0.05
+		star.mesh = smm
+		star.material_override = trim_mat
+		star.position = sp_pos
+		ovl.add_child(star)
+	# Brass spaulder on right shoulder
+	var spaulder: MeshInstance3D = MeshInstance3D.new()
+	var spm: SphereMesh = SphereMesh.new()
+	spm.radius = 0.18
+	spm.height = 0.30
+	spaulder.mesh = spm
+	spaulder.material_override = brass_mat
+	spaulder.position = Vector3(0.40, 1.65, 0)
+	ovl.add_child(spaulder)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.20
+	hdm.height = 0.42
+	head.mesh = hdm
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.95, 0)
+	# Tilt head up slightly toward constellation
+	head.rotation.x = -0.30
+	ovl.add_child(head)
+	# Indigo skullcap
+	var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.10, 0.08, 0.25)
+	cap_mat.roughness = 0.85
+	cap_mat.emission_enabled = true
+	cap_mat.emission = Color(0.30, 0.45, 0.85)
+	cap_mat.emission_energy_multiplier = 0.30
+	var skullcap: MeshInstance3D = MeshInstance3D.new()
+	var scm: SphereMesh = SphereMesh.new()
+	scm.radius = 0.21
+	scm.height = 0.25
+	skullcap.mesh = scm
+	skullcap.material_override = cap_mat
+	skullcap.position = Vector3(0, 2.10, -0.02)
+	ovl.add_child(skullcap)
+	# Cyan star pin on the skullcap
+	var pin: MeshInstance3D = MeshInstance3D.new()
+	var pmn: SphereMesh = SphereMesh.new()
+	pmn.radius = 0.04
+	pmn.height = 0.08
+	pin.mesh = pmn
+	pin.material_override = trim_mat
+	pin.position = Vector3(0, 2.18, 0.15)
+	ovl.add_child(pin)
+	# Two cyan eye dots
+	for s in [-1.0, 1.0]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emm: SphereMesh = SphereMesh.new()
+		emm.radius = 0.025
+		emm.height = 0.05
+		eye.mesh = emm
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_energy_multiplier = 5.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = eye_mat
+		eye.position = Vector3(0.07 * s, 1.94, 0.21)
+		ovl.add_child(eye)
+	# ---- Telescope (held in both hands, angled upward toward constellation) ----
+	var scope_pivot: Node3D = Node3D.new()
+	scope_pivot.position = Vector3(0.10, 1.45, -0.40)
+	scope_pivot.rotation.x = -0.85  # angled steeply upward
+	ovl.add_child(scope_pivot)
+	# Telescope barrel (long brass cylinder)
+	var barrel: MeshInstance3D = MeshInstance3D.new()
+	var bmm: CylinderMesh = CylinderMesh.new()
+	bmm.top_radius = 0.06
+	bmm.bottom_radius = 0.08
+	bmm.height = 0.95
+	barrel.mesh = bmm
+	barrel.material_override = brass_mat
+	barrel.position = Vector3(0, 0, -0.45)
+	barrel.rotation.x = PI / 2.0
+	scope_pivot.add_child(barrel)
+	# Eyepiece (smaller cylinder at near end)
+	var eyepc: MeshInstance3D = MeshInstance3D.new()
+	var epm: CylinderMesh = CylinderMesh.new()
+	epm.top_radius = 0.04
+	epm.bottom_radius = 0.05
+	epm.height = 0.12
+	eyepc.mesh = epm
+	eyepc.material_override = brass_mat
+	eyepc.position = Vector3(0, 0, 0.06)
+	eyepc.rotation.x = PI / 2.0
+	scope_pivot.add_child(eyepc)
+	# Front lens (cyan glow)
+	var lens_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lens_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	lens_mat.emission_enabled = true
+	lens_mat.emission = Color(0.55, 0.95, 1.0)
+	lens_mat.emission_energy_multiplier = 5.5
+	lens_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lmm: CylinderMesh = CylinderMesh.new()
+	lmm.top_radius = 0.07
+	lmm.bottom_radius = 0.07
+	lmm.height = 0.02
+	lens.mesh = lmm
+	lens.material_override = lens_mat
+	lens.position = Vector3(0, 0, -0.93)
+	lens.rotation.x = PI / 2.0
+	scope_pivot.add_child(lens)
+	# Brass focus rings (2 small toruses around barrel)
+	for k in range(2):
+		var ftm: TorusMesh = TorusMesh.new()
+		ftm.inner_radius = 0.07
+		ftm.outer_radius = 0.10
+		var fring: MeshInstance3D = MeshInstance3D.new()
+		fring.mesh = ftm
+		fring.material_override = brass_mat
+		fring.position = Vector3(0, 0, -0.30 - float(k) * 0.30)
+		fring.rotation.y = PI / 2.0
+		scope_pivot.add_child(fring)
+	# Subtle cool light from astronomer
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.20)
+	lt.light_color = Color(0.55, 0.85, 1.0)
+	lt.light_energy = 1.10
+	lt.omni_range = 3.2
+	ovl.add_child(lt)
+	# ---- Telescope tilt sway (subtle scanning motion) ----
+	var stir: Tween = scope_pivot.create_tween().set_loops()
+	stir.tween_property(scope_pivot, "rotation:x", -0.70, 2.4).set_ease(Tween.EASE_IN_OUT)
+	stir.tween_property(scope_pivot, "rotation:x", -1.00, 2.4).set_ease(Tween.EASE_IN_OUT)
+	# Also pan slightly side-to-side
+	var pan: Tween = scope_pivot.create_tween().set_loops()
+	pan.tween_property(scope_pivot, "rotation:y", 0.10, 2.0).set_ease(Tween.EASE_IN_OUT)
+	pan.tween_property(scope_pivot, "rotation:y", -0.10, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Lens pulse
+	var lpulse: Tween = scope_pivot.create_tween().set_loops()
+	lpulse.tween_property(lens_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(lens_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Slow body breathing
+	var breath: Tween = ovl.create_tween().set_loops()
+	breath.tween_property(ovl, "scale:y", 1.012, 2.0).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(ovl, "scale:y", 0.992, 2.0).set_ease(Tween.EASE_IN_OUT)
