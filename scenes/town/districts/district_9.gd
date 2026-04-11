@@ -68,6 +68,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_cooling_rack(geom)
 	_build_d9_lava_forge_cracks(geom)
 	_build_d9_chained_anvil_totem(geom)
+	_build_d9_scorched_bone_pile(geom)
 	print("[D9Builder] done")
 
 
@@ -4093,5 +4094,77 @@ func _build_d9_chained_anvil_totem(geom: Node) -> void:
 	cs.shape = cyl
 	stb.add_child(cs)
 	pivot.add_child(stb)
+
+
+func _build_d9_scorched_bone_pile(geom: Node) -> void:
+	## Epic-9 T48: a charred pile of long bones, a skull, and a broken sword.
+	## Remains of warriors who challenged the Molten Behemoth and lost.
+	## Visual storytelling for the mid-boss arena approach.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ScorchedBonePile"
+	pivot.position = D9_CENTER + Vector3(24, 0, 6)
+	geom.add_child(pivot)
+	# Two material variants — pale bone vs charred black
+	var bone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bone_mat.albedo_color = Color(0.45, 0.40, 0.32)
+	bone_mat.roughness = 0.85
+	var char_mat: StandardMaterial3D = StandardMaterial3D.new()
+	char_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	char_mat.roughness = 0.95
+	# 8 long bones in a chaotic stack
+	for i in 8:
+		var bone: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.10
+		bm.bottom_radius = 0.13
+		bm.height = 1.10 + float(i % 3) * 0.18
+		bone.mesh = bm
+		bone.material_override = bone_mat if (i % 2 == 0) else char_mat
+		var ang: float = (TAU / 8.0) * float(i)
+		var r: float = 0.40 + float(i % 3) * 0.18
+		bone.position = Vector3(cos(ang) * r, 0.30 + float(i % 3) * 0.15, sin(ang) * r)
+		bone.rotation.z = (TAU / 8.0) * float(i % 4)
+		bone.rotation.x = float(i) * 0.18
+		pivot.add_child(bone)
+	# Skull on top of the pile
+	var skull: MeshInstance3D = MeshInstance3D.new()
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.32
+	sm.height = 0.55
+	skull.mesh = sm
+	skull.material_override = bone_mat
+	skull.position = Vector3(0, 0.95, 0)
+	pivot.add_child(skull)
+	# Broken sword stuck in the pile
+	var sword: MeshInstance3D = MeshInstance3D.new()
+	var swm: BoxMesh = BoxMesh.new()
+	swm.size = Vector3(0.10, 1.30, 0.04)
+	sword.mesh = swm
+	var swmat: StandardMaterial3D = StandardMaterial3D.new()
+	swmat.albedo_color = Color(0.25, 0.20, 0.15)
+	swmat.metallic = 0.55
+	swmat.roughness = 0.65
+	sword.material_override = swmat
+	sword.position = Vector3(0.40, 0.85, 0.30)
+	sword.rotation.z = 0.55
+	pivot.add_child(sword)
+	# Faint smoke wisp rising from the pile
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.amount = 12
+	smoke.lifetime = 4.0
+	smoke.position = Vector3(0, 0.65, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.initial_velocity_min = 0.20
+	pmat.initial_velocity_max = 0.45
+	pmat.gravity = Vector3(0, 0.10, 0)
+	pmat.scale_min = 0.20
+	pmat.scale_max = 0.45
+	pmat.color = Color(0.30, 0.25, 0.22, 0.55)
+	smoke.process_material = pmat
+	var qm: QuadMesh = QuadMesh.new()
+	qm.size = Vector2(0.55, 0.55)
+	smoke.draw_pass_1 = qm
+	pivot.add_child(smoke)
 
 
