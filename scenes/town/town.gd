@@ -1885,6 +1885,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_fisherman_npc()
 	# Epic-4 T20: lily pads on the pond
 	_build_d4_lily_pads(geom)
+	# Epic-4 T21: glass greenhouse building
+	_build_d4_greenhouse_building(geom)
+	# Epic-4 T22: plant pot row
+	_build_d4_plant_pot_row(geom)
+	# Epic-4 T23: ladybug creature wandering
+	_build_d4_ladybug_creature(geom)
+	# Epic-4 T24: Chef NPC
+	_build_d4_chef_npc()
+	# Epic-4 T25: soup pot with steam
+	_build_d4_soup_pot(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -3197,6 +3207,273 @@ func _build_d4_lily_pads(geom: Node) -> void:
 			flower.position = positions[i] + Vector3(0, 0.12, 0)
 			flower.material_override = flower_mat
 			geom.add_child(flower)
+
+
+func _build_d4_greenhouse_building(geom: Node) -> void:
+	## Epic-4 T21: a glass greenhouse building.
+	var house: Node3D = Node3D.new()
+	house.name = "D4Greenhouse"
+	house.position = D4_CENTER + Vector3(15, 0, 8)
+	geom.add_child(house)
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.55, 0.95, 0.85, 0.30)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.45, 1.0, 0.55)
+	glass_mat.emission_energy_multiplier = 0.55
+	glass_mat.metallic = 0.30
+	glass_mat.roughness = 0.10
+	# Walls
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.40, 2.85, 2.40)
+	body.mesh = bm
+	body.position = Vector3(0, 1.42, 0)
+	body.material_override = glass_mat
+	house.add_child(body)
+	# Pitched roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(3.40, 1.0, 2.40)
+	roof.mesh = rm
+	roof.position = Vector3(0, 3.40, 0)
+	roof.material_override = glass_mat
+	house.add_child(roof)
+	# 4 corner posts
+	var frame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	frame_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	for ox: float in [-1.70, 1.70]:
+		for oz: float in [-1.20, 1.20]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.10, 2.85, 0.10)
+			post.mesh = pm
+			post.position = Vector3(ox, 1.42, oz)
+			post.material_override = frame_mat
+			house.add_child(post)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "GREENHOUSE"
+	label.position = Vector3(0, 4.40, 0)
+	label.modulate = Color(0.45, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	house.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 2.85, 2.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.42, 0)
+	sb.add_child(cs)
+	house.add_child(sb)
+
+
+func _build_d4_plant_pot_row(geom: Node) -> void:
+	## Epic-4 T22: 6 small plant pots in a row near the greenhouse.
+	var pot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pot_mat.albedo_color = Color(0.55, 0.30, 0.20)
+	var plant_mat: StandardMaterial3D = StandardMaterial3D.new()
+	plant_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	plant_mat.emission_enabled = true
+	plant_mat.emission = Color(0.45, 1.0, 0.45)
+	plant_mat.emission_energy_multiplier = 0.65
+	for i in 6:
+		var pot: Node3D = Node3D.new()
+		pot.name = "D4Pot_%d" % i
+		pot.position = D4_CENTER + Vector3(11 + i * 0.85, 0, 10)
+		geom.add_child(pot)
+		var pot_body: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.30
+		pm.bottom_radius = 0.20
+		pm.height = 0.40
+		pot_body.mesh = pm
+		pot_body.position = Vector3(0, 0.20, 0)
+		pot_body.material_override = pot_mat
+		pot.add_child(pot_body)
+		# Plant on top
+		var plant: MeshInstance3D = MeshInstance3D.new()
+		var plm: SphereMesh = SphereMesh.new()
+		plm.radius = 0.22
+		plm.height = 0.44
+		plant.mesh = plm
+		plant.position = Vector3(0, 0.55, 0)
+		plant.material_override = plant_mat
+		pot.add_child(plant)
+
+
+func _build_d4_ladybug_creature(geom: Node) -> void:
+	## Epic-4 T23: large red ladybug with black spots wandering on a patrol.
+	var bug: Node3D = Node3D.new()
+	bug.name = "D4Ladybug"
+	bug.position = D4_CENTER + Vector3(5, 0, 10)
+	geom.add_child(bug)
+	# Red body shell — flattened sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.45
+	bm.height = 0.65
+	body.mesh = bm
+	body.position = Vector3(0, 0.40, 0)
+	body.scale = Vector3(1.0, 0.7, 1.20)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(1.0, 0.20, 0.20)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.30, 0.30)
+	bmat.emission_energy_multiplier = 1.4
+	body.material_override = bmat
+	bug.add_child(body)
+	# 4 black spots on top
+	var spot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spot_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	spot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for spec in [Vector3(-0.20, 0.65, 0.10), Vector3(0.20, 0.65, 0.10), Vector3(-0.20, 0.65, -0.10), Vector3(0.20, 0.65, -0.10)]:
+		var spot: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.10
+		sm.height = 0.20
+		spot.mesh = sm
+		spot.position = spec
+		spot.material_override = spot_mat
+		bug.add_child(spot)
+	# Patrol path
+	var origin: Vector3 = D4_CENTER + Vector3(5, 0, 10)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(bug, "position", origin + Vector3(3, 0, 3), 5.0)
+	patrol.tween_property(bug, "position", origin + Vector3(-3, 0, 3), 5.0)
+	patrol.tween_property(bug, "position", origin, 5.0)
+
+
+func _build_d4_chef_npc() -> void:
+	## Epic-4 T24: Chef NPC with white outfit and tall chef hat.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var chef: Node3D = Node3D.new()
+	chef.name = "D4Chef"
+	chef.position = D4_CENTER + Vector3(15, 0, -3)
+	slots.add_child(chef)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.95, 0.95, 0.95)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 1.0, 1.0)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	chef.add_child(body)
+	# Tall chef hat — cylinder + dome top
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.30
+	hm.bottom_radius = 0.30
+	hm.height = 0.65
+	hat.mesh = hm
+	hat.position = Vector3(0, 1.95, 0)
+	hat.material_override = bmat
+	chef.add_child(hat)
+	var hat_top: MeshInstance3D = MeshInstance3D.new()
+	var htm: SphereMesh = SphereMesh.new()
+	htm.radius = 0.40
+	htm.height = 0.40
+	hat_top.mesh = htm
+	hat_top.position = Vector3(0, 2.40, 0)
+	hat_top.scale = Vector3(1.0, 0.55, 1.0)
+	hat_top.material_override = bmat
+	chef.add_child(hat_top)
+	var label: Label3D = Label3D.new()
+	label.text = "Chef"
+	label.position = Vector3(0, 2.95, 0)
+	label.modulate = Color(1, 1, 1)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	chef.add_child(label)
+
+
+func _build_d4_soup_pot(geom: Node) -> void:
+	## Epic-4 T25: a large iron pot with bubbling orange soup and steam.
+	var pot: Node3D = Node3D.new()
+	pot.name = "D4SoupPot"
+	pot.position = D4_CENTER + Vector3(13, 0, -3)
+	geom.add_child(pot)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.16, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.30
+	var pot_body: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.55
+	pm.bottom_radius = 0.45
+	pm.height = 0.85
+	pot_body.mesh = pm
+	pot_body.position = Vector3(0, 0.42, 0)
+	pot_body.material_override = iron_mat
+	pot.add_child(pot_body)
+	# Soup inside
+	var soup: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.50
+	sm.bottom_radius = 0.50
+	sm.height = 0.06
+	soup.mesh = sm
+	soup.position = Vector3(0, 0.85, 0)
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(1.0, 0.55, 0.20)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(1.0, 0.65, 0.20)
+	sm_mat.emission_energy_multiplier = 1.4
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	soup.material_override = sm_mat
+	pot.add_child(soup)
+	# Steam particles
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 25
+	steam.lifetime = 2.5
+	steam.position = Vector3(0, 1.40, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.30
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 0.55
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.30
+	pmat.scale_max = 0.55
+	pmat.color = Color(0.95, 0.95, 1.0, 0.55)
+	steam.process_material = pmat
+	var smesh: SphereMesh = SphereMesh.new()
+	smesh.radius = 0.30
+	smesh.height = 0.60
+	var st_mat: StandardMaterial3D = StandardMaterial3D.new()
+	st_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.55)
+	st_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	st_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	smesh.material = st_mat
+	steam.draw_pass_1 = smesh
+	pot.add_child(steam)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.65
+	cap.height = 0.85
+	cs.shape = cap
+	cs.position = Vector3(0, 0.42, 0)
+	sb.add_child(cs)
+	pot.add_child(sb)
 
 
 
