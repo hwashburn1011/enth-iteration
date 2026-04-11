@@ -17270,6 +17270,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_street_dj_npc()
 	# Epic-6 T85: glow drone swarm
 	_build_d6_glow_drones(geom)
+	# Epic-6 T86: city map terminal
+	_build_d6_city_map_terminal(geom)
+	# Epic-6 T87: tour guide NPC
+	_build_d6_tour_guide_npc()
+	# Epic-6 T88: protest holographic banner
+	_build_d6_protest_banner(geom)
+	# Epic-6 T89: protester NPC
+	_build_d6_protester_npc()
+	# Epic-6 T90: data exchange kiosk
+	_build_d6_data_exchange_kiosk(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -24240,6 +24250,398 @@ func _build_d6_glow_drones(geom: Node) -> void:
 		var tb: Tween = drone.create_tween().set_loops()
 		tb.tween_property(drone, "position:y", 0.65, 1.4 + randf() * 0.4)
 		tb.tween_property(drone, "position:y", -0.20, 1.4 + randf() * 0.4)
+
+
+func _build_d6_city_map_terminal(geom: Node) -> void:
+	## Epic-6 T86: free-standing city map terminal — slim metal box +
+	## angled cyan map screen + city grid pattern.
+	var term: Node3D = Node3D.new()
+	term.name = "CityMapTerminal"
+	term.position = Vector3(D6_CENTER.x - 32.0, 0.0, 12.0)
+	geom.add_child(term)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Pedestal column
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.55, 1.20, 0.40)
+	col.mesh = clm
+	col.material_override = metal_mat
+	col.position = Vector3(0, 0.60, 0)
+	term.add_child(col)
+	# Angled screen housing
+	var housing: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(1.10, 0.85, 0.18)
+	housing.mesh = hm
+	housing.material_override = metal_mat
+	housing.position = Vector3(0, 1.55, 0.18)
+	housing.rotation_degrees = Vector3(-30, 0, 0)
+	term.add_child(housing)
+	# Glowing map screen
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.95, 0.75, 0.04)
+	screen.mesh = sm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.10, 0.20, 0.30)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 0.55, 0.95)
+	screen_mat.emission_energy_multiplier = 1.4
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 1.55, 0.30)
+	screen.rotation_degrees = Vector3(-30, 0, 0)
+	term.add_child(screen)
+	# 6 city grid lines on the screen (white emissive cross-hatch)
+	var line_mat: StandardMaterial3D = StandardMaterial3D.new()
+	line_mat.albedo_color = Color(0.95, 0.95, 1.0)
+	line_mat.emission_enabled = true
+	line_mat.emission = Color(0.95, 0.95, 1.0)
+	line_mat.emission_energy_multiplier = 2.5
+	line_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		# Horizontal lines
+		var hl: MeshInstance3D = MeshInstance3D.new()
+		var hlm: BoxMesh = BoxMesh.new()
+		hlm.size = Vector3(0.85, 0.02, 0.02)
+		hl.mesh = hlm
+		hl.material_override = line_mat
+		hl.position = Vector3(0, 1.55 + (i - 1) * 0.20, 0.32)
+		hl.rotation_degrees = Vector3(-30, 0, 0)
+		term.add_child(hl)
+		# Vertical lines
+		var vl: MeshInstance3D = MeshInstance3D.new()
+		var vlm: BoxMesh = BoxMesh.new()
+		vlm.size = Vector3(0.02, 0.65, 0.02)
+		vl.mesh = vlm
+		vl.material_override = line_mat
+		vl.position = Vector3(-0.30 + i * 0.30, 1.55, 0.32)
+		vl.rotation_degrees = Vector3(-30, 0, 0)
+		term.add_child(vl)
+	# 4 location dots (you-are-here marker + 3 districts)
+	var dot_colors: Array = [
+		Color(0.30, 0.95, 0.55),
+		Color(0.55, 0.30, 0.95),
+		Color(0.95, 0.30, 0.85),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 4:
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dmm: SphereMesh = SphereMesh.new()
+		dmm.radius = 0.05
+		dmm.height = 0.10
+		dot.mesh = dmm
+		var dot_mat: StandardMaterial3D = StandardMaterial3D.new()
+		dot_mat.albedo_color = dot_colors[i]
+		dot_mat.emission_enabled = true
+		dot_mat.emission = dot_colors[i]
+		dot_mat.emission_energy_multiplier = 3.5
+		dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dot.material_override = dot_mat
+		dot.position = Vector3(-0.30 + (i % 2) * 0.55, 1.55 + (i / 2) * 0.20, 0.34)
+		dot.rotation_degrees = Vector3(-30, 0, 0)
+		term.add_child(dot)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.30, 0.65, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 1.85, 0.65)
+	term.add_child(light)
+	# Terminal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.55, 2.0, 0.65)
+	cs.shape = cb
+	sb.add_child(cs)
+	term.add_child(sb)
+
+
+func _build_d6_tour_guide_npc() -> void:
+	## Epic-6 T87: tour guide NPC by the city map — bright shirt + raised
+	## arm holding a flag.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "TourGuideSlot"
+	slot.position = Vector3(D6_CENTER.x - 30.0, 0.0, 12.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "TourGuide"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Vista")
+	if "npc_id" in npc:
+		npc.set("npc_id", "tour_d6")
+	slot.add_child(npc)
+	# Bright orange shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 1.05, 0.40)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	shirt_mat.emission_enabled = true
+	shirt_mat.emission = Color(0.95, 0.55, 0.20)
+	shirt_mat.emission_energy_multiplier = 0.45
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.55, 0)
+	npc.add_child(shirt)
+	# Tall flagpole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.025
+	pm.bottom_radius = 0.025
+	pm.height = 1.85
+	pole.mesh = pm
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	pole_mat.metallic = 0.85
+	pole.material_override = pole_mat
+	pole.position = Vector3(0.45, 1.40, 0)
+	npc.add_child(pole)
+	# Flag (small red box at top)
+	var flag: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.40, 0.30, 0.04)
+	flag.mesh = fm
+	var flag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flag_mat.albedo_color = Color(0.95, 0.20, 0.30)
+	flag_mat.emission_enabled = true
+	flag_mat.emission = Color(0.95, 0.20, 0.30)
+	flag_mat.emission_energy_multiplier = 0.85
+	flag.material_override = flag_mat
+	flag.position = Vector3(0.65, 2.10, 0)
+	npc.add_child(flag)
+	# Wave the flag
+	var tw: Tween = flag.create_tween().set_loops()
+	tw.tween_property(flag, "rotation_degrees:z", 8.0, 0.55)
+	tw.tween_property(flag, "rotation_degrees:z", -8.0, 0.55)
+
+
+func _build_d6_protest_banner(geom: Node) -> void:
+	## Epic-6 T88: holographic protest banner — large translucent panel
+	## with bold "FREE THE DATA" message and 2 vertical glow accents.
+	var banner: Node3D = Node3D.new()
+	banner.name = "ProtestBanner"
+	banner.position = Vector3(D6_CENTER.x - 8.0, 0.0, 0.0)
+	geom.add_child(banner)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	metal_mat.metallic = 0.85
+	# 2 carrying poles
+	for sx in [-1.85, 1.85]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.06
+		pm.height = 2.85
+		pole.mesh = pm
+		pole.material_override = metal_mat
+		pole.position = Vector3(sx, 1.42, 0)
+		banner.add_child(pole)
+	# Banner cloth (translucent red)
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(3.85, 1.40, 0.06)
+	cloth.mesh = cm
+	var cloth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloth_mat.albedo_color = Color(0.85, 0.20, 0.30, 0.85)
+	cloth_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cloth_mat.emission_enabled = true
+	cloth_mat.emission = Color(0.95, 0.20, 0.30)
+	cloth_mat.emission_energy_multiplier = 1.4
+	cloth_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	cloth.material_override = cloth_mat
+	cloth.position = Vector3(0, 2.10, 0)
+	banner.add_child(cloth)
+	# Label3D
+	var label: Label3D = Label3D.new()
+	label.text = "FREE THE DATA"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.20, 0.05, 0.10)
+	label.outline_size = 8
+	label.font_size = 64
+	label.pixel_size = 0.011
+	label.position = Vector3(0, 2.10, 0.05)
+	banner.add_child(label)
+	# 2 vertical glow accents
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.95, 0.85, 0.20)
+	glow_mat.emission_energy_multiplier = 3.0
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-1.85, 1.85]:
+		var glow: MeshInstance3D = MeshInstance3D.new()
+		var gmm: BoxMesh = BoxMesh.new()
+		gmm.size = Vector3(0.06, 1.40, 0.06)
+		glow.mesh = gmm
+		glow.material_override = glow_mat
+		glow.position = Vector3(sx, 2.10, 0.04)
+		banner.add_child(glow)
+	# Pole collisions
+	for sx in [-1.85, 1.85]:
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.10
+		cap.height = 2.85
+		cs.shape = cap
+		sb.add_child(cs)
+		banner.add_child(sb)
+
+
+func _build_d6_protester_npc() -> void:
+	## Epic-6 T89: protester NPC — raised fist + black bandana over face.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ProtesterSlot"
+	slot.position = Vector3(D6_CENTER.x - 8.0, 0.0, 1.5)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Protester"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Riot")
+	if "npc_id" in npc:
+		npc.set("npc_id", "protest_d6")
+	slot.add_child(npc)
+	# Black hoodie
+	var hoodie: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.65, 1.05, 0.45)
+	hoodie.mesh = hm
+	var hoodie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hoodie_mat.albedo_color = Color(0.10, 0.08, 0.12)
+	hoodie_mat.roughness = 0.85
+	hoodie.material_override = hoodie_mat
+	hoodie.position = Vector3(0, 0.55, 0)
+	npc.add_child(hoodie)
+	# Black bandana over face
+	var bandana: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.42, 0.18, 0.06)
+	bandana.mesh = bm
+	bandana.material_override = hoodie_mat
+	bandana.position = Vector3(0, 1.30, 0.21)
+	npc.add_child(bandana)
+	# Raised fist (small box arm)
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.18, 0.55, 0.18)
+	arm.mesh = am
+	arm.material_override = hoodie_mat
+	arm.position = Vector3(0.20, 1.55, 0)
+	npc.add_child(arm)
+	var fist: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.12
+	fm.height = 0.22
+	fist.mesh = fm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+	fist.material_override = skin_mat
+	fist.position = Vector3(0.20, 1.85, 0)
+	npc.add_child(fist)
+	# Pump fist tween
+	var tw: Tween = arm.create_tween().set_loops()
+	tw.tween_property(arm, "position:y", 1.65, 0.30)
+	tw.tween_property(arm, "position:y", 1.55, 0.30)
+
+
+func _build_d6_data_exchange_kiosk(geom: Node) -> void:
+	## Epic-6 T90: data exchange kiosk — black market style. Tall narrow
+	## stand with cyan currency-rate display + mysterious dark slit.
+	var kiosk: Node3D = Node3D.new()
+	kiosk.name = "DataExchangeKiosk"
+	kiosk.position = Vector3(D6_CENTER.x + 22.0, 0.0, 22.0)
+	geom.add_child(kiosk)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.08, 0.18)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.30
+	# Tall stand
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.85, 2.85, 0.55)
+	stand.mesh = sm
+	stand.material_override = dark_mat
+	stand.position = Vector3(0, 1.42, 0)
+	kiosk.add_child(stand)
+	# Currency rate screen at top
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var scm: BoxMesh = BoxMesh.new()
+	scm.size = Vector3(0.75, 0.85, 0.04)
+	screen.mesh = scm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 1.0, 1.0)
+	screen_mat.emission_energy_multiplier = 3.0
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 2.40, 0.30)
+	kiosk.add_child(screen)
+	# 3 small ticker bars on screen
+	var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bar_mat.albedo_color = Color(0.30, 1.0, 0.55)
+	bar_mat.emission_enabled = true
+	bar_mat.emission = Color(0.30, 1.0, 0.55)
+	bar_mat.emission_energy_multiplier = 3.5
+	bar_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.10, 0.02)
+		bar.mesh = bm
+		bar.material_override = bar_mat
+		bar.position = Vector3(0, 2.65 - i * 0.25, 0.32)
+		kiosk.add_child(bar)
+		var tw: Tween = bar.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(bar, "scale:x", 0.40, 0.40)
+		tw.tween_property(bar, "scale:x", 1.20, 0.40)
+	# Dark slit (dark box)
+	var slit: MeshInstance3D = MeshInstance3D.new()
+	var slm: BoxMesh = BoxMesh.new()
+	slm.size = Vector3(0.55, 0.10, 0.06)
+	slit.mesh = slm
+	var slit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	slit_mat.albedo_color = Color(0.05, 0.04, 0.10)
+	slit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	slit.material_override = slit_mat
+	slit.position = Vector3(0, 1.10, 0.30)
+	kiosk.add_child(slit)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.30, 1.0, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 2.40, 0.85)
+	kiosk.add_child(light)
+	# Stand collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 2.85, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	kiosk.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
