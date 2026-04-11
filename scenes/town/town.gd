@@ -1540,6 +1540,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_faction_wall(geom)
 	# Epic-2 T55: hacker NPC with floating screens
 	_build_d2_hacker_npc()
+	# Epic-2 T56: sniper NPC perched on a roof tower
+	_build_d2_sniper_npc()
+	# Epic-2 T57: locked treasure chest with combo lock
+	_build_d2_treasure_chest(geom)
+	# Epic-2 T58: small graveyard with marker stones
+	_build_d2_graveyard(geom)
+	# Epic-2 T59: floating data packet drift
+	_build_d2_data_packets(geom)
+	# Epic-2 T60: defensive turret base
+	_build_d2_turret(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -12353,5 +12363,399 @@ func _build_d2_hacker_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	hacker.add_child(label)
+
+
+func _build_d2_sniper_npc() -> void:
+	## Epic-2 T56: a sniper NPC perched on top of the watchtower roof at
+	## (D2_CENTER + 20, 0, -16). Crouched silhouette with a long rifle
+	## scope visible, cyan laser sight projecting downward into the plaza.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var sniper: Node3D = Node3D.new()
+	sniper.name = "D2Sniper"
+	sniper.position = D2_CENTER + Vector3(20, 9.45, -16)
+	slots.add_child(sniper)
+	# Crouched body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.10, 0.13, 0.16)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.30, 0.30, 0.40)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.30
+	bmesh.height = 0.55
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.30, 0)
+	body.rotation = Vector3(deg_to_rad(20), 0, 0)
+	body.material_override = bmat
+	sniper.add_child(body)
+	# Helmet
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(0.40, 0.30, 0.40)
+	helmet.mesh = hmesh
+	helmet.position = Vector3(0, 0.65, 0.10)
+	helmet.material_override = bmat
+	sniper.add_child(helmet)
+	# Long rifle held in front
+	var rifle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rifle_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	rifle_mat.metallic = 0.85
+	rifle_mat.roughness = 0.30
+	var rifle: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.10, 0.10, 1.85)
+	rifle.mesh = rmesh
+	rifle.position = Vector3(0.20, 0.50, 0.50)
+	rifle.rotation = Vector3(deg_to_rad(-15), deg_to_rad(10), 0)
+	rifle.material_override = rifle_mat
+	sniper.add_child(rifle)
+	# Scope on top of rifle
+	var scope: MeshInstance3D = MeshInstance3D.new()
+	var sc_mesh: CylinderMesh = CylinderMesh.new()
+	sc_mesh.top_radius = 0.06
+	sc_mesh.bottom_radius = 0.06
+	sc_mesh.height = 0.30
+	scope.mesh = sc_mesh
+	scope.position = Vector3(0.20, 0.62, 0.50)
+	scope.rotation = Vector3(deg_to_rad(75), deg_to_rad(10), 0)
+	scope.material_override = rifle_mat
+	sniper.add_child(scope)
+	# Cyan laser sight — long thin emissive line projecting forward + down
+	var laser: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: BoxMesh = BoxMesh.new()
+	lmesh.size = Vector3(0.02, 0.02, 14.0)
+	laser.mesh = lmesh
+	laser.position = Vector3(0.20, 0.30, -6.5)
+	laser.rotation = Vector3(deg_to_rad(-25), deg_to_rad(15), 0)
+	var lmat: StandardMaterial3D = StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.55, 0.95, 1.0)
+	lmat.emission_enabled = true
+	lmat.emission = Color(0.55, 0.95, 1.0)
+	lmat.emission_energy_multiplier = 3.4
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	laser.material_override = lmat
+	sniper.add_child(laser)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Sniper"
+	label.position = Vector3(0, 1.20, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	sniper.add_child(label)
+
+
+func _build_d2_treasure_chest(geom: Node) -> void:
+	## Epic-2 T57: a locked treasure chest with a glowing combination dial
+	## sitting in a hidden corner of the district. Made of dark metal with
+	## a glowing amber rim around the lid.
+	var chest: Node3D = Node3D.new()
+	chest.name = "D2TreasureChest"
+	chest.position = D2_CENTER + Vector3(-8, 0, -16)
+	chest.rotation = Vector3(0, deg_to_rad(35), 0)
+	geom.add_child(chest)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.16, 0.13, 0.10)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.40
+	# Body box
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(1.20, 0.65, 0.85)
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.32, 0)
+	body.material_override = metal_mat
+	chest.add_child(body)
+	# Lid (slightly raised box)
+	var lid: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: BoxMesh = BoxMesh.new()
+	lmesh.size = Vector3(1.25, 0.20, 0.90)
+	lid.mesh = lmesh
+	lid.position = Vector3(0, 0.75, 0)
+	lid.material_override = metal_mat
+	chest.add_child(lid)
+	# Glowing amber rim around the lid edge
+	var rim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rim_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	rim_mat.emission_enabled = true
+	rim_mat.emission = Color(1.0, 0.75, 0.25)
+	rim_mat.emission_energy_multiplier = 1.8
+	rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for spec in [
+		[Vector3(0, 0.65, 0.45), Vector3(1.20, 0.06, 0.06)],
+		[Vector3(0, 0.65, -0.45), Vector3(1.20, 0.06, 0.06)],
+		[Vector3(-0.60, 0.65, 0), Vector3(0.06, 0.06, 0.85)],
+		[Vector3(0.60, 0.65, 0), Vector3(0.06, 0.06, 0.85)],
+	]:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = spec[1]
+		seg.mesh = sm
+		seg.position = spec[0]
+		seg.material_override = rim_mat
+		chest.add_child(seg)
+	# Combination dial on the front face
+	var dial: MeshInstance3D = MeshInstance3D.new()
+	var dmesh: CylinderMesh = CylinderMesh.new()
+	dmesh.top_radius = 0.18
+	dmesh.bottom_radius = 0.18
+	dmesh.height = 0.06
+	dial.mesh = dmesh
+	dial.position = Vector3(0, 0.30, 0.45)
+	dial.rotation = Vector3(deg_to_rad(90), 0, 0)
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.85, 0.85, 0.95)
+	dmat.metallic = 0.85
+	dmat.roughness = 0.20
+	dmat.emission_enabled = true
+	dmat.emission = Color(1.0, 0.85, 0.30)
+	dmat.emission_energy_multiplier = 0.85
+	dial.material_override = dmat
+	chest.add_child(dial)
+	# Dial pointer needle
+	var needle: MeshInstance3D = MeshInstance3D.new()
+	var nm: BoxMesh = BoxMesh.new()
+	nm.size = Vector3(0.04, 0.04, 0.16)
+	needle.mesh = nm
+	needle.position = Vector3(0, 0.30, 0.50)
+	var nmat: StandardMaterial3D = StandardMaterial3D.new()
+	nmat.albedo_color = Color(1.0, 0.30, 0.30)
+	nmat.emission_enabled = true
+	nmat.emission = Color(1.0, 0.40, 0.40)
+	nmat.emission_energy_multiplier = 2.6
+	nmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	needle.material_override = nmat
+	chest.add_child(needle)
+	# Slow needle rotation simulating "trying combinations"
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(needle, "rotation:z", deg_to_rad(45), 1.4).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_interval(0.5)
+	spin.tween_property(needle, "rotation:z", deg_to_rad(-90), 2.0).set_ease(Tween.EASE_IN_OUT)
+	spin.tween_interval(0.5)
+	spin.tween_property(needle, "rotation:z", 0.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Label
+	var label: Label3D = Label3D.new()
+	label.text = "LOCKED"
+	label.position = Vector3(0, 1.20, 0)
+	label.modulate = Color(1.0, 0.65, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	chest.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.30, 0.95, 0.95)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.45, 0)
+	sb.add_child(cs)
+	chest.add_child(sb)
+
+
+func _build_d2_graveyard(geom: Node) -> void:
+	## Epic-2 T58: a small graveyard plot with 5 simple stone markers
+	## arranged in a row. Each marker has a different name on it.
+	var grave: Node3D = Node3D.new()
+	grave.name = "D2Graveyard"
+	grave.position = D2_CENTER + Vector3(-10, 0, 18)
+	geom.add_child(grave)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.32, 0.38)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.55
+	var names: Array[String] = ["BIT", "ECHO", "NULL", "FORGE", "PIXEL"]
+	for i in names.size():
+		var marker: Node3D = Node3D.new()
+		marker.name = "Marker_%s" % names[i]
+		marker.position = Vector3(-2.0 + i * 1.0, 0, 0)
+		marker.rotation = Vector3(0, 0, deg_to_rad(randf_range(-8, 8)))
+		grave.add_child(marker)
+		# Tablet — flat box with rounded top (we use a box + sphere on top)
+		var tablet: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(0.55, 0.85, 0.18)
+		tablet.mesh = tmesh
+		tablet.position = Vector3(0, 0.42, 0)
+		tablet.material_override = stone_mat
+		marker.add_child(tablet)
+		# Top arch
+		var arch: MeshInstance3D = MeshInstance3D.new()
+		var amesh: SphereMesh = SphereMesh.new()
+		amesh.radius = 0.27
+		amesh.height = 0.30
+		arch.mesh = amesh
+		arch.position = Vector3(0, 0.85, 0)
+		arch.scale = Vector3(1.0, 0.6, 0.4)
+		arch.material_override = stone_mat
+		marker.add_child(arch)
+		# Name engraved
+		var label: Label3D = Label3D.new()
+		label.text = names[i]
+		label.position = Vector3(0, 0.55, 0.10)
+		label.modulate = Color(0.10, 0.10, 0.10)
+		label.outline_size = 0
+		label.font_size = 14
+		label.no_depth_test = true
+		marker.add_child(label)
+	# Memorial sign behind the row
+	var sign_label: Label3D = Label3D.new()
+	sign_label.text = "FALLEN AGENTS"
+	sign_label.position = Vector3(0, 1.85, -1.0)
+	sign_label.modulate = Color(0.65, 0.65, 0.75)
+	sign_label.outline_modulate = Color(0, 0, 0, 0.85)
+	sign_label.outline_size = 5
+	sign_label.font_size = 18
+	sign_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	grave.add_child(sign_label)
+
+
+func _build_d2_data_packets(geom: Node) -> void:
+	## Epic-2 T59: 8 floating data packet "envelopes" drifting through the
+	## district. Each is a small glowing cyan box with an emissive seal,
+	## bobbing on independent paths through the air.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-15, 4.0, -10),
+		D2_CENTER + Vector3(-5, 5.5, 0),
+		D2_CENTER + Vector3(8, 4.5, -8),
+		D2_CENTER + Vector3(18, 5.0, 4),
+		D2_CENTER + Vector3(22, 4.5, 16),
+		D2_CENTER + Vector3(0, 5.5, 12),
+		D2_CENTER + Vector3(-10, 4.0, 6),
+		D2_CENTER + Vector3(14, 5.0, -16),
+	]
+	for i in positions.size():
+		var packet: MeshInstance3D = MeshInstance3D.new()
+		packet.name = "D2DataPacket_%d" % i
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.30, 0.20, 0.04)
+		packet.mesh = pmesh
+		packet.position = positions[i]
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.85, 0.95, 1.0, 0.85)
+		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.55, 0.95, 1.0)
+		pmat.emission_energy_multiplier = 1.6
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		packet.material_override = pmat
+		geom.add_child(packet)
+		# Drift through random waypoints
+		var origin: Vector3 = positions[i]
+		var drift: Tween = create_tween().set_loops()
+		var wp1: Vector3 = origin + Vector3(randf_range(-3, 3), randf_range(-1, 1), randf_range(-3, 3))
+		var wp2: Vector3 = origin + Vector3(randf_range(-3, 3), randf_range(-1, 1), randf_range(-3, 3))
+		drift.tween_property(packet, "position", wp1, 4.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(packet, "position", wp2, 4.0).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(packet, "position", origin, 4.0).set_ease(Tween.EASE_IN_OUT)
+		# Tumble
+		var tumble: Tween = create_tween().set_loops()
+		tumble.tween_property(packet, "rotation", Vector3(TAU, TAU * 0.5, 0), 5.0)
+
+
+func _build_d2_turret(geom: Node) -> void:
+	## Epic-2 T60: a defensive automated turret on a base. Fixed to the
+	## ground, with a slowly tracking barrel that sweeps left/right looking
+	## for targets. Red blinking power indicator on the side.
+	var turret: Node3D = Node3D.new()
+	turret.name = "D2Turret"
+	turret.position = D2_CENTER + Vector3(0, 0, -16)
+	geom.add_child(turret)
+	# Base pedestal
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.16, 0.18, 0.22)
+	base_mat.metallic = 0.85
+	base_mat.roughness = 0.30
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CylinderMesh = CylinderMesh.new()
+	bmesh.top_radius = 0.55
+	bmesh.bottom_radius = 0.65
+	bmesh.height = 0.85
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.42, 0)
+	base.material_override = base_mat
+	turret.add_child(base)
+	# Pivot for rotating top
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 1.0, 0)
+	turret.add_child(pivot)
+	# Turret head — bigger box on the pivot
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(0.85, 0.55, 0.85)
+	head.mesh = hmesh
+	head.material_override = base_mat
+	pivot.add_child(head)
+	# 2 long barrels protruding from the front
+	var barrel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	barrel_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	barrel_mat.metallic = 0.85
+	barrel_mat.roughness = 0.30
+	for sx: float in [-0.20, 0.20]:
+		var barrel: MeshInstance3D = MeshInstance3D.new()
+		var brmesh: CylinderMesh = CylinderMesh.new()
+		brmesh.top_radius = 0.07
+		brmesh.bottom_radius = 0.07
+		brmesh.height = 1.20
+		barrel.mesh = brmesh
+		barrel.position = Vector3(sx, 0, 0.85)
+		barrel.rotation = Vector3(deg_to_rad(90), 0, 0)
+		barrel.material_override = barrel_mat
+		pivot.add_child(barrel)
+		# Glowing tip
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tip_mesh: SphereMesh = SphereMesh.new()
+		tip_mesh.radius = 0.08
+		tip_mesh.height = 0.16
+		tip.mesh = tip_mesh
+		tip.position = Vector3(sx, 0, 1.45)
+		var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+		tip_mat.albedo_color = Color(1.0, 0.40, 0.20)
+		tip_mat.emission_enabled = true
+		tip_mat.emission = Color(1.0, 0.55, 0.20)
+		tip_mat.emission_energy_multiplier = 2.4
+		tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		tip.material_override = tip_mat
+		pivot.add_child(tip)
+	# Sweeping rotation
+	var sweep: Tween = create_tween().set_loops()
+	sweep.tween_property(pivot, "rotation:y", deg_to_rad(80), 4.0).set_ease(Tween.EASE_IN_OUT)
+	sweep.tween_property(pivot, "rotation:y", deg_to_rad(-80), 4.0).set_ease(Tween.EASE_IN_OUT)
+	# Red blinking power indicator on the base side
+	var indicator: MeshInstance3D = MeshInstance3D.new()
+	var im: SphereMesh = SphereMesh.new()
+	im.radius = 0.08
+	im.height = 0.16
+	indicator.mesh = im
+	indicator.position = Vector3(0.55, 0.55, 0)
+	var imat: StandardMaterial3D = StandardMaterial3D.new()
+	imat.albedo_color = Color(1.0, 0.20, 0.20)
+	imat.emission_enabled = true
+	imat.emission = Color(1.0, 0.30, 0.30)
+	imat.emission_energy_multiplier = 2.6
+	imat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	indicator.material_override = imat
+	turret.add_child(indicator)
+	var blink: Tween = create_tween().set_loops()
+	blink.tween_property(indicator, "scale", Vector3(0.4, 0.4, 0.4), 0.4).set_ease(Tween.EASE_IN_OUT)
+	blink.tween_property(indicator, "scale", Vector3(1.2, 1.2, 1.2), 0.4).set_ease(Tween.EASE_IN_OUT)
+	# Collision around base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.0, 1.85, 1.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	turret.add_child(sb)
+
 
 
