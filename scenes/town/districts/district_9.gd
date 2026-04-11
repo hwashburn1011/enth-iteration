@@ -119,6 +119,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_lord(geom)
 	_build_d9_welcome_banner(geom)
 	_build_d9_ambient_atmosphere(geom)
+	_build_d9_district_plaque(geom)
 	print("[D9Builder] done")
 
 
@@ -12062,4 +12063,173 @@ func _build_d9_ambient_atmosphere(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(fog_mat, "emission_energy_multiplier", 1.65, 2.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(fog_mat, "emission_energy_multiplier", 0.95, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_district_plaque(geom: Node) -> void:
+	## Epic-9 T99: D9 commemorative ground plaque near the welcome banner.
+	## Stepped basalt base, angled brass plaque face with 3 rows of glowing
+	## amber inscription stripes, brass guild crest at the top, 2 small
+	## reading lanterns on either side, and a glowing rune ring on the
+	## ground at the base.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_DistrictPlaque"
+	# Just inside the welcome banner (banner at +0,+28; plaque at +0,+24)
+	pivot.position = D9_CENTER + Vector3(0, 0, 24)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.65
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt base (2 levels) ----
+	var base1: MeshInstance3D = MeshInstance3D.new()
+	var b1m: BoxMesh = BoxMesh.new()
+	b1m.size = Vector3(3.20, 0.40, 1.80)
+	base1.mesh = b1m
+	base1.material_override = basalt_mat
+	base1.position = Vector3(0, 0.20, 0)
+	pivot.add_child(base1)
+	var base2: MeshInstance3D = MeshInstance3D.new()
+	var b2m: BoxMesh = BoxMesh.new()
+	b2m.size = Vector3(2.70, 0.50, 1.40)
+	base2.mesh = b2m
+	base2.material_override = basalt_mat
+	base2.position = Vector3(0, 0.65, 0)
+	pivot.add_child(base2)
+	# Combined collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.50, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bsh: BoxShape3D = BoxShape3D.new()
+	bsh.size = Vector3(3.20, 1.00, 1.80)
+	cs.shape = bsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# ---- Angled brass plaque face (tilted slightly back so it reads from above) ----
+	var plaque: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(2.40, 1.30, 0.10)
+	plaque.mesh = plm
+	plaque.material_override = brass_mat
+	plaque.position = Vector3(0, 1.40, -0.20)
+	plaque.rotation.x = -PI / 5.0
+	pivot.add_child(plaque)
+	# ---- 3 rows of glowing amber inscription stripes (3 columns each) ----
+	for row in 3:
+		var ry: float = 1.65 - float(row) * 0.30
+		var rz: float = -0.10 - float(row) * 0.18
+		for col in 3:
+			var rx: float = -0.65 + float(col) * 0.65
+			var stripe: MeshInstance3D = MeshInstance3D.new()
+			var sm: BoxMesh = BoxMesh.new()
+			sm.size = Vector3(0.55, 0.10, 0.05)
+			stripe.mesh = sm
+			stripe.material_override = amber_mat
+			stripe.position = Vector3(rx, ry, rz)
+			stripe.rotation.x = -PI / 5.0
+			pivot.add_child(stripe)
+	# ---- Brass guild crest at the top of the plaque (torus + hammer crossbar) ----
+	var crest: MeshInstance3D = MeshInstance3D.new()
+	var ctm: TorusMesh = TorusMesh.new()
+	ctm.inner_radius = 0.20
+	ctm.outer_radius = 0.30
+	crest.mesh = ctm
+	crest.material_override = amber_mat
+	crest.position = Vector3(0, 2.05, 0.05)
+	crest.rotation.x = PI / 2.0 - PI / 5.0
+	pivot.add_child(crest)
+	var crest_bar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(0.10, 0.55, 0.06)
+	crest_bar.mesh = cbm
+	crest_bar.material_override = amber_mat
+	crest_bar.position = Vector3(0, 2.05, 0.04)
+	crest_bar.rotation.x = -PI / 5.0
+	pivot.add_child(crest_bar)
+	# ---- 2 small reading lanterns on either side of the plaque ----
+	for lx in [-1.55, 1.55]:
+		# Lantern post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.10
+		pm.height = 1.85
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = Vector3(lx, 1.85, 0)
+		pivot.add_child(post)
+		# Lantern cage box at the top
+		var cage: MeshInstance3D = MeshInstance3D.new()
+		var cgm: BoxMesh = BoxMesh.new()
+		cgm.size = Vector3(0.30, 0.40, 0.30)
+		cage.mesh = cgm
+		cage.material_override = brass_mat
+		cage.position = Vector3(lx, 2.95, 0)
+		pivot.add_child(cage)
+		# Lantern flame inside
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.16
+		flm.height = 0.32
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(lx, 2.95, 0)
+		pivot.add_child(flame)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(lx, 2.95, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 2.6
+		lt.omni_range = 6.5
+		pivot.add_child(lt)
+	# ---- Glowing rune ring on the ground at the base ----
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rngm: TorusMesh = TorusMesh.new()
+	rngm.inner_radius = 1.95
+	rngm.outer_radius = 2.20
+	ring.mesh = rngm
+	ring.material_override = amber_mat
+	ring.position = Vector3(0, 0.05, 0)
+	pivot.add_child(ring)
+	# 4 cardinal rune dots on the ring
+	for i in 4:
+		var ang: float = float(i) / 4.0 * TAU
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.14
+		dm.height = 0.06
+		dot.mesh = dm
+		dot.material_override = amber_mat
+		dot.position = Vector3(cos(ang) * 2.10, 0.06, sin(ang) * 2.10)
+		dot.scale = Vector3(1.0, 0.30, 1.0)
+		pivot.add_child(dot)
+	# Pulses — amber breathe + flame flicker
+	var apulse: Tween = pivot.create_tween().set_loops()
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 4.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.45).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.45).set_ease(Tween.EASE_IN_OUT)
 
