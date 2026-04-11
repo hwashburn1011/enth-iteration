@@ -32911,6 +32911,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_iron_rod_rack(geom)
 	# Epic-9 T35: slag heap
 	_build_d9_slag_heap(geom)
+	# Epic-9 T36: obsidian shard formations
+	_build_d9_obsidian_shards(geom)
+	# Epic-9 T37: lava lake with stepping stones
+	_build_d9_lava_lake(geom)
+	# Epic-9 T38: geode display
+	_build_d9_geode_display(geom)
+	# Epic-9 T39: forge sage NPC
+	_build_d9_forge_sage_npc()
+	# Epic-9 T40: brimstone fumaroles
+	_build_d9_brimstone_fumaroles(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -43517,6 +43527,368 @@ func _build_d9_slag_heap(geom: Node) -> void:
 	cs.shape = cyl
 	stb.add_child(cs)
 	heap.add_child(stb)
+
+
+func _build_d9_obsidian_shards(geom: Node) -> void:
+	## Epic-9 T36: 6 angular obsidian shard formations rising from the ground
+	## like dark crystal blades, with subtle red inner emission.
+	var shards: Node3D = Node3D.new()
+	shards.name = "D9ObsidianShards"
+	shards.position = Vector3(D9_CENTER.x, 0, 0)
+	geom.add_child(shards)
+	var obs_mat: StandardMaterial3D = StandardMaterial3D.new()
+	obs_mat.albedo_color = Color(0.06, 0.05, 0.08)
+	obs_mat.metallic = 0.7
+	obs_mat.roughness = 0.20
+	obs_mat.emission_enabled = true
+	obs_mat.emission = Color(0.85, 0.18, 0.10)
+	obs_mat.emission_energy_multiplier = 0.40
+	var spots: Array[Vector3] = [
+		Vector3(-26, 0, -16),
+		Vector3(28, 0, -14),
+		Vector3(-24, 0, 14),
+		Vector3(26, 0, 16),
+		Vector3(-30, 0, 0),
+		Vector3(30, 0, 4),
+	]
+	for i in range(spots.size()):
+		var pos: Vector3 = spots[i]
+		var formation: Node3D = Node3D.new()
+		formation.position = pos
+		formation.rotation_degrees = Vector3(0, float(i) * 32.0, 0)
+		shards.add_child(formation)
+		# 3 shards per formation (different sizes)
+		var heights: Array[float] = [3.5, 2.6, 2.2]
+		var offsets: Array[Vector3] = [
+			Vector3(0, 0, 0),
+			Vector3(0.85, 0, 0.45),
+			Vector3(-0.65, 0, 0.55),
+		]
+		for j in range(3):
+			var shard: MeshInstance3D = MeshInstance3D.new()
+			var pm: PrismMesh = PrismMesh.new()
+			pm.size = Vector3(0.85, heights[j], 0.55)
+			shard.mesh = pm
+			shard.material_override = obs_mat
+			shard.position = offsets[j] + Vector3(0, heights[j] * 0.5, 0)
+			shard.rotation_degrees = Vector3(randf_range(-12, 12), randf_range(-30, 30), randf_range(-12, 12))
+			formation.add_child(shard)
+		# Single capsule collision per formation
+		var stb: StaticBody3D = StaticBody3D.new()
+		stb.position = Vector3(0, 1.75, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.85
+		cap.height = 3.50
+		cs.shape = cap
+		stb.add_child(cs)
+		formation.add_child(stb)
+
+
+func _build_d9_lava_lake(geom: Node) -> void:
+	## Epic-9 T37: large lava lake with 5 stone stepping stones across it.
+	var lake: Node3D = Node3D.new()
+	lake.name = "D9LavaLake"
+	lake.position = Vector3(D9_CENTER.x + 32, 0.05, 0)
+	geom.add_child(lake)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.16)
+	stone_mat.roughness = 0.85
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.42, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.55, 0.18)
+	lava_mat.emission_energy_multiplier = 4.0
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone curb (low ring around the lake)
+	var curb: MeshInstance3D = MeshInstance3D.new()
+	var ccm: TorusMesh = TorusMesh.new()
+	ccm.inner_radius = 5.5
+	ccm.outer_radius = 6.5
+	curb.mesh = ccm
+	curb.material_override = stone_mat
+	curb.position = Vector3(0, 0.10, 0)
+	curb.rotation_degrees = Vector3(90, 0, 0)
+	lake.add_child(curb)
+	# Lava surface (wide flat cylinder)
+	var surface: MeshInstance3D = MeshInstance3D.new()
+	var lcm: CylinderMesh = CylinderMesh.new()
+	lcm.top_radius = 5.50
+	lcm.bottom_radius = 5.50
+	lcm.height = 0.10
+	surface.mesh = lcm
+	surface.material_override = lava_mat
+	surface.position = Vector3(0, 0.18, 0)
+	lake.add_child(surface)
+	var pulse: Tween = surface.create_tween().set_loops()
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 5.5, 1.6)
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 2.5, 1.6)
+	# 5 stone stepping stones across the middle (a curving path)
+	var step_pos: Array[Vector3] = [
+		Vector3(-3.5, 0.45, -1.5),
+		Vector3(-1.8, 0.45, 0.5),
+		Vector3(0.0, 0.45, -0.8),
+		Vector3(1.8, 0.45, 0.5),
+		Vector3(3.5, 0.45, -1.5),
+	]
+	for p in step_pos:
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.55
+		sm.height = 0.65
+		stone.mesh = sm
+		stone.material_override = stone_mat
+		stone.position = p
+		stone.scale = Vector3(1.0, 0.45, 1.0)
+		lake.add_child(stone)
+		# Per-stone collision (small)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = p
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.55
+		cyl.height = 0.40
+		cs.shape = cyl
+		sb.add_child(cs)
+		lake.add_child(sb)
+	# Strong omni light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 6.0
+	lt.omni_range = 18.0
+	lt.position = Vector3(0, 1.5, 0)
+	lake.add_child(lt)
+
+
+func _build_d9_geode_display(geom: Node) -> void:
+	## Epic-9 T38: cracked open geode on a stone pedestal — outer dark shell
+	## hides a cluster of glowing cyan crystals inside.
+	var geode: Node3D = Node3D.new()
+	geode.name = "D9GeodeDisplay"
+	geode.position = Vector3(D9_CENTER.x - 8, 0, 14)
+	geom.add_child(geode)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	var shell_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shell_mat.albedo_color = Color(0.30, 0.22, 0.18)
+	shell_mat.roughness = 0.75
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.40, 0.95, 1.0)
+	crystal_mat.emission_energy_multiplier = 2.5
+	crystal_mat.metallic = 0.55
+	crystal_mat.roughness = 0.20
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.85
+	pcm.bottom_radius = 1.00
+	pcm.height = 1.10
+	ped.mesh = pcm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.55, 0)
+	geode.add_child(ped)
+	# Geode bottom half (open cup)
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bsm: SphereMesh = SphereMesh.new()
+	bsm.radius = 0.85
+	bsm.height = 1.40
+	bowl.mesh = bsm
+	bowl.material_override = shell_mat
+	bowl.scale = Vector3(1.0, 0.55, 1.0)
+	bowl.position = Vector3(0, 1.30, 0)
+	geode.add_child(bowl)
+	# Inner crystals (5 cone spires of varying heights)
+	var heights: Array[float] = [0.65, 0.85, 0.55, 0.75, 0.45]
+	var positions: Array[Vector3] = [
+		Vector3(0, 0, 0),
+		Vector3(0.30, 0, 0.10),
+		Vector3(-0.30, 0, -0.05),
+		Vector3(0.10, 0, -0.30),
+		Vector3(-0.20, 0, 0.30),
+	]
+	for i in range(5):
+		var crystal: MeshInstance3D = MeshInstance3D.new()
+		var ccm: CylinderMesh = CylinderMesh.new()
+		ccm.top_radius = 0.0
+		ccm.bottom_radius = 0.14
+		ccm.height = heights[i]
+		crystal.mesh = ccm
+		crystal.material_override = crystal_mat
+		crystal.position = positions[i] + Vector3(0, 1.45 + heights[i] * 0.5, 0)
+		crystal.rotation_degrees = Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))
+		geode.add_child(crystal)
+	# Pulse the crystals together
+	var pulse: Tween = bowl.create_tween().set_loops()
+	pulse.tween_property(crystal_mat, "emission_energy_multiplier", 4.0, 1.4)
+	pulse.tween_property(crystal_mat, "emission_energy_multiplier", 1.8, 1.4)
+	# Cyan light from the geode
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(0.40, 0.85, 0.95)
+	lt.light_energy = 2.5
+	lt.omni_range = 5.5
+	lt.position = Vector3(0, 1.65, 0)
+	geode.add_child(lt)
+	# Pedestal collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 1.00
+	cyl.height = 1.10
+	cs.shape = cyl
+	stb.add_child(cs)
+	geode.add_child(stb)
+
+
+func _build_d9_forge_sage_npc() -> void:
+	## Epic-9 T39: mystic forge sage NPC — robed figure with a glowing
+	## staff topped by a forge ember orb.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9ForgeSageSlot"
+	slot.position = Vector3(D9_CENTER.x - 6, 0, 14)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9ForgeSage"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sage Ember")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_forge_sage")
+	slot.add_child(npc)
+	# Long dark red robe
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.40, 0.10, 0.05)
+	robe_mat.roughness = 0.85
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rb: BoxMesh = BoxMesh.new()
+	rb.size = Vector3(0.95, 1.75, 0.65)
+	robe.mesh = rb
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.95, 0)
+	npc.add_child(robe)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.40
+	hsm.height = 0.65
+	hood.mesh = hsm
+	hood.material_override = robe_mat
+	hood.position = Vector3(0, 1.95, -0.05)
+	npc.add_child(hood)
+	# Glowing forge mark on chest (orange disc)
+	var mark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mark_mat.albedo_color = Color(1.0, 0.55, 0.18)
+	mark_mat.emission_enabled = true
+	mark_mat.emission = Color(1.0, 0.55, 0.18)
+	mark_mat.emission_energy_multiplier = 2.2
+	mark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var mark: MeshInstance3D = MeshInstance3D.new()
+	var mscm: SphereMesh = SphereMesh.new()
+	mscm.radius = 0.18
+	mscm.height = 0.10
+	mark.mesh = mscm
+	mark.material_override = mark_mat
+	mark.position = Vector3(0, 1.20, 0.34)
+	npc.add_child(mark)
+	# Forge staff (wooden haft + ember orb on top)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	wood_mat.roughness = 0.85
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var scm: CylinderMesh = CylinderMesh.new()
+	scm.top_radius = 0.05
+	scm.bottom_radius = 0.06
+	scm.height = 2.20
+	staff.mesh = scm
+	staff.material_override = wood_mat
+	staff.position = Vector3(0.55, 1.10, 0)
+	npc.add_child(staff)
+	# Ember orb
+	var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	orb_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	orb_mat.emission_enabled = true
+	orb_mat.emission = Color(1.0, 0.55, 0.18)
+	orb_mat.emission_energy_multiplier = 4.5
+	orb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var orb: MeshInstance3D = MeshInstance3D.new()
+	var osm: SphereMesh = SphereMesh.new()
+	osm.radius = 0.20
+	osm.height = 0.40
+	orb.mesh = osm
+	orb.material_override = orb_mat
+	orb.position = Vector3(0.55, 2.30, 0)
+	npc.add_child(orb)
+	var pulse: Tween = orb.create_tween().set_loops()
+	pulse.tween_property(orb_mat, "emission_energy_multiplier", 6.5, 1.0)
+	pulse.tween_property(orb_mat, "emission_energy_multiplier", 2.5, 1.0)
+	# Orange light from the staff orb
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 2.5
+	lt.omni_range = 5.5
+	lt.position = Vector3(0.55, 2.30, 0)
+	npc.add_child(lt)
+
+
+func _build_d9_brimstone_fumaroles(geom: Node) -> void:
+	## Epic-9 T40: 5 small brimstone fumaroles puffing yellow sulphur gas.
+	var fums: Node3D = Node3D.new()
+	fums.name = "D9BrimstoneFumaroles"
+	fums.position = Vector3(D9_CENTER.x, 0.05, 0)
+	geom.add_child(fums)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.18)
+	stone_mat.roughness = 0.85
+	var spots: Array[Vector3] = [
+		Vector3(-20, 0, -4),
+		Vector3(18, 0, 14),
+		Vector3(-6, 0, -16),
+		Vector3(20, 0, 4),
+		Vector3(-22, 0, 18),
+	]
+	for i in range(spots.size()):
+		var pos: Vector3 = spots[i]
+		var fum: Node3D = Node3D.new()
+		fum.position = pos
+		fums.add_child(fum)
+		# Sulphur-stained stone mound (small flat cone)
+		var mound: MeshInstance3D = MeshInstance3D.new()
+		var mcm: CylinderMesh = CylinderMesh.new()
+		mcm.top_radius = 0.20
+		mcm.bottom_radius = 0.55
+		mcm.height = 0.40
+		mound.mesh = mcm
+		mound.material_override = stone_mat
+		mound.position = Vector3(0, 0.20, 0)
+		fum.add_child(mound)
+		# Yellow gas GPU particles
+		var gas: GPUParticles3D = GPUParticles3D.new()
+		gas.position = Vector3(0, 0.45, 0)
+		gas.amount = 30
+		gas.lifetime = 3.5
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 22.0
+		pm.initial_velocity_min = 0.45
+		pm.initial_velocity_max = 0.95
+		pm.gravity = Vector3(0, 0.30, 0)
+		pm.scale_min = 0.22
+		pm.scale_max = 0.55
+		pm.color = Color(0.92, 0.92, 0.30, 0.55)
+		gas.process_material = pm
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.20
+		sm.height = 0.40
+		gas.draw_pass_1 = sm
+		fum.add_child(gas)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
