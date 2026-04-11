@@ -49,6 +49,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_sky_lanterns(geom)
 	_build_th_west_entry_arch(geom)
 	_build_th_food_cart(geom)
+	_build_th_food_cart_chef_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -5904,3 +5905,194 @@ func _build_th_food_cart(geom: Node) -> void:
 	var hpulse: Tween = pivot.create_tween().set_loops()
 	hpulse.tween_property(holo_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	hpulse.tween_property(holo_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_food_cart_chef_npc(town: Node) -> void:
+	## Epic-10 T33: Food Cart Chef Mira — chef NPC standing behind the
+	## food cart, stirring a pot. White chef coat with brass collar trim,
+	## red apron over the front, tall white chef's hat, brass ladle held
+	## in right hand on a stir pivot.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THFoodCartChefMiraSlot"
+	# Stand just behind the food cart (cart at +2.5, +11.5; chef at +2.5, +12.4)
+	slot.position = TOWN_CENTER + Vector3(2.50, 0, 12.40)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THFoodCartChefMira"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Chef Mira")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_food_cart_chef_mira")
+	# Face the cart (-Z direction toward the beacon side)
+	npc.rotation.y = PI
+	slot.add_child(npc)
+	# Materials
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.92, 0.92, 0.95)
+	coat_mat.roughness = 0.85
+	coat_mat.metallic = 0.10
+	coat_mat.emission_enabled = true
+	coat_mat.emission = Color(0.65, 0.85, 1.0)
+	coat_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.55, 0.18, 0.10)
+	apron_mat.roughness = 0.85
+	apron_mat.metallic = 0.10
+	apron_mat.emission_enabled = true
+	apron_mat.emission = Color(0.85, 0.20, 0.05)
+	apron_mat.emission_energy_multiplier = 0.30
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- White chef coat ----
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(1.00, 1.40, 0.55)
+	coat.mesh = cmesh
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.10, 0)
+	npc.add_child(coat)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(1.00, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.80, 0)
+	npc.add_child(collar)
+	# 4 brass front buttons
+	for by in [1.55, 1.30, 1.05, 0.80]:
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.05
+		bm.height = 0.10
+		btn.mesh = bm
+		btn.material_override = brass_mat
+		btn.position = Vector3(0, by, -0.30)
+		npc.add_child(btn)
+	# ---- Red apron over the front ----
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var apm: BoxMesh = BoxMesh.new()
+	apm.size = Vector3(0.90, 1.05, 0.06)
+	apron.mesh = apm
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.85, -0.30)
+	npc.add_child(apron)
+	# Apron strap (top)
+	var strap: MeshInstance3D = MeshInstance3D.new()
+	var stm: BoxMesh = BoxMesh.new()
+	stm.size = Vector3(0.90, 0.08, 0.04)
+	strap.mesh = stm
+	strap.material_override = apron_mat
+	strap.position = Vector3(0, 1.40, -0.32)
+	npc.add_child(strap)
+	# ---- Tall white chef's hat (cylinder + dome top) ----
+	var hat_band: MeshInstance3D = MeshInstance3D.new()
+	var hbm: CylinderMesh = CylinderMesh.new()
+	hbm.top_radius = 0.32
+	hbm.bottom_radius = 0.32
+	hbm.height = 0.30
+	hat_band.mesh = hbm
+	hat_band.material_override = coat_mat
+	hat_band.position = Vector3(0, 2.05, 0)
+	npc.add_child(hat_band)
+	var hat_top: MeshInstance3D = MeshInstance3D.new()
+	var htm: SphereMesh = SphereMesh.new()
+	htm.radius = 0.42
+	htm.height = 0.85
+	hat_top.mesh = htm
+	hat_top.material_override = coat_mat
+	hat_top.position = Vector3(0, 2.55, 0)
+	hat_top.scale = Vector3(1.0, 1.10, 1.0)
+	npc.add_child(hat_top)
+	# Brass hat band trim
+	var hat_trim: MeshInstance3D = MeshInstance3D.new()
+	var ht_m: TorusMesh = TorusMesh.new()
+	ht_m.inner_radius = 0.30
+	ht_m.outer_radius = 0.36
+	hat_trim.mesh = ht_m
+	hat_trim.material_override = brass_mat
+	hat_trim.position = Vector3(0, 1.92, 0)
+	hat_trim.rotation.x = PI / 2.0
+	npc.add_child(hat_trim)
+	# ---- Left arm at his side ----
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.18, 0.85, 0.18)
+	left_arm.mesh = lam
+	left_arm.material_override = coat_mat
+	left_arm.position = Vector3(-0.55, 1.10, 0)
+	npc.add_child(left_arm)
+	# ---- Right arm + ladle on a stir pivot at the shoulder ----
+	var stir_pivot: Node3D = Node3D.new()
+	stir_pivot.position = Vector3(0.55, 1.55, 0)
+	npc.add_child(stir_pivot)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = coat_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	stir_pivot.add_child(right_arm)
+	# Ladle handle (long brass cylinder)
+	var ladle_handle: MeshInstance3D = MeshInstance3D.new()
+	var lhm: CylinderMesh = CylinderMesh.new()
+	lhm.top_radius = 0.04
+	lhm.bottom_radius = 0.04
+	lhm.height = 0.85
+	ladle_handle.mesh = lhm
+	ladle_handle.material_override = brass_mat
+	ladle_handle.position = Vector3(0, -1.30, 0)
+	stir_pivot.add_child(ladle_handle)
+	# Ladle bowl (small brass half-sphere at the end)
+	var ladle_bowl: MeshInstance3D = MeshInstance3D.new()
+	var lbm: SphereMesh = SphereMesh.new()
+	lbm.radius = 0.13
+	lbm.height = 0.20
+	ladle_bowl.mesh = lbm
+	ladle_bowl.material_override = brass_mat
+	ladle_bowl.position = Vector3(0, -1.75, 0)
+	ladle_bowl.scale = Vector3(1.0, 0.55, 1.0)
+	stir_pivot.add_child(ladle_bowl)
+	# Glowing sauce drip dot below the ladle bowl
+	var drip: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.05
+	dm.height = 0.10
+	drip.mesh = dm
+	drip.material_override = amber_mat
+	drip.position = Vector3(0, -1.85, 0)
+	stir_pivot.add_child(drip)
+	# Initial pose — arm raised forward holding ladle over the pot
+	stir_pivot.rotation.x = -1.40
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.30)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Stirring tween — ladle rotates around Y over the pot in a circular stir motion ----
+	var stir: Tween = npc.create_tween().set_loops()
+	stir.tween_property(stir_pivot, "rotation:y", 0.70, 1.2).set_ease(Tween.EASE_IN_OUT)
+	stir.tween_property(stir_pivot, "rotation:y", -0.70, 1.2).set_ease(Tween.EASE_IN_OUT)
+	# Drip pulse
+	var dpulse: Tween = npc.create_tween().set_loops()
+	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(amber_mat, "emission_energy_multiplier", 4.5, 1.4).set_ease(Tween.EASE_IN_OUT)
