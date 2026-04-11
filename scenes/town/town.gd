@@ -1748,6 +1748,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_apprentice_npc()
 	# Epic-3 T55: ambient page rain particles
 	_build_d3_page_rain(geom)
+	# Epic-3 T56: alchemy table with bottles
+	_build_d3_alchemy_table(geom)
+	# Epic-3 T57: ancient sundial
+	_build_d3_sundial(geom)
+	# Epic-3 T58: grand library facade landmark
+	_build_d3_library_facade(geom)
+	# Epic-3 T59: starlight projector with ground stars
+	_build_d3_starlight_projector(geom)
+	# Epic-3 T60: floating data dragon enemy
+	_build_d3_data_dragon(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -5587,6 +5597,371 @@ func _build_d3_page_rain(geom: Node) -> void:
 	page.material = page_mat
 	rain.draw_pass_1 = page
 	geom.add_child(rain)
+
+
+func _build_d3_alchemy_table(geom: Node) -> void:
+	## Epic-3 T56: alchemy table with 5 colored potion bottles + glowing
+	## crucible. Crowded with arcane experimentation gear.
+	var alch: Node3D = Node3D.new()
+	alch.name = "D3AlchemyTable"
+	alch.position = D3_CENTER + Vector3(-12, 0, -3)
+	geom.add_child(alch)
+	# Wooden table
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	table_mat.metallic = 0.10
+	table_mat.roughness = 0.65
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(2.40, 0.95, 0.85)
+	table.mesh = tm
+	table.position = Vector3(0, 0.47, 0)
+	table.material_override = table_mat
+	alch.add_child(table)
+	# 5 potion bottles in a row
+	var potion_colors: Array[Color] = [
+		Color(0.55, 0.95, 1.0),
+		Color(1.0, 0.55, 0.20),
+		Color(0.45, 1.0, 0.55),
+		Color(1.0, 0.95, 0.30),
+		Color(0.85, 0.40, 1.0),
+	]
+	for i in 5:
+		var bottle: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.10
+		bm.bottom_radius = 0.14
+		bm.height = 0.40
+		bottle.mesh = bm
+		bottle.position = Vector3(-0.85 + i * 0.40, 1.15, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = potion_colors[i]
+		bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		bmat.albedo_color.a = 0.85
+		bmat.emission_enabled = true
+		bmat.emission = potion_colors[i]
+		bmat.emission_energy_multiplier = 1.8
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bottle.material_override = bmat
+		alch.add_child(bottle)
+	# Glowing crucible at the side — small bowl
+	var crucible: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.30
+	cm.bottom_radius = 0.18
+	cm.height = 0.30
+	crucible.mesh = cm
+	crucible.position = Vector3(1.0, 1.10, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.10, 0.10, 0.13)
+	cmat.metallic = 0.85
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.55, 1.0)
+	cmat.emission_energy_multiplier = 1.4
+	crucible.material_override = cmat
+	alch.add_child(crucible)
+	# Pulsing flame inside the crucible
+	var flame: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: SphereMesh = SphereMesh.new()
+	fmesh.radius = 0.15
+	fmesh.height = 0.30
+	flame.mesh = fmesh
+	flame.position = Vector3(1.0, 1.30, 0)
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(1.0, 0.55, 1.0)
+	fmat.emission_enabled = true
+	fmat.emission = Color(1.0, 0.55, 1.0)
+	fmat.emission_energy_multiplier = 3.0
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flame.material_override = fmat
+	alch.add_child(flame)
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(flame, "scale", Vector3(1.30, 1.30, 1.30), 0.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.6).set_ease(Tween.EASE_IN_OUT)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "ALCHEMY"
+	label.position = Vector3(0, 2.0, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	alch.add_child(label)
+	# Collision around table
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.40, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	alch.add_child(sb)
+
+
+func _build_d3_sundial(geom: Node) -> void:
+	## Epic-3 T57: ancient sundial — flat circular stone disc with a tall
+	## angled gnomon casting a virtual shadow across 12 hour markers.
+	var dial: Node3D = Node3D.new()
+	dial.name = "D3Sundial"
+	dial.position = D3_CENTER + Vector3(-15, 0, 4)
+	geom.add_child(dial)
+	# Flat disc base
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.20, 0.40)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.30
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 1.85
+	dm.bottom_radius = 1.85
+	dm.height = 0.20
+	disc.mesh = dm
+	disc.position = Vector3(0, 0.10, 0)
+	disc.material_override = stone_mat
+	dial.add_child(disc)
+	# Angled gnomon — tall thin prism
+	var gnomon: MeshInstance3D = MeshInstance3D.new()
+	var gm: PrismMesh = PrismMesh.new()
+	gm.size = Vector3(0.20, 1.85, 1.40)
+	gnomon.mesh = gm
+	gnomon.position = Vector3(0, 1.10, 0)
+	gnomon.material_override = stone_mat
+	dial.add_child(gnomon)
+	# 12 hour markers around the rim — small emissive dots
+	var marker_mat: StandardMaterial3D = StandardMaterial3D.new()
+	marker_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	marker_mat.emission_enabled = true
+	marker_mat.emission = Color(1.0, 0.55, 1.0)
+	marker_mat.emission_energy_multiplier = 2.4
+	marker_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 12:
+		var angle: float = (float(i) / 12.0) * TAU
+		var marker: MeshInstance3D = MeshInstance3D.new()
+		var mm: SphereMesh = SphereMesh.new()
+		mm.radius = 0.10
+		mm.height = 0.20
+		marker.mesh = mm
+		marker.position = Vector3(cos(angle) * 1.55, 0.25, sin(angle) * 1.55)
+		marker.material_override = marker_mat
+		dial.add_child(marker)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "SUNDIAL"
+	label.position = Vector3(0, 2.55, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dial.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.85, 0.40, 3.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.20, 0)
+	sb.add_child(cs)
+	dial.add_child(sb)
+
+
+func _build_d3_library_facade(geom: Node) -> void:
+	## Epic-3 T58: a grand library facade — wide tall building front with
+	## 4 columns + lintel + tall pointed pediment + glowing entryway.
+	var lib: Node3D = Node3D.new()
+	lib.name = "D3LibraryFacade"
+	lib.position = D3_CENTER + Vector3(0, 0, 18)
+	geom.add_child(lib)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.16, 0.26)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.85, 0.40, 1.0)
+	stone_mat.emission_energy_multiplier = 0.30
+	# 4 wide column pillars
+	for ox: float in [-3.0, -1.0, 1.0, 3.0]:
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.30
+		cm.bottom_radius = 0.40
+		cm.height = 4.85
+		col.mesh = cm
+		col.position = Vector3(ox, 2.42, 0)
+		col.material_override = stone_mat
+		lib.add_child(col)
+		# Per-column collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.40
+		cap.height = 4.85
+		cs.shape = cap
+		cs.position = Vector3(ox, 2.42, 0)
+		sb.add_child(cs)
+		lib.add_child(sb)
+	# Wide flat lintel on top of columns
+	var lintel: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(7.5, 0.85, 1.40)
+	lintel.mesh = lm
+	lintel.position = Vector3(0, 5.30, 0)
+	lintel.material_override = stone_mat
+	lib.add_child(lintel)
+	# Tall pointed pediment (prism)
+	var pediment: MeshInstance3D = MeshInstance3D.new()
+	var pm: PrismMesh = PrismMesh.new()
+	pm.size = Vector3(7.5, 1.85, 1.40)
+	pediment.mesh = pm
+	pediment.position = Vector3(0, 6.65, 0)
+	pediment.material_override = stone_mat
+	lib.add_child(pediment)
+	# Glowing entryway between the middle columns
+	var entry: MeshInstance3D = MeshInstance3D.new()
+	var em: BoxMesh = BoxMesh.new()
+	em.size = Vector3(1.85, 3.40, 0.20)
+	entry.mesh = em
+	entry.position = Vector3(0, 1.70, 0.55)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(0.06, 0.04, 0.10)
+	emat.emission_enabled = true
+	emat.emission = Color(1.0, 0.55, 1.0)
+	emat.emission_energy_multiplier = 1.4
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	entry.material_override = emat
+	lib.add_child(entry)
+	# Glowing rune on pediment
+	var rune: Label3D = Label3D.new()
+	rune.text = "Φ"
+	rune.position = Vector3(0, 6.85, 0.71)
+	rune.modulate = Color(1.0, 0.55, 1.0)
+	rune.outline_modulate = Color(0, 0, 0, 0.85)
+	rune.outline_size = 5
+	rune.font_size = 36
+	rune.no_depth_test = true
+	lib.add_child(rune)
+	# Sign above
+	var label: Label3D = Label3D.new()
+	label.text = "GRAND LIBRARY"
+	label.position = Vector3(0, 8.30, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lib.add_child(label)
+
+
+func _build_d3_starlight_projector(geom: Node) -> void:
+	## Epic-3 T59: a starlight projector — small floor-mounted gem that
+	## projects a circle of 24 small stars on the floor around it.
+	var proj: Node3D = Node3D.new()
+	proj.name = "D3StarlightProjector"
+	proj.position = D3_CENTER + Vector3(12, 0.06, 18)
+	geom.add_child(proj)
+	# Center gem
+	var gem: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 0.30
+	gm.height = 0.60
+	gem.mesh = gm
+	gem.position = Vector3(0, 0.30, 0)
+	var gmat: StandardMaterial3D = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.85, 0.40, 1.0)
+	gmat.emission_enabled = true
+	gmat.emission = Color(1.0, 0.55, 1.0)
+	gmat.emission_energy_multiplier = 3.0
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	gem.material_override = gmat
+	proj.add_child(gem)
+	# 24 floor stars in a ring
+	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	rng.seed = 200
+	var star_mat: StandardMaterial3D = StandardMaterial3D.new()
+	star_mat.albedo_color = Color(1, 1, 1)
+	star_mat.emission_enabled = true
+	star_mat.emission = Color(1, 1, 1)
+	star_mat.emission_energy_multiplier = 2.6
+	star_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 24:
+		var angle: float = rng.randf() * TAU
+		var dist: float = rng.randf_range(1.20, 4.0)
+		var star: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.06
+		sm.height = 0.12
+		star.mesh = sm
+		star.position = Vector3(cos(angle) * dist, 0.04, sin(angle) * dist)
+		star.material_override = star_mat
+		proj.add_child(star)
+		# Twinkle
+		var twk: Tween = create_tween().set_loops()
+		twk.tween_property(star, "scale", Vector3(0.4, 0.4, 0.4), 0.6 + rng.randf() * 0.4).set_ease(Tween.EASE_IN_OUT)
+		twk.tween_property(star, "scale", Vector3(1.4, 1.4, 1.4), 0.6 + rng.randf() * 0.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_data_dragon(geom: Node) -> void:
+	## Epic-3 T60: a floating data dragon — long serpentine body made of
+	## 8 connected emissive cube segments that drift in a sinuous pattern.
+	var dragon: Node3D = Node3D.new()
+	dragon.name = "D3DataDragon"
+	dragon.position = D3_CENTER + Vector3(0, 6, -12)
+	geom.add_child(dragon)
+	# 8 body segments in a chain
+	var dragon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dragon_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	dragon_mat.emission_enabled = true
+	dragon_mat.emission = Color(0.55, 0.95, 1.0)
+	dragon_mat.emission_energy_multiplier = 2.4
+	dragon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 8:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.65 - i * 0.04, 0.65 - i * 0.04, 0.65 - i * 0.04)
+		seg.mesh = sm
+		seg.position = Vector3(-i * 0.85, sin(i * 0.5) * 0.40, 0)
+		seg.material_override = dragon_mat
+		dragon.add_child(seg)
+	# Head — bigger box at index 0 already, add eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 3.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.18, 0.18]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.08
+		em.height = 0.16
+		eye.mesh = em
+		eye.position = Vector3(0, 0.15, 0.34) + Vector3(ex, 0, 0)
+		eye.material_override = eye_mat
+		dragon.add_child(eye)
+	# Slow patrol path circling overhead
+	var origin: Vector3 = D3_CENTER + Vector3(0, 6, -12)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(dragon, "position", origin + Vector3(8, 1.5, 0), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(dragon, "position", origin + Vector3(0, 1.5, 8), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(dragon, "position", origin + Vector3(-8, 1.5, 0), 8.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(dragon, "position", origin, 8.0).set_ease(Tween.EASE_IN_OUT)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(dragon, "rotation:y", TAU, 32.0)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "DATA DRAGON"
+	label.position = Vector3(-3.5, 1.55, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dragon.add_child(label)
 
 
 
