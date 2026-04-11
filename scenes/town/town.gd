@@ -17260,6 +17260,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_cyber_rats(geom)
 	# Epic-6 T80: scrap metal pile
 	_build_d6_scrap_pile(geom)
+	# Epic-6 T81: cyber café with terminals
+	_build_d6_cyber_cafe(geom)
+	# Epic-6 T82: cyber café customer NPC
+	_build_d6_cafe_customer_npc()
+	# Epic-6 T83: street DJ booth
+	_build_d6_dj_booth(geom)
+	# Epic-6 T84: street DJ NPC
+	_build_d6_street_dj_npc()
+	# Epic-6 T85: glow drone swarm
+	_build_d6_glow_drones(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -23827,6 +23837,409 @@ func _build_d6_scrap_pile(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	pile.add_child(sb)
+
+
+func _build_d6_cyber_cafe(geom: Node) -> void:
+	## Epic-6 T81: cyber café — open storefront with row of 4 terminal
+	## stations + colored counter + signage.
+	var cafe: Node3D = Node3D.new()
+	cafe.name = "CyberCafe"
+	cafe.position = Vector3(D6_CENTER.x - 18.0, 0.0, 22.0)
+	geom.add_child(cafe)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.18, 0.15, 0.25)
+	dark_mat.metallic = 0.30
+	dark_mat.roughness = 0.55
+	# Counter
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(5.50, 1.0, 1.10)
+	counter.mesh = cm
+	counter.material_override = dark_mat
+	counter.position = Vector3(0, 0.55, 0)
+	cafe.add_child(counter)
+	# 4 terminal stations on the counter
+	var screen_colors: Array = [
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.20, 0.85),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 4:
+		# Terminal monitor
+		var monitor: MeshInstance3D = MeshInstance3D.new()
+		var mm: BoxMesh = BoxMesh.new()
+		mm.size = Vector3(0.85, 0.65, 0.18)
+		monitor.mesh = mm
+		monitor.material_override = dark_mat
+		monitor.position = Vector3(-1.85 + i * 1.30, 1.55, -0.20)
+		cafe.add_child(monitor)
+		# Screen
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.75, 0.55, 0.04)
+		screen.mesh = sm
+		var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+		screen_mat.albedo_color = screen_colors[i]
+		screen_mat.emission_enabled = true
+		screen_mat.emission = screen_colors[i]
+		screen_mat.emission_energy_multiplier = 2.5
+		screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		screen.material_override = screen_mat
+		screen.position = Vector3(-1.85 + i * 1.30, 1.55, -0.10)
+		cafe.add_child(screen)
+		# Keyboard (small dark box on counter)
+		var kb: MeshInstance3D = MeshInstance3D.new()
+		var kbm: BoxMesh = BoxMesh.new()
+		kbm.size = Vector3(0.85, 0.06, 0.30)
+		kb.mesh = kbm
+		var kb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		kb_mat.albedo_color = Color(0.10, 0.08, 0.12)
+		kb_mat.metallic = 0.65
+		kb.material_override = kb_mat
+		kb.position = Vector3(-1.85 + i * 1.30, 1.10, 0.30)
+		cafe.add_child(kb)
+		# Screen flicker
+		var tw: Tween = screen.create_tween().set_loops()
+		tw.tween_interval(i * 0.15)
+		tw.tween_property(screen, "scale:y", 1.10, 0.35)
+		tw.tween_property(screen, "scale:y", 0.85, 0.35)
+	# Sign on top
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(4.20, 0.55, 0.10)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.30, 1.0, 1.0)
+	sign_mat.emission_energy_multiplier = 3.0
+	sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 2.55, -0.50)
+	cafe.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "NETCAFE"
+	label.modulate = Color(0.05, 0.10, 0.20)
+	label.outline_modulate = Color(0.30, 1.0, 1.0)
+	label.outline_size = 4
+	label.font_size = 64
+	label.pixel_size = 0.009
+	label.position = Vector3(0, 2.55, -0.42)
+	cafe.add_child(label)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.0
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.20, 0)
+	cafe.add_child(light)
+	# Counter collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 2.20, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	cafe.add_child(sb)
+
+
+func _build_d6_cafe_customer_npc() -> void:
+	## Epic-6 T82: cafe customer NPC at one of the terminals — large
+	## headphones + bright t-shirt.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CafeCustomerSlot"
+	slot.position = Vector3(D6_CENTER.x - 17.0, 0.0, 22.5)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CafeCustomer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Lurker")
+	if "npc_id" in npc:
+		npc.set("npc_id", "cafe_d6")
+	slot.add_child(npc)
+	# Bright cyan t-shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 0.95, 0.40)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	shirt_mat.emission_enabled = true
+	shirt_mat.emission = Color(0.30, 0.95, 1.0)
+	shirt_mat.emission_energy_multiplier = 0.30
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.55, 0)
+	npc.add_child(shirt)
+	# Large headphones (2 connected discs)
+	var hp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hp_mat.albedo_color = Color(0.20, 0.18, 0.25)
+	hp_mat.metallic = 0.85
+	hp_mat.roughness = 0.30
+	for sx in [-0.22, 0.22]:
+		var cup: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.10
+		cm.bottom_radius = 0.10
+		cm.height = 0.06
+		cup.mesh = cm
+		cup.material_override = hp_mat
+		cup.position = Vector3(sx, 1.40, 0)
+		cup.rotation_degrees = Vector3(0, 0, 90)
+		npc.add_child(cup)
+	# Headphone arc (small torus)
+	var arc: MeshInstance3D = MeshInstance3D.new()
+	var arm: TorusMesh = TorusMesh.new()
+	arm.inner_radius = 0.16
+	arm.outer_radius = 0.20
+	arc.mesh = arm
+	arc.material_override = hp_mat
+	arc.position = Vector3(0, 1.55, 0)
+	arc.rotation_degrees = Vector3(0, 0, 90)
+	arc.scale = Vector3(1.0, 0.40, 1.0)
+	npc.add_child(arc)
+
+
+func _build_d6_dj_booth(geom: Node) -> void:
+	## Epic-6 T83: street DJ booth — turntable + 2 large speakers + a
+	## glowing equalizer panel.
+	var booth: Node3D = Node3D.new()
+	booth.name = "DJBooth"
+	booth.position = Vector3(D6_CENTER.x + 4.0, 0.0, 22.0)
+	geom.add_child(booth)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.30
+	# Booth counter
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.85, 1.0, 0.85)
+	counter.mesh = cm
+	counter.material_override = dark_mat
+	counter.position = Vector3(0, 0.55, 0)
+	booth.add_child(counter)
+	# Turntable (large disc on counter)
+	var turntable: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.40
+	tm.bottom_radius = 0.40
+	tm.height = 0.06
+	turntable.mesh = tm
+	var disc_mat: StandardMaterial3D = StandardMaterial3D.new()
+	disc_mat.albedo_color = Color(0.15, 0.12, 0.18)
+	disc_mat.metallic = 0.55
+	turntable.material_override = disc_mat
+	turntable.position = Vector3(0, 1.10, 0)
+	booth.add_child(turntable)
+	# Center spindle (small magenta sphere)
+	var spindle: MeshInstance3D = MeshInstance3D.new()
+	var spm: SphereMesh = SphereMesh.new()
+	spm.radius = 0.05
+	spm.height = 0.10
+	spindle.mesh = spm
+	var spin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spin_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	spin_mat.emission_enabled = true
+	spin_mat.emission = Color(0.95, 0.20, 0.85)
+	spin_mat.emission_energy_multiplier = 3.0
+	spin_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spindle.material_override = spin_mat
+	spindle.position = Vector3(0, 1.16, 0)
+	booth.add_child(spindle)
+	# Spin tween on the turntable
+	var tw: Tween = turntable.create_tween().set_loops()
+	tw.tween_property(turntable, "rotation_degrees:y", 360.0, 1.6)
+	tw.tween_property(turntable, "rotation_degrees:y", 0.0, 0.0)
+	# 2 large speakers flanking
+	for sx in [-2.40, 2.40]:
+		var speaker: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.85, 1.85, 0.85)
+		speaker.mesh = sm
+		speaker.material_override = dark_mat
+		speaker.position = Vector3(sx, 0.95, 0)
+		booth.add_child(speaker)
+		# 2 cones on the front
+		for cy in [1.20, 0.65]:
+			var cone: MeshInstance3D = MeshInstance3D.new()
+			var cn_m: SphereMesh = SphereMesh.new()
+			cn_m.radius = 0.18
+			cn_m.height = 0.30
+			cone.mesh = cn_m
+			var cone_mat: StandardMaterial3D = StandardMaterial3D.new()
+			cone_mat.albedo_color = Color(0.20, 0.18, 0.22)
+			cone.material_override = cone_mat
+			cone.position = Vector3(sx, cy, 0.42)
+			cone.scale = Vector3(1.0, 1.0, 0.30)
+			booth.add_child(cone)
+			# Bass pulse tween
+			var ts: Tween = cone.create_tween().set_loops()
+			ts.tween_property(cone, "scale", Vector3(1.10, 1.10, 0.45), 0.20)
+			ts.tween_property(cone, "scale", Vector3(0.90, 0.90, 0.30), 0.20)
+		# Speaker collision
+		var sb_spk: StaticBody3D = StaticBody3D.new()
+		sb_spk.position = Vector3(sx, 0.95, 0)
+		var cs_spk: CollisionShape3D = CollisionShape3D.new()
+		var cb_spk: BoxShape3D = BoxShape3D.new()
+		cb_spk.size = Vector3(0.85, 1.85, 0.85)
+		cs_spk.shape = cb_spk
+		sb_spk.add_child(cs_spk)
+		booth.add_child(sb_spk)
+	# Equalizer panel — 12 colored bars on the booth front
+	var bar_colors: Array = [
+		Color(0.30, 0.95, 1.0),
+		Color(0.95, 0.20, 0.85),
+	]
+	for i in 12:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.10, 0.55, 0.04)
+		bar.mesh = bm
+		var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bar_mat.albedo_color = bar_colors[i % 2]
+		bar_mat.emission_enabled = true
+		bar_mat.emission = bar_colors[i % 2]
+		bar_mat.emission_energy_multiplier = 2.5
+		bar_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bar.material_override = bar_mat
+		bar.position = Vector3(-1.20 + i * 0.22, 0.65, 0.45)
+		booth.add_child(bar)
+		# Equalizer flicker
+		var tw_eq: Tween = bar.create_tween().set_loops()
+		tw_eq.tween_interval(i * 0.05)
+		tw_eq.tween_property(bar, "scale:y", randf_range(0.40, 1.40), 0.15)
+		tw_eq.tween_property(bar, "scale:y", randf_range(0.40, 1.40), 0.15)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 1.85, 0.85)
+	booth.add_child(light)
+	# Booth collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 1.0, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	booth.add_child(sb)
+
+
+func _build_d6_street_dj_npc() -> void:
+	## Epic-6 T84: street DJ NPC behind the booth — bright jacket +
+	## headphones + raised hand on a turntable.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "StreetDJSlot"
+	slot.position = Vector3(D6_CENTER.x + 4.0, 0.0, 21.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "StreetDJ"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Beatdrop")
+	if "npc_id" in npc:
+		npc.set("npc_id", "dj_d6")
+	slot.add_child(npc)
+	# Holographic jacket
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jm: BoxMesh = BoxMesh.new()
+	jm.size = Vector3(0.65, 1.05, 0.40)
+	jacket.mesh = jm
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	jacket_mat.emission_enabled = true
+	jacket_mat.emission = Color(0.30, 1.0, 0.55)
+	jacket_mat.emission_energy_multiplier = 0.55
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 0.55, 0)
+	npc.add_child(jacket)
+	# Headphones (2 cylinders + arc)
+	var hp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hp_mat.albedo_color = Color(0.10, 0.08, 0.12)
+	hp_mat.metallic = 0.85
+	for sx in [-0.22, 0.22]:
+		var cup: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.10
+		cm.bottom_radius = 0.10
+		cm.height = 0.06
+		cup.mesh = cm
+		cup.material_override = hp_mat
+		cup.position = Vector3(sx, 1.40, 0)
+		cup.rotation_degrees = Vector3(0, 0, 90)
+		npc.add_child(cup)
+	# Sway tween (DJ-ing)
+	var tw: Tween = npc.create_tween().set_loops()
+	tw.tween_property(npc, "rotation_degrees:z", 6.0, 0.30)
+	tw.tween_property(npc, "rotation_degrees:z", -6.0, 0.30)
+
+
+func _build_d6_glow_drones(geom: Node) -> void:
+	## Epic-6 T85: 8 small glow drones drifting through the bazaar at
+	## varying altitudes — bright colored orbs with halos.
+	var swarm: Node3D = Node3D.new()
+	swarm.name = "GlowDrones"
+	swarm.position = Vector3(D6_CENTER.x, 4.0, 0.0)
+	geom.add_child(swarm)
+	var drone_colors: Array = [
+		Color(0.95, 0.20, 0.85),
+		Color(0.30, 0.95, 1.0),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+		Color(0.55, 0.30, 0.95),
+		Color(0.95, 0.30, 0.30),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.95, 0.30),
+	]
+	for i in 8:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, randf_range(-1.0, 2.5), 0)
+		pivot.rotation_degrees = Vector3(0, i * 45.0, 0)
+		swarm.add_child(pivot)
+		var drone: MeshInstance3D = MeshInstance3D.new()
+		var dmm: SphereMesh = SphereMesh.new()
+		dmm.radius = 0.18
+		dmm.height = 0.32
+		drone.mesh = dmm
+		var drone_mat: StandardMaterial3D = StandardMaterial3D.new()
+		drone_mat.albedo_color = drone_colors[i]
+		drone_mat.emission_enabled = true
+		drone_mat.emission = drone_colors[i]
+		drone_mat.emission_energy_multiplier = 4.0
+		drone_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		drone.material_override = drone_mat
+		drone.position = Vector3(8.0 + i * 1.20, 0, 0)
+		pivot.add_child(drone)
+		# Per-drone halo light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = drone_colors[i]
+		light.light_energy = 1.0
+		light.omni_range = 2.0
+		light.position = Vector3.ZERO
+		drone.add_child(light)
+		# Patrol rotation
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0 + 360.0, 12.0 + i * 0.4)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0, 0.0)
+		# Bob
+		var tb: Tween = drone.create_tween().set_loops()
+		tb.tween_property(drone, "position:y", 0.65, 1.4 + randf() * 0.4)
+		tb.tween_property(drone, "position:y", -0.20, 1.4 + randf() * 0.4)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
