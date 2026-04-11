@@ -32861,6 +32861,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_coal_piles(geom)
 	# Epic-9 T10: giant bellows
 	_build_d9_giant_bellows(geom)
+	# Epic-9 T11: lava channels
+	_build_d9_lava_channels(geom)
+	# Epic-9 T12: ore cart on rails
+	_build_d9_ore_cart(geom)
+	# Epic-9 T13: miner NPC
+	_build_d9_miner_npc()
+	# Epic-9 T14: smelting furnace
+	_build_d9_smelting_furnace(geom)
+	# Epic-9 T15: tool rack
+	_build_d9_tool_rack(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -41229,6 +41239,473 @@ func _build_d9_giant_bellows(geom: Node) -> void:
 		cs.shape = bs
 		stb.add_child(cs)
 		unit.add_child(stb)
+
+
+func _build_d9_lava_channels(geom: Node) -> void:
+	## Epic-9 T11: 3 long flowing lava channels carved into the volcanic
+	## ground around the forge heart, with stone curbs and pulsing emission.
+	var channels: Node3D = Node3D.new()
+	channels.name = "D9LavaChannels"
+	channels.position = Vector3(D9_CENTER.x, 0.05, 0)
+	geom.add_child(channels)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.16)
+	stone_mat.roughness = 0.85
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.42, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.55, 0.18)
+	lava_mat.emission_energy_multiplier = 3.5
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 3 channels at different angles
+	var channel_data: Array = [
+		[Vector3(-15, 0, -8), 0.0],
+		[Vector3(0, 0, 12), 90.0],
+		[Vector3(14, 0, -6), 30.0],
+	]
+	for ch in channel_data:
+		var pos: Vector3 = ch[0]
+		var ang: float = ch[1]
+		var ch_root: Node3D = Node3D.new()
+		ch_root.position = pos
+		ch_root.rotation_degrees = Vector3(0, ang, 0)
+		channels.add_child(ch_root)
+		# Stone curb left
+		var curb_l: MeshInstance3D = MeshInstance3D.new()
+		var clb: BoxMesh = BoxMesh.new()
+		clb.size = Vector3(8.0, 0.30, 0.45)
+		curb_l.mesh = clb
+		curb_l.material_override = stone_mat
+		curb_l.position = Vector3(0, 0.15, -0.55)
+		ch_root.add_child(curb_l)
+		# Stone curb right
+		var curb_r: MeshInstance3D = MeshInstance3D.new()
+		curb_r.mesh = clb
+		curb_r.material_override = stone_mat
+		curb_r.position = Vector3(0, 0.15, 0.55)
+		ch_root.add_child(curb_r)
+		# Lava strip down the middle
+		var lava: MeshInstance3D = MeshInstance3D.new()
+		var lb: BoxMesh = BoxMesh.new()
+		lb.size = Vector3(8.0, 0.10, 0.65)
+		lava.mesh = lb
+		lava.material_override = lava_mat
+		lava.position = Vector3(0, 0.10, 0)
+		ch_root.add_child(lava)
+		var pulse: Tween = lava.create_tween().set_loops()
+		pulse.tween_property(lava_mat, "emission_energy_multiplier", 5.0, 1.4)
+		pulse.tween_property(lava_mat, "emission_energy_multiplier", 2.5, 1.4)
+
+
+func _build_d9_ore_cart(geom: Node) -> void:
+	## Epic-9 T12: mine cart on iron rails carrying glowing iron ore.
+	var cart_root: Node3D = Node3D.new()
+	cart_root.name = "D9OreCart"
+	cart_root.position = Vector3(D9_CENTER.x - 16, 0, 8)
+	geom.add_child(cart_root)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.85
+	iron.roughness = 0.40
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	# Two long iron rails
+	for sz in [-0.45, 0.45]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rb: BoxMesh = BoxMesh.new()
+		rb.size = Vector3(10.0, 0.10, 0.10)
+		rail.mesh = rb
+		rail.material_override = iron
+		rail.position = Vector3(0, 0.05, sz)
+		cart_root.add_child(rail)
+	# 6 wooden ties
+	for i in range(6):
+		var tie: MeshInstance3D = MeshInstance3D.new()
+		var tb: BoxMesh = BoxMesh.new()
+		tb.size = Vector3(0.30, 0.06, 1.30)
+		tie.mesh = tb
+		tie.material_override = wood
+		tie.position = Vector3(-4.5 + i * 1.8, 0.02, 0)
+		cart_root.add_child(tie)
+	# Mine cart body (wooden box on iron frame)
+	var cart: Node3D = Node3D.new()
+	cart.position = Vector3(0, 0.30, 0)
+	cart_root.add_child(cart)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bdb: BoxMesh = BoxMesh.new()
+	bdb.size = Vector3(1.40, 0.85, 1.10)
+	body.mesh = bdb
+	body.material_override = wood
+	body.position = Vector3(0, 0.55, 0)
+	cart.add_child(body)
+	# Iron rim around top
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rb: BoxMesh = BoxMesh.new()
+	rb.size = Vector3(1.50, 0.08, 1.20)
+	rim.mesh = rb
+	rim.material_override = iron
+	rim.position = Vector3(0, 0.92, 0)
+	cart.add_child(rim)
+	# 4 iron wheels (torus)
+	for sx in [-0.55, 0.55]:
+		for sz in [-0.45, 0.45]:
+			var wheel: MeshInstance3D = MeshInstance3D.new()
+			var tm: TorusMesh = TorusMesh.new()
+			tm.inner_radius = 0.18
+			tm.outer_radius = 0.28
+			wheel.mesh = tm
+			wheel.material_override = iron
+			wheel.position = Vector3(sx, 0.20, sz)
+			wheel.rotation_degrees = Vector3(0, 0, 90)
+			cart.add_child(wheel)
+	# Iron ore inside (4 emissive lumps)
+	var ore_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ore_mat.albedo_color = Color(0.55, 0.30, 0.15)
+	ore_mat.metallic = 0.55
+	ore_mat.roughness = 0.55
+	ore_mat.emission_enabled = true
+	ore_mat.emission = Color(1.0, 0.45, 0.12)
+	ore_mat.emission_energy_multiplier = 0.85
+	for i in range(4):
+		var lump: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.20 + randf() * 0.08
+		sm.height = 0.40 + randf() * 0.12
+		lump.mesh = sm
+		lump.material_override = ore_mat
+		lump.position = Vector3(-0.35 + float(i) * 0.22, 1.05, -0.20 + randf() * 0.40)
+		cart.add_child(lump)
+	# Cart collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(1.50, 1.10, 1.20)
+	cs.shape = bs
+	stb.add_child(cs)
+	cart.add_child(stb)
+
+
+func _build_d9_miner_npc() -> void:
+	## Epic-9 T13: miner NPC with leather coat and a heavy pickaxe.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9MinerSlot"
+	slot.position = Vector3(D9_CENTER.x - 18, 0, 8)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9Miner"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Pickaxe Pete")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_miner")
+	slot.add_child(npc)
+	# Leather coat
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.38, 0.24, 0.12)
+	coat_mat.roughness = 0.85
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.95, 1.20, 0.55)
+	coat.mesh = cb
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 1.05, 0)
+	npc.add_child(coat)
+	# Headlamp helmet (dark with cyan beam)
+	var helm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	helm_mat.albedo_color = Color(0.20, 0.18, 0.20)
+	helm_mat.metallic = 0.6
+	helm_mat.roughness = 0.45
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hsm: SphereMesh = SphereMesh.new()
+	hsm.radius = 0.32
+	hsm.height = 0.50
+	helm.mesh = hsm
+	helm.material_override = helm_mat
+	helm.position = Vector3(0, 1.95, 0)
+	npc.add_child(helm)
+	# Headlamp light (cyan emissive disc + omni light)
+	var lamp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lamp_mat.albedo_color = Color(0.55, 0.92, 1.0)
+	lamp_mat.emission_enabled = true
+	lamp_mat.emission = Color(0.55, 0.92, 1.0)
+	lamp_mat.emission_energy_multiplier = 3.0
+	lamp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var lamp: MeshInstance3D = MeshInstance3D.new()
+	var lsm: SphereMesh = SphereMesh.new()
+	lsm.radius = 0.10
+	lsm.height = 0.10
+	lamp.mesh = lsm
+	lamp.material_override = lamp_mat
+	lamp.position = Vector3(0, 2.00, 0.30)
+	npc.add_child(lamp)
+	var spot: OmniLight3D = OmniLight3D.new()
+	spot.light_color = Color(0.55, 0.92, 1.0)
+	spot.light_energy = 2.5
+	spot.omni_range = 5.0
+	spot.position = Vector3(0, 2.00, 0.40)
+	npc.add_child(spot)
+	# Pickaxe held over the shoulder
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.90
+	iron.roughness = 0.30
+	var pick_root: Node3D = Node3D.new()
+	pick_root.position = Vector3(0.45, 1.30, 0)
+	pick_root.rotation_degrees = Vector3(0, 0, -65)
+	npc.add_child(pick_root)
+	# Pickaxe haft
+	var haft: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.05
+	hcm.bottom_radius = 0.06
+	hcm.height = 1.40
+	haft.mesh = hcm
+	haft.material_override = wood
+	haft.position = Vector3(0, 0, 0)
+	pick_root.add_child(haft)
+	# Pick head (horizontal iron bar across the top)
+	var ph: MeshInstance3D = MeshInstance3D.new()
+	var phb: BoxMesh = BoxMesh.new()
+	phb.size = Vector3(0.10, 0.10, 0.65)
+	ph.mesh = phb
+	ph.material_override = iron
+	ph.position = Vector3(0, 0.70, 0)
+	pick_root.add_child(ph)
+	# Pick points (two cones)
+	for sz in [-0.32, 0.32]:
+		var pt: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.0
+		pcm.bottom_radius = 0.08
+		pcm.height = 0.30
+		pt.mesh = pcm
+		pt.material_override = iron
+		pt.position = Vector3(0, 0.70, sz)
+		pt.rotation_degrees = Vector3(0, 0, 90 if sz < 0 else -90)
+		pick_root.add_child(pt)
+
+
+func _build_d9_smelting_furnace(geom: Node) -> void:
+	## Epic-9 T14: tall stone smelting furnace with fire glow inside and a
+	## smoke chimney venting upward.
+	var furnace: Node3D = Node3D.new()
+	furnace.name = "D9SmeltingFurnace"
+	furnace.position = Vector3(D9_CENTER.x + 8, 0, 8)
+	geom.add_child(furnace)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.42, 0.40)
+	stone_mat.roughness = 0.85
+	# Wide tapered cylindrical body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bcm: CylinderMesh = CylinderMesh.new()
+	bcm.top_radius = 1.20
+	bcm.bottom_radius = 1.85
+	bcm.height = 4.20
+	body.mesh = bcm
+	body.material_override = stone_mat
+	body.position = Vector3(0, 2.10, 0)
+	furnace.add_child(body)
+	# Open mouth (dark hole at the front, lower)
+	var mouth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mouth_mat.albedo_color = Color(0.05, 0.04, 0.06)
+	mouth_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var mouth: MeshInstance3D = MeshInstance3D.new()
+	var msm: SphereMesh = SphereMesh.new()
+	msm.radius = 0.65
+	msm.height = 1.30
+	mouth.mesh = msm
+	mouth.material_override = mouth_mat
+	mouth.scale = Vector3(0.85, 1.0, 0.55)
+	mouth.position = Vector3(0, 1.40, 1.55)
+	furnace.add_child(mouth)
+	# Fire glow inside the mouth (orange emissive sphere)
+	var fire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fire_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	fire_mat.emission_enabled = true
+	fire_mat.emission = Color(1.0, 0.55, 0.18)
+	fire_mat.emission_energy_multiplier = 4.5
+	fire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var fire: MeshInstance3D = MeshInstance3D.new()
+	var fsm: SphereMesh = SphereMesh.new()
+	fsm.radius = 0.40
+	fsm.height = 0.85
+	fire.mesh = fsm
+	fire.material_override = fire_mat
+	fire.position = Vector3(0, 1.40, 1.30)
+	furnace.add_child(fire)
+	var pulse: Tween = fire.create_tween().set_loops()
+	pulse.tween_property(fire, "scale", Vector3(1.20, 1.30, 1.20), 0.6)
+	pulse.tween_property(fire, "scale", Vector3(0.88, 0.85, 0.88), 0.6)
+	# Strong orange light from the mouth
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 3.5
+	lt.omni_range = 9.0
+	lt.position = Vector3(0, 1.40, 1.85)
+	furnace.add_child(lt)
+	# Stone chimney pipe rising from the top
+	var chimney: MeshInstance3D = MeshInstance3D.new()
+	var ccm: CylinderMesh = CylinderMesh.new()
+	ccm.top_radius = 0.55
+	ccm.bottom_radius = 0.75
+	ccm.height = 2.20
+	chimney.mesh = ccm
+	chimney.material_override = stone_mat
+	chimney.position = Vector3(0, 5.30, 0)
+	furnace.add_child(chimney)
+	# Smoke particles from chimney top
+	var smoke: GPUParticles3D = GPUParticles3D.new()
+	smoke.position = Vector3(0, 6.50, 0)
+	smoke.amount = 60
+	smoke.lifetime = 4.5
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 22.0
+	pm.initial_velocity_min = 0.65
+	pm.initial_velocity_max = 1.35
+	pm.gravity = Vector3(0.10, 0.45, 0)
+	pm.scale_min = 0.35
+	pm.scale_max = 0.85
+	pm.color = Color(0.55, 0.50, 0.45, 0.65)
+	smoke.process_material = pm
+	var smoke_mesh: SphereMesh = SphereMesh.new()
+	smoke_mesh.radius = 0.28
+	smoke_mesh.height = 0.55
+	smoke.draw_pass_1 = smoke_mesh
+	furnace.add_child(smoke)
+	# Furnace collision (capsule for the body)
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+	cap_shape.radius = 1.85
+	cap_shape.height = 4.20
+	cs.shape = cap_shape
+	stb.add_child(cs)
+	furnace.add_child(stb)
+
+
+func _build_d9_tool_rack(geom: Node) -> void:
+	## Epic-9 T15: wall-mounted tool rack with 5 smithing tools (tongs,
+	## hammers, chisel, file).
+	var rack: Node3D = Node3D.new()
+	rack.name = "D9ToolRack"
+	rack.position = Vector3(D9_CENTER.x - 6, 0, -10)
+	geom.add_child(rack)
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.45, 0.30, 0.18)
+	wood.roughness = 0.85
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.22, 0.20, 0.20)
+	iron.metallic = 0.90
+	iron.roughness = 0.30
+	# Backboard plank
+	var board: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(2.80, 1.85, 0.10)
+	board.mesh = bb
+	board.material_override = wood
+	board.position = Vector3(0, 1.70, 0)
+	rack.add_child(board)
+	# Top crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bbm: BoxMesh = BoxMesh.new()
+	bbm.size = Vector3(2.80, 0.10, 0.18)
+	bar.mesh = bbm
+	bar.material_override = wood
+	bar.position = Vector3(0, 2.55, 0.10)
+	rack.add_child(bar)
+	# 5 tools hanging from the bar
+	# Tool 1: tongs (two long curved cylinders)
+	for sx in [-0.04, 0.04]:
+		var tong: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.04
+		tm.bottom_radius = 0.05
+		tm.height = 1.00
+		tong.mesh = tm
+		tong.material_override = iron
+		tong.position = Vector3(-1.10 + sx, 1.95, 0.10)
+		rack.add_child(tong)
+	# Tool 2: hammer
+	var ham_haft: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.05
+	hcm.bottom_radius = 0.06
+	hcm.height = 1.10
+	ham_haft.mesh = hcm
+	ham_haft.material_override = wood
+	ham_haft.position = Vector3(-0.55, 1.90, 0.10)
+	rack.add_child(ham_haft)
+	var ham_head: MeshInstance3D = MeshInstance3D.new()
+	var hdb: BoxMesh = BoxMesh.new()
+	hdb.size = Vector3(0.30, 0.16, 0.16)
+	ham_head.mesh = hdb
+	ham_head.material_override = iron
+	ham_head.position = Vector3(-0.55, 2.45, 0.10)
+	rack.add_child(ham_head)
+	# Tool 3: bigger sledgehammer (centered)
+	var sl_haft: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.07
+	sm.bottom_radius = 0.08
+	sm.height = 1.30
+	sl_haft.mesh = sm
+	sl_haft.material_override = wood
+	sl_haft.position = Vector3(0, 1.85, 0.10)
+	rack.add_child(sl_haft)
+	var sl_head: MeshInstance3D = MeshInstance3D.new()
+	var slb: BoxMesh = BoxMesh.new()
+	slb.size = Vector3(0.45, 0.22, 0.22)
+	sl_head.mesh = slb
+	sl_head.material_override = iron
+	sl_head.position = Vector3(0, 2.50, 0.10)
+	rack.add_child(sl_head)
+	# Tool 4: chisel
+	var ch_haft: MeshInstance3D = MeshInstance3D.new()
+	var cb: CylinderMesh = CylinderMesh.new()
+	cb.top_radius = 0.04
+	cb.bottom_radius = 0.05
+	cb.height = 0.85
+	ch_haft.mesh = cb
+	ch_haft.material_override = wood
+	ch_haft.position = Vector3(0.55, 2.05, 0.10)
+	rack.add_child(ch_haft)
+	var ch_blade: MeshInstance3D = MeshInstance3D.new()
+	var cpm: CylinderMesh = CylinderMesh.new()
+	cpm.top_radius = 0.0
+	cpm.bottom_radius = 0.06
+	cpm.height = 0.30
+	ch_blade.mesh = cpm
+	ch_blade.material_override = iron
+	ch_blade.position = Vector3(0.55, 1.55, 0.10)
+	rack.add_child(ch_blade)
+	# Tool 5: file (long thin box)
+	var file_mesh: MeshInstance3D = MeshInstance3D.new()
+	var flb: BoxMesh = BoxMesh.new()
+	flb.size = Vector3(0.10, 1.10, 0.06)
+	file_mesh.mesh = flb
+	file_mesh.material_override = iron
+	file_mesh.position = Vector3(1.10, 1.95, 0.10)
+	rack.add_child(file_mesh)
+	# Rack collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.80, 1.85, 0.20)
+	cs.shape = bs
+	stb.add_child(cs)
+	rack.add_child(stb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
