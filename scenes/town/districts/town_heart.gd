@@ -39,6 +39,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_quest_master_npc(town)
 	_build_th_banker_npc(town)
 	_build_th_fountain_wisher_npc(town)
+	_build_th_planter_ring(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -3869,3 +3870,142 @@ func _build_th_fountain_wisher_npc(town: Node) -> void:
 	var dpulse3: Tween = npc.create_tween().set_loops()
 	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 9.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_planter_ring(geom: Node) -> void:
+	## Epic-10 T23: 8 small basalt planters with glowing data plants
+	## arranged at the plaza perimeter at radius 12.5 (between the inner
+	## benches and the outer lampposts). Each planter: stepped basalt pot
+	## with brass rim, dark soil disc, central tall data crystal stem,
+	## 4 glowing leaf prisms radiating out, and a slow leaf shimmer pulse.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_PlanterRing"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var soil_mat: StandardMaterial3D = StandardMaterial3D.new()
+	soil_mat.albedo_color = Color(0.18, 0.13, 0.10)
+	soil_mat.roughness = 0.90
+	soil_mat.metallic = 0.05
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	stem_mat.emission_enabled = true
+	stem_mat.emission = Color(0.45, 0.85, 1.0)
+	stem_mat.emission_energy_multiplier = 6.5
+	stem_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var leaf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leaf_mat.albedo_color = Color(0.55, 1.0, 0.65)
+	leaf_mat.emission_enabled = true
+	leaf_mat.emission = Color(0.55, 1.0, 0.65)
+	leaf_mat.emission_energy_multiplier = 5.5
+	leaf_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Place 8 planters between the radial paths at radius 12.5
+	for i in 8:
+		var ang: float = (float(i) + 0.5) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var pp: Vector3 = Vector3(dx * 12.50, 0, dz * 12.50)
+		var pgroup: Node3D = Node3D.new()
+		pgroup.name = "Planter_" + str(i)
+		pgroup.position = pp
+		pivot.add_child(pgroup)
+		# ---- Stepped basalt pot (cylinder with tapered bottom) ----
+		var pot: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.55
+		pmm.bottom_radius = 0.45
+		pmm.height = 0.65
+		pot.mesh = pmm
+		pot.material_override = stone_mat
+		pot.position = Vector3(0, 0.32, 0)
+		pgroup.add_child(pot)
+		# Pot collision
+		var pot_sb: StaticBody3D = StaticBody3D.new()
+		pot_sb.position = Vector3(0, 0.32, 0)
+		var pot_cs: CollisionShape3D = CollisionShape3D.new()
+		var pot_cyl: CylinderShape3D = CylinderShape3D.new()
+		pot_cyl.top_radius = 0.55
+		pot_cyl.bottom_radius = 0.50
+		pot_cyl.height = 0.65
+		pot_cs.shape = pot_cyl
+		pot_sb.add_child(pot_cs)
+		pgroup.add_child(pot_sb)
+		# Brass rim torus
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.50
+		rmm.outer_radius = 0.60
+		rim.mesh = rmm
+		rim.material_override = brass_mat
+		rim.position = Vector3(0, 0.66, 0)
+		pgroup.add_child(rim)
+		# ---- Dark soil disc ----
+		var soil: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.50
+		sm.bottom_radius = 0.50
+		sm.height = 0.06
+		soil.mesh = sm
+		soil.material_override = soil_mat
+		soil.position = Vector3(0, 0.65, 0)
+		pgroup.add_child(soil)
+		# ---- Central tall data crystal stem ----
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var stmm: CylinderMesh = CylinderMesh.new()
+		stmm.top_radius = 0.05
+		stmm.bottom_radius = 0.08
+		stmm.height = 1.10
+		stem.mesh = stmm
+		stem.material_override = stem_mat
+		stem.position = Vector3(0, 1.20, 0)
+		pgroup.add_child(stem)
+		# ---- 4 glowing leaf prisms radiating out from the top of the stem ----
+		for j in 4:
+			var leaf_ang: float = float(j) / 4.0 * TAU
+			var leaf: MeshInstance3D = MeshInstance3D.new()
+			var lmesh: PrismMesh = PrismMesh.new()
+			lmesh.size = Vector3(0.32, 0.12, 0.18)
+			leaf.mesh = lmesh
+			leaf.material_override = leaf_mat
+			# Position leaf at the top of the stem, pointing outward
+			leaf.position = Vector3(cos(leaf_ang) * 0.22, 1.65, sin(leaf_ang) * 0.22)
+			leaf.rotation.y = leaf_ang
+			leaf.rotation.z = -PI / 2.0
+			pgroup.add_child(leaf)
+		# ---- Top crown bud (small unshaded sphere) ----
+		var bud: MeshInstance3D = MeshInstance3D.new()
+		var bmm: SphereMesh = SphereMesh.new()
+		bmm.radius = 0.10
+		bmm.height = 0.20
+		bud.mesh = bmm
+		bud.material_override = stem_mat
+		bud.position = Vector3(0, 1.85, 0)
+		pgroup.add_child(bud)
+		# Subtle planter glow OmniLight (small, varied per planter)
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 1.55, 0)
+		lt.light_color = Color(0.55, 0.95, 1.0)
+		lt.light_energy = 0.85
+		lt.omni_range = 3.5
+		pgroup.add_child(lt)
+	# Shared stem + leaf shimmer pulses
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(stem_mat, "emission_energy_multiplier", 8.5, 2.0).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(stem_mat, "emission_energy_multiplier", 5.0, 2.0).set_ease(Tween.EASE_IN_OUT)
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 7.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(leaf_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
