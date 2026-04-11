@@ -1,5 +1,5 @@
 class_name D9Builder
-extends RefCounted
+extends Node
 ## Volcanic Forge district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control. All build helpers here are
 ## static and called from town.gd's _build_district_9() entry function.
@@ -11,14 +11,14 @@ extends RefCounted
 const D9_CENTER := Vector3(680, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=630 out to x=760 to make room for D9.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 760.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_9(geom).
 	print("[D9Builder] start")
 	extend_boundary(geom)
@@ -69,7 +69,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D9Builder] done")
 
 
-static func _build_d9_ground(geom: Node) -> void:
+func _build_d9_ground(geom: Node) -> void:
 	## Epic-9 T1b: D9 ground — dark cracked basalt with glowing magma veins
 	## and a faint orange emission. Replaces the green grass plane at the D9
 	## center patch and overlays cracked obsidian.
@@ -135,7 +135,7 @@ static func _build_d9_ground(geom: Node) -> void:
 	ground_root.add_child(amb)
 
 
-static func _build_d9_forge_gate(geom: Node) -> void:
+func _build_d9_forge_gate(geom: Node) -> void:
 	## Epic-9 T2: massive stone forge gate — twin obsidian pylons with
 	## glowing rune-engraved arch and molten core dripping from the keystone.
 	var gate: Node3D = Node3D.new()
@@ -248,7 +248,7 @@ static func _build_d9_forge_gate(geom: Node) -> void:
 	gate.add_child(sparks)
 
 
-static func _build_d9_great_forge_heart(geom: Node) -> void:
+func _build_d9_great_forge_heart(geom: Node) -> void:
 	## Epic-9 T3: GREAT FORGE HEART — massive central molten core surrounded
 	## by stone pillars and a chained ring, the iconic landmark of D9.
 	var heart: Node3D = Node3D.new()
@@ -409,7 +409,7 @@ static func _build_d9_great_forge_heart(geom: Node) -> void:
 	heart.add_child(stb)
 
 
-static func _build_d9_forge_master_npc(town: Node) -> void:
+func _build_d9_forge_master_npc(town: Node) -> void:
 	## Epic-9 T4: Forge Master Vulcan — D9 hero NPC. Stone-skinned blacksmith
 	## with a heavy iron hammer and a glowing forge apron.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -530,7 +530,7 @@ static func _build_d9_forge_master_npc(town: Node) -> void:
 	npc.add_child(slit)
 
 
-static func _build_d9_anvil_row(geom: Node) -> void:
+func _build_d9_anvil_row(geom: Node) -> void:
 	## Epic-9 T6: row of 3 working anvils with hammers laid on top.
 	var row: Node3D = Node3D.new()
 	row.name = "D9AnvilRow"
@@ -632,7 +632,7 @@ static func _build_d9_anvil_row(geom: Node) -> void:
 		anvil_root.add_child(sb)
 
 
-static func _build_d9_apprentice_smith_npc(town: Node) -> void:
+func _build_d9_apprentice_smith_npc(town: Node) -> void:
 	## Epic-9 T7: apprentice smith NPC working at the anvil row.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
 	if slots == null:
@@ -729,7 +729,7 @@ static func _build_d9_apprentice_smith_npc(town: Node) -> void:
 	npc.add_child(cap)
 
 
-static func _build_d9_quench_barrels(geom: Node) -> void:
+func _build_d9_quench_barrels(geom: Node) -> void:
 	## Epic-9 T8: 3 wooden water-filled quench barrels with rising steam.
 	var row: Node3D = Node3D.new()
 	row.name = "D9QuenchBarrels"
@@ -817,7 +817,7 @@ static func _build_d9_quench_barrels(geom: Node) -> void:
 		barrel.add_child(stb)
 
 
-static func _build_d9_coal_piles(geom: Node) -> void:
+func _build_d9_coal_piles(geom: Node) -> void:
 	## Epic-9 T9: 4 piles of coal nuggets at the corners of the smithing area.
 	var piles: Node3D = Node3D.new()
 	piles.name = "D9CoalPiles"
@@ -878,7 +878,7 @@ static func _build_d9_coal_piles(geom: Node) -> void:
 		pile.add_child(stb)
 
 
-static func _build_d9_giant_bellows(geom: Node) -> void:
+func _build_d9_giant_bellows(geom: Node) -> void:
 	## Epic-9 T10: pair of giant leather bellows with wooden frames pumping
 	## air into the great forge — wide leather body with iron bands and a
 	## subtle compress/expand tween.
@@ -971,7 +971,7 @@ static func _build_d9_giant_bellows(geom: Node) -> void:
 		unit.add_child(stb)
 
 
-static func _build_d9_lava_channels(geom: Node) -> void:
+func _build_d9_lava_channels(geom: Node) -> void:
 	## Epic-9 T11: 3 long flowing lava channels carved into the volcanic
 	## ground around the forge heart, with stone curbs and pulsing emission.
 	var channels: Node3D = Node3D.new()
@@ -1027,7 +1027,7 @@ static func _build_d9_lava_channels(geom: Node) -> void:
 		pulse.tween_property(lava_mat, "emission_energy_multiplier", 2.5, 1.4)
 
 
-static func _build_d9_ore_cart(geom: Node) -> void:
+func _build_d9_ore_cart(geom: Node) -> void:
 	## Epic-9 T12: mine cart on iron rails carrying glowing iron ore.
 	var cart_root: Node3D = Node3D.new()
 	cart_root.name = "D9OreCart"
@@ -1117,7 +1117,7 @@ static func _build_d9_ore_cart(geom: Node) -> void:
 	cart.add_child(stb)
 
 
-static func _build_d9_miner_npc(town: Node) -> void:
+func _build_d9_miner_npc(town: Node) -> void:
 	## Epic-9 T13: miner NPC with leather coat and a heavy pickaxe.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
 	if slots == null:
@@ -1224,7 +1224,7 @@ static func _build_d9_miner_npc(town: Node) -> void:
 		pick_root.add_child(pt)
 
 
-static func _build_d9_smelting_furnace(geom: Node) -> void:
+func _build_d9_smelting_furnace(geom: Node) -> void:
 	## Epic-9 T14: tall stone smelting furnace with fire glow inside and a
 	## smoke chimney venting upward.
 	var furnace: Node3D = Node3D.new()
@@ -1324,7 +1324,7 @@ static func _build_d9_smelting_furnace(geom: Node) -> void:
 	furnace.add_child(stb)
 
 
-static func _build_d9_tool_rack(geom: Node) -> void:
+func _build_d9_tool_rack(geom: Node) -> void:
 	## Epic-9 T15: wall-mounted tool rack with 5 smithing tools (tongs,
 	## hammers, chisel, file).
 	var rack: Node3D = Node3D.new()
@@ -1438,7 +1438,7 @@ static func _build_d9_tool_rack(geom: Node) -> void:
 	rack.add_child(stb)
 
 
-static func _build_d9_iron_golem(geom: Node) -> void:
+func _build_d9_iron_golem(geom: Node) -> void:
 	## Epic-9 T16: massive standing iron golem guardian — boxy humanoid
 	## construct with glowing orange forge-eyes and a hammer-fist.
 	var golem: Node3D = Node3D.new()
@@ -1565,7 +1565,7 @@ static func _build_d9_iron_golem(geom: Node) -> void:
 	golem.add_child(stb)
 
 
-static func _build_d9_lava_pool(geom: Node) -> void:
+func _build_d9_lava_pool(geom: Node) -> void:
 	## Epic-9 T17: sunken bubbling lava pool — wide circular pit with stone
 	## rim, glowing emissive lava surface, and rising lava droplet particles.
 	var pool: Node3D = Node3D.new()
@@ -1659,7 +1659,7 @@ static func _build_d9_lava_pool(geom: Node) -> void:
 	pool.add_child(stb)
 
 
-static func _build_d9_forging_table(geom: Node) -> void:
+func _build_d9_forging_table(geom: Node) -> void:
 	## Epic-9 T18: stone forging table with a glowing weapon blueprint laid
 	## across the top — ancient runes etched into the surface.
 	var table: Node3D = Node3D.new()
@@ -1745,7 +1745,7 @@ static func _build_d9_forging_table(geom: Node) -> void:
 	table.add_child(stb)
 
 
-static func _build_d9_weapon_mannequin(geom: Node) -> void:
+func _build_d9_weapon_mannequin(geom: Node) -> void:
 	## Epic-9 T19: armored display mannequin with full plate armor + sword,
 	## standing on a stone pedestal.
 	var mann: Node3D = Node3D.new()
@@ -1866,7 +1866,7 @@ static func _build_d9_weapon_mannequin(geom: Node) -> void:
 	mann.add_child(stb)
 
 
-static func _build_d9_soot_vents(geom: Node) -> void:
+func _build_d9_soot_vents(geom: Node) -> void:
 	## Epic-9 T20: 5 ground soot vents puffing dark smoke at irregular spots.
 	var vents: Node3D = Node3D.new()
 	vents.name = "D9SootVents"
@@ -1931,7 +1931,7 @@ static func _build_d9_soot_vents(geom: Node) -> void:
 		vent.add_child(smoke)
 
 
-static func _build_d9_weapon_stall(geom: Node) -> void:
+func _build_d9_weapon_stall(geom: Node) -> void:
 	## Epic-9 T21: stone counter weapon stall with 4 weapons displayed on top
 	## (axe, mace, dagger, longsword) and a stone awning behind.
 	var stall: Node3D = Node3D.new()
@@ -2058,7 +2058,7 @@ static func _build_d9_weapon_stall(geom: Node) -> void:
 	stall.add_child(stb)
 
 
-static func _build_d9_weapon_vendor_npc(town: Node) -> void:
+func _build_d9_weapon_vendor_npc(town: Node) -> void:
 	## Epic-9 T22: weapon vendor NPC behind the stall — burly figure with
 	## a leather vest and braided beard.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -2156,7 +2156,7 @@ static func _build_d9_weapon_vendor_npc(town: Node) -> void:
 	ham_root.add_child(head)
 
 
-static func _build_d9_smelter_pots(geom: Node) -> void:
+func _build_d9_smelter_pots(geom: Node) -> void:
 	## Epic-9 T23: 2 hanging cauldrons of molten metal suspended from iron
 	## frames, glowing orange and pulsing.
 	var pots: Node3D = Node3D.new()
@@ -2254,7 +2254,7 @@ static func _build_d9_smelter_pots(geom: Node) -> void:
 		unit.add_child(lt)
 
 
-static func _build_d9_repair_station(geom: Node) -> void:
+func _build_d9_repair_station(geom: Node) -> void:
 	## Epic-9 T24: small specialized repair anvil with a tongs and a stack
 	## of repair scrap on a stone bench beside it.
 	var station: Node3D = Node3D.new()
@@ -2333,7 +2333,7 @@ static func _build_d9_repair_station(geom: Node) -> void:
 	station.add_child(stb)
 
 
-static func _build_d9_ingot_stacks(geom: Node) -> void:
+func _build_d9_ingot_stacks(geom: Node) -> void:
 	## Epic-9 T25: 3 organized stacks of finished iron ingot bars at the
 	## edge of the smithing area.
 	var stacks: Node3D = Node3D.new()
@@ -2376,7 +2376,7 @@ static func _build_d9_ingot_stacks(geom: Node) -> void:
 		stack.add_child(stb)
 
 
-static func _build_d9_forge_engineer_npc(town: Node) -> void:
+func _build_d9_forge_engineer_npc(town: Node) -> void:
 	## Epic-9 T26: forge engineer NPC with a mechanical arm and a heavy wrench.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
 	if slots == null:
@@ -2497,7 +2497,7 @@ static func _build_d9_forge_engineer_npc(town: Node) -> void:
 	wrench_root.add_child(wr_jaw)
 
 
-static func _build_d9_steam_pipes(geom: Node) -> void:
+func _build_d9_steam_pipes(geom: Node) -> void:
 	## Epic-9 T27: overhead industrial pipe network — long horizontal pipes
 	## with elbow joints and small steam vent puffs.
 	var pipes: Node3D = Node3D.new()
@@ -2583,7 +2583,7 @@ static func _build_d9_steam_pipes(geom: Node) -> void:
 			pipes.add_child(gauge)
 
 
-static func _build_d9_drilling_rig(geom: Node) -> void:
+func _build_d9_drilling_rig(geom: Node) -> void:
 	## Epic-9 T28: industrial drilling rig — vertical iron mast with a
 	## spinning drill bit at the bottom and ore dust ring around the impact.
 	var rig: Node3D = Node3D.new()
@@ -2684,7 +2684,7 @@ static func _build_d9_drilling_rig(geom: Node) -> void:
 	rig.add_child(stb)
 
 
-static func _build_d9_spark_waterfall(geom: Node) -> void:
+func _build_d9_spark_waterfall(geom: Node) -> void:
 	## Epic-9 T29: a waterfall of sparks cascading from a high stone ledge
 	## down into a small lava basin at its base.
 	var fall: Node3D = Node3D.new()
@@ -2768,7 +2768,7 @@ static func _build_d9_spark_waterfall(geom: Node) -> void:
 	fall.add_child(stb)
 
 
-static func _build_d9_cart_yard(geom: Node) -> void:
+func _build_d9_cart_yard(geom: Node) -> void:
 	## Epic-9 T30: yard of 3 parked mine carts on parallel rails — empty
 	## carts waiting for ore loading.
 	var yard: Node3D = Node3D.new()
@@ -2843,7 +2843,7 @@ static func _build_d9_cart_yard(geom: Node) -> void:
 		slot_root.add_child(stb)
 
 
-static func _build_d9_massive_crucible(geom: Node) -> void:
+func _build_d9_massive_crucible(geom: Node) -> void:
 	## Epic-9 T31: massive industrial crucible mounted on a heavy iron swing
 	## frame, full of molten metal with a slow tilt animation.
 	var crucible: Node3D = Node3D.new()
@@ -2951,7 +2951,7 @@ static func _build_d9_massive_crucible(geom: Node) -> void:
 	crucible.add_child(lt)
 
 
-static func _build_d9_crucible_operator_npc(town: Node) -> void:
+func _build_d9_crucible_operator_npc(town: Node) -> void:
 	## Epic-9 T32: crucible operator NPC — leather hood, heat-resistant gloves
 	## and a long control lever to tilt the crucible.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -3048,7 +3048,7 @@ static func _build_d9_crucible_operator_npc(town: Node) -> void:
 	npc.add_child(grip)
 
 
-static func _build_d9_forge_spirits(geom: Node) -> void:
+func _build_d9_forge_spirits(geom: Node) -> void:
 	## Epic-9 T33: 8 floating ember spirits drifting around the forge area —
 	## small glowing orange spheres on slow orbiting paths.
 	var spirits: Node3D = Node3D.new()
@@ -3092,7 +3092,7 @@ static func _build_d9_forge_spirits(geom: Node) -> void:
 		bob.tween_property(spirit, "position:y", base_y, 1.4 + phase)
 
 
-static func _build_d9_iron_rod_rack(geom: Node) -> void:
+func _build_d9_iron_rod_rack(geom: Node) -> void:
 	## Epic-9 T34: vertical wooden rack holding 6 glowing-hot iron rods
 	## sticking up out of slots, freshly pulled from the forge.
 	var rack: Node3D = Node3D.new()
@@ -3154,7 +3154,7 @@ static func _build_d9_iron_rod_rack(geom: Node) -> void:
 	rack.add_child(stb)
 
 
-static func _build_d9_slag_heap(geom: Node) -> void:
+func _build_d9_slag_heap(geom: Node) -> void:
 	## Epic-9 T35: large pile of cooled black slag — irregular dark chunks
 	## stacked into a small mound with one or two faintly glowing remnants.
 	var heap: Node3D = Node3D.new()
@@ -3209,7 +3209,7 @@ static func _build_d9_slag_heap(geom: Node) -> void:
 	heap.add_child(stb)
 
 
-static func _build_d9_obsidian_shards(geom: Node) -> void:
+func _build_d9_obsidian_shards(geom: Node) -> void:
 	## Epic-9 T36: 6 angular obsidian shard formations rising from the ground
 	## like dark crystal blades, with subtle red inner emission.
 	var shards: Node3D = Node3D.new()
@@ -3265,7 +3265,7 @@ static func _build_d9_obsidian_shards(geom: Node) -> void:
 		formation.add_child(stb)
 
 
-static func _build_d9_lava_lake(geom: Node) -> void:
+func _build_d9_lava_lake(geom: Node) -> void:
 	## Epic-9 T37: large lava lake with 5 stone stepping stones across it.
 	var lake: Node3D = Node3D.new()
 	lake.name = "D9LavaLake"
@@ -3340,7 +3340,7 @@ static func _build_d9_lava_lake(geom: Node) -> void:
 	lake.add_child(lt)
 
 
-static func _build_d9_geode_display(geom: Node) -> void:
+func _build_d9_geode_display(geom: Node) -> void:
 	## Epic-9 T38: cracked open geode on a stone pedestal — outer dark shell
 	## hides a cluster of glowing cyan crystals inside.
 	var geode: Node3D = Node3D.new()
@@ -3423,7 +3423,7 @@ static func _build_d9_geode_display(geom: Node) -> void:
 	geode.add_child(stb)
 
 
-static func _build_d9_forge_sage_npc(town: Node) -> void:
+func _build_d9_forge_sage_npc(town: Node) -> void:
 	## Epic-9 T39: mystic forge sage NPC — robed figure with a glowing
 	## staff topped by a forge ember orb.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -3518,7 +3518,7 @@ static func _build_d9_forge_sage_npc(town: Node) -> void:
 	npc.add_child(lt)
 
 
-static func _build_d9_brimstone_fumaroles(geom: Node) -> void:
+func _build_d9_brimstone_fumaroles(geom: Node) -> void:
 	## Epic-9 T40: 5 small brimstone fumaroles puffing yellow sulphur gas.
 	var fums: Node3D = Node3D.new()
 	fums.name = "D9BrimstoneFumaroles"
@@ -3571,7 +3571,7 @@ static func _build_d9_brimstone_fumaroles(geom: Node) -> void:
 		fum.add_child(gas)
 
 
-static func _build_d9_training_arena(geom: Node) -> void:
+func _build_d9_training_arena(geom: Node) -> void:
 	## Epic-9 T41: combat training arena — circular sand pit ringed by 8
 	## stone bollards with iron chain links between them.
 	var arena: Node3D = Node3D.new()
@@ -3641,7 +3641,7 @@ static func _build_d9_training_arena(geom: Node) -> void:
 		arena.add_child(link)
 
 
-static func _build_d9_iron_dummy(geom: Node) -> void:
+func _build_d9_iron_dummy(geom: Node) -> void:
 	## Epic-9 T42: iron training dummy — stone pedestal with a tall iron
 	## post and a humanoid torso, slightly dented and battered.
 	var dummy: Node3D = Node3D.new()
@@ -3720,7 +3720,7 @@ static func _build_d9_iron_dummy(geom: Node) -> void:
 	dummy.add_child(stb)
 
 
-static func _build_d9_battle_smith_npc(town: Node) -> void:
+func _build_d9_battle_smith_npc(town: Node) -> void:
 	## Epic-9 T43: battle smith trainer NPC — half-armored figure with a
 	## demonstration sword raised in a guard stance.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -3814,7 +3814,7 @@ static func _build_d9_battle_smith_npc(town: Node) -> void:
 	sway.tween_property(sword_root, "rotation_degrees:z", -5.0, 1.4)
 
 
-static func _build_d9_practice_weapon_stand(geom: Node) -> void:
+func _build_d9_practice_weapon_stand(geom: Node) -> void:
 	## Epic-9 T44: stand of 4 wooden practice weapons leaning against a
 	## stone block — bokken, training axe, training mace, training spear.
 	var stand: Node3D = Node3D.new()
@@ -3910,7 +3910,7 @@ static func _build_d9_practice_weapon_stand(geom: Node) -> void:
 	stand.add_child(stb)
 
 
-static func _build_d9_cooling_rack(geom: Node) -> void:
+func _build_d9_cooling_rack(geom: Node) -> void:
 	## Epic-9 T45: long iron cooling rack with 5 finished blade swords laid
 	## across the bars, glowing red and slowly cooling.
 	var rack: Node3D = Node3D.new()

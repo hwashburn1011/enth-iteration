@@ -1,5 +1,5 @@
 class_name D8Builder
-extends RefCounted
+extends Node
 ## Tidal Harbor district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control. All build helpers here are
 ## static and called from town.gd's _build_district_8() entry function.
@@ -11,14 +11,14 @@ extends RefCounted
 const D8_CENTER := Vector3(540, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=530 out to x=630 to make room for D8.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 630.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_8(geom).
 	print("[D8Builder] start")
 	extend_boundary(geom)
@@ -124,7 +124,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D8Builder] done")
 
 
-static func _build_d8_ground(geom: Node) -> void:
+func _build_d8_ground(geom: Node) -> void:
 	## Epic-8 T1b: D8 ground — translucent teal water plane with a wood
 	## boardwalk pattern overlaid for the dock area.
 	var plane: PlaneMesh = PlaneMesh.new()
@@ -178,7 +178,7 @@ static func _build_d8_ground(geom: Node) -> void:
 		geom.add_child(bubble)
 
 
-static func _build_d8_dock_entrance(geom: Node) -> void:
+func _build_d8_dock_entrance(geom: Node) -> void:
 	## Epic-8 T2: dock entrance arch — 2 wooden pilings with a curved
 	## driftwood crossbar + hanging fishing nets.
 	var arch: Node3D = Node3D.new()
@@ -262,7 +262,7 @@ static func _build_d8_dock_entrance(geom: Node) -> void:
 	arch.add_child(light)
 
 
-static func _build_d8_great_lighthouse(geom: Node) -> void:
+func _build_d8_great_lighthouse(geom: Node) -> void:
 	## Epic-8 T3: GREAT LIGHTHOUSE landmark — towering tapered cylinder +
 	## red and white striped paint + bright rotating top beacon.
 	var lh: Node3D = Node3D.new()
@@ -374,7 +374,7 @@ static func _build_d8_great_lighthouse(geom: Node) -> void:
 	lh.add_child(sb)
 
 
-static func _build_d8_harbor_master_npc(town: Node) -> void:
+func _build_d8_harbor_master_npc(town: Node) -> void:
 	## Epic-8 T4: harbor master NPC — navy blue captain's coat + cap +
 	## held brass spyglass.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -456,7 +456,7 @@ static func _build_d8_harbor_master_npc(town: Node) -> void:
 	npc.add_child(spy)
 
 
-static func _build_d8_fishing_boat(geom: Node) -> void:
+func _build_d8_fishing_boat(geom: Node) -> void:
 	## Epic-8 T6: small wooden fishing boat — curved hull + cabin + mast +
 	## furled sail with gentle bobbing tween.
 	var boat: Node3D = Node3D.new()
@@ -544,7 +544,7 @@ static func _build_d8_fishing_boat(geom: Node) -> void:
 	boat.add_child(sb)
 
 
-static func _build_d8_d8_fisherman_npc(town: Node) -> void:
+func _build_d8_d8_fisherman_npc(town: Node) -> void:
 	## Epic-8 T7: fisherman NPC — yellow rain coat + hat + held fishing
 	## rod with line.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -625,7 +625,7 @@ static func _build_d8_d8_fisherman_npc(town: Node) -> void:
 	npc.add_child(line)
 
 
-static func _build_d8_fish_crates(geom: Node) -> void:
+func _build_d8_fish_crates(geom: Node) -> void:
 	## Epic-8 T8: 3 dock crates filled with silver fish + ice.
 	var crates: Node3D = Node3D.new()
 	crates.name = "FishCrates"
@@ -694,7 +694,7 @@ static func _build_d8_fish_crates(geom: Node) -> void:
 		crate.add_child(sb)
 
 
-static func _build_d8_seagulls(geom: Node) -> void:
+func _build_d8_seagulls(geom: Node) -> void:
 	## Epic-8 T9: 5 seagulls flying in slow circling pattern over the harbor.
 	var gulls: Node3D = Node3D.new()
 	gulls.name = "Seagulls"
@@ -753,7 +753,7 @@ static func _build_d8_seagulls(geom: Node) -> void:
 		trot.tween_property(pivot, "rotation_degrees:y", i * 72.0, 0.0)
 
 
-static func _build_d8_sea_spray(geom: Node) -> void:
+func _build_d8_sea_spray(geom: Node) -> void:
 	## Epic-8 T10: ambient sea spray particles drifting up from the water.
 	var spray: GPUParticles3D = GPUParticles3D.new()
 	spray.name = "SeaSpray"
@@ -792,7 +792,7 @@ static func _build_d8_sea_spray(geom: Node) -> void:
 	geom.add_child(spray)
 
 
-static func _build_d8_shipwreck(geom: Node) -> void:
+func _build_d8_shipwreck(geom: Node) -> void:
 	## Epic-8 T11: shipwreck remnants — broken hull half-sunken + tilted
 	## mast + scattered planks + green seaweed.
 	var wreck: Node3D = Node3D.new()
@@ -868,7 +868,7 @@ static func _build_d8_shipwreck(geom: Node) -> void:
 	wreck.add_child(sb)
 
 
-static func _build_d8_sailor_npc(town: Node) -> void:
+func _build_d8_sailor_npc(town: Node) -> void:
 	## Epic-8 T12: sailor NPC — striped shirt + red bandana + held bottle.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -946,7 +946,7 @@ static func _build_d8_sailor_npc(town: Node) -> void:
 	npc.add_child(bottle)
 
 
-static func _build_d8_giant_anchor(geom: Node) -> void:
+func _build_d8_giant_anchor(geom: Node) -> void:
 	## Epic-8 T13: giant dock anchor — large dark metal anchor leaning
 	## against the boardwalk.
 	var anchor: Node3D = Node3D.new()
@@ -1009,7 +1009,7 @@ static func _build_d8_giant_anchor(geom: Node) -> void:
 	anchor.add_child(sb)
 
 
-static func _build_d8_pilings_row(geom: Node) -> void:
+func _build_d8_pilings_row(geom: Node) -> void:
 	## Epic-8 T14: row of 8 wooden dock pilings rising from the water,
 	## marking the edge of a long dock.
 	var pilings: Node3D = Node3D.new()
@@ -1072,7 +1072,7 @@ static func _build_d8_pilings_row(geom: Node) -> void:
 		piling.add_child(sb)
 
 
-static func _build_d8_dolphins(geom: Node) -> void:
+func _build_d8_dolphins(geom: Node) -> void:
 	## Epic-8 T15: 3 dolphins jumping out of the water in slow arcs.
 	var dolphins: Node3D = Node3D.new()
 	dolphins.name = "Dolphins"
@@ -1134,7 +1134,7 @@ static func _build_d8_dolphins(geom: Node) -> void:
 		tw.tween_interval(2.0)
 
 
-static func _build_d8_tavern(geom: Node) -> void:
+func _build_d8_tavern(geom: Node) -> void:
 	## Epic-8 T16: harbor tavern — wooden building with sloped roof + 2
 	## glowing windows + hanging signboard.
 	var tavern: Node3D = Node3D.new()
@@ -1228,7 +1228,7 @@ static func _build_d8_tavern(geom: Node) -> void:
 	tavern.add_child(sb)
 
 
-static func _build_d8_tavern_keeper_npc(town: Node) -> void:
+func _build_d8_tavern_keeper_npc(town: Node) -> void:
 	## Epic-8 T17: tavern keeper NPC — apron + held tankard with foam.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -1290,7 +1290,7 @@ static func _build_d8_tavern_keeper_npc(town: Node) -> void:
 	npc.add_child(foam)
 
 
-static func _build_d8_barrel_stack(geom: Node) -> void:
+func _build_d8_barrel_stack(geom: Node) -> void:
 	## Epic-8 T18: stack of 6 wooden barrels — 3 base + 2 middle + 1 top.
 	var stack: Node3D = Node3D.new()
 	stack.name = "BarrelStack"
@@ -1343,7 +1343,7 @@ static func _build_d8_barrel_stack(geom: Node) -> void:
 	stack.add_child(sb)
 
 
-static func _build_d8_rope_coils(geom: Node) -> void:
+func _build_d8_rope_coils(geom: Node) -> void:
 	## Epic-8 T19: 3 large coiled ropes on the dock — concentric torus rings.
 	var coils: Node3D = Node3D.new()
 	coils.name = "RopeCoils"
@@ -1368,7 +1368,7 @@ static func _build_d8_rope_coils(geom: Node) -> void:
 			coil.add_child(ring)
 
 
-static func _build_d8_lantern_posts(geom: Node) -> void:
+func _build_d8_lantern_posts(geom: Node) -> void:
 	## Epic-8 T20: row of 6 dock lantern posts — wooden pole + hanging
 	## warm yellow glass lantern.
 	var row: Node3D = Node3D.new()
@@ -1442,7 +1442,7 @@ static func _build_d8_lantern_posts(geom: Node) -> void:
 		lamp.add_child(sb)
 
 
-static func _build_d8_clam_digger_npc(town: Node) -> void:
+func _build_d8_clam_digger_npc(town: Node) -> void:
 	## Epic-8 T21: clam digger NPC — rolled-up trousers + held bucket and
 	## small spade.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1512,7 +1512,7 @@ static func _build_d8_clam_digger_npc(town: Node) -> void:
 	npc.add_child(blade)
 
 
-static func _build_d8_tide_pools(geom: Node) -> void:
+func _build_d8_tide_pools(geom: Node) -> void:
 	## Epic-8 T22: 4 small tide pools — round shallow pools of water
 	## with stone rims at varying positions on the dock.
 	var pools: Node3D = Node3D.new()
@@ -1564,7 +1564,7 @@ static func _build_d8_tide_pools(geom: Node) -> void:
 		tw.tween_property(water, "position:y", 0.08, 1.0)
 
 
-static func _build_d8_starfish(geom: Node) -> void:
+func _build_d8_starfish(geom: Node) -> void:
 	## Epic-8 T23: 4 starfish creatures on the dock — orange/red 5-pointed
 	## stars made from a center sphere + 5 prism arms.
 	var stars: Node3D = Node3D.new()
@@ -1617,7 +1617,7 @@ static func _build_d8_starfish(geom: Node) -> void:
 			star.add_child(arm)
 
 
-static func _build_d8_warning_bell(geom: Node) -> void:
+func _build_d8_warning_bell(geom: Node) -> void:
 	## Epic-8 T24: warning bell mounted on a tall wooden pole — used to
 	## signal storms or arrivals.
 	var bell: Node3D = Node3D.new()
@@ -1685,7 +1685,7 @@ static func _build_d8_warning_bell(geom: Node) -> void:
 	bell.add_child(sb)
 
 
-static func _build_d8_net_mending(geom: Node) -> void:
+func _build_d8_net_mending(geom: Node) -> void:
 	## Epic-8 T25: net mending station — wooden frame with a large draped
 	## fishing net + small wooden stool.
 	var station: Node3D = Node3D.new()
@@ -1755,7 +1755,7 @@ static func _build_d8_net_mending(geom: Node) -> void:
 	station.add_child(sb)
 
 
-static func _build_d8_kraken(geom: Node) -> void:
+func _build_d8_kraken(geom: Node) -> void:
 	## Epic-8 T26: distant kraken silhouette — large dark tentacles
 	## emerging from the water + 2 glowing red eyes peeking out.
 	var kraken: Node3D = Node3D.new()
@@ -1816,7 +1816,7 @@ static func _build_d8_kraken(geom: Node) -> void:
 		tw.tween_property(eye, "scale:y", 1.0, 0.10)
 
 
-static func _build_d8_harpooner_npc(town: Node) -> void:
+func _build_d8_harpooner_npc(town: Node) -> void:
 	## Epic-8 T27: harpooner NPC — leather vest + held large harpoon spear.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -1874,7 +1874,7 @@ static func _build_d8_harpooner_npc(town: Node) -> void:
 	npc.add_child(head)
 
 
-static func _build_d8_signal_flags(geom: Node) -> void:
+func _build_d8_signal_flags(geom: Node) -> void:
 	## Epic-8 T28: tall signal flag pole — wooden mast with 4 colored
 	## semaphore-style flags hanging.
 	var flags: Node3D = Node3D.new()
@@ -1933,7 +1933,7 @@ static func _build_d8_signal_flags(geom: Node) -> void:
 		tw.tween_property(flag, "rotation_degrees:y", -8.0, 1.4)
 
 
-static func _build_d8_buoys(geom: Node) -> void:
+func _build_d8_buoys(geom: Node) -> void:
 	## Epic-8 T29: 5 floating buoys — colorful round floats with bobbing
 	## tweens, marking a channel.
 	var buoys: Node3D = Node3D.new()
@@ -1987,7 +1987,7 @@ static func _build_d8_buoys(geom: Node) -> void:
 		tw.tween_property(buoy, "position:y", 0.20, 1.4)
 
 
-static func _build_d8_jellyfish_glow(geom: Node) -> void:
+func _build_d8_jellyfish_glow(geom: Node) -> void:
 	## Epic-8 T30: jellyfish glow particles — soft purple/pink GPU particles
 	## floating gently across the harbor like bioluminescent jellyfish.
 	var jellies: GPUParticles3D = GPUParticles3D.new()
@@ -2027,7 +2027,7 @@ static func _build_d8_jellyfish_glow(geom: Node) -> void:
 	geom.add_child(jellies)
 
 
-static func _build_d8_shipyard_scaffold(geom: Node) -> void:
+func _build_d8_shipyard_scaffold(geom: Node) -> void:
 	## Epic-8 T31: shipyard scaffolding — wooden frame structure
 	## supporting an under-construction boat hull.
 	var yard: Node3D = Node3D.new()
@@ -2080,7 +2080,7 @@ static func _build_d8_shipyard_scaffold(geom: Node) -> void:
 	yard.add_child(sb)
 
 
-static func _build_d8_shipwright_npc(town: Node) -> void:
+func _build_d8_shipwright_npc(town: Node) -> void:
 	## Epic-8 T32: shipwright NPC — leather apron + held wood plane.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -2124,7 +2124,7 @@ static func _build_d8_shipwright_npc(town: Node) -> void:
 	npc.add_child(plane)
 
 
-static func _build_d8_cargo_crane(geom: Node) -> void:
+func _build_d8_cargo_crane(geom: Node) -> void:
 	## Epic-8 T33: dockside cargo crane — tall metal frame + horizontal arm
 	## with a hanging hook + crate dangling.
 	var crane: Node3D = Node3D.new()
@@ -2198,7 +2198,7 @@ static func _build_d8_cargo_crane(geom: Node) -> void:
 	crane.add_child(sb)
 
 
-static func _build_d8_dock_workers(geom: Node) -> void:
+func _build_d8_dock_workers(geom: Node) -> void:
 	## Epic-8 T34: 3 dock worker NPCs carrying crates — small worker
 	## figures with carry-poses around the harbor.
 	var workers: Node3D = Node3D.new()
@@ -2259,7 +2259,7 @@ static func _build_d8_dock_workers(geom: Node) -> void:
 		tw.tween_property(worker, "position:y", 0.0, 0.30)
 
 
-static func _build_d8_tide_gauge(geom: Node) -> void:
+func _build_d8_tide_gauge(geom: Node) -> void:
 	## Epic-8 T35: tide gauge measuring stick — vertical wooden pole with
 	## colored measurement bands.
 	var gauge: Node3D = Node3D.new()
@@ -2320,7 +2320,7 @@ static func _build_d8_tide_gauge(geom: Node) -> void:
 	gauge.add_child(sb)
 
 
-static func _build_d8_treasure_chest(geom: Node) -> void:
+func _build_d8_treasure_chest(geom: Node) -> void:
 	## Epic-8 T36: half-sunken treasure chest with glowing gold spilling out.
 	var chest: Node3D = Node3D.new()
 	chest.name = "TreasureChest"
@@ -2404,7 +2404,7 @@ static func _build_d8_treasure_chest(geom: Node) -> void:
 	chest.add_child(sb)
 
 
-static func _build_d8_treasure_hunter_npc(town: Node) -> void:
+func _build_d8_treasure_hunter_npc(town: Node) -> void:
 	## Epic-8 T37: treasure hunter NPC — pirate-style coat + tricorn hat +
 	## eye patch + held gold coin.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2488,7 +2488,7 @@ static func _build_d8_treasure_hunter_npc(town: Node) -> void:
 	npc.add_child(coin)
 
 
-static func _build_d8_bottle_display(geom: Node) -> void:
+func _build_d8_bottle_display(geom: Node) -> void:
 	## Epic-8 T38: ship in a bottle display — wooden table with 3 sealed
 	## glass bottles each containing a tiny boat.
 	var disp: Node3D = Node3D.new()
@@ -2557,7 +2557,7 @@ static func _build_d8_bottle_display(geom: Node) -> void:
 	disp.add_child(sb)
 
 
-static func _build_d8_bottle_artisan_npc(town: Node) -> void:
+func _build_d8_bottle_artisan_npc(town: Node) -> void:
 	## Epic-8 T39: ship in a bottle artisan NPC — small magnifying glass +
 	## brown vest.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2618,7 +2618,7 @@ static func _build_d8_bottle_artisan_npc(town: Node) -> void:
 	npc.add_child(handle)
 
 
-static func _build_d8_mines(geom: Node) -> void:
+func _build_d8_mines(geom: Node) -> void:
 	## Epic-8 T40: 3 floating warning sea mines — round dark spheres with
 	## metal spikes + small red glowing fuse.
 	var mines: Node3D = Node3D.new()
@@ -2678,7 +2678,7 @@ static func _build_d8_mines(geom: Node) -> void:
 		twb.tween_property(mine, "position:y", 0.0, 1.6)
 
 
-static func _build_d8_warship(geom: Node) -> void:
+func _build_d8_warship(geom: Node) -> void:
 	## Epic-8 T41: large naval warship — long hull + 3 masts + cannon
 	## ports along the side + decorative bow.
 	var ship: Node3D = Node3D.new()
@@ -2765,7 +2765,7 @@ static func _build_d8_warship(geom: Node) -> void:
 	ship.add_child(sb)
 
 
-static func _build_d8_navy_captain_npc(town: Node) -> void:
+func _build_d8_navy_captain_npc(town: Node) -> void:
 	## Epic-8 T42: navy captain NPC — formal navy uniform + bicorne hat +
 	## held cutlass.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2839,7 +2839,7 @@ static func _build_d8_navy_captain_npc(town: Node) -> void:
 	npc.add_child(blade)
 
 
-static func _build_d8_cannons_row(geom: Node) -> void:
+func _build_d8_cannons_row(geom: Node) -> void:
 	## Epic-8 T43: row of 4 dock cannons — dark metal barrels on wooden
 	## carriages.
 	var cannons: Node3D = Node3D.new()
@@ -2899,7 +2899,7 @@ static func _build_d8_cannons_row(geom: Node) -> void:
 		cannon.add_child(sb)
 
 
-static func _build_d8_gunpowder_barrels(geom: Node) -> void:
+func _build_d8_gunpowder_barrels(geom: Node) -> void:
 	## Epic-8 T44: stack of 4 gunpowder barrels with red warning markings.
 	var barrels: Node3D = Node3D.new()
 	barrels.name = "GunpowderBarrels"
@@ -2963,7 +2963,7 @@ static func _build_d8_gunpowder_barrels(geom: Node) -> void:
 	barrels.add_child(sb)
 
 
-static func _build_d8_lifeguard_tower(geom: Node) -> void:
+func _build_d8_lifeguard_tower(geom: Node) -> void:
 	## Epic-8 T45: small wooden lifeguard tower — elevated platform on
 	## angled posts + sloped roof + warning sign.
 	var tower: Node3D = Node3D.new()
@@ -3029,7 +3029,7 @@ static func _build_d8_lifeguard_tower(geom: Node) -> void:
 	tower.add_child(sb)
 
 
-static func _build_d8_pirate_flag(geom: Node) -> void:
+func _build_d8_pirate_flag(geom: Node) -> void:
 	## Epic-8 T46: tall pirate flag pole — black skull and crossbones flag
 	## flying high, marking pirate territory.
 	var flag: Node3D = Node3D.new()
@@ -3100,7 +3100,7 @@ static func _build_d8_pirate_flag(geom: Node) -> void:
 	tw.tween_property(cloth, "rotation_degrees:y", -6.0, 1.4)
 
 
-static func _build_d8_pirate_captain_npc(town: Node) -> void:
+func _build_d8_pirate_captain_npc(town: Node) -> void:
 	## Epic-8 T47: pirate captain NPC — long red coat + tricorn hat +
 	## peg leg + held cutlass.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3182,7 +3182,7 @@ static func _build_d8_pirate_captain_npc(town: Node) -> void:
 	npc.add_child(blade)
 
 
-static func _build_d8_pirate_crew(geom: Node) -> void:
+func _build_d8_pirate_crew(geom: Node) -> void:
 	## Epic-8 T48: 3 pirate crew member figures with bandanas + striped shirts.
 	var crew: Node3D = Node3D.new()
 	crew.name = "PirateCrew"
@@ -3259,7 +3259,7 @@ static func _build_d8_pirate_crew(geom: Node) -> void:
 		pirate.add_child(bandana)
 
 
-static func _build_d8_parrots(geom: Node) -> void:
+func _build_d8_parrots(geom: Node) -> void:
 	## Epic-8 T49: 3 colorful parrots perched on small wooden posts.
 	var parrots: Node3D = Node3D.new()
 	parrots.name = "Parrots"
@@ -3334,7 +3334,7 @@ static func _build_d8_parrots(geom: Node) -> void:
 		tw.tween_property(body, "position:y", 2.0, 0.55)
 
 
-static func _build_d8_sea_tyrant(geom: Node) -> void:
+func _build_d8_sea_tyrant(geom: Node) -> void:
 	## Epic-8 T50: SEA TYRANT — D8 mid-boss landmark. Massive dark sea
 	## monster figurehead with multiple tentacles, glowing red eyes, and
 	## a halo of orbiting jellyfish.
@@ -3485,7 +3485,7 @@ static func _build_d8_sea_tyrant(geom: Node) -> void:
 	tyrant.add_child(psb)
 
 
-static func _build_d8_rowboats(geom: Node) -> void:
+func _build_d8_rowboats(geom: Node) -> void:
 	## Epic-8 T51: 4 small rowboats lined up — long curved hulls + 2
 	## oars laid across each + bobbing tweens.
 	var line: Node3D = Node3D.new()
@@ -3553,7 +3553,7 @@ static func _build_d8_rowboats(geom: Node) -> void:
 		boat.add_child(sb)
 
 
-static func _build_d8_oar_maker_npc(town: Node) -> void:
+func _build_d8_oar_maker_npc(town: Node) -> void:
 	## Epic-8 T52: oar maker NPC — leather apron + held wooden oar shaft.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -3608,7 +3608,7 @@ static func _build_d8_oar_maker_npc(town: Node) -> void:
 	npc.add_child(paddle)
 
 
-static func _build_d8_fish_market(geom: Node) -> void:
+func _build_d8_fish_market(geom: Node) -> void:
 	## Epic-8 T53: fish market stall — wooden counter with displayed fish
 	## on ice + colorful awning.
 	var market: Node3D = Node3D.new()
@@ -3699,7 +3699,7 @@ static func _build_d8_fish_market(geom: Node) -> void:
 	market.add_child(sb)
 
 
-static func _build_d8_fishmonger_npc(town: Node) -> void:
+func _build_d8_fishmonger_npc(town: Node) -> void:
 	## Epic-8 T54: fishmonger NPC — apron + held large fish.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -3744,7 +3744,7 @@ static func _build_d8_fishmonger_npc(town: Node) -> void:
 	npc.add_child(fish)
 
 
-static func _build_d8_fish_dryer(geom: Node) -> void:
+func _build_d8_fish_dryer(geom: Node) -> void:
 	## Epic-8 T55: hanging fish dryer — wooden frame with rope between
 	## 2 posts + 6 fish hanging.
 	var dryer: Node3D = Node3D.new()
@@ -3807,7 +3807,7 @@ static func _build_d8_fish_dryer(geom: Node) -> void:
 		tw.tween_property(fish, "rotation_degrees:z", -4.0, 1.4)
 
 
-static func _build_d8_sea_turtles(geom: Node) -> void:
+func _build_d8_sea_turtles(geom: Node) -> void:
 	## Epic-8 T56: 3 sea turtles slowly swimming — round green shell + 4
 	## flippers + slow drift tween.
 	var turtles: Node3D = Node3D.new()
@@ -3875,7 +3875,7 @@ static func _build_d8_sea_turtles(geom: Node) -> void:
 		tw.tween_property(turtle, "rotation_degrees:y", 0.0, 0.5)
 
 
-static func _build_d8_marine_biologist_npc(town: Node) -> void:
+func _build_d8_marine_biologist_npc(town: Node) -> void:
 	## Epic-8 T57: marine biologist NPC — white lab coat + held magnifier +
 	## small clipboard.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3930,7 +3930,7 @@ static func _build_d8_marine_biologist_npc(town: Node) -> void:
 	npc.add_child(paper)
 
 
-static func _build_d8_aquarium_tank(geom: Node) -> void:
+func _build_d8_aquarium_tank(geom: Node) -> void:
 	## Epic-8 T58: aquarium tank — translucent glass cube with cyan water
 	## inside + 4 small fish swimming + bubble particles.
 	var tank: Node3D = Node3D.new()
@@ -4011,7 +4011,7 @@ static func _build_d8_aquarium_tank(geom: Node) -> void:
 	tank.add_child(sb)
 
 
-static func _build_d8_specimen_jars(geom: Node) -> void:
+func _build_d8_specimen_jars(geom: Node) -> void:
 	## Epic-8 T59: row of 5 glass specimen jars on a wooden shelf — each
 	## containing a different colored marine specimen.
 	var jars: Node3D = Node3D.new()
@@ -4089,7 +4089,7 @@ static func _build_d8_specimen_jars(geom: Node) -> void:
 	jars.add_child(sb)
 
 
-static func _build_d8_diving_rig(geom: Node) -> void:
+func _build_d8_diving_rig(geom: Node) -> void:
 	## Epic-8 T60: diving rig — old-style brass diving helmet on a stand
 	## with hose connection.
 	var rig: Node3D = Node3D.new()
@@ -4172,7 +4172,7 @@ static func _build_d8_diving_rig(geom: Node) -> void:
 	rig.add_child(sb)
 
 
-static func _build_d8_pearl_diver_npc(town: Node) -> void:
+func _build_d8_pearl_diver_npc(town: Node) -> void:
 	## Epic-8 T61: pearl diver NPC — wetsuit + breathing mask + held pearl.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -4237,7 +4237,7 @@ static func _build_d8_pearl_diver_npc(town: Node) -> void:
 	npc.add_child(pearl)
 
 
-static func _build_d8_oysters(geom: Node) -> void:
+func _build_d8_oysters(geom: Node) -> void:
 	## Epic-8 T62: 5 open oysters scattered on a stone slab — half-shell
 	## sphere + glowing pearl visible inside each.
 	var oysters: Node3D = Node3D.new()
@@ -4306,7 +4306,7 @@ static func _build_d8_oysters(geom: Node) -> void:
 		oyster.add_child(pearl)
 
 
-static func _build_d8_crabs(geom: Node) -> void:
+func _build_d8_crabs(geom: Node) -> void:
 	## Epic-8 T63: 4 small crabs scattered around the dock — round body +
 	## 2 claws + 6 legs + side-step shuffle.
 	var crabs: Node3D = Node3D.new()
@@ -4366,7 +4366,7 @@ static func _build_d8_crabs(geom: Node) -> void:
 		tw.tween_property(crab, "position:x", crab.position.x - 1.0, 1.4)
 
 
-static func _build_d8_dock_bridge(geom: Node) -> void:
+func _build_d8_dock_bridge(geom: Node) -> void:
 	## Epic-8 T64: small wooden plank bridge connecting two dock sections
 	## across a small water gap.
 	var bridge: Node3D = Node3D.new()
@@ -4423,7 +4423,7 @@ static func _build_d8_dock_bridge(geom: Node) -> void:
 	bridge.add_child(sb)
 
 
-static func _build_d8_anemones(geom: Node) -> void:
+func _build_d8_anemones(geom: Node) -> void:
 	## Epic-8 T65: 5 sea anemones — colorful column bases with tentacle
 	## clusters waving from the top.
 	var anemones: Node3D = Node3D.new()
@@ -4486,7 +4486,7 @@ static func _build_d8_anemones(geom: Node) -> void:
 		anem.add_child(sb)
 
 
-static func _build_d8_lighthouse(geom: Node) -> void:
+func _build_d8_lighthouse(geom: Node) -> void:
 	## Epic-8 T66: lighthouse beacon — tall striped stone tower with rotating
 	## emissive lamp on top, anchored at far east edge of the harbor.
 	var house: Node3D = Node3D.new()
@@ -4585,7 +4585,7 @@ static func _build_d8_lighthouse(geom: Node) -> void:
 	house.add_child(sb)
 
 
-static func _build_d8_cargo_containers(geom: Node) -> void:
+func _build_d8_cargo_containers(geom: Node) -> void:
 	## Epic-8 T67: stacked colorful shipping containers on the dock — 6
 	## containers in a 3x2 stack with weathered metal materials.
 	var stack: Node3D = Node3D.new()
@@ -4641,7 +4641,7 @@ static func _build_d8_cargo_containers(geom: Node) -> void:
 		cont.add_child(sb)
 
 
-static func _build_d8_quay_master_npc(town: Node) -> void:
+func _build_d8_quay_master_npc(town: Node) -> void:
 	## Epic-8 T68: harbor master NPC — uniformed dockworker with clipboard.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
 	if slots == null:
@@ -4719,7 +4719,7 @@ static func _build_d8_quay_master_npc(town: Node) -> void:
 	npc.add_child(clip)
 
 
-static func _build_d8_buoy_field(geom: Node) -> void:
+func _build_d8_buoy_field(geom: Node) -> void:
 	## Epic-8 T69: 6 bobbing harbor buoys with red navigation lights, scattered
 	## offshore. Each buoy has its own bob tween offset.
 	var field: Node3D = Node3D.new()
@@ -4791,7 +4791,7 @@ static func _build_d8_buoy_field(geom: Node) -> void:
 		pulse.tween_property(light_mat, "emission_energy_multiplier", 1.5, 0.8)
 
 
-static func _build_d8_tied_fishing_boat(geom: Node) -> void:
+func _build_d8_tied_fishing_boat(geom: Node) -> void:
 	## Epic-8 T70: small wooden fishing boat tied to the dock — bobbing hull,
 	## simple cabin, mast with net hanging off the side.
 	var boat: Node3D = Node3D.new()
@@ -4896,7 +4896,7 @@ static func _build_d8_tied_fishing_boat(geom: Node) -> void:
 	boat.add_child(sb)
 
 
-static func _build_d8_sailing_yacht(geom: Node) -> void:
+func _build_d8_sailing_yacht(geom: Node) -> void:
 	## Epic-8 T71: elegant white sailing yacht — sleek hull, tall mast, big
 	## triangular mainsail and small jib, gently bobbing offshore.
 	var yacht: Node3D = Node3D.new()
@@ -4994,7 +4994,7 @@ static func _build_d8_sailing_yacht(geom: Node) -> void:
 	yacht.add_child(sb)
 
 
-static func _build_d8_shanty_singer_npc(town: Node) -> void:
+func _build_d8_shanty_singer_npc(town: Node) -> void:
 	## Epic-8 T72: sea shanty singer NPC — old sailor with concertina box,
 	## striped shirt, and a big floppy hat. Sways while singing.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -5081,7 +5081,7 @@ static func _build_d8_shanty_singer_npc(town: Node) -> void:
 	tw.tween_property(npc, "rotation_degrees:z", -4.0, 0.9)
 
 
-static func _build_d8_crows_nest(geom: Node) -> void:
+func _build_d8_crows_nest(geom: Node) -> void:
 	## Epic-8 T73: tall wooden lookout post with a circular crow's nest at top
 	## containing a small lookout figure peering through a brass spyglass.
 	var nest: Node3D = Node3D.new()
@@ -5185,7 +5185,7 @@ static func _build_d8_crows_nest(geom: Node) -> void:
 	nest.add_child(sb)
 
 
-static func _build_d8_message_bottles(geom: Node) -> void:
+func _build_d8_message_bottles(geom: Node) -> void:
 	## Epic-8 T74: 6 drifting glass message bottles bobbing in the harbor —
 	## clear amber bottles with rolled paper scrolls visible inside.
 	var bottles: Node3D = Node3D.new()
@@ -5268,7 +5268,7 @@ static func _build_d8_message_bottles(geom: Node) -> void:
 		spin.tween_property(bottle, "rotation_degrees:y", 360.0, 8.0 + phase).from(0.0)
 
 
-static func _build_d8_tide_markers(geom: Node) -> void:
+func _build_d8_tide_markers(geom: Node) -> void:
 	## Epic-8 T75: 4 striped wooden tide-depth markers — tall poles with
 	## red/white bands and a small numeric placard at top.
 	var posts: Node3D = Node3D.new()
@@ -5318,7 +5318,7 @@ static func _build_d8_tide_markers(geom: Node) -> void:
 		post.add_child(sb)
 
 
-static func _build_d8_customs_office(geom: Node) -> void:
+func _build_d8_customs_office(geom: Node) -> void:
 	## Epic-8 T76: small wooden customs office — square building with sloped
 	## roof, two windows, hanging sign reading "CUSTOMS".
 	var office: Node3D = Node3D.new()
@@ -5447,7 +5447,7 @@ static func _build_d8_customs_office(geom: Node) -> void:
 	office.add_child(stb)
 
 
-static func _build_d8_customs_officer_npc(town: Node) -> void:
+func _build_d8_customs_officer_npc(town: Node) -> void:
 	## Epic-8 T77: customs officer NPC — green uniform with badge, peaked cap,
 	## holding a leather ledger and a brass stamp.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -5547,7 +5547,7 @@ static func _build_d8_customs_officer_npc(town: Node) -> void:
 	npc.add_child(stamp)
 
 
-static func _build_d8_anchor_chain(geom: Node) -> void:
+func _build_d8_anchor_chain(geom: Node) -> void:
 	## Epic-8 T78: heavy iron anchor chain coiled on the dock — concentric
 	## rings of dark metal links with a big iron anchor at the center.
 	var pile: Node3D = Node3D.new()
@@ -5620,7 +5620,7 @@ static func _build_d8_anchor_chain(geom: Node) -> void:
 	pile.add_child(sb)
 
 
-static func _build_d8_whale_watch_tower(geom: Node) -> void:
+func _build_d8_whale_watch_tower(geom: Node) -> void:
 	## Epic-8 T79: tall whale-watching observation platform — wooden tower with
 	## ladder and big mounted brass binoculars at the top.
 	var tower: Node3D = Node3D.new()
@@ -5722,7 +5722,7 @@ static func _build_d8_whale_watch_tower(geom: Node) -> void:
 	tower.add_child(sb)
 
 
-static func _build_d8_tied_barrels(geom: Node) -> void:
+func _build_d8_tied_barrels(geom: Node) -> void:
 	## Epic-8 T80: 5 wooden barrels tied together at the dock edge, bobbing
 	## gently with rope strung between them.
 	var dock_barrels: Node3D = Node3D.new()
@@ -5792,7 +5792,7 @@ static func _build_d8_tied_barrels(geom: Node) -> void:
 	dock_barrels.add_child(rope)
 
 
-static func _build_d8_mermaid_fountain(geom: Node) -> void:
+func _build_d8_mermaid_fountain(geom: Node) -> void:
 	## Epic-8 T81: bronze mermaid statue on a stone basin — decorative
 	## fountain with a particle water spray and a soft cyan light.
 	var fountain: Node3D = Node3D.new()
@@ -5934,7 +5934,7 @@ static func _build_d8_mermaid_fountain(geom: Node) -> void:
 	fountain.add_child(sb)
 
 
-static func _build_d8_cartographer_npc(town: Node) -> void:
+func _build_d8_cartographer_npc(town: Node) -> void:
 	## Epic-8 T82: cartographer NPC — hunched figure with rolled maps slung
 	## across the back, holding a quill and a half-unrolled chart.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -6018,7 +6018,7 @@ static func _build_d8_cartographer_npc(town: Node) -> void:
 	npc.add_child(quill)
 
 
-static func _build_d8_market_raft(geom: Node) -> void:
+func _build_d8_market_raft(geom: Node) -> void:
 	## Epic-8 T83: small floating market raft — square wooden raft with a
 	## striped awning and 6 colorful goods crates on top, bobbing offshore.
 	var raft: Node3D = Node3D.new()
@@ -6115,7 +6115,7 @@ static func _build_d8_market_raft(geom: Node) -> void:
 	raft.add_child(stb)
 
 
-static func _build_d8_smokehouse(geom: Node) -> void:
+func _build_d8_smokehouse(geom: Node) -> void:
 	## Epic-8 T84: small fish smokehouse — wooden shed with a stone chimney
 	## emitting a slow particle smoke trail.
 	var shed: Node3D = Node3D.new()
@@ -6203,7 +6203,7 @@ static func _build_d8_smokehouse(geom: Node) -> void:
 	shed.add_child(stb)
 
 
-static func _build_d8_wind_chimes(geom: Node) -> void:
+func _build_d8_wind_chimes(geom: Node) -> void:
 	## Epic-8 T85: tall post with hanging wind chimes — 6 brass tubes of
 	## varying lengths suspended from a horizontal cross-bar, gentle sway.
 	var chime: Node3D = Node3D.new()
@@ -6280,7 +6280,7 @@ static func _build_d8_wind_chimes(geom: Node) -> void:
 	chime.add_child(sb)
 
 
-static func _build_d8_sea_cave(geom: Node) -> void:
+func _build_d8_sea_cave(geom: Node) -> void:
 	## Epic-8 T86: sea cave entrance — dark stone archway with mossy hangings
 	## and a soft inner cyan glow hinting at hidden depths.
 	var cave: Node3D = Node3D.new()
@@ -6378,7 +6378,7 @@ static func _build_d8_sea_cave(geom: Node) -> void:
 	cave.add_child(sb)
 
 
-static func _build_d8_submarine(geom: Node) -> void:
+func _build_d8_submarine(geom: Node) -> void:
 	## Epic-8 T87: retro submarine half-emerged at dock — long dark hull,
 	## conning tower with portholes and antenna, periscope on top.
 	var sub: Node3D = Node3D.new()
@@ -6496,7 +6496,7 @@ static func _build_d8_submarine(geom: Node) -> void:
 	sub.add_child(stb)
 
 
-static func _build_d8_rope_coil_pyramid(geom: Node) -> void:
+func _build_d8_rope_coil_pyramid(geom: Node) -> void:
 	## Epic-8 T88: large pyramid stack of thick rope coils — 3 levels with
 	## 6 coils on the bottom, 3 in the middle, 1 on top.
 	var pile: Node3D = Node3D.new()
@@ -6543,7 +6543,7 @@ func _make_rope_coil(parent: Node3D, mat: Material, pos: Vector3, radius: float)
 	parent.add_child(coil)
 
 
-static func _build_d8_shore_patrol_npc(town: Node) -> void:
+func _build_d8_shore_patrol_npc(town: Node) -> void:
 	## Epic-8 T89: armored shore patrol NPC — chest plate with naval insignia,
 	## helmet, and a tall halberd polearm with a bright cyan blade.
 	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
@@ -6651,7 +6651,7 @@ static func _build_d8_shore_patrol_npc(town: Node) -> void:
 	npc.add_child(spike)
 
 
-static func _build_d8_circling_gulls(geom: Node) -> void:
+func _build_d8_circling_gulls(geom: Node) -> void:
 	## Epic-8 T90: ambient flock of 8 seagulls circling overhead — each on
 	## its own pivot rotating about a shared center, slight bob.
 	var flock: Node3D = Node3D.new()
@@ -6700,7 +6700,7 @@ static func _build_d8_circling_gulls(geom: Node) -> void:
 		orbit.tween_property(pivot, "rotation_degrees:y", float(i) * 45.0 + 360.0, 18.0 + phase).from(float(i) * 45.0)
 
 
-static func _build_d8_whirlpool_teaser(geom: Node) -> void:
+func _build_d8_whirlpool_teaser(geom: Node) -> void:
 	## Epic-8 T91: boss arena teaser — large dark whirlpool circle in the
 	## water with concentric spinning rings and glowing violet runes around
 	## the perimeter. Sets up the finale boss arrival.
@@ -6781,7 +6781,7 @@ static func _build_d8_whirlpool_teaser(geom: Node) -> void:
 	pool.add_child(lt)
 
 
-static func _build_d8_ship_graveyard(geom: Node) -> void:
+func _build_d8_ship_graveyard(geom: Node) -> void:
 	## Epic-8 T92: broken mast graveyard — 6 splintered ship masts sticking
 	## out of the water at irregular angles, ropes hanging off, faded sails.
 	var grave: Node3D = Node3D.new()
@@ -6857,7 +6857,7 @@ static func _build_d8_ship_graveyard(geom: Node) -> void:
 		mast_root.add_child(sb)
 
 
-static func _build_d8_storm_clouds(geom: Node) -> void:
+func _build_d8_storm_clouds(geom: Node) -> void:
 	## Epic-8 T93: dark storm cloud volume above the harbor — large flat
 	## dark sphere with violet rim emission and slow drift, foreshadows
 	## the gathering finale storm.
@@ -6910,7 +6910,7 @@ static func _build_d8_storm_clouds(geom: Node) -> void:
 	pulse.tween_property(flash, "light_energy", 0.5, 4.0)
 
 
-static func _build_d8_tentacle_silhouettes(geom: Node) -> void:
+func _build_d8_tentacle_silhouettes(geom: Node) -> void:
 	## Epic-8 T94: ominous tentacle silhouettes rising from deep water around
 	## the whirlpool — 5 dark tapered tentacles with cyan suckers.
 	var tents: Node3D = Node3D.new()
@@ -6964,7 +6964,7 @@ static func _build_d8_tentacle_silhouettes(geom: Node) -> void:
 		sway.tween_property(tent, "rotation_degrees:z", -6.0, 1.8 + phase)
 
 
-static func _build_d8_warning_siren(geom: Node) -> void:
+func _build_d8_warning_siren(geom: Node) -> void:
 	## Epic-8 T95: tall warning siren post — striped pole with a rotating
 	## red emergency light and a horn megaphone, foreshadowing imminent
 	## boss arrival.
@@ -7065,7 +7065,7 @@ static func _build_d8_warning_siren(geom: Node) -> void:
 	siren.add_child(sb)
 
 
-static func _build_d8_welcome_banner(geom: Node) -> void:
+func _build_d8_welcome_banner(geom: Node) -> void:
 	## Epic-8 T96: welcome banner — large rope-strung canvas at the harbor
 	## entrance reading "TIDAL HARBOR" with a billowing wind tween.
 	var banner: Node3D = Node3D.new()
@@ -7153,7 +7153,7 @@ static func _build_d8_welcome_banner(geom: Node) -> void:
 	billow.tween_property(canvas, "rotation_degrees:x", -4.0, 1.8)
 
 
-static func _build_d8_storm_fog(geom: Node) -> void:
+func _build_d8_storm_fog(geom: Node) -> void:
 	## Epic-8 T97: storm fog ambient — large translucent dark gray fog volume
 	## hanging low over the harbor with slow drift, plus a few violet
 	## lightning-aftermath particles.
@@ -7209,7 +7209,7 @@ static func _build_d8_storm_fog(geom: Node) -> void:
 	fog.add_child(emb)
 
 
-static func _build_d8_finale_plaque(geom: Node) -> void:
+func _build_d8_finale_plaque(geom: Node) -> void:
 	## Epic-8 T98: dock plaque — bronze marker at the entrance to the boss
 	## arena dedicated to harbor history.
 	var plaque: Node3D = Node3D.new()
@@ -7261,7 +7261,7 @@ static func _build_d8_finale_plaque(geom: Node) -> void:
 	plaque.add_child(sb)
 
 
-static func _build_d8_boss_arena_fortifications(geom: Node) -> void:
+func _build_d8_boss_arena_fortifications(geom: Node) -> void:
 	## Epic-8 T99: ring of stone breakwater pillars and chain barriers around
 	## the boss arena, plus four corner braziers with violet flame.
 	var fort: Node3D = Node3D.new()
@@ -7384,7 +7384,7 @@ static func _build_d8_boss_arena_fortifications(geom: Node) -> void:
 		fort.add_child(lt)
 
 
-static func _build_d8_tide_leviathan(geom: Node) -> void:
+func _build_d8_tide_leviathan(geom: Node) -> void:
 	## Epic-8 T100 FINALE: TIDE LEVIATHAN — massive serpentine sea boss with
 	## 8 dark body segments arching above the whirlpool, glowing single eye,
 	## fanged maw, dorsal spines, and a billboard title with dark aura.

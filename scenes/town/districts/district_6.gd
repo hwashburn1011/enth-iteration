@@ -1,5 +1,5 @@
 class_name D6Builder
-extends RefCounted
+extends Node
 ## Neon Bazaar district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control. All build helpers here are
 ## static and called from town.gd's _build_district_6() entry function.
@@ -7,14 +7,14 @@ extends RefCounted
 const D6_CENTER := Vector3(400, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=330 out to x=430 to make room for D6.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 430.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_6(geom).
 	print("[D6Builder] start")
 	extend_boundary(geom)
@@ -120,7 +120,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D6Builder] done")
 
 
-static func _build_d6_ground(geom: Node) -> void:
+func _build_d6_ground(geom: Node) -> void:
 	## Epic-6 T1b: D6 ground — dark slate grid floor with magenta/cyan
 	## emissive grid lines suggesting wet pavement at night.
 	var plane: PlaneMesh = PlaneMesh.new()
@@ -169,7 +169,7 @@ static func _build_d6_ground(geom: Node) -> void:
 		geom.add_child(stripe)
 
 
-static func _build_d6_entrance_arch(geom: Node) -> void:
+func _build_d6_entrance_arch(geom: Node) -> void:
 	## Epic-6 T2: neon entrance arch — twin black metal pillars with bright
 	## emissive magenta tubes outlining a doorway shape, with small bulbs.
 	var arch: Node3D = Node3D.new()
@@ -248,7 +248,7 @@ static func _build_d6_entrance_arch(geom: Node) -> void:
 	tw.tween_property(light, "light_energy", 3.0, 1.4)
 
 
-static func _build_d6_great_sign(geom: Node) -> void:
+func _build_d6_great_sign(geom: Node) -> void:
 	## Epic-6 T3: GREAT NEON SIGN landmark — towering vertical sign with
 	## flashing "BAZAAR" letters + flickering tube outline + scrolling
 	## arrow chase lights along the bottom edge.
@@ -373,7 +373,7 @@ static func _build_d6_great_sign(geom: Node) -> void:
 	sign.add_child(sb)
 
 
-static func _build_d6_bazaar_host_npc(town: Node) -> void:
+func _build_d6_bazaar_host_npc(town: Node) -> void:
 	## Epic-6 T4: bazaar host NPC at the entrance — gold-trimmed coat,
 	## confident pose, top hat with a glowing magenta band.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -471,7 +471,7 @@ static func _build_d6_bazaar_host_npc(town: Node) -> void:
 	npc.add_child(cane)
 
 
-static func _build_d6_food_stalls(geom: Node) -> void:
+func _build_d6_food_stalls(geom: Node) -> void:
 	## Epic-6 T6: 3 colorful street food stalls in a row — noodles, skewers,
 	## and dumplings, each with a glowing sign.
 	var stalls: Node3D = Node3D.new()
@@ -575,7 +575,7 @@ static func _build_d6_food_stalls(geom: Node) -> void:
 		stall.add_child(sb)
 
 
-static func _build_d6_noodle_vendor_npc(town: Node) -> void:
+func _build_d6_noodle_vendor_npc(town: Node) -> void:
 	## Epic-6 T7: noodle vendor NPC behind the noodles stall — apron + headband.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -659,7 +659,7 @@ static func _build_d6_noodle_vendor_npc(town: Node) -> void:
 	npc.add_child(steam)
 
 
-static func _build_d6_delivery_drones(geom: Node) -> void:
+func _build_d6_delivery_drones(geom: Node) -> void:
 	## Epic-6 T8: 4 hovering delivery drones zipping along set patrol paths
 	## above the bazaar with parcel boxes hanging beneath them.
 	var fleet: Node3D = Node3D.new()
@@ -731,7 +731,7 @@ static func _build_d6_delivery_drones(geom: Node) -> void:
 		tb.tween_property(body, "position:y", 0.0, 0.30)
 
 
-static func _build_d6_night_crowd(geom: Node) -> void:
+func _build_d6_night_crowd(geom: Node) -> void:
 	## Epic-6 T9: 6 small night crowd shopper figures wandering between
 	## the stalls — small bodies + colored shirts + slow drift.
 	var crowd: Node3D = Node3D.new()
@@ -795,7 +795,7 @@ static func _build_d6_night_crowd(geom: Node) -> void:
 		tb.tween_property(body, "position:y", 0.55, 0.30)
 
 
-static func _build_d6_holo_billboard(geom: Node) -> void:
+func _build_d6_holo_billboard(geom: Node) -> void:
 	## Epic-6 T10: large holographic billboard panel hovering above the
 	## bazaar — translucent cyan with shifting block patterns.
 	var bb: Node3D = Node3D.new()
@@ -878,7 +878,7 @@ static func _build_d6_holo_billboard(geom: Node) -> void:
 	bb.add_child(sb)
 
 
-static func _build_d6_ramen_shop(geom: Node) -> void:
+func _build_d6_ramen_shop(geom: Node) -> void:
 	## Epic-6 T11: full ramen shop building — wooden facade with sliding
 	## door, paper-lantern strings, slatted overhang, and glowing window.
 	var shop: Node3D = Node3D.new()
@@ -991,7 +991,7 @@ static func _build_d6_ramen_shop(geom: Node) -> void:
 	shop.add_child(sb)
 
 
-static func _build_d6_hacker_pods(geom: Node) -> void:
+func _build_d6_hacker_pods(geom: Node) -> void:
 	## Epic-6 T12: 3 hacker terminal pods — recliner-style chairs facing
 	## glowing screens. Public hacking stations.
 	var pods: Node3D = Node3D.new()
@@ -1065,7 +1065,7 @@ static func _build_d6_hacker_pods(geom: Node) -> void:
 		pod.add_child(sb)
 
 
-static func _build_d6_hacker_npc(town: Node) -> void:
+func _build_d6_hacker_npc(town: Node) -> void:
 	## Epic-6 T13: hacker NPC standing next to a pod with a holographic
 	## glove and a glowing visor.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1137,7 +1137,7 @@ static func _build_d6_hacker_npc(town: Node) -> void:
 	trot.tween_property(hand_pivot, "rotation_degrees:y", 0.0, 0.0)
 
 
-static func _build_d6_rain(geom: Node) -> void:
+func _build_d6_rain(geom: Node) -> void:
 	## Epic-6 T14: ambient cyberpunk rain — vertical streak particles
 	## falling across the entire bazaar district.
 	var rain: GPUParticles3D = GPUParticles3D.new()
@@ -1176,7 +1176,7 @@ static func _build_d6_rain(geom: Node) -> void:
 	geom.add_child(rain)
 
 
-static func _build_d6_cyber_rickshaw(geom: Node) -> void:
+func _build_d6_cyber_rickshaw(geom: Node) -> void:
 	## Epic-6 T15: cyber rickshaw — 3-wheeled hover taxi with magenta neon
 	## underglow, side handles, and a small canopy.
 	var rick: Node3D = Node3D.new()
@@ -1278,7 +1278,7 @@ static func _build_d6_cyber_rickshaw(geom: Node) -> void:
 	rick.add_child(sb)
 
 
-static func _build_d6_tattoo_parlor(geom: Node) -> void:
+func _build_d6_tattoo_parlor(geom: Node) -> void:
 	## Epic-6 T16: tattoo parlor — small storefront with neon "INK" sign,
 	## a tattoo chair, and floating tattoo pattern holograms.
 	var parlor: Node3D = Node3D.new()
@@ -1396,7 +1396,7 @@ static func _build_d6_tattoo_parlor(geom: Node) -> void:
 	parlor.add_child(sb)
 
 
-static func _build_d6_tattoo_artist_npc(town: Node) -> void:
+func _build_d6_tattoo_artist_npc(town: Node) -> void:
 	## Epic-6 T17: tattoo artist NPC — sleeveless dark shirt, glowing
 	## tattoo gun in hand.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1469,7 +1469,7 @@ static func _build_d6_tattoo_artist_npc(town: Node) -> void:
 	npc.add_child(bandana)
 
 
-static func _build_d6_arcade_cabinets(geom: Node) -> void:
+func _build_d6_arcade_cabinets(geom: Node) -> void:
 	## Epic-6 T18: row of 4 arcade cabinets — tall boxes with glowing screens
 	## and joystick + button bumps on the front control panel.
 	var arcade: Node3D = Node3D.new()
@@ -1590,7 +1590,7 @@ static func _build_d6_arcade_cabinets(geom: Node) -> void:
 		cab.add_child(sb)
 
 
-static func _build_d6_arcade_kid_npc(town: Node) -> void:
+func _build_d6_arcade_kid_npc(town: Node) -> void:
 	## Epic-6 T19: arcade kid NPC playing one of the cabinets — small scale
 	## villager + bright t-shirt + backwards cap.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1647,7 +1647,7 @@ static func _build_d6_arcade_kid_npc(town: Node) -> void:
 	npc.add_child(brim)
 
 
-static func _build_d6_puddles(geom: Node) -> void:
+func _build_d6_puddles(geom: Node) -> void:
 	## Epic-6 T20: 8 small puddle decals scattered across the bazaar floor —
 	## thin emissive flat discs to suggest wet pavement reflections.
 	var puddles: Node3D = Node3D.new()
@@ -1679,7 +1679,7 @@ static func _build_d6_puddles(geom: Node) -> void:
 		puddles.add_child(puddle)
 
 
-static func _build_d6_weapons_stall(geom: Node) -> void:
+func _build_d6_weapons_stall(geom: Node) -> void:
 	## Epic-6 T21: cyber weapons dealer stall — angled glass display case
 	## with 3 floating cyber katanas + holographic price tags.
 	var stall: Node3D = Node3D.new()
@@ -1786,7 +1786,7 @@ static func _build_d6_weapons_stall(geom: Node) -> void:
 	stall.add_child(sb)
 
 
-static func _build_d6_arms_dealer_npc(town: Node) -> void:
+func _build_d6_arms_dealer_npc(town: Node) -> void:
 	## Epic-6 T22: arms dealer NPC — long leather coat, mirrored shades, gold chain.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -1850,7 +1850,7 @@ static func _build_d6_arms_dealer_npc(town: Node) -> void:
 	npc.add_child(chain)
 
 
-static func _build_d6_alley_dumpster(geom: Node) -> void:
+func _build_d6_alley_dumpster(geom: Node) -> void:
 	## Epic-6 T23: alley dumpster — large green metal bin with a flipped
 	## lid, scattered trash, and the occasional small cyan code particle
 	## leaking out.
@@ -1936,7 +1936,7 @@ static func _build_d6_alley_dumpster(geom: Node) -> void:
 	dumpster.add_child(sb)
 
 
-static func _build_d6_street_cat(geom: Node) -> void:
+func _build_d6_street_cat(geom: Node) -> void:
 	## Epic-6 T24: small dark street cat near the dumpster — black fur,
 	## glowing magenta eyes, slow patrol.
 	var cat: Node3D = Node3D.new()
@@ -2021,7 +2021,7 @@ static func _build_d6_street_cat(geom: Node) -> void:
 	tw.tween_property(cat, "rotation_degrees:y", 0.0, 0.4)
 
 
-static func _build_d6_vending_machines(geom: Node) -> void:
+func _build_d6_vending_machines(geom: Node) -> void:
 	## Epic-6 T25: 3 vending machines — tall lit cabinets with rows of
 	## colored drink cans visible inside.
 	var row: Node3D = Node3D.new()
@@ -2115,7 +2115,7 @@ static func _build_d6_vending_machines(geom: Node) -> void:
 		machine.add_child(sb)
 
 
-static func _build_d6_dance_club(geom: Node) -> void:
+func _build_d6_dance_club(geom: Node) -> void:
 	## Epic-6 T26: dance club entrance — dark facade with pulsing magenta
 	## door arch + 2 strobe lights flanking + thumping speaker boxes.
 	var club: Node3D = Node3D.new()
@@ -2254,7 +2254,7 @@ static func _build_d6_dance_club(geom: Node) -> void:
 	club.add_child(sb)
 
 
-static func _build_d6_bouncer_npc(town: Node) -> void:
+func _build_d6_bouncer_npc(town: Node) -> void:
 	## Epic-6 T27: club bouncer NPC — large frame, sunglasses, arms crossed,
 	## standing in front of the club door.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2320,7 +2320,7 @@ static func _build_d6_bouncer_npc(town: Node) -> void:
 	npc.add_child(earpiece)
 
 
-static func _build_d6_street_performer_npc(town: Node) -> void:
+func _build_d6_street_performer_npc(town: Node) -> void:
 	## Epic-6 T28: street performer NPC dancing — colorful jumpsuit + arm
 	## raise tween animation. Hat on the ground for tips.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2414,7 +2414,7 @@ static func _build_d6_street_performer_npc(town: Node) -> void:
 	tw.tween_property(npc, "rotation_degrees:z", -8.0, 0.30)
 
 
-static func _build_d6_graffiti_walls(geom: Node) -> void:
+func _build_d6_graffiti_walls(geom: Node) -> void:
 	## Epic-6 T29: 4 graffiti walls — small dark walls with bright colored
 	## emissive splash decals.
 	var walls: Node3D = Node3D.new()
@@ -2475,7 +2475,7 @@ static func _build_d6_graffiti_walls(geom: Node) -> void:
 		wall.add_child(sb)
 
 
-static func _build_d6_power_transformer(geom: Node) -> void:
+func _build_d6_power_transformer(geom: Node) -> void:
 	## Epic-6 T30: tall electrical power transformer — metal box on a
 	## concrete pad with an arcing cyan electricity sphere on top.
 	var trans: Node3D = Node3D.new()
@@ -2560,7 +2560,7 @@ static func _build_d6_power_transformer(geom: Node) -> void:
 	trans.add_child(sb)
 
 
-static func _build_d6_motorbikes(geom: Node) -> void:
+func _build_d6_motorbikes(geom: Node) -> void:
 	## Epic-6 T31: 3 parked cyber motorbikes — sleek body + 2 wheels each +
 	## colored neon trim under the seat.
 	var bikes: Node3D = Node3D.new()
@@ -2667,7 +2667,7 @@ static func _build_d6_motorbikes(geom: Node) -> void:
 		bike.add_child(sb)
 
 
-static func _build_d6_courier_npc(town: Node) -> void:
+func _build_d6_courier_npc(town: Node) -> void:
 	## Epic-6 T32: courier NPC — leather jacket + helmet + phone in hand,
 	## stationed near the parked bikes.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2743,7 +2743,7 @@ static func _build_d6_courier_npc(town: Node) -> void:
 	npc.add_child(phone)
 
 
-static func _build_d6_phone_booth(geom: Node) -> void:
+func _build_d6_phone_booth(geom: Node) -> void:
 	## Epic-6 T33: retro phone booth kiosk — tall translucent box with neon
 	## frame outline and a glowing receiver inside.
 	var booth: Node3D = Node3D.new()
@@ -2836,7 +2836,7 @@ static func _build_d6_phone_booth(geom: Node) -> void:
 	booth.add_child(sb)
 
 
-static func _build_d6_synth_musician_npc(town: Node) -> void:
+func _build_d6_synth_musician_npc(town: Node) -> void:
 	## Epic-6 T34: synth musician NPC — colorful jacket + behind a small
 	## floating keyboard with bright sequencer LEDs.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2923,7 +2923,7 @@ static func _build_d6_synth_musician_npc(town: Node) -> void:
 		npc.add_child(hand)
 
 
-static func _build_d6_satellite_dishes(geom: Node) -> void:
+func _build_d6_satellite_dishes(geom: Node) -> void:
 	## Epic-6 T35: cluster of 4 rooftop satellite dishes on a metal rack +
 	## blinking red status lights.
 	var dishes: Node3D = Node3D.new()
@@ -3009,7 +3009,7 @@ static func _build_d6_satellite_dishes(geom: Node) -> void:
 	dishes.add_child(sb)
 
 
-static func _build_d6_implant_clinic(geom: Node) -> void:
+func _build_d6_implant_clinic(geom: Node) -> void:
 	## Epic-6 T36: cyber implant clinic — clean white storefront with a
 	## green cross emblem, an operating chair visible inside, and a row
 	## of glowing implant cylinders on display.
@@ -3117,7 +3117,7 @@ static func _build_d6_implant_clinic(geom: Node) -> void:
 	clinic.add_child(sb)
 
 
-static func _build_d6_cyberdoc_npc(town: Node) -> void:
+func _build_d6_cyberdoc_npc(town: Node) -> void:
 	## Epic-6 T37: cyberdoc NPC — white lab coat + surgical mask + scalpel
 	## glow in hand.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3175,7 +3175,7 @@ static func _build_d6_cyberdoc_npc(town: Node) -> void:
 	npc.add_child(scalpel)
 
 
-static func _build_d6_atm_row(geom: Node) -> void:
+func _build_d6_atm_row(geom: Node) -> void:
 	## Epic-6 T38: row of 4 ATM machines — wall-mounted screens with cash
 	## slot below + green LED status.
 	var row: Node3D = Node3D.new()
@@ -3262,7 +3262,7 @@ static func _build_d6_atm_row(geom: Node) -> void:
 	row.add_child(sb)
 
 
-static func _build_d6_rave_dancers(geom: Node) -> void:
+func _build_d6_rave_dancers(geom: Node) -> void:
 	## Epic-6 T39: 5 small rave dancer figures jumping/swaying near the
 	## dance club. Bright glowsticks tracing arcs.
 	var crowd: Node3D = Node3D.new()
@@ -3336,7 +3336,7 @@ static func _build_d6_rave_dancers(geom: Node) -> void:
 		ts.tween_property(dancer, "rotation_degrees:z", -12.0, 0.40)
 
 
-static func _build_d6_steam_vents(geom: Node) -> void:
+func _build_d6_steam_vents(geom: Node) -> void:
 	## Epic-6 T40: 4 steam vents on the ground — small dark grates with
 	## thick rising steam from below.
 	var vents: Node3D = Node3D.new()
@@ -3396,7 +3396,7 @@ static func _build_d6_steam_vents(geom: Node) -> void:
 		vent.add_child(steam)
 
 
-static func _build_d6_pawn_shop(geom: Node) -> void:
+func _build_d6_pawn_shop(geom: Node) -> void:
 	## Epic-6 T41: pawn shop facade — barred windows, "PAWN" sign, and a
 	## display case of mismatched cyber gear in the front.
 	var shop: Node3D = Node3D.new()
@@ -3518,7 +3518,7 @@ static func _build_d6_pawn_shop(geom: Node) -> void:
 	shop.add_child(sb)
 
 
-static func _build_d6_pawn_broker_npc(town: Node) -> void:
+func _build_d6_pawn_broker_npc(town: Node) -> void:
 	## Epic-6 T42: pawn broker NPC — small green visor + leather vest, with
 	## a small abacus held in front.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3601,7 +3601,7 @@ static func _build_d6_pawn_broker_npc(town: Node) -> void:
 		npc.add_child(bead)
 
 
-static func _build_d6_train_tracks(geom: Node) -> void:
+func _build_d6_train_tracks(geom: Node) -> void:
 	## Epic-6 T43: elevated bullet train tracks running across the bazaar
 	## sky overhead — 2 tall support pillars + horizontal track slab + 2
 	## glowing rails on top.
@@ -3655,7 +3655,7 @@ static func _build_d6_train_tracks(geom: Node) -> void:
 		tracks.add_child(rail)
 
 
-static func _build_d6_trash_piles(geom: Node) -> void:
+func _build_d6_trash_piles(geom: Node) -> void:
 	## Epic-6 T44: 4 piles of trash bags + scattered debris in alley areas.
 	var trash: Node3D = Node3D.new()
 	trash.name = "TrashPiles"
@@ -3697,7 +3697,7 @@ static func _build_d6_trash_piles(geom: Node) -> void:
 		pile.add_child(sb)
 
 
-static func _build_d6_ad_balloons(geom: Node) -> void:
+func _build_d6_ad_balloons(geom: Node) -> void:
 	## Epic-6 T45: 4 floating ad balloons in the upper sky tethered by
 	## thin cables to the ground. Each is a colored sphere with a brand label.
 	var balloons: Node3D = Node3D.new()
@@ -3760,7 +3760,7 @@ static func _build_d6_ad_balloons(geom: Node) -> void:
 		tw.tween_property(ball, "position:y", bd["y"], 2.0 + randf())
 
 
-static func _build_d6_gambling_den(geom: Node) -> void:
+func _build_d6_gambling_den(geom: Node) -> void:
 	## Epic-6 T46: gambling den — round velvet card table + chairs +
 	## floating cards and chips, with low warm OmniLight overhead.
 	var den: Node3D = Node3D.new()
@@ -3878,7 +3878,7 @@ static func _build_d6_gambling_den(geom: Node) -> void:
 	den.add_child(sb)
 
 
-static func _build_d6_card_dealer_npc(town: Node) -> void:
+func _build_d6_card_dealer_npc(town: Node) -> void:
 	## Epic-6 T47: card dealer NPC at the gambling den — vest + bow tie +
 	## holding a fanned hand of cards.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3937,7 +3937,7 @@ static func _build_d6_card_dealer_npc(town: Node) -> void:
 		npc.add_child(card)
 
 
-static func _build_d6_smuggler_crates(geom: Node) -> void:
+func _build_d6_smuggler_crates(geom: Node) -> void:
 	## Epic-6 T48: stack of 6 smuggler data crates with biohazard markings.
 	var crates: Node3D = Node3D.new()
 	crates.name = "SmugglerCrates"
@@ -3992,7 +3992,7 @@ static func _build_d6_smuggler_crates(geom: Node) -> void:
 	crates.add_child(sb)
 
 
-static func _build_d6_smuggler_boss_npc(town: Node) -> void:
+func _build_d6_smuggler_boss_npc(town: Node) -> void:
 	## Epic-6 T49: smuggler boss NPC standing by the crates — fur-trimmed
 	## coat, big rings, scar over one eye.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4070,7 +4070,7 @@ static func _build_d6_smuggler_boss_npc(town: Node) -> void:
 	npc.add_child(ring)
 
 
-static func _build_d6_neon_sovereign(geom: Node) -> void:
+func _build_d6_neon_sovereign(geom: Node) -> void:
 	## Epic-6 T50: NEON SOVEREIGN — D6 mid-boss landmark. Towering cyber
 	## gangster figure with magenta-cyan lit body, mirror-shade visor,
 	## glowing katana, and floating neon glyphs.
@@ -4290,7 +4290,7 @@ static func _build_d6_neon_sovereign(geom: Node) -> void:
 	sov.add_child(psb)
 
 
-static func _build_d6_subway_entrance(geom: Node) -> void:
+func _build_d6_subway_entrance(geom: Node) -> void:
 	## Epic-6 T51: subway entrance — recessed staircase descending into a
 	## dark hole with a metal railing and "SUBWAY" sign overhead.
 	var sub: Node3D = Node3D.new()
@@ -4377,7 +4377,7 @@ static func _build_d6_subway_entrance(geom: Node) -> void:
 	sub.add_child(light)
 
 
-static func _build_d6_subway_map(geom: Node) -> void:
+func _build_d6_subway_map(geom: Node) -> void:
 	## Epic-6 T52: subway map kiosk — vertical illuminated box panel with
 	## a colorful map of dots and lines.
 	var map: Node3D = Node3D.new()
@@ -4484,7 +4484,7 @@ static func _build_d6_subway_map(geom: Node) -> void:
 	map.add_child(sb)
 
 
-static func _build_d6_street_preacher_npc(town: Node) -> void:
+func _build_d6_street_preacher_npc(town: Node) -> void:
 	## Epic-6 T53: street preacher NPC with a small megaphone, raised hand,
 	## standing on a small wooden crate.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4542,7 +4542,7 @@ static func _build_d6_street_preacher_npc(town: Node) -> void:
 	npc.add_child(mega)
 
 
-static func _build_d6_pigeons(geom: Node) -> void:
+func _build_d6_pigeons(geom: Node) -> void:
 	## Epic-6 T54: 4 pigeons flying in lazy circles overhead — small grey
 	## bird bodies + 2 wings + slow rotation pivot.
 	var flock: Node3D = Node3D.new()
@@ -4597,7 +4597,7 @@ static func _build_d6_pigeons(geom: Node) -> void:
 		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
 
 
-static func _build_d6_ramen_customer_npc(town: Node) -> void:
+func _build_d6_ramen_customer_npc(town: Node) -> void:
 	## Epic-6 T55: ramen customer NPC seated at a small bowl bench eating ramen.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -4679,7 +4679,7 @@ static func _build_d6_ramen_customer_npc(town: Node) -> void:
 	npc.add_child(steam)
 
 
-static func _build_d6_pharmacy(geom: Node) -> void:
+func _build_d6_pharmacy(geom: Node) -> void:
 	## Epic-6 T56: cyber pharmacy storefront — green cross sign + shelves
 	## of glowing pill bottles visible behind the counter.
 	var pharm: Node3D = Node3D.new()
@@ -4771,7 +4771,7 @@ static func _build_d6_pharmacy(geom: Node) -> void:
 	pharm.add_child(sb)
 
 
-static func _build_d6_pharmacist_npc(town: Node) -> void:
+func _build_d6_pharmacist_npc(town: Node) -> void:
 	## Epic-6 T57: pharmacist NPC — white coat + cyan tinted glasses +
 	## holding a small green pill bottle.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4835,7 +4835,7 @@ static func _build_d6_pharmacist_npc(town: Node) -> void:
 	npc.add_child(bottle)
 
 
-static func _build_d6_fighter_dummy(geom: Node) -> void:
+func _build_d6_fighter_dummy(geom: Node) -> void:
 	## Epic-6 T58: street fighter training dummy — torso bag suspended on a
 	## post with rope, with a damage particle puff each "hit".
 	var dummy: Node3D = Node3D.new()
@@ -4910,7 +4910,7 @@ static func _build_d6_fighter_dummy(geom: Node) -> void:
 	dummy.add_child(sb)
 
 
-static func _build_d6_street_fighter_npc(town: Node) -> void:
+func _build_d6_street_fighter_npc(town: Node) -> void:
 	## Epic-6 T59: street fighter NPC training near the dummy — wraps on
 	## fists, sleeveless top, fighting stance.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4976,7 +4976,7 @@ static func _build_d6_street_fighter_npc(town: Node) -> void:
 	tw.tween_interval(0.40)
 
 
-static func _build_d6_hover_taxi(geom: Node) -> void:
+func _build_d6_hover_taxi(geom: Node) -> void:
 	## Epic-6 T60: hover taxi vehicle — yellow checkered car with a side
 	## "TAXI" sign on top, hovering above the ground.
 	var taxi: Node3D = Node3D.new()
@@ -5089,7 +5089,7 @@ static func _build_d6_hover_taxi(geom: Node) -> void:
 	taxi.add_child(sb)
 
 
-static func _build_d6_bath_house(geom: Node) -> void:
+func _build_d6_bath_house(geom: Node) -> void:
 	## Epic-6 T61: cyber bath house — Japanese-style facade with curved
 	## prism roof + 2 lit doorway lanterns + steaming pool visible inside.
 	var bh: Node3D = Node3D.new()
@@ -5214,7 +5214,7 @@ static func _build_d6_bath_house(geom: Node) -> void:
 	bh.add_child(sb)
 
 
-static func _build_d6_d6_bath_attendant_npc(town: Node) -> void:
+func _build_d6_d6_bath_attendant_npc(town: Node) -> void:
 	## Epic-6 T62: D6 bath attendant — yukata robe + small towel.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -5260,7 +5260,7 @@ static func _build_d6_d6_bath_attendant_npc(town: Node) -> void:
 	npc.add_child(towel)
 
 
-static func _build_d6_bike_rack(geom: Node) -> void:
+func _build_d6_bike_rack(geom: Node) -> void:
 	## Epic-6 T63: bicycle rack — 4 cyber bikes parked at angled stands
 	## with neon trim glow and slim wheels.
 	var rack: Node3D = Node3D.new()
@@ -5345,7 +5345,7 @@ static func _build_d6_bike_rack(geom: Node) -> void:
 	rack.add_child(sb)
 
 
-static func _build_d6_mural_artist_npc(town: Node) -> void:
+func _build_d6_mural_artist_npc(town: Node) -> void:
 	## Epic-6 T64: neon mural artist NPC — paint mask, spray can in hand,
 	## standing in front of a wall with a colorful splash.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5417,7 +5417,7 @@ static func _build_d6_mural_artist_npc(town: Node) -> void:
 	npc.add_child(can)
 
 
-static func _build_d6_dance_billboard(geom: Node) -> void:
+func _build_d6_dance_billboard(geom: Node) -> void:
 	## Epic-6 T65: holographic dance billboard — large translucent panel
 	## with 3 silhouettes dancing (alternating left-right rotation tweens).
 	var bb: Node3D = Node3D.new()
@@ -5502,7 +5502,7 @@ static func _build_d6_dance_billboard(geom: Node) -> void:
 	bb.add_child(sb)
 
 
-static func _build_d6_souvenir_cart(geom: Node) -> void:
+func _build_d6_souvenir_cart(geom: Node) -> void:
 	## Epic-6 T66: souvenir vendor cart — small wheeled cart with shelves
 	## of brightly colored trinkets.
 	var cart: Node3D = Node3D.new()
@@ -5606,7 +5606,7 @@ static func _build_d6_souvenir_cart(geom: Node) -> void:
 	cart.add_child(sb)
 
 
-static func _build_d6_souvenir_vendor_npc(town: Node) -> void:
+func _build_d6_souvenir_vendor_npc(town: Node) -> void:
 	## Epic-6 T67: souvenir vendor NPC — bright apron + holding a small
 	## souvenir trinket up.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5656,7 +5656,7 @@ static func _build_d6_souvenir_vendor_npc(town: Node) -> void:
 	npc.add_child(trinket)
 
 
-static func _build_d6_holo_koi_pond(geom: Node) -> void:
+func _build_d6_holo_koi_pond(geom: Node) -> void:
 	## Epic-6 T68: holographic koi pond — round translucent purple disc on
 	## a stone rim, with cyan ripple textures.
 	var pond: Node3D = Node3D.new()
@@ -5739,7 +5739,7 @@ static func _build_d6_holo_koi_pond(geom: Node) -> void:
 	pond.add_child(sb)
 
 
-static func _build_d6_koi_fish(geom: Node) -> void:
+func _build_d6_koi_fish(geom: Node) -> void:
 	## Epic-6 T69: 4 koi fish swimming in the holo pond — flat colored
 	## prisms with rotation pivots.
 	var koi: Node3D = Node3D.new()
@@ -5786,7 +5786,7 @@ static func _build_d6_koi_fish(geom: Node) -> void:
 		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
 
 
-static func _build_d6_street_shrine(geom: Node) -> void:
+func _build_d6_street_shrine(geom: Node) -> void:
 	## Epic-6 T70: small street shrine — wooden box with a glowing red
 	## offering inside, paper lantern on top.
 	var shrine: Node3D = Node3D.new()
@@ -5873,7 +5873,7 @@ static func _build_d6_street_shrine(geom: Node) -> void:
 	shrine.add_child(sb)
 
 
-static func _build_d6_barbershop(geom: Node) -> void:
+func _build_d6_barbershop(geom: Node) -> void:
 	## Epic-6 T71: cyber barbershop — slim storefront with the iconic
 	## rotating red/white/blue pole + a styling chair + mirror.
 	var shop: Node3D = Node3D.new()
@@ -5995,7 +5995,7 @@ static func _build_d6_barbershop(geom: Node) -> void:
 	shop.add_child(sb)
 
 
-static func _build_d6_barber_npc(town: Node) -> void:
+func _build_d6_barber_npc(town: Node) -> void:
 	## Epic-6 T72: barber NPC — striped vest + holding scissors.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -6053,7 +6053,7 @@ static func _build_d6_barber_npc(town: Node) -> void:
 		scissors.add_child(blade)
 
 
-static func _build_d6_lantern_string(geom: Node) -> void:
+func _build_d6_lantern_string(geom: Node) -> void:
 	## Epic-6 T73: long string of hanging colored paper lanterns running
 	## across the bazaar at high altitude.
 	var string: Node3D = Node3D.new()
@@ -6112,7 +6112,7 @@ static func _build_d6_lantern_string(geom: Node) -> void:
 		tw.tween_property(lantern, "rotation_degrees:z", -6.0, 1.4)
 
 
-static func _build_d6_vending_bot(geom: Node) -> void:
+func _build_d6_vending_bot(geom: Node) -> void:
 	## Epic-6 T74: small wheeled vending bot — round body + 2 wheels +
 	## floating menu screen + colored item slots.
 	var bot: Node3D = Node3D.new()
@@ -6198,7 +6198,7 @@ static func _build_d6_vending_bot(geom: Node) -> void:
 	bot.add_child(sb)
 
 
-static func _build_d6_cyber_mural(geom: Node) -> void:
+func _build_d6_cyber_mural(geom: Node) -> void:
 	## Epic-6 T75: large cyber graffiti mural — wide dark wall with a big
 	## colorful spray-paint splash + text "404".
 	var mural: Node3D = Node3D.new()
@@ -6281,7 +6281,7 @@ static func _build_d6_cyber_mural(geom: Node) -> void:
 	mural.add_child(sb)
 
 
-static func _build_d6_holo_tower(geom: Node) -> void:
+func _build_d6_holo_tower(geom: Node) -> void:
 	## Epic-6 T76: tall hologram billboard tower with 3 stacked screens
 	## displaying alternating colored ad blocks.
 	var tower: Node3D = Node3D.new()
@@ -6343,7 +6343,7 @@ static func _build_d6_holo_tower(geom: Node) -> void:
 	tower.add_child(sb)
 
 
-static func _build_d6_drone_shop(geom: Node) -> void:
+func _build_d6_drone_shop(geom: Node) -> void:
 	## Epic-6 T77: drone repair shop — small workshop with 3 broken drones
 	## hanging from racks and tool boxes scattered.
 	var shop: Node3D = Node3D.new()
@@ -6457,7 +6457,7 @@ static func _build_d6_drone_shop(geom: Node) -> void:
 	shop.add_child(sb)
 
 
-static func _build_d6_drone_mechanic_npc(town: Node) -> void:
+func _build_d6_drone_mechanic_npc(town: Node) -> void:
 	## Epic-6 T78: drone mechanic NPC — coveralls + welding mask + holding
 	## a small drone in their hand.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6531,7 +6531,7 @@ static func _build_d6_drone_mechanic_npc(town: Node) -> void:
 	npc.add_child(drone)
 
 
-static func _build_d6_cyber_rats(geom: Node) -> void:
+func _build_d6_cyber_rats(geom: Node) -> void:
 	## Epic-6 T79: 4 small cyber rats — dark furry bodies + magenta eyes
 	## + tiny LED implants on their backs, slowly drifting through the alley.
 	var rats: Node3D = Node3D.new()
@@ -6609,7 +6609,7 @@ static func _build_d6_cyber_rats(geom: Node) -> void:
 		tw.tween_property(rat, "rotation_degrees:y", 0.0, 0.4)
 
 
-static func _build_d6_scrap_pile(geom: Node) -> void:
+func _build_d6_scrap_pile(geom: Node) -> void:
 	## Epic-6 T80: pile of scrap metal — random rusted boxes and pipes
 	## stacked together with one glowing wire poking out.
 	var pile: Node3D = Node3D.new()
@@ -6680,7 +6680,7 @@ static func _build_d6_scrap_pile(geom: Node) -> void:
 	pile.add_child(sb)
 
 
-static func _build_d6_cyber_cafe(geom: Node) -> void:
+func _build_d6_cyber_cafe(geom: Node) -> void:
 	## Epic-6 T81: cyber café — open storefront with row of 4 terminal
 	## stations + colored counter + signage.
 	var cafe: Node3D = Node3D.new()
@@ -6786,7 +6786,7 @@ static func _build_d6_cyber_cafe(geom: Node) -> void:
 	cafe.add_child(sb)
 
 
-static func _build_d6_cafe_customer_npc(town: Node) -> void:
+func _build_d6_cafe_customer_npc(town: Node) -> void:
 	## Epic-6 T82: cafe customer NPC at one of the terminals — large
 	## headphones + bright t-shirt.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6848,7 +6848,7 @@ static func _build_d6_cafe_customer_npc(town: Node) -> void:
 	npc.add_child(arc)
 
 
-static func _build_d6_dj_booth(geom: Node) -> void:
+func _build_d6_dj_booth(geom: Node) -> void:
 	## Epic-6 T83: street DJ booth — turntable + 2 large speakers + a
 	## glowing equalizer panel.
 	var booth: Node3D = Node3D.new()
@@ -6976,7 +6976,7 @@ static func _build_d6_dj_booth(geom: Node) -> void:
 	booth.add_child(sb)
 
 
-static func _build_d6_street_dj_npc(town: Node) -> void:
+func _build_d6_street_dj_npc(town: Node) -> void:
 	## Epic-6 T84: street DJ NPC behind the booth — bright jacket +
 	## headphones + raised hand on a turntable.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -7030,7 +7030,7 @@ static func _build_d6_street_dj_npc(town: Node) -> void:
 	tw.tween_property(npc, "rotation_degrees:z", -6.0, 0.30)
 
 
-static func _build_d6_glow_drones(geom: Node) -> void:
+func _build_d6_glow_drones(geom: Node) -> void:
 	## Epic-6 T85: 8 small glow drones drifting through the bazaar at
 	## varying altitudes — bright colored orbs with halos.
 	var swarm: Node3D = Node3D.new()
@@ -7083,7 +7083,7 @@ static func _build_d6_glow_drones(geom: Node) -> void:
 		tb.tween_property(drone, "position:y", -0.20, 1.4 + randf() * 0.4)
 
 
-static func _build_d6_city_map_terminal(geom: Node) -> void:
+func _build_d6_city_map_terminal(geom: Node) -> void:
 	## Epic-6 T86: free-standing city map terminal — slim metal box +
 	## angled cyan map screen + city grid pattern.
 	var term: Node3D = Node3D.new()
@@ -7193,7 +7193,7 @@ static func _build_d6_city_map_terminal(geom: Node) -> void:
 	term.add_child(sb)
 
 
-static func _build_d6_tour_guide_npc(town: Node) -> void:
+func _build_d6_tour_guide_npc(town: Node) -> void:
 	## Epic-6 T87: tour guide NPC by the city map — bright shirt + raised
 	## arm holding a flag.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -7258,7 +7258,7 @@ static func _build_d6_tour_guide_npc(town: Node) -> void:
 	tw.tween_property(flag, "rotation_degrees:z", -8.0, 0.55)
 
 
-static func _build_d6_protest_banner(geom: Node) -> void:
+func _build_d6_protest_banner(geom: Node) -> void:
 	## Epic-6 T88: holographic protest banner — large translucent panel
 	## with bold "FREE THE DATA" message and 2 vertical glow accents.
 	var banner: Node3D = Node3D.new()
@@ -7332,7 +7332,7 @@ static func _build_d6_protest_banner(geom: Node) -> void:
 		banner.add_child(sb)
 
 
-static func _build_d6_protester_npc(town: Node) -> void:
+func _build_d6_protester_npc(town: Node) -> void:
 	## Epic-6 T89: protester NPC — raised fist + black bandana over face.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -7394,7 +7394,7 @@ static func _build_d6_protester_npc(town: Node) -> void:
 	tw.tween_property(arm, "position:y", 1.55, 0.30)
 
 
-static func _build_d6_data_exchange_kiosk(geom: Node) -> void:
+func _build_d6_data_exchange_kiosk(geom: Node) -> void:
 	## Epic-6 T90: data exchange kiosk — black market style. Tall narrow
 	## stand with cyan currency-rate display + mysterious dark slit.
 	var kiosk: Node3D = Node3D.new()
@@ -7475,7 +7475,7 @@ static func _build_d6_data_exchange_kiosk(geom: Node) -> void:
 	kiosk.add_child(sb)
 
 
-static func _build_d6_breakdancer_npc(town: Node) -> void:
+func _build_d6_breakdancer_npc(town: Node) -> void:
 	## Epic-6 T91: breakdancer NPC — body lying on side spinning, leg out.
 	## Created on its own pivot for windmill rotation.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -7530,7 +7530,7 @@ static func _build_d6_breakdancer_npc(town: Node) -> void:
 	tw.tween_property(body_root, "rotation_degrees:y", 0.0, 0.0)
 
 
-static func _build_d6_sign_holder_npc(town: Node) -> void:
+func _build_d6_sign_holder_npc(town: Node) -> void:
 	## Epic-6 T92: cardboard sign holder NPC — tattered coat + small sign
 	## with "WORLD ENDS" text.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -7586,7 +7586,7 @@ static func _build_d6_sign_holder_npc(town: Node) -> void:
 	npc.add_child(label)
 
 
-static func _build_d6_hoverboard(geom: Node) -> void:
+func _build_d6_hoverboard(geom: Node) -> void:
 	## Epic-6 T93: parked hoverboard — slim board hovering above the ground
 	## with magenta underglow strip.
 	var hb: Node3D = Node3D.new()
@@ -7631,7 +7631,7 @@ static func _build_d6_hoverboard(geom: Node) -> void:
 	tw.tween_property(hb, "position:y", 0.30, 1.0)
 
 
-static func _build_d6_neon_tree(geom: Node) -> void:
+func _build_d6_neon_tree(geom: Node) -> void:
 	## Epic-6 T94: decorative cyber neon tree — black metal trunk with
 	## glowing magenta+cyan branches forming a stylized tree shape.
 	var tree: Node3D = Node3D.new()
@@ -7715,7 +7715,7 @@ static func _build_d6_neon_tree(geom: Node) -> void:
 	tree.add_child(sb)
 
 
-static func _build_d6_holo_butterflies(geom: Node) -> void:
+func _build_d6_holo_butterflies(geom: Node) -> void:
 	## Epic-6 T95: 8 holographic glow butterflies drifting around the neon
 	## tree — small wing pairs in alternating magenta + cyan.
 	var swarm: Node3D = Node3D.new()
@@ -7756,7 +7756,7 @@ static func _build_d6_holo_butterflies(geom: Node) -> void:
 		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0, 0.0)
 
 
-static func _build_d6_welcome_banner(geom: Node) -> void:
+func _build_d6_welcome_banner(geom: Node) -> void:
 	## Epic-6 T96: tall double-pole welcome banner — black metal poles +
 	## glowing magenta-bordered neon panel + "NEON BAZAAR" Label3D.
 	var banner: Node3D = Node3D.new()
@@ -7848,7 +7848,7 @@ static func _build_d6_welcome_banner(geom: Node) -> void:
 	banner.add_child(light)
 
 
-static func _build_d6_grand_spire(geom: Node) -> void:
+func _build_d6_grand_spire(geom: Node) -> void:
 	## Epic-6 T97: GRAND NEON SPIRE — towering 3-tier metal/glass spire
 	## with rotating crown of light beams. The new tallest D6 landmark.
 	var spire: Node3D = Node3D.new()
@@ -7957,7 +7957,7 @@ static func _build_d6_grand_spire(geom: Node) -> void:
 	spire.add_child(sb)
 
 
-static func _build_d6_district_plaque(geom: Node) -> void:
+func _build_d6_district_plaque(geom: Node) -> void:
 	## Epic-6 T98: dedication plaque on a stone pedestal at the entrance.
 	var plaque: Node3D = Node3D.new()
 	plaque.name = "D6Plaque"
@@ -8008,7 +8008,7 @@ static func _build_d6_district_plaque(geom: Node) -> void:
 	plaque.add_child(sb)
 
 
-static func _build_d6_ambient_tweak(geom: Node) -> void:
+func _build_d6_ambient_tweak(geom: Node) -> void:
 	## Epic-6 T99: cyber night ambient — magenta fill light + secondary
 	## cyan directional from above.
 	var amb: Node3D = Node3D.new()
@@ -8033,7 +8033,7 @@ static func _build_d6_ambient_tweak(geom: Node) -> void:
 	amb.add_child(sun)
 
 
-static func _build_d6_neon_empress(geom: Node) -> void:
+func _build_d6_neon_empress(geom: Node) -> void:
 	## Epic-6 T100: NEON EMPRESS — Epic 6 finale boss. Towering geisha-cyborg
 	## ruler with flowing neon kimono, masked face, glowing fan, and a
 	## halo of orbiting holographic glyphs. Magenta+cyan dominant.

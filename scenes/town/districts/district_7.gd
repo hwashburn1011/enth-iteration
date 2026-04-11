@@ -1,5 +1,5 @@
 class_name D7Builder
-extends RefCounted
+extends Node
 ## Ascension Spires district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control. All build helpers here are
 ## static and called from town.gd's _build_district_7() entry function.
@@ -11,14 +11,14 @@ extends RefCounted
 const D7_CENTER := Vector3(470, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=430 out to x=530 to make room for D7.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 530.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_7(geom).
 	print("[D7Builder] start")
 	extend_boundary(geom)
@@ -124,7 +124,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D7Builder] done")
 
 
-static func _build_d7_ground(geom: Node) -> void:
+func _build_d7_ground(geom: Node) -> void:
 	## Epic-7 T1b: D7 sandstone ground — warm tan plane with scattered
 	## small rock and pebble decorations suggesting a dry highland.
 	var plane: PlaneMesh = PlaneMesh.new()
@@ -162,7 +162,7 @@ static func _build_d7_ground(geom: Node) -> void:
 		geom.add_child(rock)
 
 
-static func _build_d7_temple_gate(geom: Node) -> void:
+func _build_d7_temple_gate(geom: Node) -> void:
 	## Epic-7 T2: red torii-style temple gate — 2 wooden vertical posts
 	## connected by 2 horizontal crossbars with upturned ends.
 	var gate: Node3D = Node3D.new()
@@ -244,7 +244,7 @@ static func _build_d7_temple_gate(geom: Node) -> void:
 	gate.add_child(light)
 
 
-static func _build_d7_great_spire(geom: Node) -> void:
+func _build_d7_great_spire(geom: Node) -> void:
 	## Epic-7 T3: GREAT SANDSTONE SPIRE landmark — towering rock formation
 	## stack of 4 cylinder tiers with a glowing amber crystal at the peak.
 	var spire: Node3D = Node3D.new()
@@ -328,7 +328,7 @@ static func _build_d7_great_spire(geom: Node) -> void:
 	spire.add_child(sb)
 
 
-static func _build_d7_monk_elder_npc(town: Node) -> void:
+func _build_d7_monk_elder_npc(town: Node) -> void:
 	## Epic-7 T4: monk elder NPC — orange robe + bald head + held wooden
 	## prayer beads.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -393,7 +393,7 @@ static func _build_d7_monk_elder_npc(town: Node) -> void:
 	npc.add_child(beads)
 
 
-static func _build_d7_prayer_flags(geom: Node) -> void:
+func _build_d7_prayer_flags(geom: Node) -> void:
 	## Epic-7 T6: long string of colorful prayer flags strung between 2
 	## tall poles. 5 colors traditional: blue, white, red, green, yellow.
 	var flags: Node3D = Node3D.new()
@@ -467,7 +467,7 @@ static func _build_d7_prayer_flags(geom: Node) -> void:
 		tw.tween_property(flag, "rotation_degrees:y", -8.0, 1.4)
 
 
-static func _build_d7_stone_cairns(geom: Node) -> void:
+func _build_d7_stone_cairns(geom: Node) -> void:
 	## Epic-7 T7: 4 meditation stone cairns — stacks of 5 progressively
 	## smaller flat rocks each.
 	var cairns: Node3D = Node3D.new()
@@ -507,7 +507,7 @@ static func _build_d7_stone_cairns(geom: Node) -> void:
 		cairn.add_child(sb)
 
 
-static func _build_d7_monk_acolyte_npc(town: Node) -> void:
+func _build_d7_monk_acolyte_npc(town: Node) -> void:
 	## Epic-7 T8: monk acolyte NPC — smaller scale + saffron robe.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -555,7 +555,7 @@ static func _build_d7_monk_acolyte_npc(town: Node) -> void:
 	npc.add_child(dome)
 
 
-static func _build_d7_incense_burner(geom: Node) -> void:
+func _build_d7_incense_burner(geom: Node) -> void:
 	## Epic-7 T9: incense burner — short bronze tripod cauldron with rising
 	## smoke particles and a soft warm glow.
 	var burner: Node3D = Node3D.new()
@@ -653,7 +653,7 @@ static func _build_d7_incense_burner(geom: Node) -> void:
 	burner.add_child(sb)
 
 
-static func _build_d7_brass_gong(geom: Node) -> void:
+func _build_d7_brass_gong(geom: Node) -> void:
 	## Epic-7 T10: brass gong on a wooden frame — large flat brass disc
 	## suspended between two pillars with a striker hammer beside it.
 	var gong: Node3D = Node3D.new()
@@ -757,7 +757,7 @@ static func _build_d7_brass_gong(geom: Node) -> void:
 	gong.add_child(light)
 
 
-static func _build_d7_stone_bridge(geom: Node) -> void:
+func _build_d7_stone_bridge(geom: Node) -> void:
 	## Epic-7 T11: long stone bridge across a small chasm — flat deck
 	## with rounded ends + 2 stone railings + dark recessed chasm.
 	var bridge: Node3D = Node3D.new()
@@ -826,7 +826,7 @@ static func _build_d7_stone_bridge(geom: Node) -> void:
 		bridge.add_child(rsb)
 
 
-static func _build_d7_spring_fountain(geom: Node) -> void:
+func _build_d7_spring_fountain(geom: Node) -> void:
 	## Epic-7 T12: small mountain spring fountain — round stone basin +
 	## central column + cyan water disc + rising steam.
 	var fountain: Node3D = Node3D.new()
@@ -935,7 +935,7 @@ static func _build_d7_spring_fountain(geom: Node) -> void:
 	fountain.add_child(sb)
 
 
-static func _build_d7_bell_tower(geom: Node) -> void:
+func _build_d7_bell_tower(geom: Node) -> void:
 	## Epic-7 T13: tall stone bell tower — square stone base column +
 	## sloped roof + large brass bell hanging in the open top room.
 	var tower: Node3D = Node3D.new()
@@ -1028,7 +1028,7 @@ static func _build_d7_bell_tower(geom: Node) -> void:
 	tower.add_child(sb)
 
 
-static func _build_d7_bellringer_npc(town: Node) -> void:
+func _build_d7_bellringer_npc(town: Node) -> void:
 	## Epic-7 T14: bellringer NPC at the base of the bell tower —
 	## brown robe + holding a long rope.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1074,7 +1074,7 @@ static func _build_d7_bellringer_npc(town: Node) -> void:
 	npc.add_child(rope)
 
 
-static func _build_d7_cliff_face(geom: Node) -> void:
+func _build_d7_cliff_face(geom: Node) -> void:
 	## Epic-7 T15: tall sandstone cliff face wall — large vertical rock
 	## slab with a few horizontal stratification bands.
 	var cliff: Node3D = Node3D.new()
@@ -1118,7 +1118,7 @@ static func _build_d7_cliff_face(geom: Node) -> void:
 	cliff.add_child(sb)
 
 
-static func _build_d7_meditation_pavilion(geom: Node) -> void:
+func _build_d7_meditation_pavilion(geom: Node) -> void:
 	## Epic-7 T16: open-air wooden meditation pavilion — square stone
 	## platform + 4 corner pillars + curved upturned prism roof.
 	var pav: Node3D = Node3D.new()
@@ -1190,7 +1190,7 @@ static func _build_d7_meditation_pavilion(geom: Node) -> void:
 	pav.add_child(sb)
 
 
-static func _build_d7_meditating_monk_npc(town: Node) -> void:
+func _build_d7_meditating_monk_npc(town: Node) -> void:
 	## Epic-7 T17: meditating monk NPC inside the pavilion — sitting in
 	## lotus position, body lower than usual.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1269,7 +1269,7 @@ static func _build_d7_meditating_monk_npc(town: Node) -> void:
 	tb.tween_property(monk, "position:y", 0.0, 1.85)
 
 
-static func _build_d7_zen_garden(geom: Node) -> void:
+func _build_d7_zen_garden(geom: Node) -> void:
 	## Epic-7 T18: zen rock garden — flat sand patch with 3 large stones
 	## arranged in a triangle and concentric ripple "waves" around them.
 	var garden: Node3D = Node3D.new()
@@ -1338,7 +1338,7 @@ static func _build_d7_zen_garden(geom: Node) -> void:
 		garden.add_child(ring)
 
 
-static func _build_d7_waterfall(geom: Node) -> void:
+func _build_d7_waterfall(geom: Node) -> void:
 	## Epic-7 T19: small flowing waterfall — cliff slab with 2 vertical
 	## blue water columns + a small pool at the bottom.
 	var fall: Node3D = Node3D.new()
@@ -1408,7 +1408,7 @@ static func _build_d7_waterfall(geom: Node) -> void:
 	fall.add_child(sb)
 
 
-static func _build_d7_scroll_shelves(geom: Node) -> void:
+func _build_d7_scroll_shelves(geom: Node) -> void:
 	## Epic-7 T20: 3 wooden shelves of rolled scrolls — slim wooden frames
 	## with horizontal racks of small scroll cylinders.
 	var shelves: Node3D = Node3D.new()
@@ -1468,7 +1468,7 @@ static func _build_d7_scroll_shelves(geom: Node) -> void:
 		shelf.add_child(sb)
 
 
-static func _build_d7_stupa_shrine(geom: Node) -> void:
+func _build_d7_stupa_shrine(geom: Node) -> void:
 	## Epic-7 T21: stupa shrine — square pedestal + dome + tall spire stack.
 	var stupa: Node3D = Node3D.new()
 	stupa.name = "StupaShrine"
@@ -1553,7 +1553,7 @@ static func _build_d7_stupa_shrine(geom: Node) -> void:
 	stupa.add_child(sb)
 
 
-static func _build_d7_pilgrim_npc(town: Node) -> void:
+func _build_d7_pilgrim_npc(town: Node) -> void:
 	## Epic-7 T22: pilgrim NPC — travel cloak + walking staff + carrying
 	## a small backpack.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1618,7 +1618,7 @@ static func _build_d7_pilgrim_npc(town: Node) -> void:
 	npc.add_child(staff)
 
 
-static func _build_d7_mountain_goats(geom: Node) -> void:
+func _build_d7_mountain_goats(geom: Node) -> void:
 	## Epic-7 T23: 4 mountain goats — small white woolly bodies + curved
 	## horns + slow patrol.
 	var herd: Node3D = Node3D.new()
@@ -1708,7 +1708,7 @@ static func _build_d7_mountain_goats(geom: Node) -> void:
 		goat.add_child(sb)
 
 
-static func _build_d7_lotus_pond(geom: Node) -> void:
+func _build_d7_lotus_pond(geom: Node) -> void:
 	## Epic-7 T24: round lotus pond — stone rim + cyan water + 5 lotus
 	## flowers floating on the surface.
 	var pond: Node3D = Node3D.new()
@@ -1796,7 +1796,7 @@ static func _build_d7_lotus_pond(geom: Node) -> void:
 	pond.add_child(sb)
 
 
-static func _build_d7_stone_lanterns(geom: Node) -> void:
+func _build_d7_stone_lanterns(geom: Node) -> void:
 	## Epic-7 T25: 6 traditional stone lanterns in a row — 3-section
 	## stack (base + body + roof) with warm internal glow.
 	var row: Node3D = Node3D.new()
@@ -1866,7 +1866,7 @@ static func _build_d7_stone_lanterns(geom: Node) -> void:
 		lantern.add_child(sb)
 
 
-static func _build_d7_tea_house(geom: Node) -> void:
+func _build_d7_tea_house(geom: Node) -> void:
 	## Epic-7 T26: small wooden tea house — square wooden frame + curved
 	## upturned roof + paper sliding doors + hanging lanterns flanking entrance.
 	var house: Node3D = Node3D.new()
@@ -1942,7 +1942,7 @@ static func _build_d7_tea_house(geom: Node) -> void:
 	house.add_child(sb)
 
 
-static func _build_d7_tea_master_npc(town: Node) -> void:
+func _build_d7_tea_master_npc(town: Node) -> void:
 	## Epic-7 T27: tea master NPC — green robe + holding a small teacup
 	## with steam rising.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2016,7 +2016,7 @@ static func _build_d7_tea_master_npc(town: Node) -> void:
 	npc.add_child(steam)
 
 
-static func _build_d7_training_posts(geom: Node) -> void:
+func _build_d7_training_posts(geom: Node) -> void:
 	## Epic-7 T28: 5 wooden training posts (mok jong style) at varying
 	## heights for martial training.
 	var posts: Node3D = Node3D.new()
@@ -2061,7 +2061,7 @@ static func _build_d7_training_posts(geom: Node) -> void:
 		posts.add_child(cap_disc)
 
 
-static func _build_d7_martial_artist_npc(town: Node) -> void:
+func _build_d7_martial_artist_npc(town: Node) -> void:
 	## Epic-7 T29: martial artist NPC — white gi + black belt + striking
 	## stance with raised fist tween.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2127,7 +2127,7 @@ static func _build_d7_martial_artist_npc(town: Node) -> void:
 	tw.tween_interval(0.40)
 
 
-static func _build_d7_rope_bridge(geom: Node) -> void:
+func _build_d7_rope_bridge(geom: Node) -> void:
 	## Epic-7 T30: long rope bridge across a chasm — 4 wooden plank
 	## sections + 2 hanging ropes + 4 vertical support cables.
 	var bridge: Node3D = Node3D.new()
@@ -2202,7 +2202,7 @@ static func _build_d7_rope_bridge(geom: Node) -> void:
 	bridge.add_child(dsb)
 
 
-static func _build_d7_stone_arch(geom: Node) -> void:
+func _build_d7_stone_arch(geom: Node) -> void:
 	## Epic-7 T31: ancient stone archway — 2 weathered stone pillars +
 	## curved torus arch top + decorative carving line.
 	var arch: Node3D = Node3D.new()
@@ -2256,7 +2256,7 @@ static func _build_d7_stone_arch(geom: Node) -> void:
 	arch.add_child(keystone)
 
 
-static func _build_d7_bonsai_garden(geom: Node) -> void:
+func _build_d7_bonsai_garden(geom: Node) -> void:
 	## Epic-7 T32: bonsai garden — 3 stylized small bonsai trees on stone
 	## pedestals, each with twisted trunk + small leaf canopy.
 	var garden: Node3D = Node3D.new()
@@ -2330,7 +2330,7 @@ static func _build_d7_bonsai_garden(geom: Node) -> void:
 		bonsai.add_child(sb)
 
 
-static func _build_d7_d7_gardener_npc(town: Node) -> void:
+func _build_d7_d7_gardener_npc(town: Node) -> void:
 	## Epic-7 T33: D7 gardener NPC — green apron + holding small pruning shears.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -2378,7 +2378,7 @@ static func _build_d7_d7_gardener_npc(town: Node) -> void:
 		npc.add_child(blade)
 
 
-static func _build_d7_cliff_stack(geom: Node) -> void:
+func _build_d7_cliff_stack(geom: Node) -> void:
 	## Epic-7 T34: tall cliff stack — 4 progressively narrower sandstone
 	## blocks stacked tall, suggesting a natural rock formation.
 	var stack: Node3D = Node3D.new()
@@ -2419,7 +2419,7 @@ static func _build_d7_cliff_stack(geom: Node) -> void:
 	stack.add_child(sb)
 
 
-static func _build_d7_stone_stairs(geom: Node) -> void:
+func _build_d7_stone_stairs(geom: Node) -> void:
 	## Epic-7 T35: long stone staircase climbing upward — 12 steps with
 	## stone railings on each side.
 	var stairs: Node3D = Node3D.new()
@@ -2459,7 +2459,7 @@ static func _build_d7_stone_stairs(geom: Node) -> void:
 		stairs.add_child(rail)
 
 
-static func _build_d7_weapon_rack(geom: Node) -> void:
+func _build_d7_weapon_rack(geom: Node) -> void:
 	## Epic-7 T36: wooden weapon rack with 4 staves and 2 hanging swords.
 	var rack: Node3D = Node3D.new()
 	rack.name = "WeaponRack"
@@ -2522,7 +2522,7 @@ static func _build_d7_weapon_rack(geom: Node) -> void:
 	rack.add_child(sb)
 
 
-static func _build_d7_d7_archer_npc(town: Node) -> void:
+func _build_d7_d7_archer_npc(town: Node) -> void:
 	## Epic-7 T37: D7 archer NPC — green tunic + held longbow.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -2568,7 +2568,7 @@ static func _build_d7_d7_archer_npc(town: Node) -> void:
 	npc.add_child(bow)
 
 
-static func _build_d7_target_stands(geom: Node) -> void:
+func _build_d7_target_stands(geom: Node) -> void:
 	## Epic-7 T38: 3 archery target stands — wooden frames with concentric
 	## bullseye discs (like the East Plaza but with wood theme).
 	var stands: Node3D = Node3D.new()
@@ -2629,7 +2629,7 @@ static func _build_d7_target_stands(geom: Node) -> void:
 		stand.add_child(sb)
 
 
-static func _build_d7_shrine_pillars(geom: Node) -> void:
+func _build_d7_shrine_pillars(geom: Node) -> void:
 	## Epic-7 T39: 6 small shrine pillars in a row, each with a tiny
 	## glowing offering bowl on top.
 	var pillars: Node3D = Node3D.new()
@@ -2694,7 +2694,7 @@ static func _build_d7_shrine_pillars(geom: Node) -> void:
 		pillar.add_child(sb)
 
 
-static func _build_d7_spirit_braziers(geom: Node) -> void:
+func _build_d7_spirit_braziers(geom: Node) -> void:
 	## Epic-7 T40: 4 spirit braziers — large bronze cauldrons with bright
 	## blue flame cores and rising sparks.
 	var braziers: Node3D = Node3D.new()
@@ -2800,7 +2800,7 @@ static func _build_d7_spirit_braziers(geom: Node) -> void:
 		brazier.add_child(sb)
 
 
-static func _build_d7_alms_bowls(geom: Node) -> void:
+func _build_d7_alms_bowls(geom: Node) -> void:
 	## Epic-7 T41: row of 5 bronze alms bowls on small wooden pedestals.
 	var bowls: Node3D = Node3D.new()
 	bowls.name = "AlmsBowls"
@@ -2861,7 +2861,7 @@ static func _build_d7_alms_bowls(geom: Node) -> void:
 		stand.add_child(sb)
 
 
-static func _build_d7_alms_collector_npc(town: Node) -> void:
+func _build_d7_alms_collector_npc(town: Node) -> void:
 	## Epic-7 T42: alms collector NPC — simple brown robe + holding a
 	## small wooden bowl.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2903,7 +2903,7 @@ static func _build_d7_alms_collector_npc(town: Node) -> void:
 	npc.add_child(bowl)
 
 
-static func _build_d7_buddha_statue(geom: Node) -> void:
+func _build_d7_buddha_statue(geom: Node) -> void:
 	## Epic-7 T43: large stone Buddha statue — round seated pose with
 	## crossed legs, robes draped over, halo behind head.
 	var statue: Node3D = Node3D.new()
@@ -2999,7 +2999,7 @@ static func _build_d7_buddha_statue(geom: Node) -> void:
 	statue.add_child(sb)
 
 
-static func _build_d7_incense_columns(geom: Node) -> void:
+func _build_d7_incense_columns(geom: Node) -> void:
 	## Epic-7 T44: 6 thin incense smoke columns rising from the ground —
 	## tall ground-anchored GPU particle smoke trails.
 	var cols: Node3D = Node3D.new()
@@ -3073,7 +3073,7 @@ static func _build_d7_incense_columns(geom: Node) -> void:
 		col.add_child(smoke)
 
 
-static func _build_d7_ancient_sage_npc(town: Node) -> void:
+func _build_d7_ancient_sage_npc(town: Node) -> void:
 	## Epic-7 T45: ancient sage NPC — long white robe + extremely long
 	## white beard sphere + walking staff.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3135,7 +3135,7 @@ static func _build_d7_ancient_sage_npc(town: Node) -> void:
 	npc.add_child(staff)
 
 
-static func _build_d7_cave_entrance(geom: Node) -> void:
+func _build_d7_cave_entrance(geom: Node) -> void:
 	## Epic-7 T46: hidden cave entrance — flattened sphere half-dome of dark
 	## rock + dark interior plug + soft amber inner light.
 	var cave: Node3D = Node3D.new()
@@ -3187,7 +3187,7 @@ static func _build_d7_cave_entrance(geom: Node) -> void:
 	cave.add_child(sb)
 
 
-static func _build_d7_cave_hermit_npc(town: Node) -> void:
+func _build_d7_cave_hermit_npc(town: Node) -> void:
 	## Epic-7 T47: cave hermit NPC at the cave entrance — ragged grey
 	## cloak + held gnarled staff with crystal head.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3257,7 +3257,7 @@ static func _build_d7_cave_hermit_npc(town: Node) -> void:
 	npc.add_child(crystal)
 
 
-static func _build_d7_burial_cairns(geom: Node) -> void:
+func _build_d7_burial_cairns(geom: Node) -> void:
 	## Epic-7 T48: 5 small burial cairns spread out — mounds of stones
 	## with small stick markers.
 	var cairns: Node3D = Node3D.new()
@@ -3305,7 +3305,7 @@ static func _build_d7_burial_cairns(geom: Node) -> void:
 		cairn.add_child(stick)
 
 
-static func _build_d7_rune_monoliths(geom: Node) -> void:
+func _build_d7_rune_monoliths(geom: Node) -> void:
 	## Epic-7 T49: 5 ancient rune monoliths in a row — tall narrow stone
 	## slabs with carved glowing rune symbols.
 	var monos: Node3D = Node3D.new()
@@ -3357,7 +3357,7 @@ static func _build_d7_rune_monoliths(geom: Node) -> void:
 		mono.add_child(sb)
 
 
-static func _build_d7_stone_colossus(geom: Node) -> void:
+func _build_d7_stone_colossus(geom: Node) -> void:
 	## Epic-7 T50: STONE COLOSSUS — D7 mid-boss landmark. Massive stone
 	## titan with hammer, glowing amber rune body cracks, and a halo of
 	## floating boulders.
@@ -3562,7 +3562,7 @@ static func _build_d7_stone_colossus(geom: Node) -> void:
 	col.add_child(psb)
 
 
-static func _build_d7_hawks(geom: Node) -> void:
+func _build_d7_hawks(geom: Node) -> void:
 	## Epic-7 T51: 4 hawks soaring overhead in slow circling pattern at
 	## different altitudes.
 	var hawks: Node3D = Node3D.new()
@@ -3608,7 +3608,7 @@ static func _build_d7_hawks(geom: Node) -> void:
 		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
 
 
-static func _build_d7_falconer_npc(town: Node) -> void:
+func _build_d7_falconer_npc(town: Node) -> void:
 	## Epic-7 T52: falconer NPC — leather glove with a perched falcon.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -3662,7 +3662,7 @@ static func _build_d7_falconer_npc(town: Node) -> void:
 	npc.add_child(falcon)
 
 
-static func _build_d7_obelisk(geom: Node) -> void:
+func _build_d7_obelisk(geom: Node) -> void:
 	## Epic-7 T53: tall narrow stone obelisk with carved glyphs on the front.
 	var ob: Node3D = Node3D.new()
 	ob.name = "Obelisk"
@@ -3736,7 +3736,7 @@ static func _build_d7_obelisk(geom: Node) -> void:
 	ob.add_child(sb)
 
 
-static func _build_d7_cave_paintings(geom: Node) -> void:
+func _build_d7_cave_paintings(geom: Node) -> void:
 	## Epic-7 T54: cave painting wall — dark rock surface with primitive
 	## colored handprints + animal silhouettes.
 	var wall: Node3D = Node3D.new()
@@ -3808,7 +3808,7 @@ static func _build_d7_cave_paintings(geom: Node) -> void:
 	wall.add_child(sb)
 
 
-static func _build_d7_shaman_npc(town: Node) -> void:
+func _build_d7_shaman_npc(town: Node) -> void:
 	## Epic-7 T55: mountain shaman NPC — feathered headdress + bone necklace
 	## + held drum.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3889,7 +3889,7 @@ static func _build_d7_shaman_npc(town: Node) -> void:
 	npc.add_child(drum)
 
 
-static func _build_d7_gate_ruin(geom: Node) -> void:
+func _build_d7_gate_ruin(geom: Node) -> void:
 	## Epic-7 T56: ancient gate ruin — broken stone arch with one
 	## collapsed pillar + scattered rubble.
 	var ruin: Node3D = Node3D.new()
@@ -3959,7 +3959,7 @@ static func _build_d7_gate_ruin(geom: Node) -> void:
 	ruin.add_child(sb2)
 
 
-static func _build_d7_d7_archaeologist_npc(town: Node) -> void:
+func _build_d7_d7_archaeologist_npc(town: Node) -> void:
 	## Epic-7 T57: D7 archaeologist NPC — beige expedition hat + dusty
 	## brown coat + small dig brush in hand.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4027,7 +4027,7 @@ static func _build_d7_d7_archaeologist_npc(town: Node) -> void:
 	npc.add_child(brush_handle)
 
 
-static func _build_d7_ancient_tomb(geom: Node) -> void:
+func _build_d7_ancient_tomb(geom: Node) -> void:
 	## Epic-7 T58: ancient tomb — large rectangular stone sarcophagus
 	## with carved lid + 2 short candles at the corners.
 	var tomb: Node3D = Node3D.new()
@@ -4124,7 +4124,7 @@ static func _build_d7_ancient_tomb(geom: Node) -> void:
 	tomb.add_child(sb)
 
 
-static func _build_d7_tomb_guardian(geom: Node) -> void:
+func _build_d7_tomb_guardian(geom: Node) -> void:
 	## Epic-7 T59: stone guardian statue beside the tomb — animal-headed
 	## sentinel with crossed arms.
 	var guard: Node3D = Node3D.new()
@@ -4206,7 +4206,7 @@ static func _build_d7_tomb_guardian(geom: Node) -> void:
 	guard.add_child(sb)
 
 
-static func _build_d7_dust_motes(geom: Node) -> void:
+func _build_d7_dust_motes(geom: Node) -> void:
 	## Epic-7 T60: ambient dust motes drifting through the air — gentle
 	## warm GPU particles giving the district atmospheric depth.
 	var motes: GPUParticles3D = GPUParticles3D.new()
@@ -4245,7 +4245,7 @@ static func _build_d7_dust_motes(geom: Node) -> void:
 	geom.add_child(motes)
 
 
-static func _build_d7_dragon_statue(geom: Node) -> void:
+func _build_d7_dragon_statue(geom: Node) -> void:
 	## Epic-7 T61: stone dragon statue — long curved body sphere chain +
 	## angular head + back ridge spikes + glowing eyes.
 	var dragon: Node3D = Node3D.new()
@@ -4327,7 +4327,7 @@ static func _build_d7_dragon_statue(geom: Node) -> void:
 	dragon.add_child(sb)
 
 
-static func _build_d7_dragon_priest_npc(town: Node) -> void:
+func _build_d7_dragon_priest_npc(town: Node) -> void:
 	## Epic-7 T62: dragon priest NPC — red and gold robe + horned crown.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -4398,7 +4398,7 @@ static func _build_d7_dragon_priest_npc(town: Node) -> void:
 		npc.add_child(horn)
 
 
-static func _build_d7_ceremonial_fire(geom: Node) -> void:
+func _build_d7_ceremonial_fire(geom: Node) -> void:
 	## Epic-7 T63: large ceremonial fire pit — circular stone ring + tall
 	## crackling flame + smoke + warm bright light.
 	var fire: Node3D = Node3D.new()
@@ -4496,7 +4496,7 @@ static func _build_d7_ceremonial_fire(geom: Node) -> void:
 	twl.tween_property(light, "light_energy", 3.5, 0.30)
 
 
-static func _build_d7_divination_table(geom: Node) -> void:
+func _build_d7_divination_table(geom: Node) -> void:
 	## Epic-7 T64: low wooden table with 6 small "bone" sticks scattered
 	## on top — divination spot.
 	var table: Node3D = Node3D.new()
@@ -4557,7 +4557,7 @@ static func _build_d7_divination_table(geom: Node) -> void:
 	table.add_child(sb)
 
 
-static func _build_d7_d7_oracle_npc(town: Node) -> void:
+func _build_d7_d7_oracle_npc(town: Node) -> void:
 	## Epic-7 T65: D7 oracle NPC at the divination table — purple robe +
 	## third eye gem on forehead + held crystal ball.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4627,7 +4627,7 @@ static func _build_d7_d7_oracle_npc(town: Node) -> void:
 	tw.tween_property(ball, "scale", Vector3.ONE * 0.85, 1.4)
 
 
-static func _build_d7_arched_bridge(geom: Node) -> void:
+func _build_d7_arched_bridge(geom: Node) -> void:
 	## Epic-7 T66: large stone bridge with curved arch span — wide deck +
 	## 2 arched supports underneath + decorative railings.
 	var bridge: Node3D = Node3D.new()
@@ -4697,7 +4697,7 @@ static func _build_d7_arched_bridge(geom: Node) -> void:
 		bridge.add_child(rsb)
 
 
-static func _build_d7_yaks(geom: Node) -> void:
+func _build_d7_yaks(geom: Node) -> void:
 	## Epic-7 T67: 3 mountain yak creatures — large dark furry bodies +
 	## curved horns + slow grazing tween.
 	var herd: Node3D = Node3D.new()
@@ -4783,7 +4783,7 @@ static func _build_d7_yaks(geom: Node) -> void:
 		yak.add_child(sb)
 
 
-static func _build_d7_yak_herder_npc(town: Node) -> void:
+func _build_d7_yak_herder_npc(town: Node) -> void:
 	## Epic-7 T68: yak herder NPC — heavy fur cloak + tall shepherd's
 	## crook + warm yellow scarf.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4852,7 +4852,7 @@ static func _build_d7_yak_herder_npc(town: Node) -> void:
 	npc.add_child(curl)
 
 
-static func _build_d7_hot_spring_d7(geom: Node) -> void:
+func _build_d7_hot_spring_d7(geom: Node) -> void:
 	## Epic-7 T69: D7 hot spring — round natural pool with stone-rim +
 	## warm green water + steam particles.
 	var spring: Node3D = Node3D.new()
@@ -4940,7 +4940,7 @@ static func _build_d7_hot_spring_d7(geom: Node) -> void:
 	spring.add_child(sb)
 
 
-static func _build_d7_bathing_monk_npc(town: Node) -> void:
+func _build_d7_bathing_monk_npc(town: Node) -> void:
 	## Epic-7 T70: bathing monk NPC near the spring — wrapped in towel,
 	## peaceful expression.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4985,7 +4985,7 @@ static func _build_d7_bathing_monk_npc(town: Node) -> void:
 	npc.add_child(dome)
 
 
-static func _build_d7_wishing_well(geom: Node) -> void:
+func _build_d7_wishing_well(geom: Node) -> void:
 	## Epic-7 T71: stone wishing well — round stone base + 2 wooden uprights +
 	## sloped roof + a bucket dangling from a rope.
 	var well: Node3D = Node3D.new()
@@ -5084,7 +5084,7 @@ static func _build_d7_wishing_well(geom: Node) -> void:
 	well.add_child(sb)
 
 
-static func _build_d7_blacksmith_forge(geom: Node) -> void:
+func _build_d7_blacksmith_forge(geom: Node) -> void:
 	## Epic-7 T72: blacksmith forge — stone fire pit + anvil + bellows.
 	var forge: Node3D = Node3D.new()
 	forge.name = "BlacksmithForge"
@@ -5181,7 +5181,7 @@ static func _build_d7_blacksmith_forge(geom: Node) -> void:
 	forge.add_child(asb)
 
 
-static func _build_d7_blacksmith_npc(town: Node) -> void:
+func _build_d7_blacksmith_npc(town: Node) -> void:
 	## Epic-7 T73: D7 blacksmith NPC — leather apron + held hammer.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -5238,7 +5238,7 @@ static func _build_d7_blacksmith_npc(town: Node) -> void:
 	npc.add_child(head)
 
 
-static func _build_d7_weapon_display(geom: Node) -> void:
+func _build_d7_weapon_display(geom: Node) -> void:
 	## Epic-7 T74: crafted weapon display rack — wood frame with 5 weapons.
 	var disp: Node3D = Node3D.new()
 	disp.name = "WeaponDisplay"
@@ -5316,7 +5316,7 @@ static func _build_d7_weapon_display(geom: Node) -> void:
 	disp.add_child(sb)
 
 
-static func _build_d7_tea_garden_benches(geom: Node) -> void:
+func _build_d7_tea_garden_benches(geom: Node) -> void:
 	## Epic-7 T75: 4 wooden tea garden benches arranged in a small group.
 	var benches: Node3D = Node3D.new()
 	benches.name = "TeaGardenBenches"
@@ -5373,7 +5373,7 @@ static func _build_d7_tea_garden_benches(geom: Node) -> void:
 		bench.add_child(sb)
 
 
-static func _build_d7_d7_rope_swing(geom: Node) -> void:
+func _build_d7_d7_rope_swing(geom: Node) -> void:
 	## Epic-7 T76: rope swing under a tree branch — tall trunk + horizontal
 	## branch + 2 ropes + plank seat with sway tween.
 	var swing: Node3D = Node3D.new()
@@ -5449,7 +5449,7 @@ static func _build_d7_d7_rope_swing(geom: Node) -> void:
 	swing.add_child(sb)
 
 
-static func _build_d7_child_apprentice_npc(town: Node) -> void:
+func _build_d7_child_apprentice_npc(town: Node) -> void:
 	## Epic-7 T77: small child apprentice NPC — saffron robe + small wood
 	## practice sword.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5508,7 +5508,7 @@ static func _build_d7_child_apprentice_npc(town: Node) -> void:
 	npc.add_child(sword)
 
 
-static func _build_d7_stone_pagoda(geom: Node) -> void:
+func _build_d7_stone_pagoda(geom: Node) -> void:
 	## Epic-7 T78: tall multi-tier stone pagoda — 4 stacked roofs of
 	## decreasing size on a square stone column.
 	var pagoda: Node3D = Node3D.new()
@@ -5585,7 +5585,7 @@ static func _build_d7_stone_pagoda(geom: Node) -> void:
 	pagoda.add_child(sb)
 
 
-static func _build_d7_pagoda_monk_npc(town: Node) -> void:
+func _build_d7_pagoda_monk_npc(town: Node) -> void:
 	## Epic-7 T79: pagoda guardian monk NPC — yellow robe + held bell.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -5647,7 +5647,7 @@ static func _build_d7_pagoda_monk_npc(town: Node) -> void:
 	npc.add_child(bell)
 
 
-static func _build_d7_falling_leaves(geom: Node) -> void:
+func _build_d7_falling_leaves(geom: Node) -> void:
 	## Epic-7 T80: ambient falling autumn leaves — GPU particles drifting
 	## down across the entire D7 area in warm orange/yellow colors.
 	var leaves: GPUParticles3D = GPUParticles3D.new()
@@ -5688,7 +5688,7 @@ static func _build_d7_falling_leaves(geom: Node) -> void:
 	geom.add_child(leaves)
 
 
-static func _build_d7_d7_gargoyles(geom: Node) -> void:
+func _build_d7_d7_gargoyles(geom: Node) -> void:
 	## Epic-7 T81: row of 4 stone gargoyles on small pedestals — animal-headed
 	## crouching figures with wings.
 	var gargs: Node3D = Node3D.new()
@@ -5774,7 +5774,7 @@ static func _build_d7_d7_gargoyles(geom: Node) -> void:
 		garg.add_child(sb)
 
 
-static func _build_d7_cloud_pavilion(geom: Node) -> void:
+func _build_d7_cloud_pavilion(geom: Node) -> void:
 	## Epic-7 T82: small floating cloud pavilion — translucent platform
 	## with pillars hovering above the ground.
 	var pav: Node3D = Node3D.new()
@@ -5844,7 +5844,7 @@ static func _build_d7_cloud_pavilion(geom: Node) -> void:
 	pav.add_child(sb)
 
 
-static func _build_d7_spirit_dancer_npc(town: Node) -> void:
+func _build_d7_spirit_dancer_npc(town: Node) -> void:
 	## Epic-7 T83: spirit dancer NPC — translucent flowing robe + raised
 	## arms + spinning rotation tween.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5900,7 +5900,7 @@ static func _build_d7_spirit_dancer_npc(town: Node) -> void:
 	tw.tween_property(dancer, "rotation_degrees:y", 0.0, 0.0)
 
 
-static func _build_d7_outlook_telescope(geom: Node) -> void:
+func _build_d7_outlook_telescope(geom: Node) -> void:
 	## Epic-7 T84: rocky outlook point with a brass telescope on a tripod.
 	var look: Node3D = Node3D.new()
 	look.name = "OutlookTelescope"
@@ -5973,7 +5973,7 @@ static func _build_d7_outlook_telescope(geom: Node) -> void:
 	look.add_child(sb)
 
 
-static func _build_d7_d7_stargazer_npc(town: Node) -> void:
+func _build_d7_d7_stargazer_npc(town: Node) -> void:
 	## Epic-7 T85: D7 stargazer NPC — purple robe + tall pointed hat with
 	## small star symbols.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6033,7 +6033,7 @@ static func _build_d7_d7_stargazer_npc(town: Node) -> void:
 		npc.add_child(star)
 
 
-static func _build_d7_prayer_wheels(geom: Node) -> void:
+func _build_d7_prayer_wheels(geom: Node) -> void:
 	## Epic-7 T86: row of 6 spinning prayer wheels — bronze drums on
 	## wooden axles, each rotating slowly around its vertical axis.
 	var wheels: Node3D = Node3D.new()
@@ -6096,7 +6096,7 @@ static func _build_d7_prayer_wheels(geom: Node) -> void:
 		wheel.add_child(sb)
 
 
-static func _build_d7_bell_shrine(geom: Node) -> void:
+func _build_d7_bell_shrine(geom: Node) -> void:
 	## Epic-7 T87: small bell shrine — wooden frame with 3 hanging brass
 	## bells of varying sizes that sway slowly.
 	var shrine: Node3D = Node3D.new()
@@ -6173,7 +6173,7 @@ static func _build_d7_bell_shrine(geom: Node) -> void:
 	shrine.add_child(light)
 
 
-static func _build_d7_sweeper_monk_npc(town: Node) -> void:
+func _build_d7_sweeper_monk_npc(town: Node) -> void:
 	## Epic-7 T88: sweeper monk NPC — orange robe + held broom + sweeping
 	## arm motion tween.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6248,7 +6248,7 @@ static func _build_d7_sweeper_monk_npc(town: Node) -> void:
 	tw.tween_property(handle, "rotation_degrees:z", 15.0, 0.55)
 
 
-static func _build_d7_water_mill(geom: Node) -> void:
+func _build_d7_water_mill(geom: Node) -> void:
 	## Epic-7 T89: small water mill — wooden building + large rotating
 	## water wheel on the side + small water trough at the base.
 	var mill: Node3D = Node3D.new()
@@ -6330,7 +6330,7 @@ static func _build_d7_water_mill(geom: Node) -> void:
 	mill.add_child(sb)
 
 
-static func _build_d7_cloud_mist(geom: Node) -> void:
+func _build_d7_cloud_mist(geom: Node) -> void:
 	## Epic-7 T90: high-altitude cloud mist — large pale GPU particles
 	## drifting around at upper height giving the area a cloudy feel.
 	var mist: GPUParticles3D = GPUParticles3D.new()
@@ -6370,7 +6370,7 @@ static func _build_d7_cloud_mist(geom: Node) -> void:
 	geom.add_child(mist)
 
 
-static func _build_d7_stone_golem(geom: Node) -> void:
+func _build_d7_stone_golem(geom: Node) -> void:
 	## Epic-7 T91: small stone golem — chunky humanoid built from stone
 	## blocks with glowing amber rune eyes + slow patrol.
 	var golem: Node3D = Node3D.new()
@@ -6446,7 +6446,7 @@ static func _build_d7_stone_golem(geom: Node) -> void:
 	golem.add_child(sb)
 
 
-static func _build_d7_sky_lanterns(geom: Node) -> void:
+func _build_d7_sky_lanterns(geom: Node) -> void:
 	## Epic-7 T92: 6 paper sky lanterns rising slowly into the air —
 	## warm orange spheres with hover/rise tweens.
 	var lanterns: Node3D = Node3D.new()
@@ -6492,7 +6492,7 @@ static func _build_d7_sky_lanterns(geom: Node) -> void:
 		tw.tween_property(lantern, "position:y", start_y, 0.0)
 
 
-static func _build_d7_lantern_releaser_npc(town: Node) -> void:
+func _build_d7_lantern_releaser_npc(town: Node) -> void:
 	## Epic-7 T93: lantern releaser NPC — cream robe + held lit lantern
 	## raised upward.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6549,7 +6549,7 @@ static func _build_d7_lantern_releaser_npc(town: Node) -> void:
 	npc.add_child(light)
 
 
-static func _build_d7_ancient_pine(geom: Node) -> void:
+func _build_d7_ancient_pine(geom: Node) -> void:
 	## Epic-7 T94: gnarled ancient pine tree — twisted trunk + 4 angled
 	## branches + dark green canopy clusters.
 	var tree: Node3D = Node3D.new()
@@ -6621,7 +6621,7 @@ static func _build_d7_ancient_pine(geom: Node) -> void:
 	tree.add_child(sb)
 
 
-static func _build_d7_d7_scholar_npc(town: Node) -> void:
+func _build_d7_d7_scholar_npc(town: Node) -> void:
 	## Epic-7 T95: D7 scholar NPC — long scholarly robe + held open
 	## scroll/book.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6668,7 +6668,7 @@ static func _build_d7_d7_scholar_npc(town: Node) -> void:
 	npc.add_child(book)
 
 
-static func _build_d7_welcome_banner(geom: Node) -> void:
+func _build_d7_welcome_banner(geom: Node) -> void:
 	## Epic-7 T96: tall double-pole welcome banner — wooden poles + draped
 	## red cloth + golden trim + Label3D titles.
 	var banner: Node3D = Node3D.new()
@@ -6767,7 +6767,7 @@ static func _build_d7_welcome_banner(geom: Node) -> void:
 	banner.add_child(light)
 
 
-static func _build_d7_grand_peak(geom: Node) -> void:
+func _build_d7_grand_peak(geom: Node) -> void:
 	## Epic-7 T97: GRAND MOUNTAIN PEAK landmark — towering 5-tier sandstone
 	## peak crowned with a glowing amber crystal + 8 orbiting stone
 	## fragments + massive aura beam.
@@ -6890,7 +6890,7 @@ static func _build_d7_grand_peak(geom: Node) -> void:
 	peak.add_child(sb)
 
 
-static func _build_d7_district_plaque(geom: Node) -> void:
+func _build_d7_district_plaque(geom: Node) -> void:
 	## Epic-7 T98: dedication plaque on a stone pedestal at the entrance.
 	var plaque: Node3D = Node3D.new()
 	plaque.name = "D7Plaque"
@@ -6941,7 +6941,7 @@ static func _build_d7_district_plaque(geom: Node) -> void:
 	plaque.add_child(sb)
 
 
-static func _build_d7_ambient_tweak(geom: Node) -> void:
+func _build_d7_ambient_tweak(geom: Node) -> void:
 	## Epic-7 T99: warm sandstone ambient — wide amber fill light + soft
 	## warm directional sun.
 	var amb: Node3D = Node3D.new()
@@ -6966,7 +6966,7 @@ static func _build_d7_ambient_tweak(geom: Node) -> void:
 	amb.add_child(sun)
 
 
-static func _build_d7_mountain_sage(geom: Node) -> void:
+func _build_d7_mountain_sage(geom: Node) -> void:
 	## Epic-7 T100: MOUNTAIN SAGE — Epic 7 finale boss. Towering monk
 	## elder seated in lotus on a high stone pedestal, with a massive
 	## halo of orbiting glyph stones and a glowing third eye.

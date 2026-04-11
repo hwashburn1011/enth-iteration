@@ -1,19 +1,19 @@
 class_name D4Builder
-extends RefCounted
+extends Node
 ## Bloom Cluster district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control.
 
 const D4_CENTER := Vector3(220, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=180 out to x=260.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 260.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_4(geom).
 	print("[D4Builder] start")
 	extend_boundary(geom)
@@ -120,7 +120,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D4Builder] done")
 
 
-static func _build_d4_ground(geom: Node) -> void:
+func _build_d4_ground(geom: Node) -> void:
 	## Epic-4 T1b: D4 ground — green organic floor extending from x=190 to
 	## x=250. Uses a green grid shader variant.
 	var plane: PlaneMesh = PlaneMesh.new()
@@ -163,7 +163,7 @@ void fragment() {
 	ground.add_child(sb)
 
 
-static func _build_d4_entrance_arch(geom: Node) -> void:
+func _build_d4_entrance_arch(geom: Node) -> void:
 	## Epic-4 T2: a wide vine-covered organic arch reading "BLOOM CLUSTER".
 	var arch: Node3D = Node3D.new()
 	arch.name = "D4EntranceArch"
@@ -255,7 +255,7 @@ static func _build_d4_entrance_arch(geom: Node) -> void:
 		arch.add_child(label)
 
 
-static func _build_d4_great_bloom(geom: Node) -> void:
+func _build_d4_great_bloom(geom: Node) -> void:
 	## Epic-4 T3: GREAT BLOOM — a 10m-tall flower in the center. Massive
 	## stem cylinder + multi-layered petal sphere arrangement on top.
 	var bloom_root: Node3D = Node3D.new()
@@ -353,7 +353,7 @@ static func _build_d4_great_bloom(geom: Node) -> void:
 	bloom_root.add_child(sb)
 
 
-static func _build_d4_bloomling(geom: Node) -> void:
+func _build_d4_bloomling(geom: Node) -> void:
 	## Epic-4 T4: a friendly bloomling — small plant creature with a
 	## flower head, 2 leaf arms, and a wandering hop animation.
 	var bloomling: Node3D = Node3D.new()
@@ -440,7 +440,7 @@ static func _build_d4_bloomling(geom: Node) -> void:
 	bloomling.add_child(label)
 
 
-static func _build_d4_gardener_npc(town: Node) -> void:
+func _build_d4_gardener_npc(town: Node) -> void:
 	## Epic-4 T5: Gardener NPC — friendly green-robed figure with a small
 	## watering can in one hand and a flower-petal hat.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -539,7 +539,7 @@ static func _build_d4_gardener_npc(town: Node) -> void:
 	gardener.add_child(label)
 
 
-static func _build_d4_bush_cluster(geom: Node) -> void:
+func _build_d4_bush_cluster(geom: Node) -> void:
 	## Epic-4 T6: 8 round green bushes scattered across the district.
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = 277
@@ -570,7 +570,7 @@ static func _build_d4_bush_cluster(geom: Node) -> void:
 		bush.add_child(sb)
 
 
-static func _build_d4_mushroom_forest(geom: Node) -> void:
+func _build_d4_mushroom_forest(geom: Node) -> void:
 	## Epic-4 T7: 8 glowing mushrooms with bioluminescent caps.
 	var positions: Array[Vector3] = [
 		D4_CENTER + Vector3(-15, 0, 8),
@@ -631,7 +631,7 @@ static func _build_d4_mushroom_forest(geom: Node) -> void:
 		shroom.add_child(cap)
 
 
-static func _build_d4_vine_canopy(geom: Node) -> void:
+func _build_d4_vine_canopy(geom: Node) -> void:
 	## Epic-4 T8: overhead vine canopy at 5m altitude.
 	var canopy: Node3D = Node3D.new()
 	canopy.name = "D4VineCanopy"
@@ -677,7 +677,7 @@ static func _build_d4_vine_canopy(geom: Node) -> void:
 		canopy.add_child(leaf)
 
 
-static func _build_d4_botanist_npc(town: Node) -> void:
+func _build_d4_botanist_npc(town: Node) -> void:
 	## Epic-4 T9: Botanist NPC with green coat and magnifying glass.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -763,7 +763,7 @@ static func _build_d4_botanist_npc(town: Node) -> void:
 	bot.add_child(label)
 
 
-static func _build_d4_beehive(geom: Node) -> void:
+func _build_d4_beehive(geom: Node) -> void:
 	## Epic-4 T10: hanging beehive with bee particles.
 	var hive: Node3D = Node3D.new()
 	hive.name = "D4Beehive"
@@ -844,7 +844,7 @@ static func _build_d4_beehive(geom: Node) -> void:
 	hive.add_child(sb)
 
 
-static func _build_d4_meadow_flowers(geom: Node) -> void:
+func _build_d4_meadow_flowers(geom: Node) -> void:
 	## Epic-4 T11: 24 small flower stem+head clusters scattered across D4.
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
 	rng.seed = 311
@@ -895,7 +895,7 @@ static func _build_d4_meadow_flowers(geom: Node) -> void:
 		flower.add_child(head)
 
 
-static func _build_d4_butterflies(geom: Node) -> void:
+func _build_d4_butterflies(geom: Node) -> void:
 	## Epic-4 T12: 30 butterfly particles drifting near the great bloom.
 	var fly: GPUParticles3D = GPUParticles3D.new()
 	fly.name = "D4Butterflies"
@@ -928,7 +928,7 @@ static func _build_d4_butterflies(geom: Node) -> void:
 	geom.add_child(fly)
 
 
-static func _build_d4_watering_well(geom: Node) -> void:
+func _build_d4_watering_well(geom: Node) -> void:
 	## Epic-4 T13: stone watering well with bucket.
 	var well: Node3D = Node3D.new()
 	well.name = "D4WateringWell"
@@ -1003,7 +1003,7 @@ static func _build_d4_watering_well(geom: Node) -> void:
 	well.add_child(sb)
 
 
-static func _build_d4_farmer_npc(town: Node) -> void:
+func _build_d4_farmer_npc(town: Node) -> void:
 	## Epic-4 T14: Farmer NPC with straw hat and pitchfork.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -1078,7 +1078,7 @@ static func _build_d4_farmer_npc(town: Node) -> void:
 	farmer.add_child(label)
 
 
-static func _build_d4_scarecrow(geom: Node) -> void:
+func _build_d4_scarecrow(geom: Node) -> void:
 	## Epic-4 T15: a straw scarecrow on a wooden cross post.
 	var crow: Node3D = Node3D.new()
 	crow.name = "D4Scarecrow"
@@ -1152,7 +1152,7 @@ static func _build_d4_scarecrow(geom: Node) -> void:
 	crow.add_child(sb)
 
 
-static func _build_d4_tree_grove(geom: Node) -> void:
+func _build_d4_tree_grove(geom: Node) -> void:
 	## Epic-4 T16: 5 medium-sized trees in a grove cluster.
 	var positions: Array[Vector3] = [
 		D4_CENTER + Vector3(-18, 0, -10),
@@ -1203,7 +1203,7 @@ static func _build_d4_tree_grove(geom: Node) -> void:
 		tree.add_child(sb)
 
 
-static func _build_d4_apple_tree(geom: Node) -> void:
+func _build_d4_apple_tree(geom: Node) -> void:
 	## Epic-4 T17: a single big apple tree with red apples on the leaves.
 	var tree: Node3D = Node3D.new()
 	tree.name = "D4AppleTree"
@@ -1261,7 +1261,7 @@ static func _build_d4_apple_tree(geom: Node) -> void:
 	tree.add_child(sb)
 
 
-static func _build_d4_fish_pond(geom: Node) -> void:
+func _build_d4_fish_pond(geom: Node) -> void:
 	## Epic-4 T18: oval fish pond with stone rim + 3 circling fish.
 	var pond: Node3D = Node3D.new()
 	pond.name = "D4FishPond"
@@ -1319,7 +1319,7 @@ static func _build_d4_fish_pond(geom: Node) -> void:
 	spin.tween_property(fish_pivot, "rotation:y", TAU, 6.0)
 
 
-static func _build_d4_fisherman_npc(town: Node) -> void:
+func _build_d4_fisherman_npc(town: Node) -> void:
 	## Epic-4 T19: Fisherman NPC by the pond holding a fishing rod.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -1378,7 +1378,7 @@ static func _build_d4_fisherman_npc(town: Node) -> void:
 	fish.add_child(label)
 
 
-static func _build_d4_lily_pads(geom: Node) -> void:
+func _build_d4_lily_pads(geom: Node) -> void:
 	## Epic-4 T20: 6 lily pads scattered on the pond surface.
 	var positions: Array[Vector3] = [
 		D4_CENTER + Vector3(-9, 0.18, 13),
@@ -1422,7 +1422,7 @@ static func _build_d4_lily_pads(geom: Node) -> void:
 			geom.add_child(flower)
 
 
-static func _build_d4_greenhouse_building(geom: Node) -> void:
+func _build_d4_greenhouse_building(geom: Node) -> void:
 	## Epic-4 T21: a glass greenhouse building.
 	var house: Node3D = Node3D.new()
 	house.name = "D4Greenhouse"
@@ -1485,7 +1485,7 @@ static func _build_d4_greenhouse_building(geom: Node) -> void:
 	house.add_child(sb)
 
 
-static func _build_d4_plant_pot_row(geom: Node) -> void:
+func _build_d4_plant_pot_row(geom: Node) -> void:
 	## Epic-4 T22: 6 small plant pots in a row near the greenhouse.
 	var pot_mat: StandardMaterial3D = StandardMaterial3D.new()
 	pot_mat.albedo_color = Color(0.55, 0.30, 0.20)
@@ -1519,7 +1519,7 @@ static func _build_d4_plant_pot_row(geom: Node) -> void:
 		pot.add_child(plant)
 
 
-static func _build_d4_ladybug_creature(geom: Node) -> void:
+func _build_d4_ladybug_creature(geom: Node) -> void:
 	## Epic-4 T23: large red ladybug with black spots wandering on a patrol.
 	var bug: Node3D = Node3D.new()
 	bug.name = "D4Ladybug"
@@ -1561,7 +1561,7 @@ static func _build_d4_ladybug_creature(geom: Node) -> void:
 	patrol.tween_property(bug, "position", origin, 5.0)
 
 
-static func _build_d4_chef_npc(town: Node) -> void:
+func _build_d4_chef_npc(town: Node) -> void:
 	## Epic-4 T24: Chef NPC with white outfit and tall chef hat.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -1615,7 +1615,7 @@ static func _build_d4_chef_npc(town: Node) -> void:
 	chef.add_child(label)
 
 
-static func _build_d4_soup_pot(geom: Node) -> void:
+func _build_d4_soup_pot(geom: Node) -> void:
 	## Epic-4 T25: a large iron pot with bubbling orange soup and steam.
 	var pot: Node3D = Node3D.new()
 	pot.name = "D4SoupPot"
@@ -1689,7 +1689,7 @@ static func _build_d4_soup_pot(geom: Node) -> void:
 	pot.add_child(sb)
 
 
-static func _build_d4_stone_path(geom: Node) -> void:
+func _build_d4_stone_path(geom: Node) -> void:
 	## Epic-4 T26: 12 cracked stone path tiles winding through D4.
 	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
 	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
@@ -1710,7 +1710,7 @@ static func _build_d4_stone_path(geom: Node) -> void:
 		geom.add_child(tile)
 
 
-static func _build_d4_windmill(geom: Node) -> void:
+func _build_d4_windmill(geom: Node) -> void:
 	## Epic-4 T27: a tall windmill — round stone tower + 4 rotating blades.
 	var mill: Node3D = Node3D.new()
 	mill.name = "D4Windmill"
@@ -1768,7 +1768,7 @@ static func _build_d4_windmill(geom: Node) -> void:
 	mill.add_child(sb)
 
 
-static func _build_d4_wheat_field(geom: Node) -> void:
+func _build_d4_wheat_field(geom: Node) -> void:
 	## Epic-4 T28: 30 wheat stalks in a 5x6 grid.
 	var field: Node3D = Node3D.new()
 	field.name = "D4WheatField"
@@ -1791,7 +1791,7 @@ static func _build_d4_wheat_field(geom: Node) -> void:
 			field.add_child(stalk)
 
 
-static func _build_d4_miller_npc(town: Node) -> void:
+func _build_d4_miller_npc(town: Node) -> void:
 	## Epic-4 T29: Miller NPC with flour-dusted apron.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -1834,7 +1834,7 @@ static func _build_d4_miller_npc(town: Node) -> void:
 	miller.add_child(label)
 
 
-static func _build_d4_bread_oven(geom: Node) -> void:
+func _build_d4_bread_oven(geom: Node) -> void:
 	## Epic-4 T30: stone bread oven with fire mouth and chimney smoke.
 	var oven: Node3D = Node3D.new()
 	oven.name = "D4BreadOven"
@@ -1918,7 +1918,7 @@ static func _build_d4_bread_oven(geom: Node) -> void:
 	oven.add_child(sb)
 
 
-static func _build_d4_gazebo(geom: Node) -> void:
+func _build_d4_gazebo(geom: Node) -> void:
 	## Epic-4 T31: 6-column octagonal gazebo with roof.
 	var gaz: Node3D = Node3D.new()
 	gaz.name = "D4Gazebo"
@@ -1958,7 +1958,7 @@ static func _build_d4_gazebo(geom: Node) -> void:
 	gaz.add_child(roof)
 
 
-static func _build_d4_flower_wreaths(geom: Node) -> void:
+func _build_d4_flower_wreaths(geom: Node) -> void:
 	## Epic-4 T32: 4 pink flower wreaths hanging on the gazebo columns.
 	var wreath_mat: StandardMaterial3D = StandardMaterial3D.new()
 	wreath_mat.albedo_color = Color(1.0, 0.55, 0.85)
@@ -1980,7 +1980,7 @@ static func _build_d4_flower_wreaths(geom: Node) -> void:
 		geom.add_child(wreath)
 
 
-static func _build_d4_bird_bath(geom: Node) -> void:
+func _build_d4_bird_bath(geom: Node) -> void:
 	## Epic-4 T33: stone bird bath with rim, water, and 2 small birds.
 	var bath: Node3D = Node3D.new()
 	bath.name = "D4BirdBath"
@@ -2049,7 +2049,7 @@ static func _build_d4_bird_bath(geom: Node) -> void:
 	bath.add_child(sb)
 
 
-static func _build_d4_storyteller_npc(town: Node) -> void:
+func _build_d4_storyteller_npc(town: Node) -> void:
 	## Epic-4 T34: Storyteller NPC standing inside the gazebo.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -2092,7 +2092,7 @@ static func _build_d4_storyteller_npc(town: Node) -> void:
 	teller.add_child(label)
 
 
-static func _build_d4_sleeping_cat(geom: Node) -> void:
+func _build_d4_sleeping_cat(geom: Node) -> void:
 	## Epic-4 T35: a small yellow cat curled up sleeping on a pink cushion.
 	var cat: Node3D = Node3D.new()
 	cat.name = "D4SleepingCat"
@@ -2152,7 +2152,7 @@ static func _build_d4_sleeping_cat(geom: Node) -> void:
 	breath.tween_property(body, "scale", Vector3(1.4, 0.85, 1.0), 1.4).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d4_picnic_blanket(geom: Node) -> void:
+func _build_d4_picnic_blanket(geom: Node) -> void:
 	## Epic-4 T36: a red picnic blanket spread with a basket and 3 fruits.
 	var picnic: Node3D = Node3D.new()
 	picnic.name = "D4Picnic"
@@ -2203,7 +2203,7 @@ static func _build_d4_picnic_blanket(geom: Node) -> void:
 		picnic.add_child(fruit)
 
 
-static func _build_d4_veg_cart(geom: Node) -> void:
+func _build_d4_veg_cart(geom: Node) -> void:
 	## Epic-4 T37: wooden vegetable cart with 2 wheels and colorful veg.
 	var cart: Node3D = Node3D.new()
 	cart.name = "D4VegCart"
@@ -2276,7 +2276,7 @@ static func _build_d4_veg_cart(geom: Node) -> void:
 	cart.add_child(sb)
 
 
-static func _build_d4_garden_gnomes(geom: Node) -> void:
+func _build_d4_garden_gnomes(geom: Node) -> void:
 	## Epic-4 T38: 3 garden gnome statues with red conical hats.
 	var positions: Array[Vector3] = [
 		D4_CENTER + Vector3(-6, 0, -3),
@@ -2337,7 +2337,7 @@ static func _build_d4_garden_gnomes(geom: Node) -> void:
 		gnome.add_child(hat)
 
 
-static func _build_d4_beekeeper_npc(town: Node) -> void:
+func _build_d4_beekeeper_npc(town: Node) -> void:
 	## Epic-4 T39: Beekeeper NPC near the beehive with a white veil hat.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -2405,7 +2405,7 @@ static func _build_d4_beekeeper_npc(town: Node) -> void:
 	bk.add_child(label)
 
 
-static func _build_d4_honey_jars(geom: Node) -> void:
+func _build_d4_honey_jars(geom: Node) -> void:
 	## Epic-4 T40: 6 honey jars in a 2x3 grid on a small wooden table.
 	var jars: Node3D = Node3D.new()
 	jars.name = "D4HoneyJars"
@@ -2451,7 +2451,7 @@ static func _build_d4_honey_jars(geom: Node) -> void:
 	jars.add_child(sb)
 
 
-static func _build_d4_compost_heap(geom: Node) -> void:
+func _build_d4_compost_heap(geom: Node) -> void:
 	## Epic-4 T41: compost heap — wooden bin frame with brown organic pile.
 	var heap: Node3D = Node3D.new()
 	heap.name = "D4Compost"
@@ -2526,7 +2526,7 @@ static func _build_d4_compost_heap(geom: Node) -> void:
 	heap.add_child(sb)
 
 
-static func _build_d4_painter_npc(town: Node) -> void:
+func _build_d4_painter_npc(town: Node) -> void:
 	## Epic-4 T42: Painter NPC at an easel with a paint palette.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -2613,7 +2613,7 @@ static func _build_d4_painter_npc(town: Node) -> void:
 	p.add_child(label)
 
 
-static func _build_d4_easel_canvas(geom: Node) -> void:
+func _build_d4_easel_canvas(geom: Node) -> void:
 	## Epic-4 T43: a wooden easel with a colorful painted canvas.
 	var easel: Node3D = Node3D.new()
 	easel.name = "D4Easel"
@@ -2682,7 +2682,7 @@ static func _build_d4_easel_canvas(geom: Node) -> void:
 	easel.add_child(sb)
 
 
-static func _build_d4_birdhouse(geom: Node) -> void:
+func _build_d4_birdhouse(geom: Node) -> void:
 	## Epic-4 T44: a small wooden birdhouse on a tall pole.
 	var house: Node3D = Node3D.new()
 	house.name = "D4Birdhouse"
@@ -2753,7 +2753,7 @@ static func _build_d4_birdhouse(geom: Node) -> void:
 	house.add_child(sb)
 
 
-static func _build_d4_clothesline(geom: Node) -> void:
+func _build_d4_clothesline(geom: Node) -> void:
 	## Epic-4 T45: hanging clothesline between 2 wooden posts with 5 sheets.
 	var line: Node3D = Node3D.new()
 	line.name = "D4Clothesline"
@@ -2818,7 +2818,7 @@ static func _build_d4_clothesline(geom: Node) -> void:
 		line.add_child(sheet)
 
 
-static func _build_d4_stone_bridge(geom: Node) -> void:
+func _build_d4_stone_bridge(geom: Node) -> void:
 	## Epic-4 T46: stone arch bridge over the small stream — wide flat
 	## deck on 2 stone arches with side rails.
 	var bridge: Node3D = Node3D.new()
@@ -2879,7 +2879,7 @@ static func _build_d4_stone_bridge(geom: Node) -> void:
 	bridge.add_child(sb)
 
 
-static func _build_d4_small_stream(geom: Node) -> void:
+func _build_d4_small_stream(geom: Node) -> void:
 	## Epic-4 T47: a small flowing stream running through D4 — long thin
 	## emissive blue strip on the ground passing under the stone bridge.
 	var stream: MeshInstance3D = MeshInstance3D.new()
@@ -2899,7 +2899,7 @@ static func _build_d4_small_stream(geom: Node) -> void:
 	geom.add_child(stream)
 
 
-static func _build_d4_frog_creature(geom: Node) -> void:
+func _build_d4_frog_creature(geom: Node) -> void:
 	## Epic-4 T48: a friendly green frog sitting on a lily pad near the
 	## stream. Has 2 large eyes and a hop tween.
 	var frog: Node3D = Node3D.new()
@@ -2971,7 +2971,7 @@ static func _build_d4_frog_creature(geom: Node) -> void:
 	hop.tween_interval(1.5)
 
 
-static func _build_d4_musician_npc(town: Node) -> void:
+func _build_d4_musician_npc(town: Node) -> void:
 	## Epic-4 T49: Musician NPC near the gazebo with a small wooden lute.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -3060,7 +3060,7 @@ static func _build_d4_musician_npc(town: Node) -> void:
 	mus.add_child(label)
 
 
-static func _build_d4_bloom_guardian(geom: Node) -> void:
+func _build_d4_bloom_guardian(geom: Node) -> void:
 	## Epic-4 T50: BLOOM GUARDIAN — friendly mini-boss with a giant
 	## flower-bud body, 4 leaf wings, and a slow patrol around the central
 	## bloom. Pure decorative — peaceful guardian, not hostile.
@@ -3153,7 +3153,7 @@ static func _build_d4_bloom_guardian(geom: Node) -> void:
 	guard.add_child(label)
 
 
-static func _build_d4_stable(geom: Node) -> void:
+func _build_d4_stable(geom: Node) -> void:
 	## Epic-4 T51: wooden stable building with open front and stall doors.
 	var stable: Node3D = Node3D.new()
 	stable.name = "D4Stable"
@@ -3217,7 +3217,7 @@ static func _build_d4_stable(geom: Node) -> void:
 	stable.add_child(sb)
 
 
-static func _build_d4_horse(geom: Node) -> void:
+func _build_d4_horse(geom: Node) -> void:
 	## Epic-4 T52: a friendly horse standing outside the stable. Body
 	## capsule + 4 legs + head + mane + tail.
 	var horse: Node3D = Node3D.new()
@@ -3306,7 +3306,7 @@ static func _build_d4_horse(geom: Node) -> void:
 	horse.add_child(label)
 
 
-static func _build_d4_stableboy_npc(town: Node) -> void:
+func _build_d4_stableboy_npc(town: Node) -> void:
 	## Epic-4 T53: Stableboy NPC near the stable holding a feed bucket.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if slots == null:
@@ -3388,7 +3388,7 @@ static func _build_d4_stableboy_npc(town: Node) -> void:
 	sb.add_child(label)
 
 
-static func _build_d4_hay_loft(geom: Node) -> void:
+func _build_d4_hay_loft(geom: Node) -> void:
 	## Epic-4 T54: a hay loft jutting out of the stable's upper level —
 	## small platform with a stack of hay sacks.
 	var loft: Node3D = Node3D.new()
@@ -3435,7 +3435,7 @@ static func _build_d4_hay_loft(geom: Node) -> void:
 		loft.add_child(sack)
 
 
-static func _build_d4_hay_bales(geom: Node) -> void:
+func _build_d4_hay_bales(geom: Node) -> void:
 	## Epic-4 T55: 5 stacked round hay bales near the stable.
 	var bales: Node3D = Node3D.new()
 	bales.name = "D4HayBales"
@@ -3478,7 +3478,7 @@ static func _build_d4_hay_bales(geom: Node) -> void:
 	bales.add_child(sb)
 
 
-static func _build_d4_pumpkin_patch(geom: Node) -> void:
+func _build_d4_pumpkin_patch(geom: Node) -> void:
 	## Epic-4 T56: pumpkin patch — squat orange pumpkins of varying sizes on
 	## a small dirt plot at the south of D4.
 	var patch: Node3D = Node3D.new()
@@ -3538,7 +3538,7 @@ static func _build_d4_pumpkin_patch(geom: Node) -> void:
 		patch.add_child(stem)
 
 
-static func _build_d4_chicken_coop(geom: Node) -> void:
+func _build_d4_chicken_coop(geom: Node) -> void:
 	## Epic-4 T57: chicken coop — small wooden hut with sloped roof, opening,
 	## and a small wire fence run.
 	var coop: Node3D = Node3D.new()
@@ -3607,7 +3607,7 @@ static func _build_d4_chicken_coop(geom: Node) -> void:
 	coop.add_child(sb)
 
 
-static func _build_d4_chickens(geom: Node) -> void:
+func _build_d4_chickens(geom: Node) -> void:
 	## Epic-4 T58: rooster + 3 hens pecking and bobbing around the coop.
 	var flock: Node3D = Node3D.new()
 	flock.name = "Chickens"
@@ -3691,7 +3691,7 @@ static func _build_d4_chickens(geom: Node) -> void:
 		tw.tween_property(bird, "position:y", 0.0, 0.30 + randf() * 0.20)
 
 
-static func _build_d4_harvest_crates(geom: Node) -> void:
+func _build_d4_harvest_crates(geom: Node) -> void:
 	## Epic-4 T59: stacked wooden crates filled with vegetables (carrots,
 	## potatoes, onions). Sit by the chicken coop.
 	var crates: Node3D = Node3D.new()
@@ -3746,7 +3746,7 @@ static func _build_d4_harvest_crates(geom: Node) -> void:
 	crates.add_child(sb)
 
 
-static func _build_d4_berry_bushes(geom: Node) -> void:
+func _build_d4_berry_bushes(geom: Node) -> void:
 	## Epic-4 T60: row of 6 berry bushes lining a path. Each bush has dark
 	## green foliage with bright red berries (small spheres).
 	var row: Node3D = Node3D.new()
@@ -3805,7 +3805,7 @@ static func _build_d4_berry_bushes(geom: Node) -> void:
 		bush.add_child(sb)
 
 
-static func _build_d4_veg_garden_rows(geom: Node) -> void:
+func _build_d4_veg_garden_rows(geom: Node) -> void:
 	## Epic-4 T61: 4 long raised garden rows with green sprouts.
 	var rows: Node3D = Node3D.new()
 	rows.name = "VegGardenRows"
@@ -3839,7 +3839,7 @@ static func _build_d4_veg_garden_rows(geom: Node) -> void:
 			rows.add_child(sprout)
 
 
-static func _build_d4_water_trough(geom: Node) -> void:
+func _build_d4_water_trough(geom: Node) -> void:
 	## Epic-4 T62: long wooden water trough with shimmering water surface.
 	var trough: Node3D = Node3D.new()
 	trough.name = "WaterTrough"
@@ -3901,7 +3901,7 @@ static func _build_d4_water_trough(geom: Node) -> void:
 	trough.add_child(sb)
 
 
-static func _build_d4_shepherd_npc(town: Node) -> void:
+func _build_d4_shepherd_npc(town: Node) -> void:
 	## Epic-4 T63: shepherd NPC with brown robe + tall crook.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -3959,7 +3959,7 @@ static func _build_d4_shepherd_npc(town: Node) -> void:
 	npc.add_child(robe)
 
 
-static func _build_d4_sheep_flock(geom: Node) -> void:
+func _build_d4_sheep_flock(geom: Node) -> void:
 	## Epic-4 T64: 5 fluffy sheep grazing in a loose group with idle bobbing.
 	var flock: Node3D = Node3D.new()
 	flock.name = "SheepFlock"
@@ -4037,7 +4037,7 @@ static func _build_d4_sheep_flock(geom: Node) -> void:
 		sheep.add_child(sb)
 
 
-static func _build_d4_sheepdog(geom: Node) -> void:
+func _build_d4_sheepdog(geom: Node) -> void:
 	## Epic-4 T65: black-and-white sheepdog patrolling around the flock.
 	var dog: Node3D = Node3D.new()
 	dog.name = "Sheepdog"
@@ -4126,7 +4126,7 @@ static func _build_d4_sheepdog(geom: Node) -> void:
 	twag.tween_property(tail, "rotation_degrees:y", -25.0, 0.25)
 
 
-static func _build_d4_cherry_orchard(geom: Node) -> void:
+func _build_d4_cherry_orchard(geom: Node) -> void:
 	## Epic-4 T66: 3 rows × 3 cherry trees with pink blossoms and red fruit.
 	var orchard: Node3D = Node3D.new()
 	orchard.name = "CherryOrchard"
@@ -4202,7 +4202,7 @@ static func _build_d4_cherry_orchard(geom: Node) -> void:
 			tree.add_child(sb)
 
 
-static func _build_d4_preserves_stand(geom: Node) -> void:
+func _build_d4_preserves_stand(geom: Node) -> void:
 	## Epic-4 T67: roadside preserves stand — wooden table with rows of
 	## colored jars (jam, honey, pickles).
 	var stand: Node3D = Node3D.new()
@@ -4307,7 +4307,7 @@ static func _build_d4_preserves_stand(geom: Node) -> void:
 	stand.add_child(sb)
 
 
-static func _build_d4_child_npc(town: Node) -> void:
+func _build_d4_child_npc(town: Node) -> void:
 	## Epic-4 T68: child NPC playing with a wooden hoop, smaller scale than adult NPCs.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -4350,7 +4350,7 @@ static func _build_d4_child_npc(town: Node) -> void:
 	tb.tween_property(npc, "position:y", 0.0, 0.45)
 
 
-static func _build_d4_dandelion_patch(geom: Node) -> void:
+func _build_d4_dandelion_patch(geom: Node) -> void:
 	## Epic-4 T69: meadow patch of dandelion puffballs — white fluffy spheres
 	## on thin green stems with subtle drift particles.
 	var patch: Node3D = Node3D.new()
@@ -4398,7 +4398,7 @@ static func _build_d4_dandelion_patch(geom: Node) -> void:
 		tw.tween_property(dande, "rotation_degrees:z", -4.0, 1.5 + randf())
 
 
-static func _build_d4_rope_swing(geom: Node) -> void:
+func _build_d4_rope_swing(geom: Node) -> void:
 	## Epic-4 T70: rope swing — overhead horizontal branch with two ropes
 	## holding a wooden plank seat that gently swings.
 	var swing: Node3D = Node3D.new()
@@ -4474,7 +4474,7 @@ static func _build_d4_rope_swing(geom: Node) -> void:
 	swing.add_child(sb)
 
 
-static func _build_d4_ancient_willow(geom: Node) -> void:
+func _build_d4_ancient_willow(geom: Node) -> void:
 	## Epic-4 T71: massive ancient willow — fat trunk, broad bowl-shaped
 	## canopy, and drooping vine ropes that hang to the ground.
 	var willow: Node3D = Node3D.new()
@@ -4547,7 +4547,7 @@ static func _build_d4_ancient_willow(geom: Node) -> void:
 	willow.add_child(sb)
 
 
-static func _build_d4_garden_statue(geom: Node) -> void:
+func _build_d4_garden_statue(geom: Node) -> void:
 	## Epic-4 T72: stone garden statue of a woodland deity — pedestal +
 	## robed figure + flower crown + soft amber emission for guardian aura.
 	var statue: Node3D = Node3D.new()
@@ -4638,7 +4638,7 @@ static func _build_d4_garden_statue(geom: Node) -> void:
 	statue.add_child(sb)
 
 
-static func _build_d4_forager_npc(town: Node) -> void:
+func _build_d4_forager_npc(town: Node) -> void:
 	## Epic-4 T73: forager NPC with woven basket carrying glowing mushrooms.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -4692,7 +4692,7 @@ static func _build_d4_forager_npc(town: Node) -> void:
 		slot.add_child(cap)
 
 
-static func _build_d4_fairy_lights(geom: Node) -> void:
+func _build_d4_fairy_lights(geom: Node) -> void:
 	## Epic-4 T74: string of glowing fairy lights between two posts. Each
 	## bulb is a small emissive sphere with an OmniLight3D.
 	var strand: Node3D = Node3D.new()
@@ -4775,7 +4775,7 @@ static func _build_d4_fairy_lights(geom: Node) -> void:
 		tw.tween_property(light, "light_energy", 0.55, 0.6)
 
 
-static func _build_d4_petal_drift(geom: Node) -> void:
+func _build_d4_petal_drift(geom: Node) -> void:
 	## Epic-4 T75: GPU particles that drift soft pink petals around the
 	## great bloom area, falling slowly downward with random sway.
 	var drift: GPUParticles3D = GPUParticles3D.new()
@@ -4817,7 +4817,7 @@ static func _build_d4_petal_drift(geom: Node) -> void:
 	geom.add_child(drift)
 
 
-static func _build_d4_thornling_patrol(geom: Node) -> void:
+func _build_d4_thornling_patrol(geom: Node) -> void:
 	## Epic-4 T76: 3 hostile thornling props patrolling along a tween path.
 	## Decorative — these are not real combat enemies but show the corruption
 	## edge of the bloom cluster. Spiky dark-green pods with red eyes.
@@ -4892,7 +4892,7 @@ static func _build_d4_thornling_patrol(geom: Node) -> void:
 		tb.tween_property(body, "position:y", 0.45, 0.6)
 
 
-static func _build_d4_archery_range(geom: Node) -> void:
+func _build_d4_archery_range(geom: Node) -> void:
 	## Epic-4 T77: archery range — line of 4 painted bullseye targets on
 	## wooden stands at the south end of D4.
 	var range_node: Node3D = Node3D.new()
@@ -4961,7 +4961,7 @@ static func _build_d4_archery_range(geom: Node) -> void:
 		stand.add_child(sb)
 
 
-static func _build_d4_ranger_npc(town: Node) -> void:
+func _build_d4_ranger_npc(town: Node) -> void:
 	## Epic-4 T78: ranger NPC with green hood + wooden longbow.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -5020,7 +5020,7 @@ static func _build_d4_ranger_npc(town: Node) -> void:
 	npc.add_child(string)
 
 
-static func _build_d4_rabbit_family(geom: Node) -> void:
+func _build_d4_rabbit_family(geom: Node) -> void:
 	## Epic-4 T79: rabbit family — 4 rabbits of varying sizes hopping in
 	## a meadow patch with bobbing tweens.
 	var family: Node3D = Node3D.new()
@@ -5105,7 +5105,7 @@ static func _build_d4_rabbit_family(geom: Node) -> void:
 		tw.tween_interval(1.0 + randf() * 0.8)
 
 
-static func _build_d4_ivy_stone_arch(geom: Node) -> void:
+func _build_d4_ivy_stone_arch(geom: Node) -> void:
 	## Epic-4 T80: ivy-covered stone arch marking a side path. Two stone
 	## pillars with a curved torus top + green ivy clumps.
 	var arch: Node3D = Node3D.new()
@@ -5168,7 +5168,7 @@ static func _build_d4_ivy_stone_arch(geom: Node) -> void:
 		arch.add_child(ivy)
 
 
-static func _build_d4_druid_circle(geom: Node) -> void:
+func _build_d4_druid_circle(geom: Node) -> void:
 	## Epic-4 T81: druid stone circle — 7 standing stones in a ring with
 	## glowing green rune carvings, surrounding a central altar.
 	var circle: Node3D = Node3D.new()
@@ -5273,7 +5273,7 @@ static func _build_d4_druid_circle(geom: Node) -> void:
 	circle.add_child(asb)
 
 
-static func _build_d4_ancient_sundial(geom: Node) -> void:
+func _build_d4_ancient_sundial(geom: Node) -> void:
 	## Epic-4 T82: ancient stone sundial — round disc on a low pedestal
 	## with a triangular gnomon casting a slow-rotating shadow blade.
 	var sundial: Node3D = Node3D.new()
@@ -5354,7 +5354,7 @@ static func _build_d4_ancient_sundial(geom: Node) -> void:
 	sundial.add_child(sb)
 
 
-static func _build_d4_merchant_cart(geom: Node) -> void:
+func _build_d4_merchant_cart(geom: Node) -> void:
 	## Epic-4 T83: traveling merchant cart — wooden wagon with cloth canopy
 	## and barrels/crates of wares stacked behind.
 	var cart: Node3D = Node3D.new()
@@ -5451,7 +5451,7 @@ static func _build_d4_merchant_cart(geom: Node) -> void:
 	cart.add_child(sb)
 
 
-static func _build_d4_traveling_merchant_npc(town: Node) -> void:
+func _build_d4_traveling_merchant_npc(town: Node) -> void:
 	## Epic-4 T84: traveling merchant NPC standing beside the cart with
 	## a long blue coat and a small purse.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5507,7 +5507,7 @@ static func _build_d4_traveling_merchant_npc(town: Node) -> void:
 	npc.add_child(hat)
 
 
-static func _build_d4_fireflies(geom: Node) -> void:
+func _build_d4_fireflies(geom: Node) -> void:
 	## Epic-4 T85: yellow firefly particles drifting upward in a wide volume
 	## around the central bloom area, giving warm magic atmosphere.
 	var fireflies: GPUParticles3D = GPUParticles3D.new()
@@ -5546,7 +5546,7 @@ static func _build_d4_fireflies(geom: Node) -> void:
 	geom.add_child(fireflies)
 
 
-static func _build_d4_pollen_veil(geom: Node) -> void:
+func _build_d4_pollen_veil(geom: Node) -> void:
 	## Epic-4 T86: GPU pollen veil — slow-drifting golden specks at ankle
 	## height across the central bloom area, contributing soft "magic dust"
 	## haze without volumetrics.
@@ -5586,7 +5586,7 @@ static func _build_d4_pollen_veil(geom: Node) -> void:
 	geom.add_child(veil)
 
 
-static func _build_d4_lantern_path(geom: Node) -> void:
+func _build_d4_lantern_path(geom: Node) -> void:
 	## Epic-4 T87: row of 8 wooden post lanterns along a winding path with
 	## warm orange glow lights, each pulsing gently.
 	var path: Node3D = Node3D.new()
@@ -5662,7 +5662,7 @@ static func _build_d4_lantern_path(geom: Node) -> void:
 		lantern.add_child(sb)
 
 
-static func _build_d4_blossom_bridge(geom: Node) -> void:
+func _build_d4_blossom_bridge(geom: Node) -> void:
 	## Epic-4 T88: small ornamental bridge of vine planks framed by 2
 	## blossom-clad vine arches.
 	var bridge: Node3D = Node3D.new()
@@ -5740,7 +5740,7 @@ static func _build_d4_blossom_bridge(geom: Node) -> void:
 	bridge.add_child(sb)
 
 
-static func _build_d4_songbird_flock(geom: Node) -> void:
+func _build_d4_songbird_flock(geom: Node) -> void:
 	## Epic-4 T89: 5 small songbirds flying in a slow circular pattern
 	## around the great bloom area, each at a slightly different radius
 	## and elevation, with wing-flap pulse.
@@ -5810,7 +5810,7 @@ static func _build_d4_songbird_flock(geom: Node) -> void:
 		trot.tween_property(bird_pivot, "rotation_degrees:y", 0.0, 0.0)
 
 
-static func _build_d4_blossom_shrine(geom: Node) -> void:
+func _build_d4_blossom_shrine(geom: Node) -> void:
 	## Epic-4 T90: blossom heart shrine — small kneeling shrine with a
 	## stone bowl, glowing pink heart-shaped offering, and 4 candle posts.
 	var shrine: Node3D = Node3D.new()
@@ -5932,7 +5932,7 @@ static func _build_d4_blossom_shrine(geom: Node) -> void:
 	shrine.add_child(sb)
 
 
-static func _build_d4_blossom_drake(geom: Node) -> void:
+func _build_d4_blossom_drake(geom: Node) -> void:
 	## Epic-4 T91: small floating dragon spirit guarding the bloom — pink
 	## body, butterfly wings, long tail, gentle hover circling pattern.
 	var drake: Node3D = Node3D.new()
@@ -6026,7 +6026,7 @@ static func _build_d4_blossom_drake(geom: Node) -> void:
 	tb.tween_property(body_root, "position:y", 0.0, 1.6)
 
 
-static func _build_d4_flower_clock(geom: Node) -> void:
+func _build_d4_flower_clock(geom: Node) -> void:
 	## Epic-4 T92: living flower clock — round flowerbed face with 12 petal
 	## "hour markers" and a single rotating golden hour-hand petal.
 	var clock: Node3D = Node3D.new()
@@ -6117,7 +6117,7 @@ static func _build_d4_flower_clock(geom: Node) -> void:
 	clock.add_child(center)
 
 
-static func _build_d4_lovers_bench(geom: Node) -> void:
+func _build_d4_lovers_bench(geom: Node) -> void:
 	## Epic-4 T93: ornate stone bench under a small flowering arch — perfect
 	## for the apprentice + courier scene later.
 	var bench: Node3D = Node3D.new()
@@ -6226,7 +6226,7 @@ static func _build_d4_lovers_bench(geom: Node) -> void:
 	bench.add_child(sb)
 
 
-static func _build_d4_apprentice_gardener_npc(town: Node) -> void:
+func _build_d4_apprentice_gardener_npc(town: Node) -> void:
 	## Epic-4 T94: small apprentice gardener NPC with watering can.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -6296,7 +6296,7 @@ static func _build_d4_apprentice_gardener_npc(town: Node) -> void:
 		slot.add_child(leaf)
 
 
-static func _build_d4_sunflower_field(geom: Node) -> void:
+func _build_d4_sunflower_field(geom: Node) -> void:
 	## Epic-4 T95: large sunflower field — 6×4 sunflowers with thick green
 	## stems, large yellow petal heads, dark centers, and a slight sway.
 	var field: Node3D = Node3D.new()
@@ -6379,7 +6379,7 @@ static func _build_d4_sunflower_field(geom: Node) -> void:
 			stalk.add_child(sb)
 
 
-static func _build_d4_welcome_banner(geom: Node) -> void:
+func _build_d4_welcome_banner(geom: Node) -> void:
 	## Epic-4 T96: tall double-pole banner welcoming travelers to the
 	## Bloom Cluster. Bright pink fabric with vine details.
 	var banner: Node3D = Node3D.new()
@@ -6472,7 +6472,7 @@ static func _build_d4_welcome_banner(geom: Node) -> void:
 		banner.add_child(vine)
 
 
-static func _build_d4_grand_altar(geom: Node) -> void:
+func _build_d4_grand_altar(geom: Node) -> void:
 	## Epic-4 T97: grand bloom altar at the heart of the cluster — large
 	## tiered stone platform with a giant glowing pink crystal flower
 	## bud at the top, supporting beams of light, and orbiting petals.
@@ -6590,7 +6590,7 @@ static func _build_d4_grand_altar(geom: Node) -> void:
 		altar.add_child(sb)
 
 
-static func _build_d4_district_plaque(geom: Node) -> void:
+func _build_d4_district_plaque(geom: Node) -> void:
 	## Epic-4 T98: dedication plaque mounted on a small stone pedestal at
 	## the entrance to the Bloom Cluster.
 	var plaque: Node3D = Node3D.new()
@@ -6642,7 +6642,7 @@ static func _build_d4_district_plaque(geom: Node) -> void:
 	plaque.add_child(sb)
 
 
-static func _build_d4_ambient_tweak(geom: Node) -> void:
+func _build_d4_ambient_tweak(geom: Node) -> void:
 	## Epic-4 T99: gentle warm ambient tint over the Bloom Cluster — soft
 	## pink directional glow + low ambient OmniLight at center for warmth.
 	var amb: Node3D = Node3D.new()
@@ -6669,7 +6669,7 @@ static func _build_d4_ambient_tweak(geom: Node) -> void:
 	amb.add_child(sun)
 
 
-static func _build_d4_bloom_elder(geom: Node) -> void:
+func _build_d4_bloom_elder(geom: Node) -> void:
 	## Epic-4 T100: BLOOM ELDER — the district guardian / Epic 4 finale.
 	## Towering tree-spirit with a massive flowering crown, multiple eyes,
 	## floating petal halo, and an aura of ancient power. The

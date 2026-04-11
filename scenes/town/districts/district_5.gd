@@ -1,19 +1,19 @@
 class_name D5Builder
-extends RefCounted
+extends Node
 ## Frozen Cache district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control.
 
 const D5_CENTER := Vector3(290, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=260 out to x=330.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 330.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_5(geom).
 	print("[D5Builder] start")
 	extend_boundary(geom)
@@ -22,15 +22,18 @@ static func build(town: Node, geom: Node) -> void:
 	_build_d5_great_monolith(geom)
 	_build_d5_cryo_keeper_npc(town)
 	_build_d5_cryo_pods(geom)
+	print("[D5] h5")
 	_build_d5_ice_golem(geom)
 	_build_d5_frost_servers(geom)
 	_build_d5_crystal_tree(geom)
 	_build_d5_snowfall(geom)
+	print("[D5] h10")
 	_build_d5_glacier_wall(geom)
 	_build_d5_frozen_waterfall(geom)
 	_build_d5_data_archaeologist_npc(town)
 	_build_d5_ice_fishing_hole(geom)
 	_build_d5_aurora_pillars(geom)
+	print("[D5] h15")
 	_build_d5_snowflake_circle(geom)
 	_build_d5_frost_wisps(geom)
 	_build_d5_ice_mage_npc(town)
@@ -119,7 +122,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D5Builder] done")
 
 
-static func _build_d5_ground(geom: Node) -> void:
+func _build_d5_ground(geom: Node) -> void:
 	## Epic-5 T1b: D5 snowy ground plane — pale blue-white with a subtle
 	## cyan grid shader baked into the material as emission.
 	var plane: PlaneMesh = PlaneMesh.new()
@@ -160,7 +163,7 @@ static func _build_d5_ground(geom: Node) -> void:
 		geom.add_child(drift)
 
 
-static func _build_d5_entrance_arch(geom: Node) -> void:
+func _build_d5_entrance_arch(geom: Node) -> void:
 	## Epic-5 T2: frost-crystal entrance arch — twin tall ice spires curving
 	## together at the top, with hanging icicles and a soft blue light.
 	var arch: Node3D = Node3D.new()
@@ -229,7 +232,7 @@ static func _build_d5_entrance_arch(geom: Node) -> void:
 	tw.tween_property(light, "light_energy", 2.6, 1.6)
 
 
-static func _build_d5_great_monolith(geom: Node) -> void:
+func _build_d5_great_monolith(geom: Node) -> void:
 	## Epic-5 T3: GREAT FROZEN MONOLITH — towering ice obelisk with embedded
 	## flickering data core, hovering rune fragments, and aura beam.
 	var mono: Node3D = Node3D.new()
@@ -340,7 +343,7 @@ static func _build_d5_great_monolith(geom: Node) -> void:
 	mono.add_child(sb)
 
 
-static func _build_d5_cryo_keeper_npc(town: Node) -> void:
+func _build_d5_cryo_keeper_npc(town: Node) -> void:
 	## Epic-5 T4: cryo-keeper NPC — pale-robed archivist who guards the
 	## frozen archive entrance.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -417,7 +420,7 @@ static func _build_d5_cryo_keeper_npc(town: Node) -> void:
 	tw.tween_property(crystal, "scale", Vector3.ONE * 0.85, 1.0)
 
 
-static func _build_d5_cryo_pods(geom: Node) -> void:
+func _build_d5_cryo_pods(geom: Node) -> void:
 	## Epic-5 T6: 6 vertical cryo-pod chambers in a row, each containing
 	## a faintly visible silhouette of a frozen data-spirit.
 	var pods: Node3D = Node3D.new()
@@ -531,7 +534,7 @@ static func _build_d5_cryo_pods(geom: Node) -> void:
 		pod.add_child(sb)
 
 
-static func _build_d5_ice_golem(geom: Node) -> void:
+func _build_d5_ice_golem(geom: Node) -> void:
 	## Epic-5 T7: large hostile ice golem creature — chunky humanoid with
 	## glowing cyan eyes and a slow patrol path. Decorative for now.
 	var golem: Node3D = Node3D.new()
@@ -620,7 +623,7 @@ static func _build_d5_ice_golem(geom: Node) -> void:
 	golem.add_child(sb)
 
 
-static func _build_d5_frost_servers(geom: Node) -> void:
+func _build_d5_frost_servers(geom: Node) -> void:
 	## Epic-5 T8: frost-tech server bank — 4 tall metal cabinets with cyan
 	## flicker LED grids and frost halos around them.
 	var bank: Node3D = Node3D.new()
@@ -681,7 +684,7 @@ static func _build_d5_frost_servers(geom: Node) -> void:
 		rack.add_child(sb)
 
 
-static func _build_d5_crystal_tree(geom: Node) -> void:
+func _build_d5_crystal_tree(geom: Node) -> void:
 	## Epic-5 T9: ice crystal tree — translucent prismatic trunk with
 	## branches of glowing cyan crystals instead of leaves.
 	var tree: Node3D = Node3D.new()
@@ -758,7 +761,7 @@ static func _build_d5_crystal_tree(geom: Node) -> void:
 	tree.add_child(sb)
 
 
-static func _build_d5_snowfall(geom: Node) -> void:
+func _build_d5_snowfall(geom: Node) -> void:
 	## Epic-5 T10: ambient snowfall — GPU particles drifting downward over
 	## the entire Frozen Cache district.
 	var snow: GPUParticles3D = GPUParticles3D.new()
@@ -799,7 +802,7 @@ static func _build_d5_snowfall(geom: Node) -> void:
 	geom.add_child(snow)
 
 
-static func _build_d5_glacier_wall(geom: Node) -> void:
+func _build_d5_glacier_wall(geom: Node) -> void:
 	## Epic-5 T11: 12m-wide glacier wall with embedded data slabs glowing
 	## from within. Acts as visual backdrop on the north side of D5.
 	var wall: Node3D = Node3D.new()
@@ -862,7 +865,7 @@ static func _build_d5_glacier_wall(geom: Node) -> void:
 	wall.add_child(sb)
 
 
-static func _build_d5_frozen_waterfall(geom: Node) -> void:
+func _build_d5_frozen_waterfall(geom: Node) -> void:
 	## Epic-5 T12: frozen waterfall — 3 vertical translucent ice columns
 	## frozen mid-flow with cyan light underneath, evoking suspended motion.
 	var fall: Node3D = Node3D.new()
@@ -933,7 +936,7 @@ static func _build_d5_frozen_waterfall(geom: Node) -> void:
 	fall.add_child(sb)
 
 
-static func _build_d5_data_archaeologist_npc(town: Node) -> void:
+func _build_d5_data_archaeologist_npc(town: Node) -> void:
 	## Epic-5 T13: data archaeologist NPC — heavy parka, holding a small
 	## glowing data fragment they "excavated" from the ice.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -999,7 +1002,7 @@ static func _build_d5_data_archaeologist_npc(town: Node) -> void:
 	th.tween_property(frag, "position:y", 0.85, 1.2)
 
 
-static func _build_d5_ice_fishing_hole(geom: Node) -> void:
+func _build_d5_ice_fishing_hole(geom: Node) -> void:
 	## Epic-5 T14: ice fishing hole on a frozen pond — round disc of ice
 	## with a circular hole in the center, a tiny stool, and a fishing rod.
 	var hole: Node3D = Node3D.new()
@@ -1086,7 +1089,7 @@ static func _build_d5_ice_fishing_hole(geom: Node) -> void:
 	hole.add_child(line)
 
 
-static func _build_d5_aurora_pillars(geom: Node) -> void:
+func _build_d5_aurora_pillars(geom: Node) -> void:
 	## Epic-5 T15: 5 tall aurora light pillars — vertical translucent
 	## colored beams shifting through cyan/violet/green hues.
 	var aurora: Node3D = Node3D.new()
@@ -1134,7 +1137,7 @@ static func _build_d5_aurora_pillars(geom: Node) -> void:
 		pillar.add_child(light)
 
 
-static func _build_d5_snowflake_circle(geom: Node) -> void:
+func _build_d5_snowflake_circle(geom: Node) -> void:
 	## Epic-5 T16: snowflake ritual circle — flat ice disc with a 6-spoked
 	## snowflake pattern carved in glowing cyan, surrounded by 6 small ice
 	## standing stones.
@@ -1217,7 +1220,7 @@ static func _build_d5_snowflake_circle(geom: Node) -> void:
 	circle.add_child(light)
 
 
-static func _build_d5_frost_wisps(geom: Node) -> void:
+func _build_d5_frost_wisps(geom: Node) -> void:
 	## Epic-5 T17: 5 small drifting frost wisp orbs — pure cyan light spheres
 	## that bob and orbit randomly across the district.
 	var wisps: Node3D = Node3D.new()
@@ -1259,7 +1262,7 @@ static func _build_d5_frost_wisps(geom: Node) -> void:
 		tb.tween_property(wisp, "position:y", -0.20, 1.4 + randf() * 0.4)
 
 
-static func _build_d5_ice_mage_npc(town: Node) -> void:
+func _build_d5_ice_mage_npc(town: Node) -> void:
 	## Epic-5 T18: ice mage NPC — pale-violet robe, floating ice shard
 	## orbs around their hands, radiates cold mist.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1335,7 +1338,7 @@ static func _build_d5_ice_mage_npc(town: Node) -> void:
 	npc.add_child(light)
 
 
-static func _build_d5_frozen_shelves(geom: Node) -> void:
+func _build_d5_frozen_shelves(geom: Node) -> void:
 	## Epic-5 T19: 4 tall frozen library shelves with crystallized "books"
 	## stacked on each. The simulation's archived knowledge.
 	var shelves: Node3D = Node3D.new()
@@ -1405,7 +1408,7 @@ static func _build_d5_frozen_shelves(geom: Node) -> void:
 		shelf.add_child(sb)
 
 
-static func _build_d5_cold_wind(geom: Node) -> void:
+func _build_d5_cold_wind(geom: Node) -> void:
 	## Epic-5 T20: GPU cold wind drift — fast-moving horizontal pale streaks
 	## blowing across the district to give a sense of weather.
 	var wind: GPUParticles3D = GPUParticles3D.new()
@@ -1446,7 +1449,7 @@ static func _build_d5_cold_wind(geom: Node) -> void:
 	geom.add_child(wind)
 
 
-static func _build_d5_ice_bridge(geom: Node) -> void:
+func _build_d5_ice_bridge(geom: Node) -> void:
 	## Epic-5 T21: 8m translucent ice bridge spanning a small chasm —
 	## arched plank deck + 2 side rails + supporting pillars at each end.
 	var bridge: Node3D = Node3D.new()
@@ -1527,7 +1530,7 @@ static func _build_d5_ice_bridge(geom: Node) -> void:
 	bridge.add_child(dsb)
 
 
-static func _build_d5_mammoth_statue(geom: Node) -> void:
+func _build_d5_mammoth_statue(geom: Node) -> void:
 	## Epic-5 T22: frozen mammoth statue — large procedural mammoth made
 	## of ice (body, head, tusks, 4 legs, trunk), suggesting an extinct
 	## subroutine preserved in the cache.
@@ -1632,7 +1635,7 @@ static func _build_d5_mammoth_statue(geom: Node) -> void:
 	mammoth.add_child(bsb)
 
 
-static func _build_d5_cryo_engineer_npc(town: Node) -> void:
+func _build_d5_cryo_engineer_npc(town: Node) -> void:
 	## Epic-5 T23: cryo engineer NPC — heavy snowsuit + welding-style helmet
 	## with a glowing visor + small toolbox at their feet.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1704,7 +1707,7 @@ static func _build_d5_cryo_engineer_npc(town: Node) -> void:
 	npc.add_child(toolbox)
 
 
-static func _build_d5_ice_cave_entrance(geom: Node) -> void:
+func _build_d5_ice_cave_entrance(geom: Node) -> void:
 	## Epic-5 T24: small ice cave entrance — half-dome ice opening with a
 	## dark interior, hinting at unexplored areas behind the cache.
 	var cave: Node3D = Node3D.new()
@@ -1772,7 +1775,7 @@ static func _build_d5_ice_cave_entrance(geom: Node) -> void:
 	cave.add_child(sb)
 
 
-static func _build_d5_frozen_heart(geom: Node) -> void:
+func _build_d5_frozen_heart(geom: Node) -> void:
 	## Epic-5 T25: frozen heart artifact — small pulsing crystal heart on
 	## a stone pedestal. A hint at later quest collectibles.
 	var heart: Node3D = Node3D.new()
@@ -1857,7 +1860,7 @@ static func _build_d5_frozen_heart(geom: Node) -> void:
 	heart.add_child(sb)
 
 
-static func _build_d5_mining_rig(geom: Node) -> void:
+func _build_d5_mining_rig(geom: Node) -> void:
 	## Epic-5 T26: data crystal mining rig — tall industrial frame with a
 	## drill core descending into the ice and a conveyor belt of crystal
 	## chunks running into a collection bin.
@@ -1974,7 +1977,7 @@ static func _build_d5_mining_rig(geom: Node) -> void:
 	rig.add_child(sb)
 
 
-static func _build_d5_penguin_colony(geom: Node) -> void:
+func _build_d5_penguin_colony(geom: Node) -> void:
 	## Epic-5 T27: 6 small penguin creatures waddling on the ice with
 	## bobbing tweens. Black body, white belly, orange beak.
 	var colony: Node3D = Node3D.new()
@@ -2063,7 +2066,7 @@ static func _build_d5_penguin_colony(geom: Node) -> void:
 		th.tween_property(penguin, "position:y", 0.0, 0.85)
 
 
-static func _build_d5_weather_tower(geom: Node) -> void:
+func _build_d5_weather_tower(geom: Node) -> void:
 	## Epic-5 T28: weather station tower — slim metal lattice with anemometer
 	## (rotating wind cups), satellite dish, and a temperature display board.
 	var tower: Node3D = Node3D.new()
@@ -2166,7 +2169,7 @@ static func _build_d5_weather_tower(geom: Node) -> void:
 	tower.add_child(sb)
 
 
-static func _build_d5_meteorologist_npc(town: Node) -> void:
+func _build_d5_meteorologist_npc(town: Node) -> void:
 	## Epic-5 T29: meteorologist NPC — heavy parka, tablet in hand showing
 	## weather data, knit beanie cap.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2239,7 +2242,7 @@ static func _build_d5_meteorologist_npc(town: Node) -> void:
 	npc.add_child(screen)
 
 
-static func _build_d5_ice_fog(geom: Node) -> void:
+func _build_d5_ice_fog(geom: Node) -> void:
 	## Epic-5 T30: ground-level ice fog — slow-drifting GPU particles
 	## providing atmospheric depth without using volumetric fog.
 	var fog: GPUParticles3D = GPUParticles3D.new()
@@ -2279,7 +2282,7 @@ static func _build_d5_ice_fog(geom: Node) -> void:
 	geom.add_child(fog)
 
 
-static func _build_d5_dog_sled(geom: Node) -> void:
+func _build_d5_dog_sled(geom: Node) -> void:
 	## Epic-5 T31: traditional wooden dog sled — long curved runners,
 	## a cargo basket, and a vertical handle for the musher.
 	var sled: Node3D = Node3D.new()
@@ -2369,7 +2372,7 @@ static func _build_d5_dog_sled(geom: Node) -> void:
 	sled.add_child(sb)
 
 
-static func _build_d5_husky_team(geom: Node) -> void:
+func _build_d5_husky_team(geom: Node) -> void:
 	## Epic-5 T32: 4 sled huskies in a 2-by-2 harness in front of the sled.
 	## Black/white/grey fur, tongue out, tails up, mild bobbing.
 	var team: Node3D = Node3D.new()
@@ -2495,7 +2498,7 @@ static func _build_d5_husky_team(geom: Node) -> void:
 			team.add_child(rope)
 
 
-static func _build_d5_musher_npc(town: Node) -> void:
+func _build_d5_musher_npc(town: Node) -> void:
 	## Epic-5 T33: musher NPC standing at the back handle of the sled.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -2555,7 +2558,7 @@ static func _build_d5_musher_npc(town: Node) -> void:
 	npc.add_child(hood)
 
 
-static func _build_d5_snow_fort(geom: Node) -> void:
+func _build_d5_snow_fort(geom: Node) -> void:
 	## Epic-5 T34: small snow fort — circular wall of stacked snow blocks
 	## with crenellated top and a low entrance gap, made of pure white emissive
 	## snow material. Fits the playful "kids built it" feel of D5.
@@ -2621,7 +2624,7 @@ static func _build_d5_snow_fort(geom: Node) -> void:
 		fort.add_child(ball)
 
 
-static func _build_d5_aurora_curtain(geom: Node) -> void:
+func _build_d5_aurora_curtain(geom: Node) -> void:
 	## Epic-5 T35: massive arching aurora curtain in the sky over D5 —
 	## wide translucent multicolor sheet hovering at high altitude.
 	var aurora: Node3D = Node3D.new()
@@ -2658,7 +2661,7 @@ static func _build_d5_aurora_curtain(geom: Node) -> void:
 		tw.tween_property(sheet, "rotation_degrees:z", -12.0 - i, 6.0 + i * 0.4)
 
 
-static func _build_d5_ice_harvest_pit(geom: Node) -> void:
+func _build_d5_ice_harvest_pit(geom: Node) -> void:
 	## Epic-5 T36: rectangular ice harvesting pit dug into the snow with
 	## chiseled walls and a row of ice saws/picks resting at one edge.
 	var pit: Node3D = Node3D.new()
@@ -2728,7 +2731,7 @@ static func _build_d5_ice_harvest_pit(geom: Node) -> void:
 		pit.add_child(blade)
 
 
-static func _build_d5_ice_block_stacks(geom: Node) -> void:
+func _build_d5_ice_block_stacks(geom: Node) -> void:
 	## Epic-5 T37: 3 stacks of harvested ice blocks ready for transport.
 	var stacks: Node3D = Node3D.new()
 	stacks.name = "IceBlockStacks"
@@ -2774,7 +2777,7 @@ static func _build_d5_ice_block_stacks(geom: Node) -> void:
 		stacks.add_child(top)
 
 
-static func _build_d5_data_analyst_npc(town: Node) -> void:
+func _build_d5_data_analyst_npc(town: Node) -> void:
 	## Epic-5 T38: data analyst NPC — slim grey suit (no parka, indoor type),
 	## holding a glowing tablet, surrounded by tiny floating data cubes.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2858,7 +2861,7 @@ static func _build_d5_data_analyst_npc(town: Node) -> void:
 	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
 
 
-static func _build_d5_holo_charts(geom: Node) -> void:
+func _build_d5_holo_charts(geom: Node) -> void:
 	## Epic-5 T39: 3 large floating holographic chart panels showing
 	## bar-graph data spikes, hovering above a small projector base.
 	var charts: Node3D = Node3D.new()
@@ -2943,7 +2946,7 @@ static func _build_d5_holo_charts(geom: Node) -> void:
 	charts.add_child(sb)
 
 
-static func _build_d5_lab_hut(geom: Node) -> void:
+func _build_d5_lab_hut(geom: Node) -> void:
 	## Epic-5 T40: small frozen research lab hut — a low ice-block building
 	## with a steel door and 2 glowing porthole windows.
 	var hut: Node3D = Node3D.new()
@@ -3033,7 +3036,7 @@ static func _build_d5_lab_hut(geom: Node) -> void:
 	hut.add_child(sb)
 
 
-static func _build_d5_ice_rink(geom: Node) -> void:
+func _build_d5_ice_rink(geom: Node) -> void:
 	## Epic-5 T41: large rectangular ice rink with low wooden barriers
 	## around the perimeter, marked center circle, and 2 face-off dots.
 	var rink: Node3D = Node3D.new()
@@ -3110,7 +3113,7 @@ static func _build_d5_ice_rink(geom: Node) -> void:
 		rink.add_child(dot)
 
 
-static func _build_d5_skater_npc(geom: Node) -> void:
+func _build_d5_skater_npc(geom: Node) -> void:
 	## Epic-5 T42: skater character circling the rink center continuously.
 	## Uses a self-built body (not the VillagerR3 prefab) so we can move it
 	## freely inside the rink without an NPCSlot binding.
@@ -3202,7 +3205,7 @@ static func _build_d5_skater_npc(geom: Node) -> void:
 	tlean.tween_property(body_root, "rotation_degrees:z", 8.0, 1.5)
 
 
-static func _build_d5_warming_campfire(geom: Node) -> void:
+func _build_d5_warming_campfire(geom: Node) -> void:
 	## Epic-5 T43: small warming campfire — stone ring + crossed logs +
 	## flickering orange fire core + warm OmniLight.
 	var fire: Node3D = Node3D.new()
@@ -3273,7 +3276,7 @@ static func _build_d5_warming_campfire(geom: Node) -> void:
 	twl.tween_property(light, "light_energy", 2.4, 0.30)
 
 
-static func _build_d5_cocoa_stand(geom: Node) -> void:
+func _build_d5_cocoa_stand(geom: Node) -> void:
 	## Epic-5 T44: hot cocoa vendor stand — wooden booth with a steaming
 	## kettle, mugs, and a 'HOT COCOA' sign.
 	var stand: Node3D = Node3D.new()
@@ -3436,7 +3439,7 @@ static func _build_d5_cocoa_stand(geom: Node) -> void:
 	stand.add_child(sb)
 
 
-static func _build_d5_cocoa_vendor_npc(town: Node) -> void:
+func _build_d5_cocoa_vendor_npc(town: Node) -> void:
 	## Epic-5 T45: cocoa vendor NPC at the cocoa stand — apron + chef hat.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -3499,7 +3502,7 @@ static func _build_d5_cocoa_vendor_npc(town: Node) -> void:
 	npc.add_child(mug)
 
 
-static func _build_d5_cryo_prison(geom: Node) -> void:
+func _build_d5_cryo_prison(geom: Node) -> void:
 	## Epic-5 T46: cryo prison cell — single tall reinforced ice cylinder
 	## with steel bars containing a captured red glitch creature inside.
 	var prison: Node3D = Node3D.new()
@@ -3620,7 +3623,7 @@ static func _build_d5_cryo_prison(geom: Node) -> void:
 	prison.add_child(sb)
 
 
-static func _build_d5_yeti_silhouette(geom: Node) -> void:
+func _build_d5_yeti_silhouette(geom: Node) -> void:
 	## Epic-5 T47: large dark yeti silhouette on the far horizon — pure
 	## flat dark unshaded material so it reads like a distant shape against
 	## the snow. Visual storytelling: something hunts beyond the cache.
@@ -3684,7 +3687,7 @@ static func _build_d5_yeti_silhouette(geom: Node) -> void:
 	ts.tween_property(yeti, "rotation_degrees:y", -4.0, 3.0)
 
 
-static func _build_d5_explorer_npc(town: Node) -> void:
+func _build_d5_explorer_npc(town: Node) -> void:
 	## Epic-5 T48: arctic explorer NPC carrying a tall pickaxe and wearing
 	## a backpack and snow-goggles.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3783,7 +3786,7 @@ static func _build_d5_explorer_npc(town: Node) -> void:
 	npc.add_child(head)
 
 
-static func _build_d5_ice_spike_traps(geom: Node) -> void:
+func _build_d5_ice_spike_traps(geom: Node) -> void:
 	## Epic-5 T49: ice spike trap field — 12 sharp upward-pointing ice
 	## spikes scattered in a hostile area, with a cyan glow base.
 	var field: Node3D = Node3D.new()
@@ -3852,7 +3855,7 @@ static func _build_d5_ice_spike_traps(geom: Node) -> void:
 	tw.tween_property(light, "light_energy", 1.4, 0.55)
 
 
-static func _build_d5_glacial_warden(geom: Node) -> void:
+func _build_d5_glacial_warden(geom: Node) -> void:
 	## Epic-5 T50: GLACIAL WARDEN — D5 mid-boss landmark. Tall ice knight
 	## with a massive frost greatsword, tower shield, and a billboard label.
 	var warden: Node3D = Node3D.new()
@@ -4072,7 +4075,7 @@ static func _build_d5_glacial_warden(geom: Node) -> void:
 	warden.add_child(psb)
 
 
-static func _build_d5_telescope_observatory(geom: Node) -> void:
+func _build_d5_telescope_observatory(geom: Node) -> void:
 	## Epic-5 T51: small observatory — round ice base + half-dome ice top
 	## with an open slit + protruding telescope barrel.
 	var obs: Node3D = Node3D.new()
@@ -4172,7 +4175,7 @@ static func _build_d5_telescope_observatory(geom: Node) -> void:
 	obs.add_child(sb)
 
 
-static func _build_d5_stargazer_npc(town: Node) -> void:
+func _build_d5_stargazer_npc(town: Node) -> void:
 	## Epic-5 T52: stargazer NPC standing outside the observatory with a
 	## small handheld star chart.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4247,7 +4250,7 @@ static func _build_d5_stargazer_npc(town: Node) -> void:
 	npc.add_child(chart)
 
 
-static func _build_d5_comet_streaks(geom: Node) -> void:
+func _build_d5_comet_streaks(geom: Node) -> void:
 	## Epic-5 T53: 3 comet streaks across the high sky — long emissive
 	## tails that drift slowly across the district overhead.
 	var comets: Node3D = Node3D.new()
@@ -4299,7 +4302,7 @@ static func _build_d5_comet_streaks(geom: Node) -> void:
 		tw.tween_property(comet, "position:x", -25.0, 0.0)
 
 
-static func _build_d5_rune_monument(geom: Node) -> void:
+func _build_d5_rune_monument(geom: Node) -> void:
 	## Epic-5 T54: ancient ice rune monument — pyramidal stack of carved
 	## ice blocks with glowing cyan rune symbols on each face.
 	var mono: Node3D = Node3D.new()
@@ -4375,7 +4378,7 @@ static func _build_d5_rune_monument(geom: Node) -> void:
 	th.tween_property(capstone, "position:y", 4.30, 1.6)
 
 
-static func _build_d5_arctic_fox(geom: Node) -> void:
+func _build_d5_arctic_fox(geom: Node) -> void:
 	## Epic-5 T55: small arctic fox creature — pure white fur, dark eye dots,
 	## bushy tail, with a hopping idle and slow patrol path.
 	var fox: Node3D = Node3D.new()
@@ -4473,7 +4476,7 @@ static func _build_d5_arctic_fox(geom: Node) -> void:
 	th.tween_interval(0.85)
 
 
-static func _build_d5_ice_fishing_huts(geom: Node) -> void:
+func _build_d5_ice_fishing_huts(geom: Node) -> void:
 	## Epic-5 T56: 3 small wooden ice fishing huts arranged on a frozen
 	## flat — boxy houses with sloped prism roofs and a small chimney each.
 	var village: Node3D = Node3D.new()
@@ -4587,7 +4590,7 @@ static func _build_d5_ice_fishing_huts(geom: Node) -> void:
 		hut.add_child(sb)
 
 
-static func _build_d5_ice_angler_npc(town: Node) -> void:
+func _build_d5_ice_angler_npc(town: Node) -> void:
 	## Epic-5 T57: ice angler NPC seated outside one of the huts.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -4660,7 +4663,7 @@ static func _build_d5_ice_angler_npc(town: Node) -> void:
 	tw.tween_property(fish, "rotation_degrees:x", -15.0, 0.30)
 
 
-static func _build_d5_aurora_altar(geom: Node) -> void:
+func _build_d5_aurora_altar(geom: Node) -> void:
 	## Epic-5 T58: aurora data altar — a low circular ice altar with three
 	## floating data shards spinning above it, gathering aurora light.
 	var altar: Node3D = Node3D.new()
@@ -4763,7 +4766,7 @@ static func _build_d5_aurora_altar(geom: Node) -> void:
 	altar.add_child(sb)
 
 
-static func _build_d5_pine_grove(geom: Node) -> void:
+func _build_d5_pine_grove(geom: Node) -> void:
 	## Epic-5 T59: 8 snow-dusted pine trees clustered together — dark green
 	## prism cones with white snow caps.
 	var grove: Node3D = Node3D.new()
@@ -4833,7 +4836,7 @@ static func _build_d5_pine_grove(geom: Node) -> void:
 		tree.add_child(sb)
 
 
-static func _build_d5_snowman(geom: Node) -> void:
+func _build_d5_snowman(geom: Node) -> void:
 	## Epic-5 T60: classic snowman — 3 stacked snow spheres + carrot nose +
 	## coal eyes/buttons + stick arms + scarf + top hat.
 	var snowman: Node3D = Node3D.new()
@@ -4964,7 +4967,7 @@ static func _build_d5_snowman(geom: Node) -> void:
 	snowman.add_child(sb)
 
 
-static func _build_d5_caribou_herd(geom: Node) -> void:
+func _build_d5_caribou_herd(geom: Node) -> void:
 	## Epic-5 T61: 4 caribou with branching antlers grazing in a small group.
 	var herd: Node3D = Node3D.new()
 	herd.name = "CaribouHerd"
@@ -5061,7 +5064,7 @@ static func _build_d5_caribou_herd(geom: Node) -> void:
 		caribou.add_child(sb)
 
 
-static func _build_d5_caribou_herder_npc(town: Node) -> void:
+func _build_d5_caribou_herder_npc(town: Node) -> void:
 	## Epic-5 T62: caribou herder NPC with a long staff and traditional
 	## fur-trimmed coat.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5131,7 +5134,7 @@ static func _build_d5_caribou_herder_npc(town: Node) -> void:
 	npc.add_child(tip)
 
 
-static func _build_d5_ice_rails(geom: Node) -> void:
+func _build_d5_ice_rails(geom: Node) -> void:
 	## Epic-5 T63: 12m ice rail track running west-east through the lower
 	## south of D5 — 2 long parallel ice rails + 6 wooden cross-ties.
 	var rails: Node3D = Node3D.new()
@@ -5168,7 +5171,7 @@ static func _build_d5_ice_rails(geom: Node) -> void:
 		rails.add_child(tie)
 
 
-static func _build_d5_cable_car_station(geom: Node) -> void:
+func _build_d5_cable_car_station(geom: Node) -> void:
 	## Epic-5 T64: cable car station — tall ice tower + horizontal cable +
 	## hanging gondola cabin with cyan windows + a station platform.
 	var station: Node3D = Node3D.new()
@@ -5288,7 +5291,7 @@ static func _build_d5_cable_car_station(geom: Node) -> void:
 	station.add_child(tsb)
 
 
-static func _build_d5_snow_sculpture(geom: Node) -> void:
+func _build_d5_snow_sculpture(geom: Node) -> void:
 	## Epic-5 T65: large snow sculpture — abstract spiral made of stacked
 	## snow segments + a glowing rune embedded at its core. Public art.
 	var sculpture: Node3D = Node3D.new()
@@ -5350,7 +5353,7 @@ static func _build_d5_snow_sculpture(geom: Node) -> void:
 	sculpture.add_child(sb)
 
 
-static func _build_d5_thermal_vents(geom: Node) -> void:
+func _build_d5_thermal_vents(geom: Node) -> void:
 	## Epic-5 T66: 5 small thermal vents in the ice — dark holes with rising
 	## steam columns and faint orange glow underneath.
 	var vents: Node3D = Node3D.new()
@@ -5417,7 +5420,7 @@ static func _build_d5_thermal_vents(geom: Node) -> void:
 		vent.add_child(light)
 
 
-static func _build_d5_hot_spring(geom: Node) -> void:
+func _build_d5_hot_spring(geom: Node) -> void:
 	## Epic-5 T67: hot spring pool — circular stone-rim pool with steaming
 	## warm water surface and an orange underglow.
 	var spring: Node3D = Node3D.new()
@@ -5519,7 +5522,7 @@ static func _build_d5_hot_spring(geom: Node) -> void:
 	spring.add_child(sb)
 
 
-static func _build_d5_bath_attendant_npc(town: Node) -> void:
+func _build_d5_bath_attendant_npc(town: Node) -> void:
 	## Epic-5 T68: bath attendant NPC near the hot spring — short white robe,
 	## carrying a stack of folded towels.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5569,7 +5572,7 @@ static func _build_d5_bath_attendant_npc(town: Node) -> void:
 		npc.add_child(towel)
 
 
-static func _build_d5_ice_climbing_wall(geom: Node) -> void:
+func _build_d5_ice_climbing_wall(geom: Node) -> void:
 	## Epic-5 T69: tall vertical ice climbing wall — large ice slab face
 	## with embedded handhold prisms and 3 anchored ropes.
 	var wall: Node3D = Node3D.new()
@@ -5637,7 +5640,7 @@ static func _build_d5_ice_climbing_wall(geom: Node) -> void:
 	wall.add_child(sb)
 
 
-static func _build_d5_ice_climber_npc(town: Node) -> void:
+func _build_d5_ice_climber_npc(town: Node) -> void:
 	## Epic-5 T70: ice climber NPC — bright orange jacket, helmet, and
 	## holding a small ice axe.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5713,7 +5716,7 @@ static func _build_d5_ice_climber_npc(town: Node) -> void:
 	npc.add_child(pick)
 
 
-static func _build_d5_ice_maze(geom: Node) -> void:
+func _build_d5_ice_maze(geom: Node) -> void:
 	## Epic-5 T71: simple ice block maze — 5x5 grid pattern with some
 	## blocks removed to form a winding path. Each block is a tall ice
 	## cube with collision.
@@ -5758,7 +5761,7 @@ static func _build_d5_ice_maze(geom: Node) -> void:
 				maze.add_child(sb)
 
 
-static func _build_d5_lost_wanderer_npc(town: Node) -> void:
+func _build_d5_lost_wanderer_npc(town: Node) -> void:
 	## Epic-5 T72: lost wanderer NPC inside the ice maze — looking
 	## bewildered, holding a small lantern.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5833,7 +5836,7 @@ static func _build_d5_lost_wanderer_npc(town: Node) -> void:
 	npc.add_child(light)
 
 
-static func _build_d5_glacial_chess(geom: Node) -> void:
+func _build_d5_glacial_chess(geom: Node) -> void:
 	## Epic-5 T73: giant ice chess set on a checkerboard floor — 8x8
 	## board pattern with 4 large ice chess pieces (king, queen, rook, knight).
 	var chess: Node3D = Node3D.new()
@@ -6024,7 +6027,7 @@ static func _build_d5_glacial_chess(geom: Node) -> void:
 	chess.add_child(nsb)
 
 
-static func _build_d5_chess_player_npc(town: Node) -> void:
+func _build_d5_chess_player_npc(town: Node) -> void:
 	## Epic-5 T74: chess player NPC pondering the board — chin in hand pose,
 	## scholarly grey beard hint via colored hood.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6082,7 +6085,7 @@ static func _build_d5_chess_player_npc(town: Node) -> void:
 	npc.add_child(hand)
 
 
-static func _build_d5_crystal_cluster(geom: Node) -> void:
+func _build_d5_crystal_cluster(geom: Node) -> void:
 	## Epic-5 T75: large data crystal cluster landmark — central tall crystal
 	## surrounded by 6 smaller satellite crystals + an aura beam.
 	var cluster: Node3D = Node3D.new()
@@ -6169,7 +6172,7 @@ static func _build_d5_crystal_cluster(geom: Node) -> void:
 	cluster.add_child(sb)
 
 
-static func _build_d5_snow_globe(geom: Node) -> void:
+func _build_d5_snow_globe(geom: Node) -> void:
 	## Epic-5 T76: giant snow globe sculpture — wooden base + huge clear
 	## glass sphere containing a tiny ice village (3 huts) and slow GPU
 	## "snow inside the globe" particles.
@@ -6283,7 +6286,7 @@ static func _build_d5_snow_globe(geom: Node) -> void:
 	globe.add_child(sb)
 
 
-static func _build_d5_cellist_npc(town: Node) -> void:
+func _build_d5_cellist_npc(town: Node) -> void:
 	## Epic-5 T77: cellist musician NPC playing an ice cello at the cocoa
 	## stand area. Brown formal jacket + bowing motion.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6382,7 +6385,7 @@ static func _build_d5_cellist_npc(town: Node) -> void:
 		tn.tween_property(note, "position:y", 1.85, 0.0)
 
 
-static func _build_d5_frosted_lamps(geom: Node) -> void:
+func _build_d5_frosted_lamps(geom: Node) -> void:
 	## Epic-5 T78: 6 frosted lamp posts in a row leading toward the warden,
 	## warm white glow contrasting with the cold cyan district lights.
 	var lamps: Node3D = Node3D.new()
@@ -6467,7 +6470,7 @@ static func _build_d5_frosted_lamps(geom: Node) -> void:
 		lamp.add_child(sb)
 
 
-static func _build_d5_arctic_owl(geom: Node) -> void:
+func _build_d5_arctic_owl(geom: Node) -> void:
 	## Epic-5 T79: small arctic owl perched on a high crystal — white
 	## body, bright golden eyes, slow head turn animation.
 	var owl: Node3D = Node3D.new()
@@ -6567,7 +6570,7 @@ static func _build_d5_arctic_owl(geom: Node) -> void:
 	owl.add_child(sb)
 
 
-static func _build_d5_rune_ring(geom: Node) -> void:
+func _build_d5_rune_ring(geom: Node) -> void:
 	## Epic-5 T80: ring of 9 small rune stones — short ice pillars in a
 	## perfect circle, each carved with a glowing cyan symbol.
 	var ring: Node3D = Node3D.new()
@@ -6643,7 +6646,7 @@ static func _build_d5_rune_ring(geom: Node) -> void:
 	ring.add_child(light)
 
 
-static func _build_d5_ice_slide(geom: Node) -> void:
+func _build_d5_ice_slide(geom: Node) -> void:
 	## Epic-5 T81: tall ice slide — staircase up + curved slide down,
 	## marking a recreation spot for the Cache citizens.
 	var slide: Node3D = Node3D.new()
@@ -6708,7 +6711,7 @@ static func _build_d5_ice_slide(geom: Node) -> void:
 	slide.add_child(sb)
 
 
-static func _build_d5_skating_instructor_npc(town: Node) -> void:
+func _build_d5_skating_instructor_npc(town: Node) -> void:
 	## Epic-5 T82: skating instructor NPC near the rink — bright pink coat,
 	## holding a clipboard with a small whistle around their neck.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6780,7 +6783,7 @@ static func _build_d5_skating_instructor_npc(town: Node) -> void:
 	npc.add_child(whistle)
 
 
-static func _build_d5_ice_harp(geom: Node) -> void:
+func _build_d5_ice_harp(geom: Node) -> void:
 	## Epic-5 T83: large ice harp sculpture — curved frame with 12 thin
 	## glowing string cylinders inside.
 	var harp: Node3D = Node3D.new()
@@ -6869,7 +6872,7 @@ static func _build_d5_ice_harp(geom: Node) -> void:
 	harp.add_child(sb)
 
 
-static func _build_d5_harpist_npc(town: Node) -> void:
+func _build_d5_harpist_npc(town: Node) -> void:
 	## Epic-5 T84: harpist NPC seated at the ice harp.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
 	if npc_slots == null:
@@ -6915,7 +6918,7 @@ static func _build_d5_harpist_npc(town: Node) -> void:
 	npc.add_child(hair)
 
 
-static func _build_d5_data_prism_array(geom: Node) -> void:
+func _build_d5_data_prism_array(geom: Node) -> void:
 	## Epic-5 T85: rotating prism array — 5 rotating triangular ice prisms
 	## refracting cyan light. A "data refraction" decorative installation.
 	var array: Node3D = Node3D.new()
@@ -6978,7 +6981,7 @@ static func _build_d5_data_prism_array(geom: Node) -> void:
 		stand.add_child(sb)
 
 
-static func _build_d5_ice_fountain(geom: Node) -> void:
+func _build_d5_ice_fountain(geom: Node) -> void:
 	## Epic-5 T86: large central ice fountain — circular basin + central
 	## column + 4 outward water-jet arcs frozen mid-flight.
 	var fountain: Node3D = Node3D.new()
@@ -7077,7 +7080,7 @@ static func _build_d5_ice_fountain(geom: Node) -> void:
 	fountain.add_child(sb)
 
 
-static func _build_d5_cryo_lantern_grove(geom: Node) -> void:
+func _build_d5_cryo_lantern_grove(geom: Node) -> void:
 	## Epic-5 T87: 6 small cryo lanterns clustered as a grove around a path,
 	## floating slowly with cyan light each.
 	var grove: Node3D = Node3D.new()
@@ -7138,7 +7141,7 @@ static func _build_d5_cryo_lantern_grove(geom: Node) -> void:
 		tw.tween_property(lantern, "position:y", lantern.position.y, 1.6 + i * 0.18)
 
 
-static func _build_d5_signposts(geom: Node) -> void:
+func _build_d5_signposts(geom: Node) -> void:
 	## Epic-5 T88: 4-way signpost network — central post with 4 directional
 	## arrow signs pointing toward each district.
 	var post_root: Node3D = Node3D.new()
@@ -7201,7 +7204,7 @@ static func _build_d5_signposts(geom: Node) -> void:
 	post_root.add_child(sb)
 
 
-static func _build_d5_tablet_shrine(geom: Node) -> void:
+func _build_d5_tablet_shrine(geom: Node) -> void:
 	## Epic-5 T89: data tablet shrine — 3 floating glowing tablets above
 	## a stone altar, simulating an offering of preserved knowledge.
 	var shrine: Node3D = Node3D.new()
@@ -7265,7 +7268,7 @@ static func _build_d5_tablet_shrine(geom: Node) -> void:
 	shrine.add_child(sb)
 
 
-static func _build_d5_ice_elemental(geom: Node) -> void:
+func _build_d5_ice_elemental(geom: Node) -> void:
 	## Epic-5 T90: small floating ice elemental creature — 3 stacked ice
 	## crystal segments with glowing eyes, hovering and slowly rotating
 	## along a small patrol path.
@@ -7327,7 +7330,7 @@ static func _build_d5_ice_elemental(geom: Node) -> void:
 	ts.tween_property(elemental, "rotation_degrees:y", 0.0, 0.0)
 
 
-static func _build_d5_glacier_crab(geom: Node) -> void:
+func _build_d5_glacier_crab(geom: Node) -> void:
 	## Epic-5 T91: glacier crab — pale blue crustacean with 6 legs, 2 large
 	## claws, and an ice-shell back. Side-step shuffling animation.
 	var crab: Node3D = Node3D.new()
@@ -7432,7 +7435,7 @@ static func _build_d5_glacier_crab(geom: Node) -> void:
 	crab.add_child(sb)
 
 
-static func _build_d5_cryo_kiosk(geom: Node) -> void:
+func _build_d5_cryo_kiosk(geom: Node) -> void:
 	## Epic-5 T92: cryo terminal kiosk — interactive standing terminal with
 	## a glowing cyan screen, used as a save point hint location.
 	var kiosk: Node3D = Node3D.new()
@@ -7512,7 +7515,7 @@ static func _build_d5_cryo_kiosk(geom: Node) -> void:
 	kiosk.add_child(sb)
 
 
-static func _build_d5_seeker_npc(town: Node) -> void:
+func _build_d5_seeker_npc(town: Node) -> void:
 	## Epic-5 T93: hopeful seeker NPC — young traveler in pale blue cloak,
 	## looking up toward the aurora curtain with hands clasped.
 	var npc_slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -7584,7 +7587,7 @@ static func _build_d5_seeker_npc(town: Node) -> void:
 	npc.add_child(light)
 
 
-static func _build_d5_cryosleep_pods(geom: Node) -> void:
+func _build_d5_cryosleep_pods(geom: Node) -> void:
 	## Epic-5 T94: row of 4 horizontal cryosleep medical pods — like the
 	## standing cryo pods but laid down with sleeping subjects inside.
 	var row: Node3D = Node3D.new()
@@ -7673,7 +7676,7 @@ static func _build_d5_cryosleep_pods(geom: Node) -> void:
 		pod.add_child(sb)
 
 
-static func _build_d5_starlight_projector(geom: Node) -> void:
+func _build_d5_starlight_projector(geom: Node) -> void:
 	## Epic-5 T95: starlight projector — small dish device casting an
 	## upward cone of starry blue light + 12 floating glow stars.
 	var proj: Node3D = Node3D.new()
@@ -7760,7 +7763,7 @@ static func _build_d5_starlight_projector(geom: Node) -> void:
 	proj.add_child(sb)
 
 
-static func _build_d5_welcome_banner(geom: Node) -> void:
+func _build_d5_welcome_banner(geom: Node) -> void:
 	## Epic-5 T96: tall double-pole welcome banner — translucent ice fabric
 	## with the district name and a crown of icicles hanging below.
 	var banner: Node3D = Node3D.new()
@@ -7849,7 +7852,7 @@ static func _build_d5_welcome_banner(geom: Node) -> void:
 		banner.add_child(ic)
 
 
-static func _build_d5_crown_tower(geom: Node) -> void:
+func _build_d5_crown_tower(geom: Node) -> void:
 	## Epic-5 T97: crown ice tower — towering 4-tier ice spire with a
 	## hovering crown of orbiting crystals at the peak. Visible from
 	## across the entire eastern world half.
@@ -7964,7 +7967,7 @@ static func _build_d5_crown_tower(geom: Node) -> void:
 	tower.add_child(sb)
 
 
-static func _build_d5_district_plaque(geom: Node) -> void:
+func _build_d5_district_plaque(geom: Node) -> void:
 	## Epic-5 T98: dedication plaque on a stone pedestal at the entrance.
 	var plaque: Node3D = Node3D.new()
 	plaque.name = "D5Plaque"
@@ -8015,7 +8018,7 @@ static func _build_d5_district_plaque(geom: Node) -> void:
 	plaque.add_child(sb)
 
 
-static func _build_d5_ambient_tweak(geom: Node) -> void:
+func _build_d5_ambient_tweak(geom: Node) -> void:
 	## Epic-5 T99: cold ambient atmosphere — wide cyan fill light + pale
 	## directional light from above.
 	var amb: Node3D = Node3D.new()
@@ -8036,7 +8039,7 @@ static func _build_d5_ambient_tweak(geom: Node) -> void:
 	amb.add_child(sun)
 
 
-static func _build_d5_frost_monarch(geom: Node) -> void:
+func _build_d5_frost_monarch(geom: Node) -> void:
 	## Epic-5 T100: FROST MONARCH — Epic 5 finale district boss. Tall
 	## crowned ice queen with a flowing translucent gown, frost crown,
 	## scepter, and a halo of orbiting frozen runes.

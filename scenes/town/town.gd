@@ -1210,228 +1210,10 @@ func _build_east_plaza() -> void:
 	var geom: Node = get_node_or_null("Geometry")
 	if geom == null:
 		return
-	# Step 1: extend the playable boundary east. The original BoundaryEast is
-	# at x=20 and we want the player to walk to x=44 (center + 12). Push the
-	# existing boundary out and add new north/south boundaries that span the
-	# extension.
-	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
-	if east_wall:
-		east_wall.position.x = 44.0
-	# Step 2: ground extension — a separate cyan grid plane stitched to the
-	# main town ground at x=20. Extends from x=20 to x=44, z=-20 to z=20.
-	_build_east_plaza_ground(geom)
-	# Step 3: connecting path from main town to plaza
-	_build_east_plaza_path(geom)
-	# Step 4: data terminal centerpiece (procedural mesh, no GLB needed)
-	_build_data_terminal(geom, EAST_PLAZA_CENTER)
-	# Step 5: 4 holographic kiosks around the centerpiece
-	_build_kiosks(geom)
-	# Step 6: queue bollards forming a market line
-	_build_queue_bollards(geom)
-	# Step 7: ambient market particles (orange/cyan code dust)
-	_build_market_particles(geom)
-	# Step 8: 4 plaza lights
-	_build_plaza_lights(geom)
-	# Step 9: data merchant NPC (placeholder + interaction)
-	_build_data_merchant_npc()
-	# Epic-1 T2: Cipher data broker NPC at far east
-	_build_cipher_npc()
-	# Epic-1 T3: procedural Market Hall building NE of the centerpiece
-	_build_market_hall(geom)
-	# Epic-1 T4: kiosk interaction labels
-	_attach_kiosk_interactables(geom)
-	# Epic-1 T5: ambient market chatter trigger zone (sets a meta on enter)
-	_build_market_chatter_zone(geom)
-	# Epic-1 T6: procedural vendor stall (separate from kiosks — open-air booth)
-	_build_vendor_stall(geom)
-	# Epic-1 T7: 5 ambient pedestrian orbs drifting through the plaza
-	_build_plaza_pedestrians(geom)
-	# Epic-1 T8: loading dock sub-area at far east edge
-	_build_loading_dock(geom)
-	# Epic-1 T9: hanging banner flags between kiosks
-	_build_banner_flags(geom)
-	# Epic-1 T10: cyan OPEN floor decals
-	_build_open_decals(geom)
-	# Epic-1 T11: cyan park benches
-	_build_plaza_benches(geom)
-	# Epic-1 T12: holographic planters with floating leaves
-	_build_plaza_planters(geom)
-	# Epic-1 T13: vending machines along the market hall wall
-	_build_vending_machines(geom)
-	# Epic-1 T14: 2 patrolling security drones above the plaza
-	_build_security_drones(geom)
-	# Epic-1 T15: info totem pillars at plaza entrances
-	_build_info_totems(geom)
-	# Epic-1 T16: data fountain centerpiece replacing the data terminal? no, in addition
-	_build_data_fountain(geom)
-	# Epic-1 T17: holographic billboards floating above the plaza
-	_build_holo_billboards(geom)
-	# Epic-1 T18: animated neon ad strips on the market hall walls
-	_build_neon_ads(geom)
-	# Epic-1 T19: transit pad with arrival pulse animation
-	_build_transit_pad(geom)
-	# Epic-1 T20: shop signage with glow text labels
-	_build_shop_signage(geom)
-	# Epic-1 T21: cyan ground light strips guiding the path through the plaza
-	_build_ground_light_strips(geom)
-	# Epic-1 T22: 3 small maintenance bots sweeping the plaza floor
-	_build_maintenance_bots(geom)
-	# Epic-1 T23: rare sky data fragments falling slowly through the plaza
-	_build_sky_data_fragments(geom)
-	# Epic-1 T24: glowing power conduits running across the plaza ground
-	_build_power_conduits(geom)
-	# Epic-1 T25: plaza arch gateway at the western entrance
-	_build_plaza_arch_gateway(geom)
-	# Epic-1 T26: sparring arena sub-area at NE plaza corner
-	_build_sparring_arena(geom)
-	# Epic-1 T27: 2 practice dummies inside the sparring arena
-	_build_practice_dummies(geom)
-	# Epic-1 T28: tournament pit (sunken combat ring) at SE corner
-	_build_tournament_pit(geom)
-	# Epic-1 T29: crowd seating ring around the tournament pit
-	_build_crowd_seating(geom)
-	# Epic-1 T30: combat trainer NPC at the sparring arena edge
-	_build_combat_trainer_npc()
-	# Epic-1 T31: weapon rack with 4 displayed weapons
-	_build_weapon_rack(geom)
-	# Epic-1 T32: armored combat mannequin (humanoid display)
-	_build_combat_mannequin(geom)
-	# Epic-1 T33: padded training mat (warm-up zone)
-	_build_training_mat(geom)
-	# Epic-1 T34: scoreboard with HP/XP display panels
-	_build_score_board(geom)
-	# Epic-1 T35: cyan chalk technique lines painted on the spar zone floor
-	_build_chalk_lines(geom)
-	# Epic-1 T36: quest bulletin board with floating mock quest entries
-	_build_quest_board(geom)
-	# Epic-1 T37: data recycling bins (trash bins) at plaza corners
-	_build_data_bins(geom)
-	# Epic-1 T38: animated street lamps with on/off cycle
-	_build_animated_lamps(geom)
-	# Epic-1 T39: stairs ramp connecting plaza to loading dock
-	_build_dock_ramp(geom)
-	# Epic-1 T40: plaza sub-zone number markers (floating "1/5" etc)
-	_build_zone_numbers(geom)
-	# Epic-1 T41: tournament leaderboard near the pit
-	_build_tournament_leaderboard(geom)
-	# Epic-1 T42: portcullis-style gate at the tournament pit entrance
-	_build_tournament_gate(geom)
-	# Epic-1 T43: long perimeter seating wall around plaza edges
-	_build_perimeter_seating(geom)
-	# Epic-1 T44: 2 gate guard NPCs at the west arch
-	_build_gate_guards()
-	# Epic-1 T45: ambient cipher data orbs floating through the plaza
-	_build_cipher_orbs(geom)
-	# Epic-1 T46: holographic shop window displays at vendor row
-	_build_holo_shop_windows(geom)
-	# Epic-1 T47: translucent glass atrium roof above market core
-	_build_atrium_roof(geom)
-	# Epic-1 T48: small cafe seating cluster (tables + chairs) near vendors
-	_build_cafe_seating(geom)
-	# Epic-1 T49: secondary data-stream fountains flanking the main fountain
-	_build_data_streams(geom)
-	# Epic-1 T50: directional district signpost cluster at the plaza arch
-	_build_district_signposts(geom)
-	# Epic-1 T51: static onlooker crowd ringing the tournament pit
-	_build_tournament_audience(geom)
-	# Epic-1 T52: animated banner flags swaying on tall poles
-	_build_waving_banners(geom)
-	# Epic-1 T53: spinning turbine generator near the loading dock
-	_build_power_generator(geom)
-	# Epic-1 T54: scattered floating data shard collectibles
-	_build_data_shards(geom)
-	# Epic-1 T55: holographic AI statue centerpiece in the plaza
-	_build_ai_statue(geom)
-	# Epic-1 T56: covered merchant tent with fabric awning + crates
-	_build_merchant_tent(geom)
-	# Epic-1 T57: towering data archive landmark structure
-	_build_data_archive(geom)
-	# Epic-1 T58: combat dummy hit-effect VFX (sparks + recoil tweens)
-	_build_dummy_hit_vfx(geom)
-	# Epic-1 T59: 3 courier delivery drones flying patrol routes
-	_build_courier_drones(geom)
-	# Epic-1 T60: scattered ambient glow nodes pulsing on the ground
-	_build_glow_nodes(geom)
-	# Epic-1 T61: holographic minimap kiosk near plaza arch entrance
-	_build_minimap_kiosk(geom)
-	# Epic-1 T62: data ATM deposit terminal — currency exchange post
-	_build_data_atm(geom)
-	# Epic-1 T63: bug-catcher cage prop — captured glitchbug specimen
-	_build_bug_cage(geom)
-	# Epic-1 T64: 4 plaza speaker towers broadcasting ambient announcements
-	_build_announcement_speakers(geom)
-	# Epic-1 T65: small statue garden — 4 mini ancestor busts around AI statue
-	_build_statue_garden(geom)
-	# Epic-1 T66: large radial floor decals around plaza center
-	_build_radial_floor_decals(geom)
-	# Epic-1 T67: hovering food vendor cart
-	_build_food_cart(geom)
-	# Epic-1 T68: ambient coin/currency drop animations
-	_build_coin_drops(geom)
-	# Epic-1 T69: tournament pit overhead spotlights
-	_build_pit_spotlights(geom)
-	# Epic-1 T70: ambient floating data-flake snow particles over the plaza
-	_build_data_snow(geom)
-	# Epic-1 T71: rope barrier rings around sparring + tournament arenas
-	_build_arena_rope_barriers(geom)
-	# Epic-1 T72: floating "% OFF" sale signs over the kiosks
-	_build_sale_signs(geom)
-	# Epic-1 T73: intermittent NPC chatter speech bubbles
-	_build_chatter_bubbles(geom)
-	# Epic-1 T74: fountain mist particles rising from data fountain
-	_build_fountain_mist(geom)
-	# Epic-1 T75: tournament champion banner stretched across the pit
-	_build_champion_banner(geom)
-	# Epic-1 T76: locked east gate hinting at next district (Epic 2 hook)
-	_build_east_gate(geom)
-	# Epic-1 T77: distant skyline silhouette beyond east boundary
-	_build_skyline_silhouette(geom)
-	# Epic-1 T78: twinkling horizon city lights
-	_build_horizon_lights(geom)
-	# Epic-1 T79: border guard NPC at the east gate ("CLOSED" notice)
-	_build_border_guard_npc()
-	# Epic-1 T80: path teaser extending east toward the next district
-	_build_eastbound_path(geom)
-	# Epic-1 T81: glowing save shrine pillar in the plaza
-	_build_save_shrine(geom)
-	# Epic-1 T82: tall bell tower with hanging bell
-	_build_bell_tower(geom)
-	# Epic-1 T83: drifting data clouds overhead
-	_build_data_clouds(geom)
-	# Epic-1 T84: 2 holo-chess players seated at a table
-	_build_chess_players(geom)
-	# Epic-1 T85: plaza directory hologram listing shops + NPCs
-	_build_plaza_directory(geom)
-	# Epic-1 T86: combat respawn beacon (separate from save shrine)
-	_build_respawn_beacon(geom)
-	# Epic-1 T87: glitching ground crack VFX showing the simulation seams
-	_build_ground_glitch(geom)
-	# Epic-1 T88: 6 floating purchase receipts drifting between vendors
-	_build_floating_receipts(geom)
-	# Epic-1 T89: animated combat training golem punching air
-	_build_combat_golem(geom)
-	# Epic-1 T90: decorative weather dial kiosk
-	_build_weather_dial(geom)
-	# Epic-1 T91: 4 massive corner light pillars marking the plaza edge
-	_build_corner_pillars(geom)
-	# Epic-1 T92: patrolling maintenance bot collecting "trash"
-	_build_maintenance_patrol(geom)
-	# Epic-1 T93: large horizontal news ticker sign
-	_build_news_ticker(geom)
-	# Epic-1 T94: data spa relaxation pool with 3 floating bathers
-	_build_data_spa(geom)
-	# Epic-1 T95: ambient fireworks emitter over the plaza center
-	_build_plaza_fireworks(geom)
-	# Epic-1 T96: welcome arch banner spanning the west plaza entrance
-	_build_welcome_arch_banner(geom)
-	# Epic-1 T97: 4 colored spotlights illuminating the central AI statue
-	_build_statue_spotlights(geom)
-	# Epic-1 T98: ambient lighting + fill light tweak for the entire plaza
-	_build_plaza_ambient_lighting(geom)
-	# Epic-1 T99: Epic 1 completion plaque hidden near the east gate
-	_build_epic1_plaque(geom)
-	# Epic-1 T100: FINALE — massive central holographic Globbler landmark
-	_build_central_globbler_landmark(geom)
+	print("[town] entering D1 east plaza")
+	var _b1 := D1Builder.new()
+	add_child(_b1)
+	_b1.build(self, geom)
 	print("[town] D1 east plaza done")
 	# === EPIC 2: District 2 — Stack Overflow Outskirts ===
 	print("[town] entering D2")
@@ -1439,13 +1221,13 @@ func _build_east_plaza() -> void:
 	print("[town] D2 done")
 
 
-
-
 func _build_district_2(geom: Node) -> void:
 	## Epic 2 entry point — delegates to D2Builder (scenes/town/districts/district_2.gd).
 	## All Stack Outskirts content was extracted to that module to keep
 	## town.gd modular. After D2 finishes, chain into D3 (Memory Vault).
-	D2Builder.build(self, geom)
+	var _b2 := D2Builder.new()
+	add_child(_b2)
+	_b2.build(self, geom)
 	# === EPIC 3: Memory Vault — The Datacore Depths ===
 	print("[town] entering D3")
 	_build_district_3(geom)
@@ -1454,7 +1236,9 @@ func _build_district_2(geom: Node) -> void:
 
 func _build_district_3(geom: Node) -> void:
 	## Epic 3 entry point — delegates to D3Builder. After D3, chains into D4..D8.
-	D3Builder.build(self, geom)
+	var _b3 := D3Builder.new()
+	add_child(_b3)
+	_b3.build(self, geom)
 	# === EPIC 4: Bloom Cluster — The Sandbox Greenhouse ===
 	print("[town] entering D4")
 	_build_district_4(geom)
@@ -1479,14 +1263,18 @@ func _build_district_3(geom: Node) -> void:
 
 func _build_district_4(geom: Node) -> void:
 	## Epic 4 entry point — delegates to D4Builder.
-	D4Builder.build(self, geom)
+	var _b4 := D4Builder.new()
+	add_child(_b4)
+	_b4.build(self, geom)
 
 
 
 
 func _build_district_5(geom: Node) -> void:
 	## Epic 5 entry point — delegates to D5Builder.
-	D5Builder.build(self, geom)
+	var _b5 := D5Builder.new()
+	add_child(_b5)
+	_b5.build(self, geom)
 
 
 
@@ -1495,7 +1283,9 @@ func _build_district_6(geom: Node) -> void:
 	## Epic 6 entry point — delegates to D6Builder (scenes/town/districts/district_6.gd).
 	## All Neon Bazaar content was extracted to that module to keep
 	## town.gd modular. See D6Builder.build() for the full task list.
-	D6Builder.build(self, geom)
+	var _b6 := D6Builder.new()
+	add_child(_b6)
+	_b6.build(self, geom)
 
 
 
@@ -1504,14 +1294,18 @@ func _build_district_7(geom: Node) -> void:
 	## Epic 7 entry point — delegates to D7Builder (scenes/town/districts/district_7.gd).
 	## All Ascension Spires content was extracted to that module to keep
 	## town.gd modular. See D7Builder.build() for the full task list.
-	D7Builder.build(self, geom)
+	var _b7 := D7Builder.new()
+	add_child(_b7)
+	_b7.build(self, geom)
 
 
 func _build_district_8(geom: Node) -> void:
 	## Epic 8 entry point — delegates to D8Builder (scenes/town/districts/district_8.gd).
 	## All Tidal Harbor content was extracted to that module. After D8 finishes,
 	## chain into D9 (Volcanic Forge).
-	D8Builder.build(self, geom)
+	var _b8 := D8Builder.new()
+	add_child(_b8)
+	_b8.build(self, geom)
 	# === EPIC 9: District 9 — Volcanic Forge ===
 	print("[town] entering D9")
 	_build_district_9(geom)
@@ -1522,11 +1316,6 @@ func _build_district_9(geom: Node) -> void:
 	## Epic 9 entry point — delegates to D9Builder (scenes/town/districts/district_9.gd).
 	## All Volcanic Forge content was extracted to that module to keep town.gd
 	## modular. See D9Builder.build() for the full task list.
-	D9Builder.build(self, geom)
-
-
-
-
-
-
-
+	var _b9 := D9Builder.new()
+	add_child(_b9)
+	_b9.build(self, geom)

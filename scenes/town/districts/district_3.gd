@@ -1,19 +1,19 @@
 class_name D3Builder
-extends RefCounted
+extends Node
 ## Memory Vault district builder — extracted from scenes/town/town.gd to keep
 ## the main town script modular and under control.
 
 const D3_CENTER := Vector3(150, 0, 0)
 
 
-static func extend_boundary(geom: Node) -> void:
+func extend_boundary(geom: Node) -> void:
 	## Push the east boundary wall from x=120 out to x=180.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
 		east_wall.position.x = 180.0
 
 
-static func build(town: Node, geom: Node) -> void:
+func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_3(geom).
 	print("[D3Builder] start")
 	extend_boundary(geom)
@@ -120,7 +120,7 @@ static func build(town: Node, geom: Node) -> void:
 	print("[D3Builder] done")
 
 
-static func _build_d3_ground(geom: Node) -> void:
+func _build_d3_ground(geom: Node) -> void:
 	## Epic-3 T1b: D3 ground — violet/purple grid floor extending from
 	## x=120 to x=180. Uses a tweaked variant of the digital grid shader
 	## with violet primary color on a deep black base.
@@ -164,7 +164,7 @@ void fragment() {
 	ground.add_child(sb)
 
 
-static func _build_d3_entrance_arch(geom: Node) -> void:
+func _build_d3_entrance_arch(geom: Node) -> void:
 	## Epic-3 T2: a tall ornate violet stone arch at the D3 entrance
 	## (just east of D2 boundary at x=120) reading "MEMORY VAULT".
 	var arch: Node3D = Node3D.new()
@@ -259,7 +259,7 @@ static func _build_d3_entrance_arch(geom: Node) -> void:
 		arch.add_child(label)
 
 
-static func _build_d3_great_crystal(geom: Node) -> void:
+func _build_d3_great_crystal(geom: Node) -> void:
 	## Epic-3 T3: a giant 8m-tall data crystal at the D3 center, the
 	## district's main landmark. Translucent violet prism floating just
 	## above a stepped platform with a slow vertical bob and rotation.
@@ -370,7 +370,7 @@ static func _build_d3_great_crystal(geom: Node) -> void:
 	crystal.add_child(sb)
 
 
-static func _build_d3_awakened_guardian(geom: Node) -> void:
+func _build_d3_awakened_guardian(geom: Node) -> void:
 	## Epic-3 T4: an awakened guardian mini-boss — a stone humanoid statue
 	## that has come to life. Tall thin body, glowing violet runes
 	## carved into chest, deep amethyst eyes, slow patrol around the
@@ -476,7 +476,7 @@ static func _build_d3_awakened_guardian(geom: Node) -> void:
 	guardian.add_child(label)
 
 
-static func _build_d3_lost_coder_npc(town: Node) -> void:
+func _build_d3_lost_coder_npc(town: Node) -> void:
 	## Epic-3 T5: Lost Coder NPC — a wandering ancient programmer ghost
 	## with a translucent body and a glowing keyboard floating in front
 	## of them. The first inhabitant of the Memory Vault.
@@ -579,7 +579,7 @@ static func _build_d3_lost_coder_npc(town: Node) -> void:
 	coder.add_child(label)
 
 
-static func _build_d3_ancient_pillars(geom: Node) -> void:
+func _build_d3_ancient_pillars(geom: Node) -> void:
 	## Epic-3 T6: a cluster of 6 ancient violet stone pillars at varying
 	## heights forming a half-circle around the great crystal — like
 	## sentinels guarding the heart of the vault.
@@ -636,7 +636,7 @@ static func _build_d3_ancient_pillars(geom: Node) -> void:
 		cluster.add_child(sb)
 
 
-static func _build_d3_sigil_glyphs(geom: Node) -> void:
+func _build_d3_sigil_glyphs(geom: Node) -> void:
 	## Epic-3 T7: 8 floating violet sigil glyphs drifting through the air
 	## near the crystal. Each is a different ancient symbol Label3D
 	## floating + slowly rotating + bobbing.
@@ -683,7 +683,7 @@ static func _build_d3_sigil_glyphs(geom: Node) -> void:
 		bob.tween_property(glyph, "position:y", origin_y, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_reading_chamber(geom: Node) -> void:
+func _build_d3_reading_chamber(geom: Node) -> void:
 	## Epic-3 T8: a small alcove reading chamber — 3-sided stone walls
 	## containing a podium with a glowing tome and a stool. The "scholar's
 	## corner" of the vault.
@@ -789,7 +789,7 @@ static func _build_d3_reading_chamber(geom: Node) -> void:
 	chamber.add_child(sb)
 
 
-static func _build_d3_memory_shards(geom: Node) -> void:
+func _build_d3_memory_shards(geom: Node) -> void:
 	## Epic-3 T9: 8 small floating "memory shard" prism collectibles
 	## scattered around the great crystal — like Epic 1's data shards but
 	## violet. Spinning + bobbing decorative collectibles.
@@ -830,7 +830,7 @@ static func _build_d3_memory_shards(geom: Node) -> void:
 		bob.tween_property(shard, "position:y", origin_y, 1.4).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_archivist_npc(town: Node) -> void:
+func _build_d3_archivist_npc(town: Node) -> void:
 	## Epic-3 T10: Archivist NPC standing inside the reading chamber.
 	## Tall robed figure with a glowing scroll case slung over one shoulder
 	## and a single bright violet eye on the head.
@@ -915,7 +915,7 @@ static func _build_d3_archivist_npc(town: Node) -> void:
 	arch.add_child(label)
 
 
-static func _build_d3_codex_pages(geom: Node) -> void:
+func _build_d3_codex_pages(geom: Node) -> void:
 	## Epic-3 T11: 12 drifting "codex pages" — small thin translucent
 	## boxes floating across the vault on independent paths, each with
 	## a small Label3D rune symbol on it.
@@ -968,7 +968,7 @@ static func _build_d3_codex_pages(geom: Node) -> void:
 		tumble.tween_property(page, "rotation", Vector3(TAU, TAU * 0.5, 0), 7.0)
 
 
-static func _build_d3_spiral_stair(geom: Node) -> void:
+func _build_d3_spiral_stair(geom: Node) -> void:
 	## Epic-3 T12: a tall spiral knowledge staircase landmark — 12 steps
 	## winding upward around a central column, each step with a small
 	## emissive trim. Decorative climb-tower on the side of the district.
@@ -1058,7 +1058,7 @@ static func _build_d3_spiral_stair(geom: Node) -> void:
 	stair.add_child(sb)
 
 
-static func _build_d3_wisp_enemy(geom: Node) -> void:
+func _build_d3_wisp_enemy(geom: Node) -> void:
 	## Epic-3 T13: 4 small floating wisp enemies — pulsing emissive
 	## spheres with trailing tail particles, drifting through the vault.
 	var positions: Array[Vector3] = [
@@ -1127,7 +1127,7 @@ static func _build_d3_wisp_enemy(geom: Node) -> void:
 		drift.tween_property(wisp, "position", origin, 4.0).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_vault_keeper_npc(town: Node) -> void:
+func _build_d3_vault_keeper_npc(town: Node) -> void:
 	## Epic-3 T14: Vault Keeper NPC — large statue-like guardian standing
 	## still by the entrance arch. Has a key motif on chest and golden eyes.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -1220,7 +1220,7 @@ static func _build_d3_vault_keeper_npc(town: Node) -> void:
 	keeper.add_child(label)
 
 
-static func _build_d3_memory_pool(geom: Node) -> void:
+func _build_d3_memory_pool(geom: Node) -> void:
 	## Epic-3 T15: a small circular memory pool — torus rim around a
 	## glowing translucent disc. Bubbling violet "data" rises from it.
 	var pool: Node3D = Node3D.new()
@@ -1302,7 +1302,7 @@ static func _build_d3_memory_pool(geom: Node) -> void:
 	pool.add_child(label)
 
 
-static func _build_d3_floating_bookshelves(geom: Node) -> void:
+func _build_d3_floating_bookshelves(geom: Node) -> void:
 	## Epic-3 T16: 4 floating bookshelves drifting at different altitudes,
 	## each holding 5 colored book spines glowing inside.
 	var positions: Array[Vector3] = [
@@ -1362,7 +1362,7 @@ static func _build_d3_floating_bookshelves(geom: Node) -> void:
 		spin.tween_property(shelf, "rotation:y", TAU, 18.0 + i * 2)
 
 
-static func _build_d3_stone_benches(geom: Node) -> void:
+func _build_d3_stone_benches(geom: Node) -> void:
 	## Epic-3 T17: 5 stone benches arranged in a semicircle facing the
 	## great crystal — meditation seating for the vault scholars.
 	var bench_mat: StandardMaterial3D = StandardMaterial3D.new()
@@ -1409,7 +1409,7 @@ static func _build_d3_stone_benches(geom: Node) -> void:
 		bench.add_child(sb)
 
 
-static func _build_d3_ritual_circle(geom: Node) -> void:
+func _build_d3_ritual_circle(geom: Node) -> void:
 	## Epic-3 T18: a 5m violet ritual circle on the ground in front of the
 	## great crystal — concentric torus rings + 8 small rune dots in a
 	## ring + a center pulsing star.
@@ -1463,7 +1463,7 @@ static func _build_d3_ritual_circle(geom: Node) -> void:
 	pulse.tween_property(ring_root, "scale", Vector3(0.96, 1.0, 0.96), 2.4).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_war_banners(geom: Node) -> void:
+func _build_d3_war_banners(geom: Node) -> void:
 	## Epic-3 T19: 4 ancient war banners hanging from tall stone poles —
 	## long violet cloth panels with rune symbols. Tells "ancient battles
 	## happened here, the vault commemorates fallen mages".
@@ -1545,7 +1545,7 @@ static func _build_d3_war_banners(geom: Node) -> void:
 		banner_root.add_child(sb)
 
 
-static func _build_d3_acolyte_npc(town: Node) -> void:
+func _build_d3_acolyte_npc(town: Node) -> void:
 	## Epic-3 T20: Acolyte NPC sitting cross-legged on one of the stone
 	## benches, meditating with hands clasped in front and eyes closed.
 	## Has a small floating prayer symbol over their head.
@@ -1626,7 +1626,7 @@ static func _build_d3_acolyte_npc(town: Node) -> void:
 	acolyte.add_child(label)
 
 
-static func _build_d3_mana_font(geom: Node) -> void:
+func _build_d3_mana_font(geom: Node) -> void:
 	## Epic-3 T21: a mana font — small fountain with a glowing violet
 	## sphere rising and falling on a tween. Ringed by 4 small candle
 	## flames (mocked with emissive amber spheres).
@@ -1709,7 +1709,7 @@ static func _build_d3_mana_font(geom: Node) -> void:
 	font.add_child(sb)
 
 
-static func _build_d3_mausoleum(geom: Node) -> void:
+func _build_d3_mausoleum(geom: Node) -> void:
 	## Epic-3 T22: a stone mausoleum building — square structure with
 	## peaked roof, sealed door with rune carving, and 4 corner crests.
 	var maus: Node3D = Node3D.new()
@@ -1802,7 +1802,7 @@ static func _build_d3_mausoleum(geom: Node) -> void:
 	maus.add_child(sb)
 
 
-static func _build_d3_crystal_lanterns(geom: Node) -> void:
+func _build_d3_crystal_lanterns(geom: Node) -> void:
 	## Epic-3 T23: 6 floating crystal lantern cluster — small prisms
 	## suspended in the air with thin tether cables to the ground.
 	var positions: Array[Vector3] = [
@@ -1851,7 +1851,7 @@ static func _build_d3_crystal_lanterns(geom: Node) -> void:
 		spin.tween_property(lantern, "rotation:y", TAU, 5.0 + i * 0.3)
 
 
-static func _build_d3_sage_npc(town: Node) -> void:
+func _build_d3_sage_npc(town: Node) -> void:
 	## Epic-3 T24: Sage NPC — old wise figure with a long beard, holding
 	## a tall crystal staff with a glowing orb on top. The "wisdom giver"
 	## archetype.
@@ -1958,7 +1958,7 @@ static func _build_d3_sage_npc(town: Node) -> void:
 	sage.add_child(label)
 
 
-static func _build_d3_echo_wraith(geom: Node) -> void:
+func _build_d3_echo_wraith(geom: Node) -> void:
 	## Epic-3 T25: an echo wraith — wider thinner enemy than the wisps,
 	## with a cloak-like trailing form, glowing white face, slow patrol.
 	var wraith: Node3D = Node3D.new()
@@ -2027,7 +2027,7 @@ static func _build_d3_echo_wraith(geom: Node) -> void:
 	wraith.add_child(label)
 
 
-static func _build_d3_rune_decals(geom: Node) -> void:
+func _build_d3_rune_decals(geom: Node) -> void:
 	## Epic-3 T26: 4 small rune circle decals on the D3 floor scattered
 	## across the district. Each is a flat torus with 8 small dots inside.
 	var positions: Array[Vector3] = [
@@ -2071,7 +2071,7 @@ static func _build_d3_rune_decals(geom: Node) -> void:
 		spin.tween_property(decal, "rotation:y", TAU * (1 if i % 2 == 0 else -1), 14.0 + i * 2)
 
 
-static func _build_d3_sealed_gates(geom: Node) -> void:
+func _build_d3_sealed_gates(geom: Node) -> void:
 	## Epic-3 T27: sealed vault gates landmark — 2 huge stone double doors
 	## with a glowing rune seal across the middle. Looks like a quest hook
 	## but is purely decorative.
@@ -2182,7 +2182,7 @@ static func _build_d3_sealed_gates(geom: Node) -> void:
 	gates.add_child(label)
 
 
-static func _build_d3_data_spirits(geom: Node) -> void:
+func _build_d3_data_spirits(geom: Node) -> void:
 	## Epic-3 T28: 8 floating data spirits orbiting in a circle overhead
 	## around the great crystal — small translucent ghost figures.
 	var spirit_mat: StandardMaterial3D = StandardMaterial3D.new()
@@ -2231,7 +2231,7 @@ static func _build_d3_data_spirits(geom: Node) -> void:
 	spin.tween_property(orbit_pivot, "rotation:y", TAU, 16.0)
 
 
-static func _build_d3_oracle_npc(town: Node) -> void:
+func _build_d3_oracle_npc(town: Node) -> void:
 	## Epic-3 T29: Oracle NPC sitting on a small plinth in front of the
 	## sealed gates with a glowing crystal ball floating in front of them.
 	## Hooded with no visible face, just glowing eyes inside the hood.
@@ -2329,7 +2329,7 @@ static func _build_d3_oracle_npc(town: Node) -> void:
 	oracle.add_child(label)
 
 
-static func _build_d3_violet_mist(geom: Node) -> void:
+func _build_d3_violet_mist(geom: Node) -> void:
 	## Epic-3 T30: ambient violet mist drifting low across the district —
 	## 80 large translucent violet puff particles slowly moving north.
 	var mist: GPUParticles3D = GPUParticles3D.new()
@@ -2365,7 +2365,7 @@ static func _build_d3_violet_mist(geom: Node) -> void:
 	geom.add_child(mist)
 
 
-static func _build_d3_floating_arches(geom: Node) -> void:
+func _build_d3_floating_arches(geom: Node) -> void:
 	## Epic-3 T31: 3 floating ancient archways drifting overhead at
 	## different altitudes — small free-floating arches like portal
 	## fragments suspended in the air.
@@ -2414,7 +2414,7 @@ static func _build_d3_floating_arches(geom: Node) -> void:
 		spin.tween_property(arch, "rotation:y", arch.rotation.y + TAU, 18.0)
 
 
-static func _build_d3_battle_scars(geom: Node) -> void:
+func _build_d3_battle_scars(geom: Node) -> void:
 	## Epic-3 T32: scattered broken stone fragments across the D3 floor —
 	## 10 small angled stone shards suggesting an ancient battle.
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -2443,7 +2443,7 @@ static func _build_d3_battle_scars(geom: Node) -> void:
 		geom.add_child(fragment)
 
 
-static func _build_d3_memory_obelisks(geom: Node) -> void:
+func _build_d3_memory_obelisks(geom: Node) -> void:
 	## Epic-3 T33: 3 tall memory obelisks — narrow stone prisms with
 	## glowing rune lines down each face. Sentinel-like landmarks placed
 	## at the edges of the district.
@@ -2513,7 +2513,7 @@ static func _build_d3_memory_obelisks(geom: Node) -> void:
 		obelisk.add_child(sb)
 
 
-static func _build_d3_phantom_warrior_npc(town: Node) -> void:
+func _build_d3_phantom_warrior_npc(town: Node) -> void:
 	## Epic-3 T34: Phantom Warrior NPC — a translucent ghost of a fallen
 	## warrior with armor outline + a translucent sword. Stands at attention.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2586,7 +2586,7 @@ static func _build_d3_phantom_warrior_npc(town: Node) -> void:
 	phantom.add_child(label)
 
 
-static func _build_d3_illusion_bridge(geom: Node) -> void:
+func _build_d3_illusion_bridge(geom: Node) -> void:
 	## Epic-3 T35: a short illusion bridge — 6 floating tile platforms in
 	## a row that fade in/out on independent flickers, suggesting "the
 	## bridge only appears for the worthy".
@@ -2629,7 +2629,7 @@ static func _build_d3_illusion_bridge(geom: Node) -> void:
 	bridge.add_child(label)
 
 
-static func _build_d3_levitating_runes(geom: Node) -> void:
+func _build_d3_levitating_runes(geom: Node) -> void:
 	## Epic-3 T36: 12 levitating glowing rune cubes orbiting horizontally
 	## around the great crystal at chest height. Pivot rotation tween.
 	var pivot: Node3D = Node3D.new()
@@ -2657,7 +2657,7 @@ static func _build_d3_levitating_runes(geom: Node) -> void:
 	spin.tween_property(pivot, "rotation:y", TAU, 12.0)
 
 
-static func _build_d3_observatory_dome(geom: Node) -> void:
+func _build_d3_observatory_dome(geom: Node) -> void:
 	## Epic-3 T37: an ancient observatory dome — large hemisphere on a
 	## stone base with a slit opening + a small telescope poking out.
 	var dome: Node3D = Node3D.new()
@@ -2739,7 +2739,7 @@ static func _build_d3_observatory_dome(geom: Node) -> void:
 	dome.add_child(sb)
 
 
-static func _build_d3_portal_pad(geom: Node) -> void:
+func _build_d3_portal_pad(geom: Node) -> void:
 	## Epic-3 T38: portal pad — circular dais on the ground with 4
 	## upright energy beams forming a square gate, slowly rotating.
 	var portal: Node3D = Node3D.new()
@@ -2816,7 +2816,7 @@ static func _build_d3_portal_pad(geom: Node) -> void:
 	portal.add_child(label)
 
 
-static func _build_d3_ritualist_npc(town: Node) -> void:
+func _build_d3_ritualist_npc(town: Node) -> void:
 	## Epic-3 T39: Ritualist NPC standing by the ritual circle with arms
 	## outstretched, casting a spell. Has glowing palms and a tall hat.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -2903,7 +2903,7 @@ static func _build_d3_ritualist_npc(town: Node) -> void:
 	rit.add_child(label)
 
 
-static func _build_d3_violet_braziers(geom: Node) -> void:
+func _build_d3_violet_braziers(geom: Node) -> void:
 	## Epic-3 T40: 4 violet flame braziers at the corners of the great
 	## crystal platform — stone bowls with flame particles rising from them.
 	var positions: Array[Vector3] = [
@@ -2989,7 +2989,7 @@ static func _build_d3_violet_braziers(geom: Node) -> void:
 		brazier.add_child(sb)
 
 
-static func _build_d3_spell_puzzle(geom: Node) -> void:
+func _build_d3_spell_puzzle(geom: Node) -> void:
 	## Epic-3 T41: a spell circle puzzle on the ground — 4 colored rune
 	## tiles in a square arrangement, each pulsing in a different color.
 	## Looks like a "step on these in order" puzzle.
@@ -3051,7 +3051,7 @@ static func _build_d3_spell_puzzle(geom: Node) -> void:
 		pulse.tween_property(tmat, "emission_energy_multiplier", 1.4, 0.85 + tile.position.x * 0.1).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_floating_stair(geom: Node) -> void:
+func _build_d3_floating_stair(geom: Node) -> void:
 	## Epic-3 T42: a vertical "floating platform staircase" — 8 small
 	## platforms hovering at ascending heights forming a climbable path
 	## up to 8m altitude.
@@ -3091,7 +3091,7 @@ static func _build_d3_floating_stair(geom: Node) -> void:
 		stair.add_child(sb)
 
 
-static func _build_d3_chained_statue(geom: Node) -> void:
+func _build_d3_chained_statue(geom: Node) -> void:
 	## Epic-3 T43: a chained ancient statue — humanoid stone figure with
 	## 4 thin chain cylinders binding it to the ground. Tells "ancient
 	## power was sealed here".
@@ -3165,7 +3165,7 @@ static func _build_d3_chained_statue(geom: Node) -> void:
 	statue.add_child(sb)
 
 
-static func _build_d3_librarian_npc(town: Node) -> void:
+func _build_d3_librarian_npc(town: Node) -> void:
 	## Epic-3 T44: Librarian NPC standing next to the floating bookshelves
 	## holding an open glowing book in front of them.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -3243,7 +3243,7 @@ static func _build_d3_librarian_npc(town: Node) -> void:
 	lib.add_child(label)
 
 
-static func _build_d3_elemental_wisps(geom: Node) -> void:
+func _build_d3_elemental_wisps(geom: Node) -> void:
 	## Epic-3 T45: 4 elemental wisps in different colors (fire/ice/leaf/
 	## storm) drifting near the spell puzzle as if guarding it.
 	var wisp_specs: Array = [
@@ -3279,7 +3279,7 @@ static func _build_d3_elemental_wisps(geom: Node) -> void:
 		bob.tween_property(wisp, "position:y", origin.y, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_sky_portal(geom: Node) -> void:
+func _build_d3_sky_portal(geom: Node) -> void:
 	## Epic-3 T46: a large sky portal ring 16m above the district center —
 	## a huge translucent torus with 8 emissive runes around its edge,
 	## slowly rotating + tilted at an angle.
@@ -3325,7 +3325,7 @@ static func _build_d3_sky_portal(geom: Node) -> void:
 	spin.tween_property(portal, "rotation:z", TAU, 24.0)
 
 
-static func _build_d3_judgment_dais(geom: Node) -> void:
+func _build_d3_judgment_dais(geom: Node) -> void:
 	## Epic-3 T47: a raised judgment dais with a throne — 3-step stone
 	## platform supporting a tall stone seat. Empty throne suggesting
 	## "the judge of memories has not yet returned".
@@ -3402,7 +3402,7 @@ static func _build_d3_judgment_dais(geom: Node) -> void:
 	dais.add_child(sb)
 
 
-static func _build_d3_echo_singer_npc(town: Node) -> void:
+func _build_d3_echo_singer_npc(town: Node) -> void:
 	## Epic-3 T48: Echo Singer NPC — translucent figure with a flowing
 	## robe that "sings" memory echoes. Has 5 small floating note glyphs
 	## drifting around their head.
@@ -3484,7 +3484,7 @@ static func _build_d3_echo_singer_npc(town: Node) -> void:
 	singer.add_child(label)
 
 
-static func _build_d3_mana_crystals(geom: Node) -> void:
+func _build_d3_mana_crystals(geom: Node) -> void:
 	## Epic-3 T49: a cluster of 6 floating mana crystals at the corners
 	## of the judgment dais — each is a small spinning prism with strong
 	## emission.
@@ -3518,7 +3518,7 @@ static func _build_d3_mana_crystals(geom: Node) -> void:
 		bob.tween_property(crystal, "position:y", positions[i].y, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_memory_echo(geom: Node) -> void:
+func _build_d3_memory_echo(geom: Node) -> void:
 	## Epic-3 T50: MEMORY ECHO mini-boss — large translucent face with
 	## 4 floating cube fragments orbiting it. Slow patrol around the
 	## sealed gates area.
@@ -3612,7 +3612,7 @@ static func _build_d3_memory_echo(geom: Node) -> void:
 	echo.add_child(label)
 
 
-static func _build_d3_ancient_pool(geom: Node) -> void:
+func _build_d3_ancient_pool(geom: Node) -> void:
 	## Epic-3 T51: ancient stone pool with 4 floating "data fish" — small
 	## elongated emissive shapes drifting in circles above the surface.
 	var pool: Node3D = Node3D.new()
@@ -3693,7 +3693,7 @@ static func _build_d3_ancient_pool(geom: Node) -> void:
 	pool.add_child(sb)
 
 
-static func _build_d3_pendulum(geom: Node) -> void:
+func _build_d3_pendulum(geom: Node) -> void:
 	## Epic-3 T52: tall hanging pendulum — stone arch frame with a long
 	## thin chain holding a heavy weighted ball that swings back and forth.
 	var pend: Node3D = Node3D.new()
@@ -3772,7 +3772,7 @@ static func _build_d3_pendulum(geom: Node) -> void:
 	swing.tween_property(pivot, "rotation:x", deg_to_rad(-20), 1.6).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_prophecy_stones(geom: Node) -> void:
+func _build_d3_prophecy_stones(geom: Node) -> void:
 	## Epic-3 T53: 3 prophecy stones forming a small triangle — each stone
 	## is a flat slab with text engraved + glowing emission.
 	var positions: Array[Vector3] = [
@@ -3823,7 +3823,7 @@ static func _build_d3_prophecy_stones(geom: Node) -> void:
 		stone.add_child(sb)
 
 
-static func _build_d3_apprentice_npc(town: Node) -> void:
+func _build_d3_apprentice_npc(town: Node) -> void:
 	## Epic-3 T54: an apprentice child NPC — smaller body, eager bouncing
 	## animation, and a small floating practice rune sphere they're trying
 	## to learn to control.
@@ -3912,7 +3912,7 @@ static func _build_d3_apprentice_npc(town: Node) -> void:
 	app.add_child(label)
 
 
-static func _build_d3_page_rain(geom: Node) -> void:
+func _build_d3_page_rain(geom: Node) -> void:
 	## Epic-3 T55: ambient floating page rain — 80 small translucent
 	## amber page particles drifting down across the entire district like
 	## paper leaves.
@@ -3948,7 +3948,7 @@ static func _build_d3_page_rain(geom: Node) -> void:
 	geom.add_child(rain)
 
 
-static func _build_d3_alchemy_table(geom: Node) -> void:
+func _build_d3_alchemy_table(geom: Node) -> void:
 	## Epic-3 T56: alchemy table with 5 colored potion bottles + glowing
 	## crucible. Crowded with arcane experimentation gear.
 	var alch: Node3D = Node3D.new()
@@ -4048,7 +4048,7 @@ static func _build_d3_alchemy_table(geom: Node) -> void:
 	alch.add_child(sb)
 
 
-static func _build_d3_sundial(geom: Node) -> void:
+func _build_d3_sundial(geom: Node) -> void:
 	## Epic-3 T57: ancient sundial — flat circular stone disc with a tall
 	## angled gnomon casting a virtual shadow across 12 hour markers.
 	var dial: Node3D = Node3D.new()
@@ -4118,7 +4118,7 @@ static func _build_d3_sundial(geom: Node) -> void:
 	dial.add_child(sb)
 
 
-static func _build_d3_library_facade(geom: Node) -> void:
+func _build_d3_library_facade(geom: Node) -> void:
 	## Epic-3 T58: a grand library facade — wide tall building front with
 	## 4 columns + lintel + tall pointed pediment + glowing entryway.
 	var lib: Node3D = Node3D.new()
@@ -4205,7 +4205,7 @@ static func _build_d3_library_facade(geom: Node) -> void:
 	lib.add_child(label)
 
 
-static func _build_d3_starlight_projector(geom: Node) -> void:
+func _build_d3_starlight_projector(geom: Node) -> void:
 	## Epic-3 T59: a starlight projector — small floor-mounted gem that
 	## projects a circle of 24 small stars on the floor around it.
 	var proj: Node3D = Node3D.new()
@@ -4253,7 +4253,7 @@ static func _build_d3_starlight_projector(geom: Node) -> void:
 		twk.tween_property(star, "scale", Vector3(1.4, 1.4, 1.4), 0.6 + rng.randf() * 0.4).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_data_dragon(geom: Node) -> void:
+func _build_d3_data_dragon(geom: Node) -> void:
 	## Epic-3 T60: a floating data dragon — long serpentine body made of
 	## 8 connected emissive cube segments that drift in a sinuous pattern.
 	var dragon: Node3D = Node3D.new()
@@ -4313,7 +4313,7 @@ static func _build_d3_data_dragon(geom: Node) -> void:
 	dragon.add_child(label)
 
 
-static func _build_d3_healing_fountain(geom: Node) -> void:
+func _build_d3_healing_fountain(geom: Node) -> void:
 	## Epic-3 T61: a healing fountain — stone basin with rising green
 	## emissive water column + 4 small healing pulse particles flowing
 	## outward at the rim.
@@ -4419,7 +4419,7 @@ static func _build_d3_healing_fountain(geom: Node) -> void:
 	font.add_child(sb)
 
 
-static func _build_d3_study_desks(geom: Node) -> void:
+func _build_d3_study_desks(geom: Node) -> void:
 	## Epic-3 T62: 3 study desks in a row — wooden tables with stacked
 	## books + small inkpot + an open scroll on each.
 	var positions: Array[Vector3] = [
@@ -4493,7 +4493,7 @@ static func _build_d3_study_desks(geom: Node) -> void:
 		desk.add_child(sb)
 
 
-static func _build_d3_mage_robes(geom: Node) -> void:
+func _build_d3_mage_robes(geom: Node) -> void:
 	## Epic-3 T63: a coat rack with 3 hanging mage robes in different
 	## colors — boxes with conical hat tops.
 	var rack: Node3D = Node3D.new()
@@ -4574,7 +4574,7 @@ static func _build_d3_mage_robes(geom: Node) -> void:
 	rack.add_child(sb)
 
 
-static func _build_d3_fortune_teller_npc(town: Node) -> void:
+func _build_d3_fortune_teller_npc(town: Node) -> void:
 	## Epic-3 T64: Fortune Teller NPC sitting at a small round table with
 	## a glowing crystal ball in front. Has a scarf wrapped around the head.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -4678,7 +4678,7 @@ static func _build_d3_fortune_teller_npc(town: Node) -> void:
 	teller.add_child(label)
 
 
-static func _build_d3_tarot_cards(geom: Node) -> void:
+func _build_d3_tarot_cards(geom: Node) -> void:
 	## Epic-3 T65: 6 floating tarot cards near the fortune teller — small
 	## rectangles in different colors with floating animation.
 	var positions: Array[Vector3] = [
@@ -4721,7 +4721,7 @@ static func _build_d3_tarot_cards(geom: Node) -> void:
 		spin.tween_property(card, "rotation:y", TAU, 5.0 + i * 0.5)
 
 
-static func _build_d3_sky_chimes(geom: Node) -> void:
+func _build_d3_sky_chimes(geom: Node) -> void:
 	## Epic-3 T66: 5 hanging sky chimes — long thin metal cylinders
 	## hanging from a horizontal bar between 2 tall poles, swinging
 	## gently as if in a breeze.
@@ -4789,7 +4789,7 @@ static func _build_d3_sky_chimes(geom: Node) -> void:
 		sway.tween_property(pivot, "rotation:x", deg_to_rad(-8 - i * 2), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_spirit_altars(geom: Node) -> void:
+func _build_d3_spirit_altars(geom: Node) -> void:
 	## Epic-3 T67: 3 small spirit altars in a row — stone pedestals each
 	## with a glowing offering bowl on top + flame.
 	var positions: Array[Vector3] = [
@@ -4854,7 +4854,7 @@ static func _build_d3_spirit_altars(geom: Node) -> void:
 		altar.add_child(sb)
 
 
-static func _build_d3_floating_crown(geom: Node) -> void:
+func _build_d3_floating_crown(geom: Node) -> void:
 	## Epic-3 T68: a massive floating crown landmark — large 5-pronged
 	## golden crown ring suspended above the judgment dais.
 	var crown: Node3D = Node3D.new()
@@ -4910,7 +4910,7 @@ static func _build_d3_floating_crown(geom: Node) -> void:
 	bob.tween_property(crown, "position:y", 6.0, 2.4).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_grimoire_stack(geom: Node) -> void:
+func _build_d3_grimoire_stack(geom: Node) -> void:
 	## Epic-3 T69: a tall stack of 6 magical grimoires — colored book
 	## boxes piled with the top one slightly open and glowing.
 	var stack: Node3D = Node3D.new()
@@ -4984,7 +4984,7 @@ static func _build_d3_grimoire_stack(geom: Node) -> void:
 	stack.add_child(sb)
 
 
-static func _build_d3_monk_npc(town: Node) -> void:
+func _build_d3_monk_npc(town: Node) -> void:
 	## Epic-3 T70: a Monk NPC walking a circular path around the great
 	## crystal — slow continuous patrol on a circle.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5074,7 +5074,7 @@ static func _build_d3_monk_npc(town: Node) -> void:
 	monk.add_child(label)
 
 
-static func _build_d3_conjurer_npc(town: Node) -> void:
+func _build_d3_conjurer_npc(town: Node) -> void:
 	## Epic-3 T71: Conjurer NPC with a small familiar floating beside.
 	## Wide-brimmed pointy hat, robe, and a small wisp creature orbiting.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5181,7 +5181,7 @@ static func _build_d3_conjurer_npc(town: Node) -> void:
 	conj.add_child(label)
 
 
-static func _build_d3_map_wall(geom: Node) -> void:
+func _build_d3_map_wall(geom: Node) -> void:
 	## Epic-3 T72: ancient map wall — large flat wall covered with 6
 	## colored map fragment boxes pinned in a grid pattern.
 	var wall_root: Node3D = Node3D.new()
@@ -5246,7 +5246,7 @@ static func _build_d3_map_wall(geom: Node) -> void:
 	wall_root.add_child(sb)
 
 
-static func _build_d3_dust_orbs(geom: Node) -> void:
+func _build_d3_dust_orbs(geom: Node) -> void:
 	## Epic-3 T73: 12 small floating dust orbs scattered through the
 	## district airspace at varied heights — pulsing emissive spheres.
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()
@@ -5282,7 +5282,7 @@ static func _build_d3_dust_orbs(geom: Node) -> void:
 		drift.tween_property(orb, "position", origin, 4.0).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_altar_circle(geom: Node) -> void:
+func _build_d3_altar_circle(geom: Node) -> void:
 	## Epic-3 T74: 6 small spirit altars arranged in a circle around a
 	## central glow point — like a coven gathering site.
 	var circle_root: Node3D = Node3D.new()
@@ -5354,7 +5354,7 @@ static func _build_d3_altar_circle(geom: Node) -> void:
 	circle_root.add_child(light)
 
 
-static func _build_d3_mind_crystals(geom: Node) -> void:
+func _build_d3_mind_crystals(geom: Node) -> void:
 	## Epic-3 T75: a cluster of 8 floating "mind crystals" forming a
 	## thinking pattern overhead — small spinning prisms drifting in a
 	## brain-like cluster.
@@ -5391,7 +5391,7 @@ static func _build_d3_mind_crystals(geom: Node) -> void:
 		pulse.tween_property(crystal, "scale", Vector3(0.85, 0.85, 0.85), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_ascending_stairs(geom: Node) -> void:
+func _build_d3_ascending_stairs(geom: Node) -> void:
 	## Epic-3 T76: ascending stone stairs leading up to a high observation
 	## platform — 6 wide steps + a square platform at the top.
 	var stair: Node3D = Node3D.new()
@@ -5441,7 +5441,7 @@ static func _build_d3_ascending_stairs(geom: Node) -> void:
 	stair.add_child(psb)
 
 
-static func _build_d3_grand_telescope(geom: Node) -> void:
+func _build_d3_grand_telescope(geom: Node) -> void:
 	## Epic-3 T77: a grand telescope landmark on a tripod stand — large
 	## angled cylinder pointing at the sky portal.
 	var scope: Node3D = Node3D.new()
@@ -5520,7 +5520,7 @@ static func _build_d3_grand_telescope(geom: Node) -> void:
 	scope.add_child(sb)
 
 
-static func _build_d3_prayer_chains(geom: Node) -> void:
+func _build_d3_prayer_chains(geom: Node) -> void:
 	## Epic-3 T78: a hanging prayer chain mobile — top horizontal bar
 	## with 5 vertical chains, each holding a colored prayer pendant.
 	var chains: Node3D = Node3D.new()
@@ -5580,7 +5580,7 @@ static func _build_d3_prayer_chains(geom: Node) -> void:
 	sway.tween_property(chains, "rotation:z", deg_to_rad(-8), 1.6).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_dreamcatcher(geom: Node) -> void:
+func _build_d3_dreamcatcher(geom: Node) -> void:
 	## Epic-3 T79: a large dreamcatcher mobile — torus rim with 8 thin
 	## emissive web threads forming an X pattern + 3 small hanging
 	## feathers below.
@@ -5640,7 +5640,7 @@ static func _build_d3_dreamcatcher(geom: Node) -> void:
 	spin.tween_property(catcher, "rotation:z", TAU, 12.0)
 
 
-static func _build_d3_starseer_npc(town: Node) -> void:
+func _build_d3_starseer_npc(town: Node) -> void:
 	## Epic-3 T80: Starseer NPC standing on the high observation platform
 	## looking up at the sky portal. Has a long telescope held in one hand.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5732,7 +5732,7 @@ static func _build_d3_starseer_npc(town: Node) -> void:
 	seer.add_child(label)
 
 
-static func _build_d3_spell_scrolls(geom: Node) -> void:
+func _build_d3_spell_scrolls(geom: Node) -> void:
 	## Epic-3 T81: 8 spell scrolls floating in a cluster — long thin
 	## emissive cylinders with rune labels at varying heights.
 	var positions: Array[Vector3] = [
@@ -5772,7 +5772,7 @@ static func _build_d3_spell_scrolls(geom: Node) -> void:
 		spin.tween_property(scroll, "rotation:y", TAU, 5.0 + i * 0.4)
 
 
-static func _build_d3_cleric_npc(town: Node) -> void:
+func _build_d3_cleric_npc(town: Node) -> void:
 	## Epic-3 T82: Cleric NPC standing by the healing fountain holding a
 	## green glowing healing wand.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -5867,7 +5867,7 @@ static func _build_d3_cleric_npc(town: Node) -> void:
 	cleric.add_child(label)
 
 
-static func _build_d3_ancient_gargoyles(geom: Node) -> void:
+func _build_d3_ancient_gargoyles(geom: Node) -> void:
 	## Epic-3 T83: 3 violet gargoyle statues guarding the sealed gates.
 	var positions: Array[Vector3] = [
 		D3_CENTER + Vector3(16, 0, -4),
@@ -5948,7 +5948,7 @@ static func _build_d3_ancient_gargoyles(geom: Node) -> void:
 		garg.add_child(sb)
 
 
-static func _build_d3_lone_bell(geom: Node) -> void:
+func _build_d3_lone_bell(geom: Node) -> void:
 	## Epic-3 T84: a lone tall bell on a stone arch frame near the
 	## boundary, swinging gently.
 	var bell: Node3D = Node3D.new()
@@ -6012,7 +6012,7 @@ static func _build_d3_lone_bell(geom: Node) -> void:
 	swing.tween_property(pivot, "rotation:z", deg_to_rad(-15), 1.4).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_dream_eater(geom: Node) -> void:
+func _build_d3_dream_eater(geom: Node) -> void:
 	## Epic-3 T85: DREAM EATER 3rd mini-boss — a wide hovering creature
 	## with translucent tentacle arms hanging down. Slow drift patrol.
 	var eater: Node3D = Node3D.new()
@@ -6092,7 +6092,7 @@ static func _build_d3_dream_eater(geom: Node) -> void:
 	eater.add_child(label)
 
 
-static func _build_d3_lectern(geom: Node) -> void:
+func _build_d3_lectern(geom: Node) -> void:
 	## Epic-3 T86: a lectern with a floating script — angled stand with
 	## a glowing scroll hovering above the reading surface.
 	var lect: Node3D = Node3D.new()
@@ -6150,7 +6150,7 @@ static func _build_d3_lectern(geom: Node) -> void:
 	lect.add_child(sb)
 
 
-static func _build_d3_reflecting_pool(geom: Node) -> void:
+func _build_d3_reflecting_pool(geom: Node) -> void:
 	## Epic-3 T87: a long rectangular reflecting pool — slim emissive
 	## cyan basin reflecting the sky.
 	var pool: Node3D = Node3D.new()
@@ -6203,7 +6203,7 @@ static func _build_d3_reflecting_pool(geom: Node) -> void:
 	pool.add_child(label)
 
 
-static func _build_d3_staff_cluster(geom: Node) -> void:
+func _build_d3_staff_cluster(geom: Node) -> void:
 	## Epic-3 T88: 5 mage staves leaning against each other in a cluster —
 	## tall thin cylinders with colored gem tops.
 	var cluster: Node3D = Node3D.new()
@@ -6250,7 +6250,7 @@ static func _build_d3_staff_cluster(geom: Node) -> void:
 		cluster.add_child(gem)
 
 
-static func _build_d3_elder_mage_npc(town: Node) -> void:
+func _build_d3_elder_mage_npc(town: Node) -> void:
 	## Epic-3 T89: Elder Mage NPC standing on the floating crown landmark
 	## platform — long beard, tall hat, multi-colored robe.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6355,7 +6355,7 @@ static func _build_d3_elder_mage_npc(town: Node) -> void:
 	elder.add_child(label)
 
 
-static func _build_d3_perimeter_braziers(geom: Node) -> void:
+func _build_d3_perimeter_braziers(geom: Node) -> void:
 	## Epic-3 T90: 6 large violet flame braziers around the perimeter of
 	## D3 — taller than the inner braziers, real lighting.
 	for i in 6:
@@ -6426,7 +6426,7 @@ static func _build_d3_perimeter_braziers(geom: Node) -> void:
 		brazier.add_child(sb)
 
 
-static func _build_d3_astrolabe(geom: Node) -> void:
+func _build_d3_astrolabe(geom: Node) -> void:
 	## Epic-3 T91: an astrolabe device — stone stand with 3 nested rotating
 	## torus rings (rotating around different axes) representing celestial
 	## tracking.
@@ -6476,7 +6476,7 @@ static func _build_d3_astrolabe(geom: Node) -> void:
 		# Rotation tween
 		var spin: Tween = create_tween().set_loops()
 		var axis: String = ["rotation:y", "rotation:x", "rotation:z"][i]
-		spin.tween_property(ring, axis, ring.get(axis) + TAU, 6.0 + i * 2)
+		spin.tween_property(ring, axis, ring.get_indexed(axis) + TAU, 6.0 + i * 2)
 	# Center sphere
 	var center: MeshInstance3D = MeshInstance3D.new()
 	var cm: SphereMesh = SphereMesh.new()
@@ -6512,7 +6512,7 @@ static func _build_d3_astrolabe(geom: Node) -> void:
 	astro.add_child(sb)
 
 
-static func _build_d3_ingredient_shelves(geom: Node) -> void:
+func _build_d3_ingredient_shelves(geom: Node) -> void:
 	## Epic-3 T92: 2 ingredient shelves stacked with colored vials in
 	## small grid arrangements.
 	var shelves: Node3D = Node3D.new()
@@ -6572,7 +6572,7 @@ static func _build_d3_ingredient_shelves(geom: Node) -> void:
 	shelves.add_child(sb)
 
 
-static func _build_d3_planet_model(geom: Node) -> void:
+func _build_d3_planet_model(geom: Node) -> void:
 	## Epic-3 T93: a floating planet model — large sphere with a torus
 	## ring around it like a saturnian planet, suspended above a stand.
 	var plan: Node3D = Node3D.new()
@@ -6644,7 +6644,7 @@ static func _build_d3_planet_model(geom: Node) -> void:
 	plan.add_child(sb)
 
 
-static func _build_d3_time_keeper_npc(town: Node) -> void:
+func _build_d3_time_keeper_npc(town: Node) -> void:
 	## Epic-3 T94: Time Keeper NPC standing by the sundial — robed figure
 	## with an hourglass at the belt and a slow pendulum cane.
 	var slots: Node3D = town.get_node_or_null("%NPCSlots") as Node3D
@@ -6742,7 +6742,7 @@ static func _build_d3_time_keeper_npc(town: Node) -> void:
 	keeper.add_child(label)
 
 
-static func _build_d3_seeker_trial(geom: Node) -> void:
+func _build_d3_seeker_trial(geom: Node) -> void:
 	## Epic-3 T95: seeker trial — 9 small floor pads in a 3x3 grid that
 	## glow in sequence (chase pattern), suggesting a "step on these in
 	## the right order" puzzle.
@@ -6786,7 +6786,7 @@ static func _build_d3_seeker_trial(geom: Node) -> void:
 	trial.add_child(label)
 
 
-static func _build_d3_welcome_banner(geom: Node) -> void:
+func _build_d3_welcome_banner(geom: Node) -> void:
 	## Epic-3 T96: a wide violet welcome banner stretched between the
 	## D3 entrance arch pillars at x=122 reading "MEMORY VAULT".
 	var banner_root: Node3D = Node3D.new()
@@ -6841,7 +6841,7 @@ static func _build_d3_welcome_banner(geom: Node) -> void:
 	pulse.tween_property(cmat, "emission_energy_multiplier", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
 
 
-static func _build_d3_atmosphere_fog(geom: Node) -> void:
+func _build_d3_atmosphere_fog(geom: Node) -> void:
 	## Epic-3 T97: ambient violet fog drifting across the entire D3 floor —
 	## 80 large translucent violet puffs.
 	var fog: GPUParticles3D = GPUParticles3D.new()
@@ -6877,7 +6877,7 @@ static func _build_d3_atmosphere_fog(geom: Node) -> void:
 	geom.add_child(fog)
 
 
-static func _build_d3_epic3_plaque(geom: Node) -> void:
+func _build_d3_epic3_plaque(geom: Node) -> void:
 	## Epic-3 T98: a stone tablet plaque commemorating Epic 3 completion.
 	var plaque: Node3D = Node3D.new()
 	plaque.name = "D3Epic3Plaque"
@@ -6933,7 +6933,7 @@ static func _build_d3_epic3_plaque(geom: Node) -> void:
 	plaque.add_child(sb)
 
 
-static func _build_d3_ambient_fills(geom: Node) -> void:
+func _build_d3_ambient_fills(geom: Node) -> void:
 	## Epic-3 T99: 3 high violet-tinted OmniLight3D fill lights spaced
 	## along the D3 length lifting overall light level.
 	var positions: Array[Vector3] = [
@@ -6952,7 +6952,7 @@ static func _build_d3_ambient_fills(geom: Node) -> void:
 		geom.add_child(fill)
 
 
-static func _build_d3_arcane_overseer_landmark(geom: Node) -> void:
+func _build_d3_arcane_overseer_landmark(geom: Node) -> void:
 	## Epic-3 T100 (FINALE): a massive ARCANE OVERSEER landmark hovering
 	## 14m above the D3 center — translucent violet humanoid + 8 orbital
 	## rune cubes + ground halo + real OmniLight3D casting violet over the
