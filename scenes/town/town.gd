@@ -17290,6 +17290,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_neon_tree(geom)
 	# Epic-6 T95: holographic butterflies
 	_build_d6_holo_butterflies(geom)
+	# Epic-6 T96: D6 welcome banner
+	_build_d6_welcome_banner(geom)
+	# Epic-6 T97: grand neon spire landmark
+	_build_d6_grand_spire(geom)
+	# Epic-6 T98: dedication plaque
+	_build_d6_district_plaque(geom)
+	# Epic-6 T99: ambient neon light tweak
+	_build_d6_ambient_tweak(geom)
+	# Epic-6 T100: NEON EMPRESS district boss
+	_build_d6_neon_empress(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -24933,6 +24943,472 @@ func _build_d6_holo_butterflies(geom: Node) -> void:
 		var trot: Tween = pivot.create_tween().set_loops()
 		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0 + 360.0, 8.0 + i * 0.4)
 		trot.tween_property(pivot, "rotation_degrees:y", i * 45.0, 0.0)
+
+
+func _build_d6_welcome_banner(geom: Node) -> void:
+	## Epic-6 T96: tall double-pole welcome banner — black metal poles +
+	## glowing magenta-bordered neon panel + "NEON BAZAAR" Label3D.
+	var banner: Node3D = Node3D.new()
+	banner.name = "D6WelcomeBanner"
+	banner.position = Vector3(D6_CENTER.x - 36.0, 0.0, -4.0)
+	geom.add_child(banner)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.08, 0.15)
+	black_mat.metallic = 0.85
+	black_mat.roughness = 0.30
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 4.0
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-2.40, 2.40]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.30, 5.85, 0.30)
+		pole.mesh = pm
+		pole.material_override = black_mat
+		pole.position = Vector3(sx, 2.92, 0)
+		banner.add_child(pole)
+		# Pole collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.30, 5.85, 0.30)
+		cs.shape = cb
+		sb.add_child(cs)
+		banner.add_child(sb)
+	# Top crossbar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(5.20, 0.20, 0.20)
+	bar.mesh = bm
+	bar.material_override = black_mat
+	bar.position = Vector3(0, 5.85, 0)
+	banner.add_child(bar)
+	# Banner panel (black background)
+	var panel: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(4.85, 2.85, 0.10)
+	panel.mesh = pmm
+	panel.material_override = black_mat
+	panel.position = Vector3(0, 3.85, 0)
+	banner.add_child(panel)
+	# Magenta neon border tubes
+	for w in [
+		{"size": Vector3(4.85, 0.10, 0.06), "pos": Vector3(0, 5.30, 0.10)},
+		{"size": Vector3(4.85, 0.10, 0.06), "pos": Vector3(0, 2.40, 0.10)},
+		{"size": Vector3(0.10, 2.85, 0.06), "pos": Vector3(-2.40, 3.85, 0.10)},
+		{"size": Vector3(0.10, 2.85, 0.06), "pos": Vector3( 2.40, 3.85, 0.10)},
+	]:
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = w["size"]
+		tube.mesh = tm
+		tube.material_override = magenta_mat
+		tube.position = w["pos"]
+		banner.add_child(tube)
+	# Title labels
+	var label: Label3D = Label3D.new()
+	label.text = "NEON BAZAAR"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.95, 0.20, 0.85)
+	label.outline_size = 16
+	label.font_size = 96
+	label.pixel_size = 0.013
+	label.position = Vector3(0, 4.30, 0.20)
+	banner.add_child(label)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "open all hours, every iteration"
+	subtitle.modulate = Color(0.30, 1.0, 1.0)
+	subtitle.outline_modulate = Color(0.10, 0.05, 0.20)
+	subtitle.outline_size = 6
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.010
+	subtitle.position = Vector3(0, 3.20, 0.20)
+	banner.add_child(subtitle)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 3.5
+	light.omni_range = 9.0
+	light.position = Vector3(0, 3.85, 1.20)
+	banner.add_child(light)
+
+
+func _build_d6_grand_spire(geom: Node) -> void:
+	## Epic-6 T97: GRAND NEON SPIRE — towering 3-tier metal/glass spire
+	## with rotating crown of light beams. The new tallest D6 landmark.
+	var spire: Node3D = Node3D.new()
+	spire.name = "GrandNeonSpire"
+	spire.position = Vector3(D6_CENTER.x, 0.0, -2.0)
+	geom.add_child(spire)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.08, 0.06, 0.12)
+	black_mat.metallic = 0.85
+	black_mat.roughness = 0.30
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 4.0
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.30, 1.0, 1.0)
+	cyan_mat.emission_energy_multiplier = 4.0
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone pedestal
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.15, 0.25)
+	stone_mat.metallic = 0.55
+	var pedestal: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(5.50, 0.55, 5.50)
+	pedestal.mesh = pm
+	pedestal.material_override = stone_mat
+	pedestal.position = Vector3(0, 0.27, 0)
+	spire.add_child(pedestal)
+	# 3 tower tiers
+	var tier_data: Array = [
+		{"size": Vector3(2.85, 4.20, 2.85), "y": 2.40, "neon": magenta_mat},
+		{"size": Vector3(2.0, 4.20, 2.0),   "y": 6.65, "neon": cyan_mat},
+		{"size": Vector3(1.30, 4.20, 1.30), "y": 10.85, "neon": magenta_mat},
+	]
+	for tier in tier_data:
+		var t: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = tier["size"]
+		t.mesh = tm
+		t.material_override = black_mat
+		t.position = Vector3(0, tier["y"], 0)
+		spire.add_child(t)
+		# Vertical neon strips on the front
+		for sx in [-tier["size"].x * 0.40, tier["size"].x * 0.40]:
+			var strip: MeshInstance3D = MeshInstance3D.new()
+			var sm: BoxMesh = BoxMesh.new()
+			sm.size = Vector3(0.06, tier["size"].y * 0.85, 0.06)
+			strip.mesh = sm
+			strip.material_override = tier["neon"]
+			strip.position = Vector3(sx, tier["y"], tier["size"].z * 0.50 + 0.02)
+			spire.add_child(strip)
+	# Top crystal spike
+	var spike: MeshInstance3D = MeshInstance3D.new()
+	var spm: PrismMesh = PrismMesh.new()
+	spm.size = Vector3(1.40, 3.40, 1.40)
+	spike.mesh = spm
+	spike.material_override = magenta_mat
+	spike.position = Vector3(0, 14.65, 0)
+	spire.add_child(spike)
+	# Rotating crown of 6 light beams at the top
+	var crown_pivot: Node3D = Node3D.new()
+	crown_pivot.position = Vector3(0, 14.65, 0)
+	spire.add_child(crown_pivot)
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var beam: MeshInstance3D = MeshInstance3D.new()
+		var beam_m: CylinderMesh = CylinderMesh.new()
+		beam_m.top_radius = 0.10
+		beam_m.bottom_radius = 0.30
+		beam_m.height = 8.0
+		beam.mesh = beam_m
+		var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+		beam_mat.albedo_color = Color(0.95, 0.30, 0.85, 0.45) if i % 2 == 0 else Color(0.30, 0.95, 1.0, 0.45)
+		beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		beam_mat.emission_enabled = true
+		beam_mat.emission = Color(0.95, 0.30, 0.85) if i % 2 == 0 else Color(0.30, 0.95, 1.0)
+		beam_mat.emission_energy_multiplier = 1.4
+		beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		beam.material_override = beam_mat
+		beam.position = Vector3(cos(ang) * 2.40, 4.0, sin(ang) * 2.40)
+		beam.rotation_degrees = Vector3(0, deg_to_rad(ang) * 60.0, 30.0)
+		crown_pivot.add_child(beam)
+	var trot: Tween = crown_pivot.create_tween().set_loops()
+	trot.tween_property(crown_pivot, "rotation_degrees:y", 360.0, 12.0)
+	trot.tween_property(crown_pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Massive central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 5.5
+	light.omni_range = 24.0
+	light.position = Vector3(0, 8.0, 0)
+	spire.add_child(light)
+	# Spire collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 6.65, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 13.30, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	spire.add_child(sb)
+
+
+func _build_d6_district_plaque(geom: Node) -> void:
+	## Epic-6 T98: dedication plaque on a stone pedestal at the entrance.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "D6Plaque"
+	plaque.position = Vector3(D6_CENTER.x - 32.0, 0.0, 4.0)
+	geom.add_child(plaque)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.15, 0.25)
+	stone_mat.roughness = 0.92
+	# Pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.85, 1.20, 0.55)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.60, 0)
+	plaque.add_child(ped)
+	# Plaque face (chrome)
+	var face: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.75, 0.50, 0.06)
+	face.mesh = fm
+	var chrome_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chrome_mat.albedo_color = Color(0.85, 0.85, 0.92)
+	chrome_mat.metallic = 0.95
+	chrome_mat.roughness = 0.05
+	face.material_override = chrome_mat
+	face.position = Vector3(0, 1.00, 0.30)
+	face.rotation_degrees = Vector3(-15, 0, 0)
+	plaque.add_child(face)
+	var label: Label3D = Label3D.new()
+	label.text = "NEON BAZAAR\nDistrict 06 — Iteration 06\nWhere code refuses to sleep"
+	label.modulate = Color(0.10, 0.05, 0.15)
+	label.outline_modulate = Color(0.95, 0.20, 0.85)
+	label.outline_size = 4
+	label.font_size = 32
+	label.pixel_size = 0.0035
+	label.position = Vector3(0, 1.05, 0.36)
+	label.rotation_degrees = Vector3(-15, 0, 0)
+	plaque.add_child(label)
+	# Pedestal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.60, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.20, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_d6_ambient_tweak(geom: Node) -> void:
+	## Epic-6 T99: cyber night ambient — magenta fill light + secondary
+	## cyan directional from above.
+	var amb: Node3D = Node3D.new()
+	amb.name = "D6Ambient"
+	amb.position = Vector3(D6_CENTER.x, 8.0, 0.0)
+	geom.add_child(amb)
+	var fill: OmniLight3D = OmniLight3D.new()
+	fill.light_color = Color(1.0, 0.55, 0.85)
+	fill.light_energy = 0.85
+	fill.omni_range = 42.0
+	amb.add_child(fill)
+	# Slow color cycle
+	var tw: Tween = fill.create_tween().set_loops()
+	tw.tween_property(fill, "light_color", Color(0.55, 0.85, 1.0), 6.0)
+	tw.tween_property(fill, "light_color", Color(1.0, 0.55, 0.85), 6.0)
+	var sun: DirectionalLight3D = DirectionalLight3D.new()
+	sun.light_color = Color(0.55, 0.85, 1.0)
+	sun.light_energy = 0.30
+	sun.shadow_enabled = false
+	sun.position = Vector3(0, 14.0, 0)
+	sun.rotation_degrees = Vector3(-65, 35, 0)
+	amb.add_child(sun)
+
+
+func _build_d6_neon_empress(geom: Node) -> void:
+	## Epic-6 T100: NEON EMPRESS — Epic 6 finale boss. Towering geisha-cyborg
+	## ruler with flowing neon kimono, masked face, glowing fan, and a
+	## halo of orbiting holographic glyphs. Magenta+cyan dominant.
+	var emp: Node3D = Node3D.new()
+	emp.name = "NeonEmpress"
+	emp.position = Vector3(D6_CENTER.x + 28.0, 0.0, -22.0)
+	geom.add_child(emp)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.08, 0.06, 0.12)
+	black_mat.metallic = 0.85
+	black_mat.roughness = 0.30
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85, 0.85)
+	magenta_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 4.0
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.30, 1.0, 1.0)
+	cyan_mat.emission_energy_multiplier = 4.0
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.15, 0.25)
+	stone_mat.metallic = 0.65
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(3.85, 0.55, 3.85)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.27, 0)
+	emp.add_child(ped)
+	# Flowing kimono — wide tapered cone (translucent magenta)
+	var kimono: MeshInstance3D = MeshInstance3D.new()
+	var km: CylinderMesh = CylinderMesh.new()
+	km.top_radius = 0.95
+	km.bottom_radius = 1.85
+	km.height = 4.20
+	kimono.mesh = km
+	kimono.material_override = magenta_mat
+	kimono.position = Vector3(0, 2.70, 0)
+	emp.add_child(kimono)
+	# Cyan obi (sash) — torus around the waist
+	var obi: MeshInstance3D = MeshInstance3D.new()
+	var om: TorusMesh = TorusMesh.new()
+	om.inner_radius = 1.10
+	om.outer_radius = 1.30
+	obi.mesh = om
+	obi.material_override = cyan_mat
+	obi.position = Vector3(0, 3.40, 0)
+	emp.add_child(obi)
+	# Torso (smaller column above kimono)
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.65
+	tm.bottom_radius = 0.95
+	tm.height = 1.40
+	torso.mesh = tm
+	torso.material_override = black_mat
+	torso.position = Vector3(0, 5.50, 0)
+	emp.add_child(torso)
+	# Head (sphere)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.55
+	hm.height = 0.95
+	head.mesh = hm
+	head.material_override = black_mat
+	head.position = Vector3(0, 6.65, 0)
+	emp.add_child(head)
+	# Glowing magenta mask covering the face
+	var mask: MeshInstance3D = MeshInstance3D.new()
+	var mskm: BoxMesh = BoxMesh.new()
+	mskm.size = Vector3(0.85, 0.45, 0.06)
+	mask.mesh = mskm
+	mask.material_override = magenta_mat
+	mask.position = Vector3(0, 6.65, 0.55)
+	emp.add_child(mask)
+	# Hair pins / antennae (3 cyan spikes from head)
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var pin: MeshInstance3D = MeshInstance3D.new()
+		var pim: PrismMesh = PrismMesh.new()
+		pim.size = Vector3(0.10, 0.85 + (i % 2) * 0.30, 0.10)
+		pin.mesh = pim
+		pin.material_override = cyan_mat
+		pin.position = Vector3(cos(ang) * 0.35, 7.30, sin(ang) * 0.35)
+		emp.add_child(pin)
+	# 2 long sleeves trailing outward
+	for sx in [-1.85, 1.85]:
+		var sleeve: MeshInstance3D = MeshInstance3D.new()
+		var slm: BoxMesh = BoxMesh.new()
+		slm.size = Vector3(0.55, 1.85, 0.55)
+		sleeve.mesh = slm
+		sleeve.material_override = magenta_mat
+		sleeve.position = Vector3(sx, 4.20, 0)
+		sleeve.rotation_degrees = Vector3(0, 0, -25.0 if sx > 0 else 25.0)
+		emp.add_child(sleeve)
+	# Held glowing fan (semi-circle of cyan slats)
+	var fan_pivot: Node3D = Node3D.new()
+	fan_pivot.position = Vector3(2.40, 4.85, 0)
+	emp.add_child(fan_pivot)
+	for i in 7:
+		var ang: float = lerp(deg_to_rad(-50.0), deg_to_rad(50.0), float(i) / 6.0)
+		var slat: MeshInstance3D = MeshInstance3D.new()
+		var slm: BoxMesh = BoxMesh.new()
+		slm.size = Vector3(0.06, 1.30, 0.04)
+		slat.mesh = slm
+		slat.material_override = cyan_mat if i % 2 == 0 else magenta_mat
+		slat.position = Vector3(sin(ang) * 0.65, 0.55, cos(ang) * 0.10)
+		slat.rotation = Vector3(0, ang, deg_to_rad(35) * sin(ang))
+		fan_pivot.add_child(slat)
+	# Slow fan flutter
+	var twf: Tween = fan_pivot.create_tween().set_loops()
+	twf.tween_property(fan_pivot, "rotation_degrees:y", 8.0, 1.4)
+	twf.tween_property(fan_pivot, "rotation_degrees:y", -8.0, 1.4)
+	# 10 orbiting holographic glyphs around the head
+	var halo: Node3D = Node3D.new()
+	halo.position = Vector3(0, 7.30, 0)
+	emp.add_child(halo)
+	for i in 10:
+		var ang: float = (TAU / 10.0) * i
+		var glyph: MeshInstance3D = MeshInstance3D.new()
+		var gmm: BoxMesh = BoxMesh.new()
+		gmm.size = Vector3(0.18, 0.30, 0.04)
+		glyph.mesh = gmm
+		glyph.material_override = cyan_mat if i % 2 == 0 else magenta_mat
+		glyph.position = Vector3(cos(ang) * 2.40, 0, sin(ang) * 2.40)
+		glyph.rotation = Vector3(0, ang + PI * 0.5, 0)
+		halo.add_child(glyph)
+	var trot: Tween = halo.create_tween().set_loops()
+	trot.tween_property(halo, "rotation_degrees:y", 360.0, 14.0)
+	trot.tween_property(halo, "rotation_degrees:y", 0.0, 0.0)
+	# Massive central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 5.5
+	light.omni_range = 22.0
+	light.position = Vector3(0, 5.50, 0)
+	emp.add_child(light)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 2.0)
+	twl.tween_property(light, "light_energy", 4.5, 2.0)
+	# Title labels
+	var title: Label3D = Label3D.new()
+	title.text = "THE NEON EMPRESS"
+	title.modulate = Color(0.95, 0.30, 0.85)
+	title.outline_modulate = Color(0.10, 0.05, 0.20)
+	title.outline_size = 14
+	title.font_size = 84
+	title.pixel_size = 0.014
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 9.50, 0)
+	emp.add_child(title)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Sovereign of perpetual midnight"
+	subtitle.modulate = Color(0.30, 0.95, 1.0)
+	subtitle.outline_modulate = Color(0.20, 0.05, 0.30)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.011
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 8.80, 0)
+	emp.add_child(subtitle)
+	# Body collision (capsule)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.50, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.85
+	cap.height = 8.40
+	cs.shape = cap
+	sb.add_child(cs)
+	emp.add_child(sb)
+	# Pedestal collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	psb.position = Vector3(0, 0.27, 0)
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(3.85, 0.55, 3.85)
+	pcs.shape = pcb
+	psb.add_child(pcs)
+	emp.add_child(psb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
