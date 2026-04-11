@@ -114,6 +114,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_boss_approach_gate(geom)
 	_build_d9_boss_approach_skull_pile(geom)
 	_build_d9_boss_approach_sentinels(geom)
+	_build_d9_boss_approach_altars(geom)
 	print("[D9Builder] done")
 
 
@@ -11108,4 +11109,185 @@ func _build_d9_boss_approach_sentinels(geom: Node) -> void:
 	var pulse: Tween = pivot.create_tween().set_loops()
 	pulse.tween_property(ember_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	pulse.tween_property(ember_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_boss_approach_altars(geom: Node) -> void:
+	## Epic-9 T94: pair of basalt offering altars flanking the boss
+	## approach path between the sentinels and the arena. Each altar:
+	## tiered basalt block, brass top plate, glowing offering bowl with
+	## an eternal flame, brass anvil-and-hammer crest on the front face.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BossApproachAltars"
+	pivot.position = D9_CENTER + Vector3(0, 0, -27)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.5
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Build an altar at +/- offset
+	for ax in [-4.50, 4.50]:
+		var agroup: Node3D = Node3D.new()
+		agroup.name = "Altar_" + str(int(ax))
+		agroup.position = Vector3(ax, 0, 0)
+		# Inner-facing
+		if ax > 0:
+			agroup.rotation.y = -PI / 2.0
+		else:
+			agroup.rotation.y = PI / 2.0
+		pivot.add_child(agroup)
+		# ---- Tiered basalt block (2 levels) ----
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bsm: BoxMesh = BoxMesh.new()
+		bsm.size = Vector3(2.20, 0.45, 1.60)
+		base.mesh = bsm
+		base.material_override = basalt_mat
+		base.position = Vector3(0, 0.22, 0)
+		agroup.add_child(base)
+		var top_block: MeshInstance3D = MeshInstance3D.new()
+		var tbm: BoxMesh = BoxMesh.new()
+		tbm.size = Vector3(1.80, 0.65, 1.30)
+		top_block.mesh = tbm
+		top_block.material_override = basalt_mat
+		top_block.position = Vector3(0, 0.78, 0)
+		agroup.add_child(top_block)
+		# Combined collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.55, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(2.20, 1.10, 1.60)
+		cs.shape = bsh
+		sb.add_child(cs)
+		agroup.add_child(sb)
+		# ---- Brass top plate ----
+		var top_plate: MeshInstance3D = MeshInstance3D.new()
+		var tpm: BoxMesh = BoxMesh.new()
+		tpm.size = Vector3(1.85, 0.10, 1.35)
+		top_plate.mesh = tpm
+		top_plate.material_override = brass_mat
+		top_plate.position = Vector3(0, 1.16, 0)
+		agroup.add_child(top_plate)
+		# ---- Brass offering bowl on top ----
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bowm: SphereMesh = SphereMesh.new()
+		bowm.radius = 0.45
+		bowm.height = 0.85
+		bowl.mesh = bowm
+		bowl.material_override = brass_mat
+		bowl.position = Vector3(0, 1.40, 0)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		agroup.add_child(bowl)
+		# Bowl rim torus
+		var rim: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.40
+		rmm.outer_radius = 0.50
+		rim.mesh = rmm
+		rim.material_override = brass_mat
+		rim.position = Vector3(0, 1.55, 0)
+		agroup.add_child(rim)
+		# ---- Eternal flame in the bowl ----
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.32
+		flm.height = 0.65
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(0, 1.85, 0)
+		agroup.add_child(flame)
+		# Flame OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 1.95, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 3.4
+		lt.omni_range = 9.0
+		agroup.add_child(lt)
+		# Rising ember motes
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = Vector3(0, 2.10, 0)
+		motes.amount = 18
+		motes.lifetime = 2.2
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 14.0
+		pmat.initial_velocity_min = 0.5
+		pmat.initial_velocity_max = 1.0
+		pmat.gravity = Vector3(0, 0.3, 0)
+		pmat.scale_min = 0.05
+		pmat.scale_max = 0.10
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.04
+		psmesh.height = 0.08
+		motes.draw_pass_1 = psmesh
+		agroup.add_child(motes)
+		# ---- Brass anvil-and-hammer crest on the front face ----
+		# Front face = -Z (in local space, after the agroup rotation, this faces the path center)
+		# Anvil base
+		var anvil: MeshInstance3D = MeshInstance3D.new()
+		var anm: BoxMesh = BoxMesh.new()
+		anm.size = Vector3(0.65, 0.20, 0.10)
+		anvil.mesh = anm
+		anvil.material_override = amber_mat
+		anvil.position = Vector3(0, 0.65, -0.66)
+		agroup.add_child(anvil)
+		# Anvil horn (small box on the side)
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var hnm: BoxMesh = BoxMesh.new()
+		hnm.size = Vector3(0.20, 0.12, 0.10)
+		horn.mesh = hnm
+		horn.material_override = amber_mat
+		horn.position = Vector3(0.30, 0.72, -0.66)
+		agroup.add_child(horn)
+		# Hammer head crossing the anvil
+		var hamhead: MeshInstance3D = MeshInstance3D.new()
+		var hhm: BoxMesh = BoxMesh.new()
+		hhm.size = Vector3(0.35, 0.16, 0.10)
+		hamhead.mesh = hhm
+		hamhead.material_override = amber_mat
+		hamhead.position = Vector3(-0.10, 0.92, -0.66)
+		hamhead.rotation.z = -PI / 8.0
+		agroup.add_child(hamhead)
+		# Hammer handle
+		var hamhandle: MeshInstance3D = MeshInstance3D.new()
+		var hhdm: CylinderMesh = CylinderMesh.new()
+		hhdm.top_radius = 0.03
+		hhdm.bottom_radius = 0.03
+		hhdm.height = 0.55
+		hamhandle.mesh = hhdm
+		hamhandle.material_override = amber_mat
+		hamhandle.position = Vector3(0.15, 1.16, -0.66)
+		hamhandle.rotation.z = PI / 8.0
+		agroup.add_child(hamhandle)
+	# Flame flicker + crest pulse
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.45).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.45).set_ease(Tween.EASE_IN_OUT)
+	var apulse: Tween = pivot.create_tween().set_loops()
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 
