@@ -3,9 +3,10 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://byb3dopw34d27"
-path="res://.godot/imported/rogueprocess_r3_rogueprocess_albedo_1024.png-e09f079b09f114489a55848fa466f303.ctex"
+path.s3tc="res://.godot/imported/rogueprocess_r3_rogueprocess_albedo_1024.png-e09f079b09f114489a55848fa466f303.s3tc.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "559d1cb9c102851718bd934cb8624645"
@@ -14,11 +15,11 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/enemies/rogueprocess_r3_rogueprocess_albedo_1024.png"
-dest_files=["res://.godot/imported/rogueprocess_r3_rogueprocess_albedo_1024.png-e09f079b09f114489a55848fa466f303.ctex"]
+dest_files=["res://.godot/imported/rogueprocess_r3_rogueprocess_albedo_1024.png-e09f079b09f114489a55848fa466f303.s3tc.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1
@@ -34,4 +35,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

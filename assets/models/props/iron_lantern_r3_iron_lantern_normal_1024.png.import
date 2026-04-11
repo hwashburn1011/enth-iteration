@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://1xh53ijd3tsm"
+path.s3tc="res://.godot/imported/iron_lantern_r3_iron_lantern_normal_1024.png-93b3ad6c0235744ab534a5b411f3fe4c.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "0bd28d322414298765e5d13111d73d5c"
+}
+
+[deps]
+
+source_file="res://assets/models/props/iron_lantern_r3_iron_lantern_normal_1024.png"
+dest_files=["res://.godot/imported/iron_lantern_r3_iron_lantern_normal_1024.png-93b3ad6c0235744ab534a5b411f3fe4c.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=1
+roughness/src_normal="res://assets/models/props/iron_lantern_r3_iron_lantern_normal_1024.png"
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

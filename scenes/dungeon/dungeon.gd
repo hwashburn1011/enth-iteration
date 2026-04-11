@@ -116,52 +116,66 @@ func _show_location_label(location: String) -> void:
 
 
 func _setup_environment() -> void:
-	# Directional light — warm, top-left per visual style guide
+	# Directional light — warm cyan key from above-left, brighter so the new
+	# textured surfaces are properly lit and the cellular panel grid pops
 	var dir_light: DirectionalLight3D = DirectionalLight3D.new()
 	dir_light.rotation_degrees = Vector3(-55, -35, 0)
-	dir_light.light_energy = 0.8
-	dir_light.light_color = Color(1.0, 0.95, 0.85)  # Slightly warm
+	dir_light.light_energy = 1.4
+	dir_light.light_color = Color(0.95, 0.95, 0.92)
 	dir_light.shadow_enabled = true
 	dir_light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
+	dir_light.shadow_bias = 0.05
 	add_child(dir_light)
 
-	# Fill light from opposite side (softer, cooler)
+	# Cool blue fill light from opposite side — stronger so shadows aren't pitch black
 	var fill_light: DirectionalLight3D = DirectionalLight3D.new()
 	fill_light.rotation_degrees = Vector3(-40, 145, 0)
-	fill_light.light_energy = 0.3
-	fill_light.light_color = Color(0.7, 0.8, 1.0)  # Cool blue fill
+	fill_light.light_energy = 0.55
+	fill_light.light_color = Color(0.55, 0.7, 1.0)  # Cool blue fill
 	fill_light.shadow_enabled = false
 	add_child(fill_light)
 
 	# World environment — dungeon atmosphere
 	var env: Environment = Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.06, 0.06, 0.1)  # Very dark blue-black
+	env.background_color = Color(0.05, 0.06, 0.12)  # Slightly bluer void
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.2, 0.22, 0.3)  # Cool ambient
-	env.ambient_light_energy = 0.5
-	# Fog for atmosphere
+	env.ambient_light_color = Color(0.25, 0.30, 0.42)  # Cooler ambient
+	env.ambient_light_energy = 0.85  # Brighter so floor texture reads
+	# Fog for atmosphere — slightly stronger so distance falls off naturally
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.1, 0.12, 0.18)
-	env.fog_density = 0.015
+	env.fog_light_color = Color(0.10, 0.14, 0.22)
+	env.fog_density = 0.018
 	# Tonemap for better contrast
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.tonemap_white = 6.0
+	env.tonemap_white = 6.5
+	env.tonemap_exposure = 1.05
 	# Glow for emission effects — stronger to make edge strips and LEDs pop
 	env.glow_enabled = true
-	env.glow_intensity = 0.5
-	env.glow_bloom = 0.2
+	env.glow_intensity = 0.7
+	env.glow_strength = 1.1
+	env.glow_bloom = 0.28
 	env.glow_blend_mode = Environment.GLOW_BLEND_MODE_ADDITIVE
-	# SSAO for depth in enclosed rooms
+	# SSAO for depth in enclosed rooms — stronger to make panel seams pop
 	env.ssao_enabled = true
-	env.ssao_radius = 0.8
-	env.ssao_intensity = 0.6
-	# Volumetric fog for atmospheric depth
+	env.ssao_radius = 1.2
+	env.ssao_intensity = 1.4
+	env.ssao_detail = 2.5
+	# SSIL for indirect light bounces (gives subtle color bleed)
+	env.ssil_enabled = true
+	env.ssil_radius = 4.0
+	env.ssil_intensity = 0.8
+	# Volumetric fog for atmospheric depth — slightly stronger
 	env.volumetric_fog_enabled = true
-	env.volumetric_fog_density = 0.02
-	env.volumetric_fog_albedo = Color(0.08, 0.1, 0.16)
-	env.volumetric_fog_emission = Color(0.04, 0.06, 0.1)
-	env.volumetric_fog_emission_energy = 0.3
+	env.volumetric_fog_density = 0.025
+	env.volumetric_fog_albedo = Color(0.10, 0.13, 0.20)
+	env.volumetric_fog_emission = Color(0.05, 0.08, 0.14)
+	env.volumetric_fog_emission_energy = 0.4
+	# Adjustments for color punch
+	env.adjustment_enabled = true
+	env.adjustment_brightness = 1.05
+	env.adjustment_contrast = 1.08
+	env.adjustment_saturation = 1.12
 
 	var world_env: WorldEnvironment = WorldEnvironment.new()
 	world_env.environment = env

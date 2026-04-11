@@ -1,0 +1,38 @@
+[remap]
+
+importer="texture"
+type="CompressedTexture2D"
+uid="uid://bojt0hxwb8w7b"
+path.s3tc="res://.godot/imported/forge_anvil_r3_v3_anvil_normal_1024.png-a8b9eaf9eec20abe8a25af2e5d1a89a3.s3tc.ctex"
+metadata={
+"imported_formats": ["s3tc_bptc"],
+"vram_texture": true
+}
+generator_parameters={
+"md5": "250d55ca53b01db49e3762fe16738baf"
+}
+
+[deps]
+
+source_file="res://_art_source/environments/exports/forge_anvil_r3_v3_anvil_normal_1024.png"
+dest_files=["res://.godot/imported/forge_anvil_r3_v3_anvil_normal_1024.png-a8b9eaf9eec20abe8a25af2e5d1a89a3.s3tc.ctex"]
+
+[params]
+
+compress/mode=2
+compress/high_quality=false
+compress/lossy_quality=0.7
+compress/hdr_compression=1
+compress/normal_map=1
+compress/channel_pack=0
+mipmaps/generate=true
+mipmaps/limit=-1
+roughness/mode=1
+roughness/src_normal="res://_art_source/environments/exports/forge_anvil_r3_v3_anvil_normal_1024.png"
+process/fix_alpha_border=true
+process/premult_alpha=false
+process/normal_map_invert_y=false
+process/hdr_as_srgb=false
+process/hdr_clamp_exposure=false
+process/size_limit=0
+detect_3d/compress_to=0

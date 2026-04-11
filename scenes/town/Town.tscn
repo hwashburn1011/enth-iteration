@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://ptcodskpowyf" path="res://scenes/town/town.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://pp3l1tdt0ooe" path="res://scenes/town/DungeonEntrance.tscn" id="2_entrance"]
 [ext_resource type="Environment" path="res://assets/placeholders/town_environment.tres" id="3_env"]
-[ext_resource type="PackedScene" path="res://assets/models/buildings/town_hero_building_r3.glb" id="4_town_hero_building_r3"]
+[ext_resource type="PackedScene" uid="uid://b6le80bowp5hc" path="res://assets/models/buildings/town_hero_building_r3.glb" id="4_town_hero_building_r3"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
 size = Vector2(40, 40)
@@ -30,8 +30,8 @@ mesh = SubResource("PlaneMesh_ground")
 surface_material_override/0 = SubResource("Material_ground")
 
 [node name="Building1" type="CSGBox3D" parent="Geometry"]
-visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 2, -8)
+visible = false
 size = Vector3(6, 4, 5)
 material = SubResource("Material_building")
 
@@ -39,20 +39,20 @@ material = SubResource("Material_building")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, -8)
 
 [node name="Building2" type="CSGBox3D" parent="Geometry"]
-visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.5, -6)
+visible = false
 size = Vector3(5, 3, 4)
 material = SubResource("Material_building")
 
 [node name="Building3" type="CSGBox3D" parent="Geometry"]
-visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1.5, 8)
+visible = false
 size = Vector3(4, 3, 5)
 material = SubResource("Material_building")
 
 [node name="Building4" type="CSGBox3D" parent="Geometry"]
-visible = false
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 2, 10)
+visible = false
 size = Vector3(5, 4, 4)
 material = SubResource("Material_building")
 
