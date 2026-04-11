@@ -1620,6 +1620,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_stalker_enemy(geom)
 	# Epic-2 T95: fortification barriers around boss arena teaser
 	_build_d2_boss_fortifications(geom)
+	# Epic-2 T96: D2 welcome banner stretched between entrance pillars
+	_build_d2_welcome_banner(geom)
+	# Epic-2 T97: atmospheric red fog particles drifting low
+	_build_d2_red_fog(geom)
+	# Epic-2 T98: Epic 2 completion plaque
+	_build_d2_epic2_plaque(geom)
+	# Epic-2 T99: 3 high amber ambient fill lights
+	_build_d2_ambient_lighting(geom)
+	# Epic-2 T100: FINALE — massive hovering Glitch Herald landmark
+	_build_d2_glitch_herald_landmark(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -15538,4 +15548,303 @@ func _build_d2_boss_fortifications(geom: Node) -> void:
 		cs.position = Vector3(0, 0.92, 0)
 		sb.add_child(cs)
 		wall_root.add_child(sb)
+
+
+func _build_d2_welcome_banner(geom: Node) -> void:
+	## Epic-2 T96: a wide amber banner stretched between the existing D2
+	## entrance arch pillars at x=70 reading "STACK OVERFLOW / OUTSKIRTS".
+	## Has waving emissive trim and a slow alpha pulse.
+	var banner_root: Node3D = Node3D.new()
+	banner_root.name = "D2WelcomeBanner"
+	banner_root.position = Vector3(70, 0, 0)
+	geom.add_child(banner_root)
+	# Banner cloth — long horizontal box
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(0.10, 0.95, 7.5)
+	cloth.mesh = cmesh
+	cloth.position = Vector3(0, 5.5, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.30, 0.10, 0.04)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.40, 0.20)
+	cmat.emission_energy_multiplier = 1.0
+	cmat.metallic = 0.10
+	cmat.roughness = 0.55
+	cloth.material_override = cmat
+	banner_root.add_child(cloth)
+	# Top + bottom emissive trim
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(1.0, 0.55, 0.20)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(1.0, 0.65, 0.20)
+	trim_mat.emission_energy_multiplier = 2.0
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ty: float in [5.95, 5.05]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(0.12, 0.08, 7.5)
+		trim.mesh = tmesh
+		trim.position = Vector3(0, ty, 0)
+		trim.material_override = trim_mat
+		banner_root.add_child(trim)
+	# Welcome text — duplicated for both sides
+	for fx: float in [-0.10, 0.10]:
+		var label: Label3D = Label3D.new()
+		label.text = "STACK OVERFLOW\nOUTSKIRTS"
+		label.position = Vector3(fx, 5.50, 0)
+		label.rotation = Vector3(0, deg_to_rad(-90 if fx < 0 else 90), 0)
+		label.modulate = Color(1.0, 0.55, 0.20)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 24
+		label.no_depth_test = true
+		banner_root.add_child(label)
+	# Slow emission pulse
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(cmat, "emission_energy_multiplier", 1.6, 2.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(cmat, "emission_energy_multiplier", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d2_red_fog(geom: Node) -> void:
+	## Epic-2 T97: atmospheric red fog drifting low across the district —
+	## 60 large translucent red puff particles slowly moving east at
+	## ~0.5m altitude, very transparent.
+	var fog: GPUParticles3D = GPUParticles3D.new()
+	fog.name = "D2RedFog"
+	fog.position = D2_CENTER + Vector3(-25, 0.5, 0)
+	fog.amount = 60
+	fog.lifetime = 12.0
+	fog.preprocess = 6.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(0.5, 0.5, 18.0)
+	pmat.direction = Vector3(1, 0, 0)
+	pmat.spread = 4.0
+	pmat.initial_velocity_min = 0.45
+	pmat.initial_velocity_max = 0.85
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.85
+	pmat.scale_max = 1.40
+	pmat.color = Color(1.0, 0.30, 0.20, 0.20)
+	fog.process_material = pmat
+	var puff: SphereMesh = SphereMesh.new()
+	puff.radius = 0.85
+	puff.height = 1.70
+	var puff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	puff_mat.albedo_color = Color(1.0, 0.30, 0.20, 0.20)
+	puff_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	puff_mat.emission_enabled = true
+	puff_mat.emission = Color(1.0, 0.40, 0.20)
+	puff_mat.emission_energy_multiplier = 0.45
+	puff_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	puff.material = puff_mat
+	fog.draw_pass_1 = puff
+	geom.add_child(fog)
+
+
+func _build_d2_epic2_plaque(geom: Node) -> void:
+	## Epic-2 T98: a stone tablet plaque commemorating the completion of
+	## Epic 2 ("EPIC 02 / OUTSKIRTS COMPLETE"), placed near the boss arena.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "D2Epic2Plaque"
+	plaque.position = D2_CENTER + Vector3(24, 0, -8)
+	geom.add_child(plaque)
+	# Tiny pedestal
+	var ped_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ped_mat.albedo_color = Color(0.16, 0.13, 0.10)
+	ped_mat.metallic = 0.55
+	ped_mat.roughness = 0.45
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(0.85, 0.50, 0.40)
+	ped.mesh = pmesh
+	ped.position = Vector3(0, 0.25, 0)
+	ped.material_override = ped_mat
+	plaque.add_child(ped)
+	# Tilted stone tablet
+	var tablet: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.85, 0.65, 0.06)
+	tablet.mesh = tmesh
+	tablet.position = Vector3(0, 0.85, 0)
+	tablet.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.30, 0.20, 0.14)
+	tmat.metallic = 0.65
+	tmat.roughness = 0.30
+	tmat.emission_enabled = true
+	tmat.emission = Color(1.0, 0.55, 0.20)
+	tmat.emission_energy_multiplier = 0.40
+	tablet.material_override = tmat
+	plaque.add_child(tablet)
+	# Engraved text
+	var label: Label3D = Label3D.new()
+	label.text = "EPIC 02\nOUTSKIRTS\nCOMPLETE"
+	label.position = Vector3(0, 0.95, 0.18)
+	label.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	label.modulate = Color(1.0, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 14
+	label.no_depth_test = true
+	plaque.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 0.60, 0.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.30, 0)
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_d2_ambient_lighting(geom: Node) -> void:
+	## Epic-2 T99: 3 high amber-tinted OmniLight3D fill lights spaced
+	## along the D2 length lifting the overall light level so all 100
+	## elements read nicely.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-15, 8, 0),
+		D2_CENTER + Vector3(0, 8, 0),
+		D2_CENTER + Vector3(15, 8, 0),
+	]
+	for i in positions.size():
+		var fill: OmniLight3D = OmniLight3D.new()
+		fill.name = "D2FillLight_%d" % i
+		fill.position = positions[i]
+		fill.light_color = Color(1.0, 0.75, 0.55)
+		fill.light_energy = 1.4
+		fill.omni_range = 22.0
+		fill.omni_attenuation = 1.6
+		geom.add_child(fill)
+
+
+func _build_d2_glitch_herald_landmark(geom: Node) -> void:
+	## Epic-2 T100 (FINALE): a massive hovering "Glitch Herald" landmark
+	## above the D2 center — translucent crimson humanoid figure with
+	## 6 orbital glitch shards, slow rotation, ground halo, real omni
+	## light. The Outskirts equivalent of East Plaza's Globbler landmark.
+	var landmark: Node3D = Node3D.new()
+	landmark.name = "D2GlitchHeraldLandmark"
+	landmark.position = D2_CENTER + Vector3(0, 12, 0)
+	geom.add_child(landmark)
+	# Pivot for rotation
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "RotationPivot"
+	landmark.add_child(pivot)
+	# Translucent humanoid body — capsule
+	var holo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	holo_mat.albedo_color = Color(1.0, 0.30, 0.30, 0.45)
+	holo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	holo_mat.emission_enabled = true
+	holo_mat.emission = Color(1.0, 0.30, 0.30)
+	holo_mat.emission_energy_multiplier = 2.4
+	holo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body capsule
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.85
+	bmesh.height = 2.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0, 0)
+	body.material_override = holo_mat
+	pivot.add_child(body)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.70
+	hmesh.height = 1.40
+	head.mesh = hmesh
+	head.position = Vector3(0, 1.85, 0)
+	head.material_override = holo_mat
+	pivot.add_child(head)
+	# 2 huge glowing white eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1, 0.9)
+	eye_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 3.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.32, 0.32]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.22
+		em.height = 0.44
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.95, 0.55)
+		eye.material_override = eye_mat
+		pivot.add_child(eye)
+	# 2 outstretched arms
+	for sx: float in [-1.0, 1.0]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.30, 0.30, 1.60)
+		arm.mesh = am
+		arm.position = Vector3(sx * 1.10, 0.30, 0)
+		arm.rotation = Vector3(0, 0, sign(sx) * deg_to_rad(20))
+		arm.material_override = holo_mat
+		pivot.add_child(arm)
+	# 6 orbital glitch shards (prisms) circling at body height
+	for i in 6:
+		var angle: float = (float(i) / 6.0) * TAU
+		var shard: MeshInstance3D = MeshInstance3D.new()
+		var sm: PrismMesh = PrismMesh.new()
+		sm.size = Vector3(0.30, 0.65, 0.30)
+		shard.mesh = sm
+		shard.position = Vector3(cos(angle) * 2.20, sin(float(i) * 0.85) * 0.55, sin(angle) * 2.20)
+		shard.rotation = Vector3(0, -angle, deg_to_rad(15))
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(1.0, 0.40, 0.40)
+		smat.emission_enabled = true
+		smat.emission = Color(1.0, 0.55, 0.30)
+		smat.emission_energy_multiplier = 2.6
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		shard.material_override = smat
+		pivot.add_child(shard)
+	# Slow main rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 18.0)
+	# Bobbing in place
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(landmark, "position:y", 13.0, 3.0).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(landmark, "position:y", 12.0, 3.0).set_ease(Tween.EASE_IN_OUT)
+	# Ground halo beneath the landmark
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hmesh2: TorusMesh = TorusMesh.new()
+	hmesh2.inner_radius = 4.0
+	hmesh2.outer_radius = 4.55
+	halo.mesh = hmesh2
+	halo.position = D2_CENTER + Vector3(0, 0.06, 0)
+	var hmat2: StandardMaterial3D = StandardMaterial3D.new()
+	hmat2.albedo_color = Color(1.0, 0.40, 0.40)
+	hmat2.emission_enabled = true
+	hmat2.emission = Color(1.0, 0.55, 0.30)
+	hmat2.emission_energy_multiplier = 2.4
+	hmat2.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = hmat2
+	geom.add_child(halo)
+	var halo_pulse: Tween = create_tween().set_loops()
+	halo_pulse.tween_property(halo, "scale", Vector3(1.20, 1.0, 1.20), 2.0).set_ease(Tween.EASE_IN_OUT)
+	halo_pulse.tween_property(halo, "scale", Vector3(1.0, 1.0, 1.0), 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Real OmniLight at the landmark casting amber light over the district
+	var landmark_light: OmniLight3D = OmniLight3D.new()
+	landmark_light.position = Vector3(0, 0, 0)
+	landmark_light.light_color = Color(1.0, 0.55, 0.30)
+	landmark_light.light_energy = 3.5
+	landmark_light.omni_range = 28.0
+	landmark_light.omni_attenuation = 1.4
+	pivot.add_child(landmark_light)
+	# GLITCH HERALD billboard above the landmark
+	var label: Label3D = Label3D.new()
+	label.text = "GLITCH HERALD"
+	label.position = Vector3(0, 4.0, 0)
+	label.modulate = Color(1.0, 0.40, 0.40)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 26
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	landmark.add_child(label)
+
 
