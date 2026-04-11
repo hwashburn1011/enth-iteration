@@ -31,6 +31,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_practice_dummy(geom)
 	_build_th_district_map_kiosk(geom)
 	_build_th_banner_streamers(geom)
+	_build_th_ambient_data_motes(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -2473,3 +2474,67 @@ func _build_th_banner_streamers(geom: Node) -> void:
 			var fpulse2: Tween = pivot.create_tween().set_loops()
 			fpulse2.tween_property(flag_mat, "emission_energy_multiplier", 6.5, period).set_ease(Tween.EASE_IN_OUT)
 			fpulse2.tween_property(flag_mat, "emission_energy_multiplier", 3.0, period).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_ambient_data_motes(geom: Node) -> void:
+	## Epic-10 T15: plaza-wide ambient data motes — 4 GPUParticles3D
+	## emitters spaced across the plaza quadrants, each emitting drifting
+	## cyan motes upward from a wide box area, plus 1 wide central
+	## upward column of brighter motes from the beacon pad. Reads as
+	## "the data heart sheds sparks across the plaza".
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_AmbientDataMotes"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Mote mesh — small unshaded sphere
+	var mote_mesh: SphereMesh = SphereMesh.new()
+	mote_mesh.radius = 0.05
+	mote_mesh.height = 0.10
+	# 4 quadrant emitters
+	var quad_data: Array = [
+		{"pos": Vector3(-7.0, 0.30, -7.0), "color": Color(0.45, 0.85, 1.0, 1.0)},
+		{"pos": Vector3(7.0, 0.30, -7.0), "color": Color(0.55, 0.90, 1.0, 1.0)},
+		{"pos": Vector3(-7.0, 0.30, 7.0), "color": Color(0.45, 0.85, 1.0, 1.0)},
+		{"pos": Vector3(7.0, 0.30, 7.0), "color": Color(0.55, 0.90, 1.0, 1.0)},
+	]
+	for qd in quad_data:
+		var emit: GPUParticles3D = GPUParticles3D.new()
+		emit.position = qd["pos"]
+		emit.amount = 28
+		emit.lifetime = 5.0
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pmat.emission_box_extents = Vector3(5.0, 0.30, 5.0)
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 14.0
+		pmat.initial_velocity_min = 0.3
+		pmat.initial_velocity_max = 0.6
+		pmat.gravity = Vector3(0, 0.05, 0)
+		pmat.scale_min = 0.6
+		pmat.scale_max = 1.2
+		pmat.color = qd["color"]
+		emit.process_material = pmat
+		emit.draw_pass_1 = mote_mesh
+		pivot.add_child(emit)
+	# Central upward column from the beacon pad — brighter, denser
+	var central_emit: GPUParticles3D = GPUParticles3D.new()
+	central_emit.position = Vector3(0, 1.20, 0)
+	central_emit.amount = 60
+	central_emit.lifetime = 6.0
+	var cpmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	cpmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	cpmat.emission_ring_radius = 2.50
+	cpmat.emission_ring_inner_radius = 2.00
+	cpmat.emission_ring_height = 0.05
+	cpmat.emission_ring_axis = Vector3(0, 1, 0)
+	cpmat.direction = Vector3(0, 1, 0)
+	cpmat.spread = 8.0
+	cpmat.initial_velocity_min = 0.5
+	cpmat.initial_velocity_max = 1.0
+	cpmat.gravity = Vector3(0, 0.10, 0)
+	cpmat.scale_min = 0.8
+	cpmat.scale_max = 1.4
+	cpmat.color = Color(0.55, 0.90, 1.0, 1.0)
+	central_emit.process_material = cpmat
+	central_emit.draw_pass_1 = mote_mesh
+	pivot.add_child(central_emit)
