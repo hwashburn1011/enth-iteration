@@ -1403,6 +1403,16 @@ func _build_east_plaza() -> void:
 	_build_combat_golem(geom)
 	# Epic-1 T90: decorative weather dial kiosk
 	_build_weather_dial(geom)
+	# Epic-1 T91: 4 massive corner light pillars marking the plaza edge
+	_build_corner_pillars(geom)
+	# Epic-1 T92: patrolling maintenance bot collecting "trash"
+	_build_maintenance_patrol(geom)
+	# Epic-1 T93: large horizontal news ticker sign
+	_build_news_ticker(geom)
+	# Epic-1 T94: data spa relaxation pool with 3 floating bathers
+	_build_data_spa(geom)
+	# Epic-1 T95: ambient fireworks emitter over the plaza center
+	_build_plaza_fireworks(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -6919,5 +6929,430 @@ func _build_weather_dial(geom: Node) -> void:
 	cs.position = Vector3(0, 0.92, 0)
 	sb.add_child(cs)
 	dial.add_child(sb)
+
+
+func _build_corner_pillars(geom: Node) -> void:
+	## Epic-1 T91: 4 massive light pillars at the plaza corners — each is
+	## 12m tall with a stacked pattern of stone tiers and a glowing capital
+	## crowned by a pulsing emissive sphere. Defines the plaza silhouette.
+	var positions: Array[Vector3] = [
+		Vector3(22, 0, -18),
+		Vector3(46, 0, -18),
+		Vector3(22, 0, 18),
+		Vector3(46, 0, 18),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.20, 0.26)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for i in positions.size():
+		var pillar: Node3D = Node3D.new()
+		pillar.name = "EastPlazaCornerPillar_%d" % i
+		pillar.position = positions[i]
+		geom.add_child(pillar)
+		# Wide base
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(2.0, 0.55, 2.0)
+		base.mesh = bmesh
+		base.position = Vector3(0, 0.27, 0)
+		base.material_override = stone_mat
+		pillar.add_child(base)
+		# Tall column shaft
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var smesh: CylinderMesh = CylinderMesh.new()
+		smesh.top_radius = 0.55
+		smesh.bottom_radius = 0.65
+		smesh.height = 9.5
+		shaft.mesh = smesh
+		shaft.position = Vector3(0, 5.30, 0)
+		shaft.material_override = stone_mat
+		pillar.add_child(shaft)
+		# Cyan emissive ring inset midway up the shaft
+		var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ring_mat.albedo_color = Color(0.30, 0.85, 1.0)
+		ring_mat.emission_enabled = true
+		ring_mat.emission = Color(0.55, 0.95, 1.0)
+		ring_mat.emission_energy_multiplier = 1.6
+		ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ry: float in [3.0, 5.5, 8.0]:
+			var ring: MeshInstance3D = MeshInstance3D.new()
+			var rmesh: TorusMesh = TorusMesh.new()
+			rmesh.inner_radius = 0.62
+			rmesh.outer_radius = 0.72
+			ring.mesh = rmesh
+			ring.position = Vector3(0, ry, 0)
+			ring.material_override = ring_mat
+			pillar.add_child(ring)
+		# Wider capital block at the top
+		var capital: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(1.6, 0.50, 1.6)
+		capital.mesh = cmesh
+		capital.position = Vector3(0, 10.30, 0)
+		capital.material_override = stone_mat
+		pillar.add_child(capital)
+		# Crowning emissive sphere
+		var crown: MeshInstance3D = MeshInstance3D.new()
+		var crown_mesh: SphereMesh = SphereMesh.new()
+		crown_mesh.radius = 0.65
+		crown_mesh.height = 1.30
+		crown.mesh = crown_mesh
+		crown.position = Vector3(0, 11.20, 0)
+		var crown_mat: StandardMaterial3D = StandardMaterial3D.new()
+		crown_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		crown_mat.emission_enabled = true
+		crown_mat.emission = Color(0.55, 0.95, 1.0)
+		crown_mat.emission_energy_multiplier = 2.6
+		crown_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crown.material_override = crown_mat
+		pillar.add_child(crown)
+		# Pulse the crown sphere
+		var pulse: Tween = create_tween().set_loops()
+		var pulse_speed: float = 1.4 + i * 0.2
+		pulse.tween_property(crown, "scale", Vector3(1.20, 1.20, 1.20), pulse_speed).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(crown, "scale", Vector3(1.0, 1.0, 1.0), pulse_speed).set_ease(Tween.EASE_IN_OUT)
+		# Real OmniLight illuminating the corner
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = Vector3(0, 11.20, 0)
+		light.light_color = Color(0.55, 0.95, 1.0)
+		light.light_energy = 2.8
+		light.omni_range = 14.0
+		light.omni_attenuation = 1.6
+		pillar.add_child(light)
+		# Collision around the column
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.75
+		cap.height = 10.5
+		cs.shape = cap
+		cs.position = Vector3(0, 5.30, 0)
+		sb.add_child(cs)
+		pillar.add_child(sb)
+
+
+func _build_maintenance_patrol(geom: Node) -> void:
+	## Epic-1 T92: a maintenance bot patrolling the plaza on a long looping
+	## path, visibly larger than the existing ambient bots. Stubby chassis
+	## on 4 thin wheels with a bristle "broom" attachment underneath.
+	var bot: Node3D = Node3D.new()
+	bot.name = "EastPlazaMaintenanceBot"
+	bot.position = Vector3(26, 0, -14)
+	geom.add_child(bot)
+	# Chassis
+	var chassis_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chassis_mat.albedo_color = Color(0.95, 0.65, 0.20)
+	chassis_mat.emission_enabled = true
+	chassis_mat.emission = Color(1.0, 0.75, 0.30)
+	chassis_mat.emission_energy_multiplier = 0.45
+	chassis_mat.metallic = 0.55
+	chassis_mat.roughness = 0.40
+	var chassis: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(0.95, 0.55, 1.20)
+	chassis.mesh = cmesh
+	chassis.position = Vector3(0, 0.45, 0)
+	chassis.material_override = chassis_mat
+	bot.add_child(chassis)
+	# Cyan dome eye
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var emesh: SphereMesh = SphereMesh.new()
+	emesh.radius = 0.18
+	emesh.height = 0.36
+	eye.mesh = emesh
+	eye.position = Vector3(0, 0.85, 0)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(0.30, 0.85, 1.0)
+	emat.emission_enabled = true
+	emat.emission = Color(0.55, 0.95, 1.0)
+	emat.emission_energy_multiplier = 2.0
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = emat
+	bot.add_child(eye)
+	# 4 wheels
+	var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheel_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	wheel_mat.metallic = 0.85
+	for ox: float in [-0.40, 0.40]:
+		for oz: float in [-0.50, 0.50]:
+			var wheel: MeshInstance3D = MeshInstance3D.new()
+			var wmesh: CylinderMesh = CylinderMesh.new()
+			wmesh.top_radius = 0.18
+			wmesh.bottom_radius = 0.18
+			wmesh.height = 0.10
+			wheel.mesh = wmesh
+			wheel.position = Vector3(ox, 0.18, oz)
+			wheel.rotation = Vector3(0, 0, deg_to_rad(90))
+			wheel.material_override = wheel_mat
+			bot.add_child(wheel)
+	# Bristle broom — thin emissive bars hanging below
+	var bristle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bristle_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	bristle_mat.emission_enabled = true
+	bristle_mat.emission = Color(1.0, 0.85, 0.30)
+	bristle_mat.emission_energy_multiplier = 1.4
+	bristle_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for bx in 5:
+		var bristle: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(0.02, 0.18, 0.6)
+		bristle.mesh = bmesh
+		bristle.position = Vector3(-0.30 + bx * 0.15, 0.10, -0.65)
+		bristle.material_override = bristle_mat
+		bot.add_child(bristle)
+	# Patrol path tween — long loop around the plaza
+	var waypoints: Array[Vector3] = [
+		Vector3(26, 0, -14),
+		Vector3(45, 0, -14),
+		Vector3(45, 0, 16),
+		Vector3(26, 0, 16),
+		Vector3(26, 0, -14),
+	]
+	var patrol: Tween = create_tween().set_loops()
+	for wi in waypoints.size() - 1:
+		var from: Vector3 = waypoints[wi]
+		var to: Vector3 = waypoints[wi + 1]
+		# Face direction of travel
+		var dir: Vector3 = (to - from).normalized()
+		var yaw: float = atan2(dir.x, dir.z)
+		patrol.tween_property(bot, "rotation:y", yaw, 0.3)
+		patrol.tween_property(bot, "position", to, 8.0)
+
+
+func _build_news_ticker(geom: Node) -> void:
+	## Epic-1 T93: a large horizontal news ticker mounted on tall columns
+	## above the plaza directory. Wide black panel with a long string of
+	## news headlines that scrolls (we mock the scroll with a tween moving
+	## the label horizontally inside the bar).
+	var ticker_root: Node3D = Node3D.new()
+	ticker_root.name = "EastPlazaNewsTicker"
+	ticker_root.position = Vector3(34, 0, -3)
+	geom.add_child(ticker_root)
+	# 2 support columns
+	var col_mat: StandardMaterial3D = StandardMaterial3D.new()
+	col_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	col_mat.metallic = 0.85
+	col_mat.roughness = 0.30
+	for sx: float in [-3.5, 3.5]:
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: CylinderMesh = CylinderMesh.new()
+		cmesh.top_radius = 0.10
+		cmesh.bottom_radius = 0.14
+		cmesh.height = 4.5
+		col.mesh = cmesh
+		col.position = Vector3(sx, 2.25, 0)
+		col.material_override = col_mat
+		ticker_root.add_child(col)
+		# Collision on each column
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 4.5
+		cs.shape = cap
+		cs.position = Vector3(sx, 2.25, 0)
+		sb.add_child(cs)
+		ticker_root.add_child(sb)
+	# Black bar panel
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(7.5, 0.85, 0.20)
+	bar.mesh = bmesh
+	bar.position = Vector3(0, 4.40, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.04, 0.06, 0.10)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.30
+	bar.material_override = bmat
+	ticker_root.add_child(bar)
+	# Top + bottom emissive trim
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(1.0, 0.40, 0.20)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(1.0, 0.55, 0.20)
+	trim_mat.emission_energy_multiplier = 1.8
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ty: float in [4.83, 3.97]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(7.5, 0.05, 0.22)
+		trim.mesh = tmesh
+		trim.position = Vector3(0, ty, 0)
+		trim.material_override = trim_mat
+		ticker_root.add_child(trim)
+	# Scrolling news label — clipped within bar via tween x position
+	var headline: Label3D = Label3D.new()
+	headline.text = "*** GLOBBLER SIGHTED IN EAST PLAZA  ***  TOURNAMENT FINALS TONIGHT  ***  CIPHER 99 STILL UNDEFEATED  ***  DATA SHARDS UP 12%  ***"
+	headline.position = Vector3(3.5, 4.40, 0.12)
+	headline.modulate = Color(1.0, 0.55, 0.20)
+	headline.outline_modulate = Color(0, 0, 0, 0.85)
+	headline.outline_size = 4
+	headline.font_size = 22
+	headline.no_depth_test = true
+	ticker_root.add_child(headline)
+	var scroll: Tween = create_tween().set_loops()
+	scroll.tween_property(headline, "position:x", -10.5, 18.0)
+	scroll.tween_property(headline, "position:x", 3.5, 0.05)
+
+
+func _build_data_spa(geom: Node) -> void:
+	## Epic-1 T94: a small relaxation pool — sunken cyan disc with 3 NPC
+	## "bathers" hovering inside (just heads + shoulders above the surface).
+	## Adds a "leisure" vibe to balance the combat-heavy areas.
+	var spa: Node3D = Node3D.new()
+	spa.name = "EastPlazaDataSpa"
+	spa.position = Vector3(46, 0, -10)
+	geom.add_child(spa)
+	# Pool rim — wide flat torus
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rim_mesh: TorusMesh = TorusMesh.new()
+	rim_mesh.inner_radius = 1.40
+	rim_mesh.outer_radius = 1.65
+	rim.mesh = rim_mesh
+	rim.position = Vector3(0, 0.20, 0)
+	var rim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rim_mat.albedo_color = Color(0.18, 0.22, 0.28)
+	rim_mat.metallic = 0.65
+	rim_mat.roughness = 0.30
+	rim_mat.emission_enabled = true
+	rim_mat.emission = Color(0.30, 0.85, 1.0)
+	rim_mat.emission_energy_multiplier = 0.5
+	rim.material_override = rim_mat
+	spa.add_child(rim)
+	# Water disc inside the rim
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: CylinderMesh = CylinderMesh.new()
+	wmesh.top_radius = 1.40
+	wmesh.bottom_radius = 1.40
+	wmesh.height = 0.10
+	water.mesh = wmesh
+	water.position = Vector3(0, 0.15, 0)
+	var wmat: StandardMaterial3D = StandardMaterial3D.new()
+	wmat.albedo_color = Color(0.30, 0.85, 1.0, 0.55)
+	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	wmat.emission_enabled = true
+	wmat.emission = Color(0.55, 0.95, 1.0)
+	wmat.emission_energy_multiplier = 1.4
+	wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = wmat
+	spa.add_child(water)
+	# 3 bather "heads" peeking above the water
+	var bather_specs: Array = [
+		[Vector3(-0.7, 0.30, 0), Color(0.95, 0.65, 0.45)],
+		[Vector3(0.7, 0.30, -0.3), Color(0.85, 0.40, 1.0)],
+		[Vector3(0.0, 0.30, 0.7), Color(0.45, 0.95, 0.65)],
+	]
+	for i in bather_specs.size():
+		var bather: Node3D = Node3D.new()
+		bather.name = "Bather_%d" % i
+		bather.position = bather_specs[i][0]
+		spa.add_child(bather)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: SphereMesh = SphereMesh.new()
+		hmesh.radius = 0.18
+		hmesh.height = 0.36
+		head.mesh = hmesh
+		head.position = Vector3(0, 0.10, 0)
+		var color: Color = bather_specs[i][1]
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = color
+		hmat.emission_enabled = true
+		hmat.emission = color
+		hmat.emission_energy_multiplier = 0.55
+		hmat.metallic = 0.20
+		hmat.roughness = 0.55
+		head.material_override = hmat
+		bather.add_child(head)
+		# Eyes (closed/relaxing — 2 small black bars)
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex: float in [-0.06, 0.06]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emesh: BoxMesh = BoxMesh.new()
+			emesh.size = Vector3(0.04, 0.01, 0.02)
+			eye.mesh = emesh
+			eye.position = Vector3(ex, 0.13, 0.16)
+			eye.material_override = eye_mat
+			bather.add_child(eye)
+		# Bob in the water
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(bather, "position:y", 0.40, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(bather, "position:y", 0.30, 1.6 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+	# Steam particles rising
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 30
+	steam.lifetime = 3.0
+	steam.position = Vector3(0, 0.50, 0)
+	var spmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	spmat.emission_sphere_radius = 1.20
+	spmat.direction = Vector3(0, 1, 0)
+	spmat.spread = 25.0
+	spmat.initial_velocity_min = 0.40
+	spmat.initial_velocity_max = 0.85
+	spmat.gravity = Vector3.ZERO
+	spmat.scale_min = 0.30
+	spmat.scale_max = 0.55
+	spmat.color = Color(0.85, 0.95, 1.0, 0.30)
+	steam.process_material = spmat
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.30
+	sm.height = 0.60
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.30)
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = sm_mat
+	steam.draw_pass_1 = sm
+	spa.add_child(steam)
+
+
+func _build_plaza_fireworks(geom: Node) -> void:
+	## Epic-1 T95: ambient fireworks emitter high over the plaza center,
+	## continuously bursting cyan/violet/amber sparks. Sells "active festive
+	## district" with one VFX call.
+	var fw: GPUParticles3D = GPUParticles3D.new()
+	fw.name = "EastPlazaFireworks"
+	fw.position = Vector3(34, 14, 0)
+	fw.amount = 120
+	fw.lifetime = 2.5
+	fw.explosiveness = 0.6
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.30
+	pmat.direction = Vector3(0, 0, 0)
+	pmat.spread = 180.0
+	pmat.initial_velocity_min = 3.0
+	pmat.initial_velocity_max = 6.0
+	pmat.gravity = Vector3(0, -2.5, 0)
+	pmat.scale_min = 0.10
+	pmat.scale_max = 0.22
+	pmat.color = Color(0.55, 0.95, 1.0, 1.0)
+	# Color ramp via gradient
+	var grad: Gradient = Gradient.new()
+	grad.add_point(0.0, Color(0.55, 0.95, 1.0, 1.0))
+	grad.add_point(0.4, Color(0.85, 0.40, 1.0, 1.0))
+	grad.add_point(0.75, Color(1.0, 0.85, 0.30, 0.8))
+	grad.add_point(1.0, Color(1.0, 0.30, 0.30, 0.0))
+	var grad_tex: GradientTexture1D = GradientTexture1D.new()
+	grad_tex.gradient = grad
+	pmat.color_ramp = grad_tex
+	fw.process_material = pmat
+	var spark: SphereMesh = SphereMesh.new()
+	spark.radius = 0.08
+	spark.height = 0.16
+	var spark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spark_mat.albedo_color = Color(1, 1, 1)
+	spark_mat.emission_enabled = true
+	spark_mat.emission = Color(1, 1, 1)
+	spark_mat.emission_energy_multiplier = 2.5
+	spark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spark.material = spark_mat
+	fw.draw_pass_1 = spark
+	geom.add_child(fw)
+
 
 
