@@ -122,36 +122,29 @@ func _on_health_changed_color(current: float, max_val: float) -> void:
 
 
 func _build_player_extras() -> void:
-	# R5 fix: don't clobber the GlobblerR3 + HeroSwordR3 + HeroShieldR4 instances
-	# that Player.tscn already added as children of Model. The old version of
-	# this function loaded char_globbler_v2.glb at runtime and wiped every
-	# Model child first — which silently deleted the R3/R4 hero assets.
-	# If the .tscn already has any GlobblerR3/HeroSwordR3/HeroShieldR4 children,
-	# trust them and skip the runtime load.
-	var has_r3_hero: bool = false
+	# v4 hero: Player.tscn now instances globbler_v4.glb directly. Trust the
+	# scene's GlobblerV4 / HeroSword / HeroShield children — don't clobber.
+	var has_v4_hero: bool = false
 	for child: Node in model.get_children():
-		if child.name.begins_with("GlobblerR3") or child.name.begins_with("HeroSword") or child.name.begins_with("HeroShield"):
-			has_r3_hero = true
+		if child.name.begins_with("GlobblerV4") or child.name.begins_with("GlobblerR3") or child.name.begins_with("HeroSword") or child.name.begins_with("HeroShield"):
+			has_v4_hero = true
 			break
-	if not has_r3_hero:
-		var glb: PackedScene = load("res://assets/models/characters/globbler_r3.glb") as PackedScene
+	if not has_v4_hero:
+		var glb: PackedScene = load("res://assets/models/characters/globbler_v4.glb") as PackedScene
 		if glb:
 			for child: Node in model.get_children():
 				if child is MeshInstance3D:
 					child.queue_free()
 			var instance: Node3D = glb.instantiate() as Node3D
-			# R5 fix: globbler_r3 was built at hero render scale (~1.7m tall).
-			# Game character is ~0.8m tall, scale 0.45 to match collision capsule.
+			# v4 model is built at unit scale (~1.6m tall). Scale 0.45 to match
+			# the existing collision capsule height.
 			instance.scale = Vector3(0.45, 0.45, 0.45)
 			model.add_child(instance)
 
-	# R5 round-2 fix: GlobblerR3's baked albedo is a placeholder (UV pads of
-	# solid pale blue with no character detail), so the sculpted mesh renders
-	# as a featureless white sphere on screen. Override the surface material
-	# with a glowing teal AI-orb mat and bolt on procedural eyes + visor so
-	# the player reads as a *character* instead of a blob. This is code
-	# polish on the existing sculpt — no re-bake needed.
-	if has_r3_hero:
+	# v4 hero ships with its own visor, eyes, nameplate, antenna, and
+	# materials baked in. Skip the legacy R3 orb-material override + procedural
+	# eye/antenna code below (kept for reference but gated off).
+	if false:
 		var orb_mat: StandardMaterial3D = StandardMaterial3D.new()
 		orb_mat.albedo_color = Color(0.18, 0.55, 0.62)
 		orb_mat.emission_enabled = true
@@ -294,10 +287,9 @@ func _build_player_extras() -> void:
 	light_tween.tween_property(player_light, "light_energy", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
 	light_tween.tween_property(player_light, "light_energy", 0.55, 2.0).set_ease(Tween.EASE_IN_OUT)
 
-	# R5 fix: skip the placeholder arm + foot stubs when GlobblerR3 is loaded.
-	# These were R2 capsule-style "Globbler" arms+feet — they look like big
-	# white spheres next to the actual sculpted character and obscure the silhouette.
-	if not has_r3_hero:
+	# v4 hero already has arms + boots in the model. Skip the legacy
+	# placeholder arm/foot stubs.
+	if not has_v4_hero:
 		var arm_mat: StandardMaterial3D = StandardMaterial3D.new()
 		arm_mat.albedo_color = Color(0.22, 0.78, 0.75)
 		arm_mat.roughness = 0.7
