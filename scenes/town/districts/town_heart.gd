@@ -67,6 +67,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_corner_mini_fountains(geom)
 	_build_th_open_pavilion(geom)
 	_build_th_hex_gazebo(geom)
+	_build_th_road_junctions(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -8936,3 +8937,152 @@ func _build_th_hex_gazebo(geom: Node) -> void:
 	var dpulse3: Tween = pivot.create_tween().set_loops()
 	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_road_junctions(geom: Node) -> void:
+	## Epic-10 T51: 4 small octagonal transition plazas where each cardinal
+	## entry arch meets the start of the approach road. Each junction:
+	## small basalt octagonal disc, brass center disc with glowing rune
+	## ring, brass perimeter trim torus, and 4 small accent lamps at the
+	## diagonal corners.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_RoadJunctions"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.45, 0.85, 1.0)
+	rune_mat.emission_energy_multiplier = 6.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+	bulb_mat.emission_enabled = true
+	bulb_mat.emission = Color(1.0, 0.65, 0.20)
+	bulb_mat.emission_energy_multiplier = 7.5
+	bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 junction positions — at radius 16 (between the entry arches at 15.5 and the road starts at 17.5)
+	var junction_positions: Array = [
+		Vector3(16.0, 0, 0),    # E
+		Vector3(0, 0, -16.0),   # N
+		Vector3(-16.0, 0, 0),   # W
+		Vector3(0, 0, 16.0),    # S
+	]
+	for jp in junction_positions:
+		var jgroup: Node3D = Node3D.new()
+		jgroup.position = jp
+		pivot.add_child(jgroup)
+		# ---- Octagonal stone disc (cylinder approximation, 16 segments) ----
+		var disc: MeshInstance3D = MeshInstance3D.new()
+		var dm: CylinderMesh = CylinderMesh.new()
+		dm.top_radius = 2.40
+		dm.bottom_radius = 2.50
+		dm.height = 0.10
+		disc.mesh = dm
+		disc.material_override = stone_mat
+		disc.position = Vector3(0, 0.05, 0)
+		jgroup.add_child(disc)
+		# Disc collision
+		var disc_sb: StaticBody3D = StaticBody3D.new()
+		disc_sb.position = Vector3(0, 0.05, 0)
+		var disc_cs: CollisionShape3D = CollisionShape3D.new()
+		var disc_cyl: CylinderShape3D = CylinderShape3D.new()
+		disc_cyl.top_radius = 2.50
+		disc_cyl.bottom_radius = 2.50
+		disc_cyl.height = 0.20
+		disc_cs.shape = disc_cyl
+		disc_sb.add_child(disc_cs)
+		jgroup.add_child(disc_sb)
+		# ---- Brass perimeter trim torus ----
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var trm: TorusMesh = TorusMesh.new()
+		trm.inner_radius = 2.30
+		trm.outer_radius = 2.45
+		trim.mesh = trm
+		trim.material_override = brass_mat
+		trim.position = Vector3(0, 0.13, 0)
+		jgroup.add_child(trim)
+		# ---- Brass center disc ----
+		var center: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.95
+		cmm.bottom_radius = 0.95
+		cmm.height = 0.06
+		center.mesh = cmm
+		center.material_override = brass_mat
+		center.position = Vector3(0, 0.13, 0)
+		jgroup.add_child(center)
+		# ---- Glowing cyan rune ring on the center disc ----
+		var rune_ring: MeshInstance3D = MeshInstance3D.new()
+		var rrm: TorusMesh = TorusMesh.new()
+		rrm.inner_radius = 0.65
+		rrm.outer_radius = 0.85
+		rune_ring.mesh = rrm
+		rune_ring.material_override = rune_mat
+		rune_ring.position = Vector3(0, 0.18, 0)
+		jgroup.add_child(rune_ring)
+		# 4 small rune dots on the ring
+		for i in 4:
+			var ang: float = float(i) / 4.0 * TAU
+			var dot: MeshInstance3D = MeshInstance3D.new()
+			var dotm: SphereMesh = SphereMesh.new()
+			dotm.radius = 0.10
+			dotm.height = 0.05
+			dot.mesh = dotm
+			dot.material_override = rune_mat
+			dot.position = Vector3(cos(ang) * 0.75, 0.20, sin(ang) * 0.75)
+			dot.scale = Vector3(1.0, 0.30, 1.0)
+			jgroup.add_child(dot)
+		# ---- 4 small accent lamps at the diagonal corners ----
+		for i in 4:
+			var lang: float = float(i) / 4.0 * TAU + PI / 4.0
+			var lx: float = cos(lang) * 1.85
+			var lz: float = sin(lang) * 1.85
+			# Small brass post
+			var lpost: MeshInstance3D = MeshInstance3D.new()
+			var lpm: CylinderMesh = CylinderMesh.new()
+			lpm.top_radius = 0.05
+			lpm.bottom_radius = 0.07
+			lpm.height = 0.85
+			lpost.mesh = lpm
+			lpost.material_override = brass_mat
+			lpost.position = Vector3(lx, 0.55, lz)
+			jgroup.add_child(lpost)
+			# Bulb on top of the post
+			var bulb: MeshInstance3D = MeshInstance3D.new()
+			var blm: SphereMesh = SphereMesh.new()
+			blm.radius = 0.10
+			blm.height = 0.20
+			bulb.mesh = blm
+			bulb.material_override = bulb_mat
+			bulb.position = Vector3(lx, 1.05, lz)
+			jgroup.add_child(bulb)
+			# OmniLight per lamp
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(lx, 1.05, lz)
+			lt.light_color = Color(1.0, 0.65, 0.20)
+			lt.light_energy = 1.4
+			lt.omni_range = 4.0
+			jgroup.add_child(lt)
+	# Shared cyan rune pulse + bulb pulse
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 4.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	var bpulse: Tween = pivot.create_tween().set_loops()
+	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 9.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 6.0, 1.4).set_ease(Tween.EASE_IN_OUT)
