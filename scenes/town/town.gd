@@ -1253,6 +1253,16 @@ func _build_east_plaza() -> void:
 	_build_security_drones(geom)
 	# Epic-1 T15: info totem pillars at plaza entrances
 	_build_info_totems(geom)
+	# Epic-1 T16: data fountain centerpiece replacing the data terminal? no, in addition
+	_build_data_fountain(geom)
+	# Epic-1 T17: holographic billboards floating above the plaza
+	_build_holo_billboards(geom)
+	# Epic-1 T18: animated neon ad strips on the market hall walls
+	_build_neon_ads(geom)
+	# Epic-1 T19: transit pad with arrival pulse animation
+	_build_transit_pad(geom)
+	# Epic-1 T20: shop signage with glow text labels
+	_build_shop_signage(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -2087,6 +2097,215 @@ func _build_security_drones(geom: Node) -> void:
 		var tween: Tween = create_tween().set_loops()
 		for waypoint in path:
 			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_data_fountain(geom: Node) -> void:
+	## Epic-1 T16: cyan data fountain at (32, 0, 12) — wide basin + central
+	## column with rising particle stream
+	var fountain: Node3D = Node3D.new()
+	fountain.name = "EastPlazaDataFountain"
+	fountain.position = Vector3(32, 0, 12)
+	geom.add_child(fountain)
+	# Wide basin (low cylinder)
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var basin_mesh: CylinderMesh = CylinderMesh.new()
+	basin_mesh.top_radius = 1.4
+	basin_mesh.bottom_radius = 1.5
+	basin_mesh.height = 0.3
+	basin.mesh = basin_mesh
+	basin.position = Vector3(0, 0.15, 0)
+	var basin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basin_mat.albedo_color = Color(0.10, 0.18, 0.26)
+	basin_mat.emission_enabled = true
+	basin_mat.emission = Color(0.30, 0.85, 1.0)
+	basin_mat.emission_energy_multiplier = 0.5
+	basin_mat.metallic = 0.6
+	basin.material_override = basin_mat
+	fountain.add_child(basin)
+	# Central column
+	var column: MeshInstance3D = MeshInstance3D.new()
+	var col_mesh: CylinderMesh = CylinderMesh.new()
+	col_mesh.top_radius = 0.18
+	col_mesh.bottom_radius = 0.25
+	col_mesh.height = 1.2
+	column.mesh = col_mesh
+	column.position = Vector3(0, 0.9, 0)
+	column.material_override = basin_mat
+	fountain.add_child(column)
+	# Rising "data stream" particle column
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 80
+	particles.lifetime = 2.0
+	particles.position = Vector3(0, 1.5, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.1
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 8.0
+	pmat.gravity = Vector3(0, -0.4, 0)
+	pmat.initial_velocity_min = 1.5
+	pmat.initial_velocity_max = 2.4
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(0.45, 0.95, 1.0, 0.85)
+	particles.process_material = pmat
+	var dot_mesh: SphereMesh = SphereMesh.new()
+	dot_mesh.radius = 0.04
+	dot_mesh.height = 0.08
+	particles.draw_pass_1 = dot_mesh
+	fountain.add_child(particles)
+	# Collision around the basin
+	var sb: StaticBody3D = StaticBody3D.new()
+	var col_shape: CollisionShape3D = CollisionShape3D.new()
+	var col_box: BoxShape3D = BoxShape3D.new()
+	col_box.size = Vector3(3.0, 0.3, 3.0)
+	col_shape.shape = col_box
+	col_shape.position = Vector3(0, 0.15, 0)
+	sb.add_child(col_shape)
+	fountain.add_child(sb)
+
+
+func _build_holo_billboards(geom: Node) -> void:
+	## Epic-1 T17: 2 floating holographic billboards above the plaza
+	for entry in [
+		[Vector3(28, 5.0, 0), "EAST PLAZA", Color(1.0, 0.55, 0.15)],
+		[Vector3(36, 5.5, 0), "DATA MARKET", Color(0.30, 0.85, 1.0)],
+	]:
+		var pos: Vector3 = entry[0]
+		var text: String = entry[1]
+		var hue: Color = entry[2]
+		var board: Node3D = Node3D.new()
+		board.position = pos
+		geom.add_child(board)
+		# Translucent panel backdrop
+		var panel: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(3.5, 0.9, 0.05)
+		panel.mesh = pmesh
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(hue.r, hue.g, hue.b, 0.4)
+		pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pmat.emission_enabled = true
+		pmat.emission = hue
+		pmat.emission_energy_multiplier = 1.8
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		panel.material_override = pmat
+		board.add_child(panel)
+		# Text label
+		var label: Label3D = Label3D.new()
+		label.text = text
+		label.position = Vector3(0, 0, -0.05)
+		label.modulate = Color(1, 1, 1)
+		label.outline_modulate = Color(0, 0, 0, 0.95)
+		label.outline_size = 8
+		label.font_size = 36
+		label.no_depth_test = true
+		board.add_child(label)
+		# Slow Y-bob animation
+		var tween: Tween = create_tween().set_loops()
+		tween.tween_property(board, "position:y", pos.y + 0.2, 3.0).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(board, "position:y", pos.y, 3.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_neon_ads(geom: Node) -> void:
+	## Epic-1 T18: 4 neon ad strips along the south plaza boundary
+	for i: int in 4:
+		var strip: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(2.2, 0.3, 0.04)
+		strip.mesh = smesh
+		strip.position = Vector3(26 + i * 4, 1.8, 14)
+		var hues: Array[Color] = [
+			Color(1.0, 0.20, 0.50),  # hot pink
+			Color(0.30, 1.0, 0.50),  # neon green
+			Color(0.20, 0.50, 1.0),  # electric blue
+			Color(1.0, 0.85, 0.20),  # neon yellow
+		]
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = hues[i]
+		smat.emission_enabled = true
+		smat.emission = hues[i]
+		smat.emission_energy_multiplier = 2.5
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		strip.material_override = smat
+		geom.add_child(strip)
+		# Pulse animation — alternating brightness
+		var tween: Tween = create_tween().set_loops()
+		tween.tween_property(smat, "emission_energy_multiplier", 4.0, 0.8 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(smat, "emission_energy_multiplier", 1.5, 0.8 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_transit_pad(geom: Node) -> void:
+	## Epic-1 T19: glowing transit pad at the SW corner of the plaza —
+	## hexagonal landing pad with circular pulse animation
+	var pad: Node3D = Node3D.new()
+	pad.name = "EastPlazaTransitPad"
+	pad.position = Vector3(24, 0, -10)
+	geom.add_child(pad)
+	# Hexagonal base
+	var hex: MeshInstance3D = MeshInstance3D.new()
+	var hex_mesh: CylinderMesh = CylinderMesh.new()
+	hex_mesh.top_radius = 1.6
+	hex_mesh.bottom_radius = 1.6
+	hex_mesh.height = 0.15
+	hex_mesh.radial_segments = 6
+	hex.mesh = hex_mesh
+	hex.position = Vector3(0, 0.075, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.10, 0.20, 0.35)
+	hmat.emission_enabled = true
+	hmat.emission = Color(0.30, 0.85, 1.0)
+	hmat.emission_energy_multiplier = 1.0
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	hex.material_override = hmat
+	pad.add_child(hex)
+	# Pulsing emission
+	var tween: Tween = create_tween().set_loops()
+	tween.tween_property(hmat, "emission_energy_multiplier", 2.5, 1.5).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(hmat, "emission_energy_multiplier", 0.8, 1.5).set_ease(Tween.EASE_IN_OUT)
+	# Vertical light beam
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_mesh: CylinderMesh = CylinderMesh.new()
+	beam_mesh.top_radius = 1.5
+	beam_mesh.bottom_radius = 1.5
+	beam_mesh.height = 8.0
+	beam.mesh = beam_mesh
+	beam.position = Vector3(0, 4.0, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.85, 1.0, 0.18)
+	bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.40, 0.90, 1.0)
+	bmat.emission_energy_multiplier = 0.5
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bmat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	beam.material_override = bmat
+	pad.add_child(beam)
+
+
+func _build_shop_signage(geom: Node) -> void:
+	## Epic-1 T20: 4 vertical glow text labels above the kiosks naming
+	## what each kiosk sells
+	var sign_data: Array = [
+		[Vector3(28, 2.4, -4), "CHIPS", Color(0.30, 0.85, 1.0)],
+		[Vector3(36, 2.4, -4), "MODULES", Color(1.0, 0.55, 0.15)],
+		[Vector3(28, 2.4, 4), "PROTOCOLS", Color(0.55, 0.35, 0.85)],
+		[Vector3(36, 2.4, 4), "PROMPTS", Color(0.30, 1.0, 0.50)],
+	]
+	for entry in sign_data:
+		var pos: Vector3 = entry[0]
+		var text: String = entry[1]
+		var hue: Color = entry[2]
+		var label: Label3D = Label3D.new()
+		label.text = text
+		label.position = pos
+		label.modulate = hue
+		label.outline_modulate = Color(0, 0.05, 0.10, 0.95)
+		label.outline_size = 7
+		label.font_size = 26
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.no_depth_test = true
+		geom.add_child(label)
 
 
 func _build_info_totems(geom: Node) -> void:
