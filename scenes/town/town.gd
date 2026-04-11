@@ -8895,6 +8895,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_cable_car_station(geom)
 	# Epic-5 T65: snow sculpture
 	_build_d5_snow_sculpture(geom)
+	# Epic-5 T66: thermal steam vents
+	_build_d5_thermal_vents(geom)
+	# Epic-5 T67: hot spring pool
+	_build_d5_hot_spring(geom)
+	# Epic-5 T68: bath attendant NPC
+	_build_d5_bath_attendant_npc()
+	# Epic-5 T69: ice climbing wall
+	_build_d5_ice_climbing_wall(geom)
+	# Epic-5 T70: ice climber NPC
+	_build_d5_ice_climber_npc()
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -14133,6 +14143,369 @@ func _build_d5_snow_sculpture(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	sculpture.add_child(sb)
+
+
+func _build_d5_thermal_vents(geom: Node) -> void:
+	## Epic-5 T66: 5 small thermal vents in the ice — dark holes with rising
+	## steam columns and faint orange glow underneath.
+	var vents: Node3D = Node3D.new()
+	vents.name = "ThermalVents"
+	vents.position = Vector3(D5_CENTER.x + 14.0, 0.0, 0.0)
+	geom.add_child(vents)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.05, 0.10, 0.18)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 5:
+		var vent: Node3D = Node3D.new()
+		vent.position = Vector3(
+			randf_range(-2.5, 2.5),
+			0.0,
+			randf_range(-2.5, 2.5)
+		)
+		vents.add_child(vent)
+		# Vent hole (dark disc)
+		var hole: MeshInstance3D = MeshInstance3D.new()
+		var hm: CylinderMesh = CylinderMesh.new()
+		hm.top_radius = 0.30
+		hm.bottom_radius = 0.30
+		hm.height = 0.04
+		hole.mesh = hm
+		hole.material_override = dark_mat
+		hole.position = Vector3(0, 0.04, 0)
+		vent.add_child(hole)
+		# Steam particles rising
+		var steam: GPUParticles3D = GPUParticles3D.new()
+		steam.amount = 22
+		steam.lifetime = 2.2
+		steam.preprocess = 1.0
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 22.0
+		pm.gravity = Vector3.ZERO
+		pm.initial_velocity_min = 0.45
+		pm.initial_velocity_max = 0.95
+		pm.scale_min = 0.18
+		pm.scale_max = 0.45
+		pm.color = Color(0.95, 0.92, 0.85, 0.55)
+		steam.process_material = pm
+		var sm_mesh: SphereMesh = SphereMesh.new()
+		sm_mesh.radius = 0.18
+		sm_mesh.height = 0.36
+		steam.draw_pass_1 = sm_mesh
+		var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sm_mat.albedo_color = Color(0.95, 0.92, 0.85, 0.45)
+		sm_mat.emission_enabled = true
+		sm_mat.emission = Color(0.95, 0.85, 0.65)
+		sm_mat.emission_energy_multiplier = 0.65
+		sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm_mesh.material = sm_mat
+		steam.position = Vector3(0, 0.20, 0)
+		vent.add_child(steam)
+		# Faint orange glow from below
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.55, 0.20)
+		light.light_energy = 0.85
+		light.omni_range = 1.85
+		light.position = Vector3(0, -0.10, 0)
+		vent.add_child(light)
+
+
+func _build_d5_hot_spring(geom: Node) -> void:
+	## Epic-5 T67: hot spring pool — circular stone-rim pool with steaming
+	## warm water surface and an orange underglow.
+	var spring: Node3D = Node3D.new()
+	spring.name = "HotSpring"
+	spring.position = Vector3(D5_CENTER.x + 12.0, 0.0, 4.0)
+	geom.add_child(spring)
+	# Stone rim
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.50, 0.45)
+	stone_mat.roughness = 0.92
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 1.40
+	rm.outer_radius = 1.85
+	rim.mesh = rm
+	rim.material_override = stone_mat
+	rim.position = Vector3(0, 0.30, 0)
+	spring.add_child(rim)
+	# Water surface (warm cyan-green disc)
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.55
+	wm.bottom_radius = 1.55
+	wm.height = 0.08
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.30, 0.85, 0.75, 0.85)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.95, 0.80)
+	water_mat.emission_energy_multiplier = 0.85
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.10
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.30, 0)
+	spring.add_child(water)
+	# Subtle bob
+	var twb: Tween = water.create_tween().set_loops()
+	twb.tween_property(water, "position:y", 0.34, 1.5)
+	twb.tween_property(water, "position:y", 0.30, 1.5)
+	# 3 stone benches around the pool
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i + PI / 6.0
+		var bench: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.10, 0.30, 0.40)
+		bench.mesh = bm
+		bench.material_override = stone_mat
+		bench.position = Vector3(cos(ang) * 2.30, 0.18, sin(ang) * 2.30)
+		bench.rotation = Vector3(0, -ang, 0)
+		spring.add_child(bench)
+	# Steam particles rising from the water
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 35
+	steam.lifetime = 3.0
+	steam.preprocess = 1.5
+	steam.position = Vector3(0, 0.45, 0)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(1.40, 0.10, 1.40)
+	pm.direction = Vector3(0.10, 1, 0.05)
+	pm.spread = 22.0
+	pm.gravity = Vector3(0.05, 0.55, 0)
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.30
+	pm.scale_max = 0.65
+	pm.color = Color(0.95, 0.92, 0.85, 0.55)
+	steam.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.25
+	sm_mesh.height = 0.50
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(0.85, 0.92, 1.0)
+	sm_mat.emission_energy_multiplier = 0.55
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	spring.add_child(steam)
+	# Warm pool light from below
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.85, 0.95, 0.70)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 0.20, 0)
+	spring.add_child(light)
+	# Rim collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 1.85
+	cap.height = 0.55
+	cs.shape = cap
+	sb.add_child(cs)
+	spring.add_child(sb)
+
+
+func _build_d5_bath_attendant_npc() -> void:
+	## Epic-5 T68: bath attendant NPC near the hot spring — short white robe,
+	## carrying a stack of folded towels.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BathAttendantSlot"
+	slot.position = Vector3(D5_CENTER.x + 10.0, 0.0, 4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "BathAttendant"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Onsen")
+	if "npc_id" in npc:
+		npc.set("npc_id", "bath_d5")
+	slot.add_child(npc)
+	# White robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 0.95, 0.40)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+	# Stack of folded towels (3 colored boxes)
+	var towel_colors: Array = [
+		Color(0.85, 0.20, 0.30),
+		Color(0.30, 0.65, 0.85),
+		Color(0.95, 0.85, 0.30),
+	]
+	for i in 3:
+		var towel: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.40, 0.10, 0.30)
+		towel.mesh = tm
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = towel_colors[i]
+		tmat.roughness = 0.85
+		towel.material_override = tmat
+		towel.position = Vector3(0.40, 0.85 + i * 0.11, 0.20)
+		npc.add_child(towel)
+
+
+func _build_d5_ice_climbing_wall(geom: Node) -> void:
+	## Epic-5 T69: tall vertical ice climbing wall — large ice slab face
+	## with embedded handhold prisms and 3 anchored ropes.
+	var wall: Node3D = Node3D.new()
+	wall.name = "IceClimbingWall"
+	wall.position = Vector3(D5_CENTER.x + 22.0, 0.0, 16.0)
+	geom.add_child(wall)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	# Main slab
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(5.50, 7.50, 1.10)
+	slab.mesh = sm
+	slab.material_override = ice_mat
+	slab.position = Vector3(0, 3.75, 0)
+	wall.add_child(slab)
+	# 12 handhold prisms scattered on the front
+	var hold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hold_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	hold_mat.emission_enabled = true
+	hold_mat.emission = Color(0.30, 1.0, 1.0)
+	hold_mat.emission_energy_multiplier = 1.6
+	hold_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 12:
+		var hold: MeshInstance3D = MeshInstance3D.new()
+		var hm: PrismMesh = PrismMesh.new()
+		hm.size = Vector3(0.20, 0.18, 0.20)
+		hold.mesh = hm
+		hold.material_override = hold_mat
+		hold.position = Vector3(
+			randf_range(-2.0, 2.0),
+			0.85 + randf_range(0, 5.85),
+			0.60
+		)
+		hold.rotation_degrees = Vector3(randf_range(-30, 30), randf_range(0, 360), randf_range(-30, 30))
+		wall.add_child(hold)
+	# 3 anchored ropes hanging from the top
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	rope_mat.roughness = 0.85
+	for sx in [-1.85, 0.0, 1.85]:
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rm: CylinderMesh = CylinderMesh.new()
+		rm.top_radius = 0.025
+		rm.bottom_radius = 0.025
+		rm.height = 6.50
+		rope.mesh = rm
+		rope.material_override = rope_mat
+		rope.position = Vector3(sx, 4.20, 0.65)
+		wall.add_child(rope)
+	# Wall collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 7.50, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	wall.add_child(sb)
+
+
+func _build_d5_ice_climber_npc() -> void:
+	## Epic-5 T70: ice climber NPC — bright orange jacket, helmet, and
+	## holding a small ice axe.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "IceClimberSlot"
+	slot.position = Vector3(D5_CENTER.x + 20.0, 0.0, 16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "IceClimber"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Crampon")
+	if "npc_id" in npc:
+		npc.set("npc_id", "climber_d5")
+	slot.add_child(npc)
+	# Bright orange jacket
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jm: BoxMesh = BoxMesh.new()
+	jm.size = Vector3(0.75, 1.05, 0.50)
+	jacket.mesh = jm
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.95, 0.55, 0.10)
+	jacket_mat.emission_enabled = true
+	jacket_mat.emission = Color(0.95, 0.45, 0.05)
+	jacket_mat.emission_energy_multiplier = 0.30
+	jacket_mat.roughness = 0.65
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 0.55, 0)
+	npc.add_child(jacket)
+	# White helmet
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.22
+	hm.height = 0.36
+	helmet.mesh = hm
+	var helmet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	helmet_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	helmet_mat.metallic = 0.30
+	helmet_mat.roughness = 0.40
+	helmet.material_override = helmet_mat
+	helmet.position = Vector3(0, 1.45, 0)
+	helmet.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(helmet)
+	# Small ice axe in hand
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.04
+	hmm.bottom_radius = 0.05
+	hmm.height = 0.85
+	handle.mesh = hmm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0.45, 0.85, 0.20)
+	handle.rotation_degrees = Vector3(0, 0, -25)
+	npc.add_child(handle)
+	var pick: MeshInstance3D = MeshInstance3D.new()
+	var pkm: PrismMesh = PrismMesh.new()
+	pkm.size = Vector3(0.06, 0.10, 0.30)
+	pick.mesh = pkm
+	var steel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	steel_mat.albedo_color = Color(0.50, 0.55, 0.60)
+	steel_mat.metallic = 0.85
+	steel_mat.roughness = 0.30
+	pick.material_override = steel_mat
+	pick.position = Vector3(0.65, 1.20, 0.20)
+	pick.rotation_degrees = Vector3(45, 0, 0)
+	npc.add_child(pick)
 
 
 
