@@ -25557,6 +25557,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_hot_spring_d7(geom)
 	# Epic-7 T70: bathing monk NPC
 	_build_d7_bathing_monk_npc()
+	# Epic-7 T71: stone wishing well
+	_build_d7_wishing_well(geom)
+	# Epic-7 T72: blacksmith forge with anvil
+	_build_d7_blacksmith_forge(geom)
+	# Epic-7 T73: blacksmith NPC
+	_build_d7_blacksmith_npc()
+	# Epic-7 T74: crafted weapon display
+	_build_d7_weapon_display(geom)
+	# Epic-7 T75: tea garden benches
+	_build_d7_tea_garden_benches(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -30425,6 +30435,394 @@ func _build_d7_bathing_monk_npc() -> void:
 	dome.material_override = skin_mat
 	dome.position = Vector3(0, 1.30, 0)
 	npc.add_child(dome)
+
+
+func _build_d7_wishing_well(geom: Node) -> void:
+	## Epic-7 T71: stone wishing well — round stone base + 2 wooden uprights +
+	## sloped roof + a bucket dangling from a rope.
+	var well: Node3D = Node3D.new()
+	well.name = "WishingWell"
+	well.position = Vector3(D7_CENTER.x + 16.0, 0.0, 22.0)
+	geom.add_child(well)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Round stone base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.85
+	bm.bottom_radius = 1.0
+	bm.height = 0.85
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.42, 0)
+	well.add_child(base)
+	# Dark water at bottom
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.65
+	wm.bottom_radius = 0.65
+	wm.height = 0.04
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.05, 0.10, 0.20)
+	water_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.85, 0)
+	well.add_child(water)
+	# 2 wooden uprights
+	for sx in [-0.85, 0.85]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.18, 1.85, 0.18)
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(sx, 1.85, 0)
+		well.add_child(post)
+	# Crossbar at top
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.06
+	brm.bottom_radius = 0.06
+	brm.height = 1.85
+	bar.mesh = brm
+	bar.material_override = wood_mat
+	bar.position = Vector3(0, 2.85, 0)
+	bar.rotation_degrees = Vector3(0, 0, 90)
+	well.add_child(bar)
+	# Sloped roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(2.20, 0.55, 1.10)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.40, 0.20, 0.15)
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 3.30, 0)
+	well.add_child(roof)
+	# Rope + bucket
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rmm: CylinderMesh = CylinderMesh.new()
+	rmm.top_radius = 0.025
+	rmm.bottom_radius = 0.025
+	rmm.height = 1.40
+	rope.mesh = rmm
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope.material_override = rope_mat
+	rope.position = Vector3(0.30, 2.10, 0)
+	well.add_child(rope)
+	var bucket: MeshInstance3D = MeshInstance3D.new()
+	var bm2: CylinderMesh = CylinderMesh.new()
+	bm2.top_radius = 0.18
+	bm2.bottom_radius = 0.14
+	bm2.height = 0.20
+	bucket.mesh = bm2
+	bucket.material_override = wood_mat
+	bucket.position = Vector3(0.30, 1.30, 0)
+	well.add_child(bucket)
+	# Well collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 1.0
+	cap.height = 1.85
+	cs.shape = cap
+	sb.add_child(cs)
+	well.add_child(sb)
+
+
+func _build_d7_blacksmith_forge(geom: Node) -> void:
+	## Epic-7 T72: blacksmith forge — stone fire pit + anvil + bellows.
+	var forge: Node3D = Node3D.new()
+	forge.name = "BlacksmithForge"
+	forge.position = Vector3(D7_CENTER.x + 24.0, 0.0, -2.0)
+	geom.add_child(forge)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.40, 0.30, 0.20)
+	stone_mat.roughness = 0.92
+	var dark_metal: StandardMaterial3D = StandardMaterial3D.new()
+	dark_metal.albedo_color = Color(0.20, 0.18, 0.20)
+	dark_metal.metallic = 0.85
+	dark_metal.roughness = 0.30
+	# Forge box
+	var fbox: MeshInstance3D = MeshInstance3D.new()
+	var fbm: BoxMesh = BoxMesh.new()
+	fbm.size = Vector3(1.85, 1.10, 1.85)
+	fbox.mesh = fbm
+	fbox.material_override = stone_mat
+	fbox.position = Vector3(0, 0.55, 0)
+	forge.add_child(fbox)
+	# Hot fire core
+	var fire: MeshInstance3D = MeshInstance3D.new()
+	var fm: SphereMesh = SphereMesh.new()
+	fm.radius = 0.45
+	fm.height = 0.55
+	fire.mesh = fm
+	var fire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fire_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	fire_mat.emission_enabled = true
+	fire_mat.emission = Color(1.0, 0.45, 0.05)
+	fire_mat.emission_energy_multiplier = 4.5
+	fire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fire.material_override = fire_mat
+	fire.position = Vector3(0, 1.40, 0)
+	forge.add_child(fire)
+	var tw: Tween = fire.create_tween().set_loops()
+	tw.tween_property(fire, "scale", Vector3(1.20, 1.30, 1.20), 0.20)
+	tw.tween_property(fire, "scale", Vector3(0.85, 0.85, 0.85), 0.20)
+	# Hot light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.55, 0.10)
+	light.light_energy = 4.0
+	light.omni_range = 7.0
+	light.position = Vector3(0, 1.40, 0)
+	forge.add_child(light)
+	# Anvil
+	var anvil_block: MeshInstance3D = MeshInstance3D.new()
+	var abm: BoxMesh = BoxMesh.new()
+	abm.size = Vector3(0.55, 0.85, 0.40)
+	anvil_block.mesh = abm
+	anvil_block.material_override = dark_metal
+	anvil_block.position = Vector3(2.40, 0.42, 0)
+	forge.add_child(anvil_block)
+	var anvil_top: MeshInstance3D = MeshInstance3D.new()
+	var atm: BoxMesh = BoxMesh.new()
+	atm.size = Vector3(0.85, 0.20, 0.55)
+	anvil_top.mesh = atm
+	anvil_top.material_override = dark_metal
+	anvil_top.position = Vector3(2.40, 0.95, 0)
+	forge.add_child(anvil_top)
+	# Bellows
+	var bellows: MeshInstance3D = MeshInstance3D.new()
+	var bem: SphereMesh = SphereMesh.new()
+	bem.radius = 0.55
+	bem.height = 0.55
+	bellows.mesh = bem
+	var bellows_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bellows_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	bellows_mat.roughness = 0.85
+	bellows.material_override = bellows_mat
+	bellows.position = Vector3(-2.0, 0.55, 0)
+	bellows.scale = Vector3(0.85, 0.65, 1.40)
+	forge.add_child(bellows)
+	var twp: Tween = bellows.create_tween().set_loops()
+	twp.tween_property(bellows, "scale", Vector3(0.85, 0.45, 1.40), 0.55)
+	twp.tween_property(bellows, "scale", Vector3(0.85, 0.65, 1.40), 0.55)
+	# Forge collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 1.10, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	forge.add_child(sb)
+	# Anvil collision
+	var asb: StaticBody3D = StaticBody3D.new()
+	asb.position = Vector3(2.40, 0.55, 0)
+	var acs: CollisionShape3D = CollisionShape3D.new()
+	var acb: BoxShape3D = BoxShape3D.new()
+	acb.size = Vector3(0.85, 1.10, 0.55)
+	acs.shape = acb
+	asb.add_child(acs)
+	forge.add_child(asb)
+
+
+func _build_d7_blacksmith_npc() -> void:
+	## Epic-7 T73: D7 blacksmith NPC — leather apron + held hammer.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7BlacksmithSlot"
+	slot.position = Vector3(D7_CENTER.x + 23.0, 0.0, -2.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Blacksmith"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Forgewright")
+	if "npc_id" in npc:
+		npc.set("npc_id", "blacksmith_d7")
+	slot.add_child(npc)
+	# Leather apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.95, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	apron_mat.metallic = 0.30
+	apron_mat.roughness = 0.65
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Held hammer
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.04
+	hm.bottom_radius = 0.05
+	hm.height = 0.55
+	handle.mesh = hm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(handle)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: BoxMesh = BoxMesh.new()
+	hdm.size = Vector3(0.18, 0.18, 0.30)
+	head.mesh = hdm
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	head.material_override = metal_mat
+	head.position = Vector3(0.40, 1.10, 0.20)
+	npc.add_child(head)
+
+
+func _build_d7_weapon_display(geom: Node) -> void:
+	## Epic-7 T74: crafted weapon display rack — wood frame with 5 weapons.
+	var disp: Node3D = Node3D.new()
+	disp.name = "WeaponDisplay"
+	disp.position = Vector3(D7_CENTER.x + 28.0, 0.0, -2.0)
+	geom.add_child(disp)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Frame
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(2.85, 2.40, 0.30)
+	frame.mesh = fm
+	frame.material_override = wood_mat
+	frame.position = Vector3(0, 1.20, 0)
+	disp.add_child(frame)
+	# 5 weapons
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	bronze_mat.metallic = 0.85
+	bronze_mat.roughness = 0.30
+	var x_positions: Array = [-1.10, -0.55, 0.0, 0.55, 1.10]
+	for i in 5:
+		var x: float = x_positions[i]
+		# Handle
+		var handle: MeshInstance3D = MeshInstance3D.new()
+		var hm: CylinderMesh = CylinderMesh.new()
+		hm.top_radius = 0.025
+		hm.bottom_radius = 0.025
+		hm.height = 1.40
+		handle.mesh = hm
+		handle.material_override = wood_mat
+		handle.position = Vector3(x, 1.20, 0.18)
+		disp.add_child(handle)
+		# Different weapon head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		if i == 0 or i == 4:
+			# Sword/dagger blade
+			var bmm: BoxMesh = BoxMesh.new()
+			bmm.size = Vector3(0.06, 0.85 if i == 0 else 0.55, 0.04)
+			head.mesh = bmm
+			head.material_override = blade_mat
+		elif i == 1:
+			# Axe
+			var pm2: PrismMesh = PrismMesh.new()
+			pm2.size = Vector3(0.18, 0.40, 0.06)
+			head.mesh = pm2
+			head.material_override = blade_mat
+		elif i == 2:
+			# Spear tip
+			var pm2: PrismMesh = PrismMesh.new()
+			pm2.size = Vector3(0.08, 0.40, 0.04)
+			head.mesh = pm2
+			head.material_override = blade_mat
+		else:
+			# Hammer head
+			var bmm: BoxMesh = BoxMesh.new()
+			bmm.size = Vector3(0.18, 0.20, 0.30)
+			head.mesh = bmm
+			head.material_override = bronze_mat
+		head.position = Vector3(x, 1.95, 0.20)
+		disp.add_child(head)
+	# Frame collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 2.40, 0.30)
+	cs.shape = cb
+	sb.add_child(cs)
+	disp.add_child(sb)
+
+
+func _build_d7_tea_garden_benches(geom: Node) -> void:
+	## Epic-7 T75: 4 wooden tea garden benches arranged in a small group.
+	var benches: Node3D = Node3D.new()
+	benches.name = "TeaGardenBenches"
+	benches.position = Vector3(D7_CENTER.x - 22.0, 0.0, 8.0)
+	geom.add_child(benches)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 2.85, 0,  0.0),
+		Vector3( 0.0, 0,  2.40),
+		Vector3( 2.85, 0,  2.40),
+	]
+	var rotations: Array = [0.0, 180.0, 0.0, 180.0]
+	for i in 4:
+		var bench: Node3D = Node3D.new()
+		bench.position = positions[i]
+		bench.rotation_degrees = Vector3(0, rotations[i], 0)
+		benches.add_child(bench)
+		# Seat
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.85, 0.18, 0.55)
+		seat.mesh = sm
+		seat.material_override = wood_mat
+		seat.position = Vector3(0, 0.55, 0)
+		bench.add_child(seat)
+		# 2 legs
+		for sx in [-0.85, 0.85]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.18, 0.55, 0.40)
+			leg.mesh = lm
+			leg.material_override = wood_mat
+			leg.position = Vector3(sx, 0.27, 0)
+			bench.add_child(leg)
+		# Backrest
+		var back: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.85, 0.65, 0.10)
+		back.mesh = bm
+		back.material_override = wood_mat
+		back.position = Vector3(0, 0.95, -0.20)
+		bench.add_child(back)
+		# Bench collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.85, 1.30, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		bench.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
