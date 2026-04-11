@@ -81,6 +81,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_iterations_memorial_wall(geom)
 	_build_th_memorial_mourner_npc(town)
 	_build_th_wishing_pond(geom)
+	_build_th_pond_caretaker_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -11478,3 +11479,196 @@ func _build_th_wishing_pond(geom: Node) -> void:
 	var wpulse: Tween = pivot.create_tween().set_loops()
 	wpulse.tween_property(water_mat, "emission_energy_multiplier", 2.2, 2.4).set_ease(Tween.EASE_IN_OUT)
 	wpulse.tween_property(water_mat, "emission_energy_multiplier", 1.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_pond_caretaker_npc(town: Node) -> void:
+	## Epic-10 T65: Pond Caretaker Sage Mira NPC — elder NPC tending the
+	## wishing pond. Stands beside it holding a brass long-handled scoop,
+	## with cyan-trimmed teal robe matching the pond theme. Slow tending sway,
+	## scoop gently rises and falls as if scooping ripples.
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node = npc_scene.instantiate()
+	npc.name = "Sage_Mira_PondCaretaker"
+	# Position: just beside the wishing pond (NNW radius 11.5, ang ~PI*0.62)
+	# Place at the same angle but pulled slightly inward + offset to one side
+	var ang_pos: float = PI * 0.62
+	var rad_pos: float = 9.40
+	var px: float = cos(ang_pos) * rad_pos + 0.85
+	var pz: float = sin(ang_pos) * rad_pos - 0.45
+	if npc is Node3D:
+		(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+		# Face the pond
+		var pond_x: float = cos(ang_pos) * 11.5
+		var pond_z: float = sin(ang_pos) * 11.5
+		(npc as Node3D).rotation.y = atan2(pond_x - px, pond_z - pz)
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sage Mira")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_pond_caretaker")
+	town.add_child(npc)
+	# ---- Cosmetic overlay (teal-and-brass robe) ----
+	var ovl: Node3D = Node3D.new()
+	ovl.name = "PondCaretakerOverlay"
+	if npc is Node3D:
+		(npc as Node3D).add_child(ovl)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.18, 0.45, 0.55)
+	robe_mat.metallic = 0.10
+	robe_mat.roughness = 0.85
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.75, 0.95)
+	robe_mat.emission_energy_multiplier = 0.30
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.40, 0.95, 1.0)
+	trim_mat.metallic = 0.30
+	trim_mat.roughness = 0.55
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.50, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 1.40
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.85, 0.78, 0.65)
+	skin_mat.roughness = 0.85
+	# Long teal robe (covers torso + legs)
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(0.92, 1.85, 0.55)
+	robe.mesh = rmm
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 1.00, 0)
+	ovl.add_child(robe)
+	# Robe hem flare
+	var hem: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.45
+	hmm.bottom_radius = 0.62
+	hmm.height = 0.55
+	hem.mesh = hmm
+	hem.material_override = robe_mat
+	hem.position = Vector3(0, 0.30, 0)
+	ovl.add_child(hem)
+	# Cyan trim band at the chest
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var tmm: BoxMesh = BoxMesh.new()
+	tmm.size = Vector3(0.95, 0.08, 0.58)
+	trim.mesh = tmm
+	trim.material_override = trim_mat
+	trim.position = Vector3(0, 1.40, 0)
+	ovl.add_child(trim)
+	# Head (silver-haired elder)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hdm: SphereMesh = SphereMesh.new()
+	hdm.radius = 0.20
+	hdm.height = 0.42
+	head.mesh = hdm
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.95, 0)
+	ovl.add_child(head)
+	# Silver hair cap
+	var hair: MeshInstance3D = MeshInstance3D.new()
+	var hrm: SphereMesh = SphereMesh.new()
+	hrm.radius = 0.21
+	hrm.height = 0.30
+	hair.mesh = hrm
+	var hair_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hair_mat.albedo_color = Color(0.82, 0.85, 0.90)
+	hair_mat.roughness = 0.78
+	hair_mat.emission_enabled = true
+	hair_mat.emission = Color(0.85, 0.90, 1.0)
+	hair_mat.emission_energy_multiplier = 0.20
+	hair.material_override = hair_mat
+	hair.position = Vector3(0, 2.10, -0.02)
+	ovl.add_child(hair)
+	# Two small cyan eye dots
+	for s in [-1.0, 1.0]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emm: SphereMesh = SphereMesh.new()
+		emm.radius = 0.025
+		emm.height = 0.05
+		eye.mesh = emm
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(0.55, 0.95, 1.0)
+		eye_mat.emission_energy_multiplier = 5.0
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = eye_mat
+		eye.position = Vector3(0.07 * s, 1.97, 0.18)
+		ovl.add_child(eye)
+	# Brass shoulder clasp
+	var clasp: MeshInstance3D = MeshInstance3D.new()
+	var clm: SphereMesh = SphereMesh.new()
+	clm.radius = 0.07
+	clm.height = 0.14
+	clasp.mesh = clm
+	clasp.material_override = brass_mat
+	clasp.position = Vector3(0.30, 1.65, 0)
+	ovl.add_child(clasp)
+	# ---- Long brass scoop staff (held in front) ----
+	var scoop_pivot: Node3D = Node3D.new()
+	scoop_pivot.position = Vector3(0.20, 1.20, -0.20)
+	scoop_pivot.rotation.x = -0.35  # angled forward+down toward pond
+	ovl.add_child(scoop_pivot)
+	# Staff shaft
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var shm: CylinderMesh = CylinderMesh.new()
+	shm.top_radius = 0.025
+	shm.bottom_radius = 0.030
+	shm.height = 1.40
+	shaft.mesh = shm
+	shaft.material_override = brass_mat
+	shaft.position = Vector3(0, 0, -0.70)
+	shaft.rotation.x = PI / 2.0
+	scoop_pivot.add_child(shaft)
+	# Scoop bowl at the end
+	var scoop: MeshInstance3D = MeshInstance3D.new()
+	var sbm: SphereMesh = SphereMesh.new()
+	sbm.radius = 0.10
+	sbm.height = 0.18
+	scoop.mesh = sbm
+	scoop.material_override = brass_mat
+	scoop.position = Vector3(0, -0.04, -1.45)
+	scoop_pivot.add_child(scoop)
+	# Tiny shimmer drop hovering near scoop tip
+	var drop_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drop_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	drop_mat.emission_enabled = true
+	drop_mat.emission = Color(0.55, 0.95, 1.0)
+	drop_mat.emission_energy_multiplier = 5.5
+	drop_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var drop: MeshInstance3D = MeshInstance3D.new()
+	var dpm: SphereMesh = SphereMesh.new()
+	dpm.radius = 0.04
+	dpm.height = 0.08
+	drop.mesh = dpm
+	drop.material_override = drop_mat
+	drop.position = Vector3(0, 0.04, -1.45)
+	scoop_pivot.add_child(drop)
+	# Subtle warm light from the caretaker
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.20)
+	lt.light_color = Color(0.55, 0.95, 1.0)
+	lt.light_energy = 1.10
+	lt.omni_range = 3.0
+	ovl.add_child(lt)
+	# ---- Tending sway: scoop arm rises and falls ----
+	var stir: Tween = scoop_pivot.create_tween().set_loops()
+	stir.tween_property(scoop_pivot, "rotation:x", -0.18, 1.8).set_ease(Tween.EASE_IN_OUT)
+	stir.tween_property(scoop_pivot, "rotation:x", -0.45, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Drop pulse + gentle bob
+	var dpulse: Tween = scoop_pivot.create_tween().set_loops()
+	dpulse.tween_property(drop_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(drop_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Slow body breathing
+	var breath: Tween = ovl.create_tween().set_loops()
+	breath.tween_property(ovl, "scale:y", 1.012, 2.2).set_ease(Tween.EASE_IN_OUT)
+	breath.tween_property(ovl, "scale:y", 0.992, 2.2).set_ease(Tween.EASE_IN_OUT)
