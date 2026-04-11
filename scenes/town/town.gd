@@ -8915,6 +8915,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_chess_player_npc()
 	# Epic-5 T75: large data crystal cluster
 	_build_d5_crystal_cluster(geom)
+	# Epic-5 T76: giant snow globe sculpture
+	_build_d5_snow_globe(geom)
+	# Epic-5 T77: cellist musician NPC
+	_build_d5_cellist_npc()
+	# Epic-5 T78: frosted lamp post row
+	_build_d5_frosted_lamps(geom)
+	# Epic-5 T79: arctic owl creature
+	_build_d5_arctic_owl(geom)
+	# Epic-5 T80: ice rune ring of 9 stones
+	_build_d5_rune_ring(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -14972,6 +14982,480 @@ func _build_d5_crystal_cluster(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	cluster.add_child(sb)
+
+
+func _build_d5_snow_globe(geom: Node) -> void:
+	## Epic-5 T76: giant snow globe sculpture — wooden base + huge clear
+	## glass sphere containing a tiny ice village (3 huts) and slow GPU
+	## "snow inside the globe" particles.
+	var globe: Node3D = Node3D.new()
+	globe.name = "SnowGlobeSculpture"
+	globe.position = Vector3(D5_CENTER.x + 0.0, 0.0, 8.0)
+	geom.add_child(globe)
+	# Wooden base
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.65
+	bm.bottom_radius = 1.85
+	bm.height = 0.65
+	base.mesh = bm
+	base.material_override = wood_mat
+	base.position = Vector3(0, 0.32, 0)
+	globe.add_child(base)
+	# Glass sphere
+	var glass: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 1.85
+	gm.height = 3.70
+	glass.mesh = gm
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.30)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.65, 0.85, 1.0)
+	glass_mat.emission_energy_multiplier = 0.45
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.05
+	glass.material_override = glass_mat
+	glass.position = Vector3(0, 2.50, 0)
+	globe.add_child(glass)
+	# 3 tiny huts inside
+	var hut_wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hut_wood_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	hut_wood_mat.roughness = 0.85
+	var hut_roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hut_roof_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	hut_roof_mat.roughness = 0.85
+	var hut_positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 0.55, 0, -0.45),
+		Vector3(-0.50, 0,  0.45),
+	]
+	for pos in hut_positions:
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bbm: BoxMesh = BoxMesh.new()
+		bbm.size = Vector3(0.40, 0.30, 0.40)
+		body.mesh = bbm
+		body.material_override = hut_wood_mat
+		body.position = Vector3(pos.x, 1.95 + 0.15, pos.z)
+		globe.add_child(body)
+		var roof: MeshInstance3D = MeshInstance3D.new()
+		var rm: PrismMesh = PrismMesh.new()
+		rm.size = Vector3(0.50, 0.20, 0.45)
+		roof.mesh = rm
+		roof.material_override = hut_roof_mat
+		roof.position = Vector3(pos.x, 1.95 + 0.40, pos.z)
+		globe.add_child(roof)
+	# Tiny snow particles inside the globe
+	var snow: GPUParticles3D = GPUParticles3D.new()
+	snow.amount = 40
+	snow.lifetime = 5.0
+	snow.preprocess = 3.0
+	snow.position = Vector3(0, 3.85, 0)
+	snow.visibility_aabb = AABB(Vector3(-2, -3, -2), Vector3(4, 4, 4))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pm.emission_sphere_radius = 1.65
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 35.0
+	pm.gravity = Vector3(0, -0.18, 0)
+	pm.initial_velocity_min = 0.05
+	pm.initial_velocity_max = 0.20
+	pm.scale_min = 0.04
+	pm.scale_max = 0.08
+	pm.color = Color(0.95, 0.97, 1.0)
+	snow.process_material = pm
+	var flake_mesh: SphereMesh = SphereMesh.new()
+	flake_mesh.radius = 0.04
+	flake_mesh.height = 0.08
+	snow.draw_pass_1 = flake_mesh
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.95, 0.97, 1.0)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.85, 0.95, 1.0)
+	fmat.emission_energy_multiplier = 1.4
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flake_mesh.material = fmat
+	globe.add_child(snow)
+	# Soft glow light inside
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.55, 0.85, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 5.5
+	light.position = Vector3(0, 2.50, 0)
+	globe.add_child(light)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: SphereShape3D = SphereShape3D.new()
+	cap.radius = 1.85
+	cs.shape = cap
+	sb.add_child(cs)
+	globe.add_child(sb)
+
+
+func _build_d5_cellist_npc() -> void:
+	## Epic-5 T77: cellist musician NPC playing an ice cello at the cocoa
+	## stand area. Brown formal jacket + bowing motion.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CellistSlot"
+	slot.position = Vector3(D5_CENTER.x + 2.0, 0.0, 14.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Cellist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Adagio")
+	if "npc_id" in npc:
+		npc.set("npc_id", "cellist_d5")
+	slot.add_child(npc)
+	# Brown formal jacket
+	var jacket: MeshInstance3D = MeshInstance3D.new()
+	var jm: BoxMesh = BoxMesh.new()
+	jm.size = Vector3(0.65, 1.05, 0.40)
+	jacket.mesh = jm
+	var jacket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jacket_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	jacket_mat.roughness = 0.65
+	jacket.material_override = jacket_mat
+	jacket.position = Vector3(0, 0.55, 0)
+	npc.add_child(jacket)
+	# Ice cello body (large translucent prism in front of NPC)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.85
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var cello: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(0.55, 1.20, 0.20)
+	cello.mesh = cbm
+	cello.material_override = ice_mat
+	cello.position = Vector3(0, 0.85, 0.42)
+	cello.scale = Vector3(1.0, 1.0, 0.85)
+	npc.add_child(cello)
+	# Cello neck (thin vertical cylinder above body)
+	var neck: MeshInstance3D = MeshInstance3D.new()
+	var nm: CylinderMesh = CylinderMesh.new()
+	nm.top_radius = 0.04
+	nm.bottom_radius = 0.05
+	nm.height = 0.85
+	neck.mesh = nm
+	neck.material_override = ice_mat
+	neck.position = Vector3(0, 1.85, 0.42)
+	npc.add_child(neck)
+	# Bow (long thin wooden cylinder + horsehair line)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bow_m: CylinderMesh = CylinderMesh.new()
+	bow_m.top_radius = 0.02
+	bow_m.bottom_radius = 0.03
+	bow_m.height = 0.85
+	bow.mesh = bow_m
+	bow.material_override = wood_mat
+	bow.position = Vector3(0.35, 0.85, 0.55)
+	bow.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(bow)
+	# Bow stroke tween (back and forth motion)
+	var tw: Tween = bow.create_tween().set_loops()
+	tw.tween_property(bow, "position:x", 0.65, 0.55)
+	tw.tween_property(bow, "position:x", 0.05, 0.55)
+	# 4 musical note glows floating up from the cello
+	var note_mat: StandardMaterial3D = StandardMaterial3D.new()
+	note_mat.albedo_color = Color(0.85, 0.55, 0.95)
+	note_mat.emission_enabled = true
+	note_mat.emission = Color(0.85, 0.45, 0.95)
+	note_mat.emission_energy_multiplier = 2.5
+	note_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var note: MeshInstance3D = MeshInstance3D.new()
+		var nm2: SphereMesh = SphereMesh.new()
+		nm2.radius = 0.06
+		nm2.height = 0.12
+		note.mesh = nm2
+		note.material_override = note_mat
+		note.position = Vector3(randf_range(-0.20, 0.20), 1.85 + i * 0.30, 0.55)
+		npc.add_child(note)
+		# Float up and fade
+		var tn: Tween = note.create_tween().set_loops()
+		tn.tween_interval(i * 0.40)
+		tn.tween_property(note, "position:y", 3.20, 1.85)
+		tn.tween_property(note, "position:y", 1.85, 0.0)
+
+
+func _build_d5_frosted_lamps(geom: Node) -> void:
+	## Epic-5 T78: 6 frosted lamp posts in a row leading toward the warden,
+	## warm white glow contrasting with the cold cyan district lights.
+	var lamps: Node3D = Node3D.new()
+	lamps.name = "FrostedLamps"
+	lamps.position = Vector3(D5_CENTER.x - 12.0, 0.0, -2.0)
+	geom.add_child(lamps)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.35)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.95, 0.92, 0.85, 0.85)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(1.0, 0.92, 0.75)
+	glass_mat.emission_energy_multiplier = 2.5
+	glass_mat.metallic = 0.30
+	glass_mat.roughness = 0.10
+	for i in 6:
+		var lamp: Node3D = Node3D.new()
+		lamp.position = Vector3(i * 2.40, 0, 0)
+		lamps.add_child(lamp)
+		# Tall metal post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.10
+		pm.height = 2.85
+		post.mesh = pm
+		post.material_override = metal_mat
+		post.position = Vector3(0, 1.42, 0)
+		lamp.add_child(post)
+		# Top arm (horizontal small cylinder)
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.05
+		am.bottom_radius = 0.05
+		am.height = 0.40
+		arm.mesh = am
+		arm.material_override = metal_mat
+		arm.position = Vector3(0.20, 2.85, 0)
+		arm.rotation_degrees = Vector3(0, 0, 90)
+		lamp.add_child(arm)
+		# Lamp head (frosted glass sphere)
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.20
+		hm.height = 0.36
+		head.mesh = hm
+		head.material_override = glass_mat
+		head.position = Vector3(0.40, 2.65, 0)
+		lamp.add_child(head)
+		# Cone-shaped frost cap on top of head
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: PrismMesh = PrismMesh.new()
+		cmm.size = Vector3(0.30, 0.18, 0.30)
+		cap.mesh = cmm
+		cap.material_override = metal_mat
+		cap.position = Vector3(0.40, 2.92, 0)
+		lamp.add_child(cap)
+		# Light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.92, 0.75)
+		light.light_energy = 1.4
+		light.omni_range = 4.0
+		light.position = Vector3(0.40, 2.65, 0)
+		lamp.add_child(light)
+		# Subtle pulse offset per lamp
+		var tw: Tween = light.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(light, "light_energy", 1.85, 1.0)
+		tw.tween_property(light, "light_energy", 1.4, 1.0)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var capshape: CapsuleShape3D = CapsuleShape3D.new()
+		capshape.radius = 0.10
+		capshape.height = 2.85
+		cs.shape = capshape
+		sb.add_child(cs)
+		lamp.add_child(sb)
+
+
+func _build_d5_arctic_owl(geom: Node) -> void:
+	## Epic-5 T79: small arctic owl perched on a high crystal — white
+	## body, bright golden eyes, slow head turn animation.
+	var owl: Node3D = Node3D.new()
+	owl.name = "ArcticOwl"
+	owl.position = Vector3(D5_CENTER.x - 10.0, 0.0, -22.0)
+	geom.add_child(owl)
+	# Perch crystal (small ice prism)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	var perch: MeshInstance3D = MeshInstance3D.new()
+	var pmm: PrismMesh = PrismMesh.new()
+	pmm.size = Vector3(0.45, 1.85, 0.45)
+	perch.mesh = pmm
+	perch.material_override = ice_mat
+	perch.position = Vector3(0, 0.92, 0)
+	owl.add_child(perch)
+	# Owl body (round white sphere)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.95, 0.97, 1.0)
+	fur_mat.roughness = 0.85
+	fur_mat.emission_enabled = true
+	fur_mat.emission = Color(0.85, 0.92, 1.0)
+	fur_mat.emission_energy_multiplier = 0.20
+	var owl_pivot: Node3D = Node3D.new()
+	owl_pivot.position = Vector3(0, 2.10, 0)
+	owl.add_child(owl_pivot)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.30
+	bm.height = 0.55
+	body.mesh = bm
+	body.material_override = fur_mat
+	body.position = Vector3(0, 0, 0)
+	body.scale = Vector3(0.95, 1.10, 0.85)
+	owl_pivot.add_child(body)
+	# 2 large golden eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.85, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.85, 0.20)
+	eye_mat.emission_energy_multiplier = 3.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.07
+		em.height = 0.14
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 0.10, 0.22)
+		owl_pivot.add_child(eye)
+		# Eye black pupil
+		var pupil: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: SphereMesh = SphereMesh.new()
+		pmesh.radius = 0.025
+		pmesh.height = 0.05
+		pupil.mesh = pmesh
+		var pupil_mat: StandardMaterial3D = StandardMaterial3D.new()
+		pupil_mat.albedo_color = Color(0.05, 0.05, 0.05)
+		pupil_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pupil.material_override = pupil_mat
+		pupil.position = Vector3(ex, 0.10, 0.28)
+		owl_pivot.add_child(pupil)
+	# Beak
+	var beak: MeshInstance3D = MeshInstance3D.new()
+	var bkm: PrismMesh = PrismMesh.new()
+	bkm.size = Vector3(0.06, 0.10, 0.10)
+	beak.mesh = bkm
+	var beak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beak_mat.albedo_color = Color(0.95, 0.65, 0.10)
+	beak.material_override = beak_mat
+	beak.position = Vector3(0, 0.02, 0.28)
+	beak.rotation_degrees = Vector3(180, 0, 0)
+	owl_pivot.add_child(beak)
+	# Slow head turn (owl)
+	var tw: Tween = owl_pivot.create_tween().set_loops()
+	tw.tween_property(owl_pivot, "rotation_degrees:y", 90.0, 2.5)
+	tw.tween_interval(1.5)
+	tw.tween_property(owl_pivot, "rotation_degrees:y", -90.0, 2.5)
+	tw.tween_interval(1.5)
+	tw.tween_property(owl_pivot, "rotation_degrees:y", 0.0, 0.5)
+	# Perch collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var capsh: CapsuleShape3D = CapsuleShape3D.new()
+	capsh.radius = 0.30
+	capsh.height = 1.85
+	cs.shape = capsh
+	sb.add_child(cs)
+	owl.add_child(sb)
+
+
+func _build_d5_rune_ring(geom: Node) -> void:
+	## Epic-5 T80: ring of 9 small rune stones — short ice pillars in a
+	## perfect circle, each carved with a glowing cyan symbol.
+	var ring: Node3D = Node3D.new()
+	ring.name = "IceRuneRing"
+	ring.position = Vector3(D5_CENTER.x - 14.0, 0.0, -2.0)
+	geom.add_child(ring)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.30, 1.0, 1.0)
+	rune_mat.emission_energy_multiplier = 2.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 9:
+		var ang: float = (TAU / 9.0) * i
+		var stone: Node3D = Node3D.new()
+		stone.position = Vector3(cos(ang) * 3.40, 0, sin(ang) * 3.40)
+		stone.rotation.y = -ang + PI * 0.5
+		ring.add_child(stone)
+		# Pillar
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.40, 1.40, 0.30)
+		pillar.mesh = pm
+		pillar.material_override = ice_mat
+		pillar.position = Vector3(0, 0.70, 0)
+		stone.add_child(pillar)
+		# Rune carving
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.18, 0.45, 0.04)
+		rune.mesh = rm
+		rune.material_override = rune_mat
+		rune.position = Vector3(0, 0.70, 0.18)
+		stone.add_child(rune)
+		# Pulse the rune
+		var tw: Tween = rune.create_tween().set_loops()
+		tw.tween_interval(i * 0.18)
+		tw.tween_property(rune, "scale:y", 1.20, 0.85)
+		tw.tween_property(rune, "scale:y", 0.85, 0.85)
+		# Stone collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.70, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.40, 1.40, 0.30)
+		cs.shape = cb
+		sb.add_child(cs)
+		stone.add_child(sb)
+	# Central low altar disc
+	var altar: MeshInstance3D = MeshInstance3D.new()
+	var am: CylinderMesh = CylinderMesh.new()
+	am.top_radius = 0.85
+	am.bottom_radius = 0.95
+	am.height = 0.30
+	altar.mesh = am
+	altar.material_override = ice_mat
+	altar.position = Vector3(0, 0.15, 0)
+	ring.add_child(altar)
+	# Center light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.0
+	light.omni_range = 6.0
+	light.position = Vector3(0, 0.55, 0)
+	ring.add_child(light)
 
 
 
