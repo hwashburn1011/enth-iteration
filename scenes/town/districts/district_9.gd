@@ -82,6 +82,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_forge_cart_caravan(geom)
 	_build_d9_ore_vein_cliff(geom)
 	_build_d9_mine_foreman_npc(town)
+	_build_d9_hammer_target_dummy(geom)
 	print("[D9Builder] done")
 
 
@@ -5739,5 +5740,126 @@ func _build_d9_mine_foreman_npc(town: Node) -> void:
 	var blink: Tween = npc.create_tween().set_loops()
 	blink.tween_property(lamp_mat, "emission_energy_multiplier", 10.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	blink.tween_property(lamp_mat, "emission_energy_multiplier", 6.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_hammer_target_dummy(geom: Node) -> void:
+	## Epic-9 T62: heavy iron training target dummy near the forge anvil
+	## shrine. Stout iron post with a target ring, dent decals on the
+	## front face, swaying recoil animation when hit (idle subtle wobble).
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_HammerTargetDummy"
+	pivot.position = D9_CENTER + Vector3(64, 0, 2)
+	geom.add_child(pivot)
+	# Iron material
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(1.0, 0.30, 0.05)
+	iron_mat.emission_energy_multiplier = 0.30
+	# Stone base anchor
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bcm: CylinderMesh = CylinderMesh.new()
+	bcm.top_radius = 0.85
+	bcm.bottom_radius = 1.00
+	bcm.height = 0.35
+	base.mesh = bcm
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	stone_mat.roughness = 0.85
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.18, 0)
+	pivot.add_child(base)
+	# Main post — tall iron cylinder
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.45
+	pcm.bottom_radius = 0.55
+	pcm.height = 2.20
+	post.mesh = pcm
+	post.material_override = iron_mat
+	post.position = Vector3(0, 1.45, 0)
+	pivot.add_child(post)
+	# Target ring on the front of the post — torus facing camera
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var trm: TorusMesh = TorusMesh.new()
+	trm.inner_radius = 0.30
+	trm.outer_radius = 0.40
+	ring.mesh = trm
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.55, 0.10)
+	ring_mat.emission_energy_multiplier = 5.5
+	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = ring_mat
+	ring.position = Vector3(0, 1.85, -0.55)
+	ring.rotation.x = PI / 2.0
+	pivot.add_child(ring)
+	# Bullseye dot in the center of the ring
+	var dot: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.10
+	dm.height = 0.20
+	dot.mesh = dm
+	var dot_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dot_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	dot_mat.emission_enabled = true
+	dot_mat.emission = Color(1.0, 0.85, 0.30)
+	dot_mat.emission_energy_multiplier = 7.0
+	dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dot.material_override = dot_mat
+	dot.position = Vector3(0, 1.85, -0.62)
+	pivot.add_child(dot)
+	# 3 dent decals around the ring (small dark unshaded boxes for "scuffs")
+	var dent_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dent_mat.albedo_color = Color(0.05, 0.04, 0.03)
+	dent_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var ang: float = (TAU / 3.0) * float(i) + 0.40
+		var dent: MeshInstance3D = MeshInstance3D.new()
+		var dnt_box: BoxMesh = BoxMesh.new()
+		dnt_box.size = Vector3(0.18, 0.04, 0.04)
+		dent.mesh = dnt_box
+		dent.material_override = dent_mat
+		dent.position = Vector3(cos(ang) * 0.55, 1.85 + sin(ang) * 0.55, -0.55)
+		dent.rotation.z = ang
+		pivot.add_child(dent)
+	# Score marks scratched in the side of the post — short emissive bars
+	for i in 5:
+		var mark: MeshInstance3D = MeshInstance3D.new()
+		var mb: BoxMesh = BoxMesh.new()
+		mb.size = Vector3(0.04, 0.20, 0.04)
+		mark.mesh = mb
+		mark.material_override = ring_mat
+		mark.position = Vector3(0.50, 0.65 + float(i) * 0.10, 0.40)
+		mark.rotation.z = -0.20
+		pivot.add_child(mark)
+	# Swaying idle wobble — subtle so it reads as "ready to be hit"
+	var wobble: Tween = pivot.create_tween().set_loops()
+	wobble.tween_property(post, "rotation:z", 0.025, 1.5).set_ease(Tween.EASE_IN_OUT)
+	wobble.tween_property(post, "rotation:z", -0.025, 1.5).set_ease(Tween.EASE_IN_OUT)
+	# Bullseye dot pulse to call attention
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(dot_mat, "emission_energy_multiplier", 9.0, 0.85).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(dot_mat, "emission_energy_multiplier", 5.0, 0.85).set_ease(Tween.EASE_IN_OUT)
+	# Target light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.85, -0.70)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.4
+	lt.omni_range = 5.5
+	pivot.add_child(lt)
+	# Solid post collision so the player can't walk through
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.45, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.height = 2.20
+	cyl.radius = 0.55
+	cs.shape = cyl
+	stb.add_child(cs)
+	pivot.add_child(stb)
 
 
