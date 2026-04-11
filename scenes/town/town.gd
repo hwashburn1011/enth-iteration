@@ -1985,6 +1985,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_dandelion_patch(geom)
 	# Epic-4 T70: rope swing hanging from a tree branch
 	_build_d4_rope_swing(geom)
+	# Epic-4 T71: ancient willow tree with drooping vines
+	_build_d4_ancient_willow(geom)
+	# Epic-4 T72: stone garden statue (woodland deity)
+	_build_d4_garden_statue(geom)
+	# Epic-4 T73: forager NPC with mushroom basket
+	_build_d4_forager_npc()
+	# Epic-4 T74: fairy lights strung between trees
+	_build_d4_fairy_lights(geom)
+	# Epic-4 T75: petal drift particles
+	_build_d4_petal_drift(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -6349,6 +6359,349 @@ func _build_d4_rope_swing(geom: Node) -> void:
 	cs.shape = cap
 	sb.add_child(cs)
 	swing.add_child(sb)
+
+
+func _build_d4_ancient_willow(geom: Node) -> void:
+	## Epic-4 T71: massive ancient willow — fat trunk, broad bowl-shaped
+	## canopy, and drooping vine ropes that hang to the ground.
+	var willow: Node3D = Node3D.new()
+	willow.name = "AncientWillow"
+	willow.position = Vector3(D4_CENTER.x + 14.0, 0.0, 6.0)
+	geom.add_child(willow)
+	# Trunk
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	trunk_mat.roughness = 0.95
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var trm: CylinderMesh = CylinderMesh.new()
+	trm.top_radius = 0.40
+	trm.bottom_radius = 0.85
+	trm.height = 4.5
+	trunk.mesh = trm
+	trunk.material_override = trunk_mat
+	trunk.position = Vector3(0, 2.25, 0)
+	willow.add_child(trunk)
+	# Crown — wide flat sphere
+	var crown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crown_mat.albedo_color = Color(0.30, 0.55, 0.20)
+	crown_mat.emission_enabled = true
+	crown_mat.emission = Color(0.20, 0.45, 0.15)
+	crown_mat.emission_energy_multiplier = 0.20
+	crown_mat.roughness = 0.80
+	for i in 5:
+		var lobe: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 1.40
+		lm.height = 1.40
+		lobe.mesh = lm
+		lobe.material_override = crown_mat
+		var ang: float = (TAU / 5.0) * i
+		lobe.position = Vector3(cos(ang) * 1.2, 4.5 + sin(i) * 0.30, sin(ang) * 1.2)
+		lobe.scale = Vector3(1.0, 0.55, 1.0)
+		willow.add_child(lobe)
+	# Hanging vines — 12 thin droopers
+	var vine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vine_mat.albedo_color = Color(0.40, 0.65, 0.30)
+	vine_mat.emission_enabled = true
+	vine_mat.emission = Color(0.30, 0.55, 0.20)
+	vine_mat.emission_energy_multiplier = 0.20
+	vine_mat.roughness = 0.85
+	for i in 12:
+		var ang: float = (TAU / 12.0) * i
+		var radius: float = 1.6 + randf() * 0.4
+		var vine: MeshInstance3D = MeshInstance3D.new()
+		var vm: CylinderMesh = CylinderMesh.new()
+		vm.top_radius = 0.05
+		vm.bottom_radius = 0.025
+		vm.height = 3.5 + randf() * 0.6
+		vine.mesh = vm
+		vine.material_override = vine_mat
+		vine.position = Vector3(cos(ang) * radius, 2.6, sin(ang) * radius)
+		willow.add_child(vine)
+		# Sway tween
+		var tw: Tween = vine.create_tween().set_loops()
+		tw.tween_property(vine, "rotation_degrees:z", 3.0, 1.8 + randf() * 0.5)
+		tw.tween_property(vine, "rotation_degrees:z", -3.0, 1.8 + randf() * 0.5)
+	# Trunk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.25, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.85
+	cap.height = 4.5
+	cs.shape = cap
+	sb.add_child(cs)
+	willow.add_child(sb)
+
+
+func _build_d4_garden_statue(geom: Node) -> void:
+	## Epic-4 T72: stone garden statue of a woodland deity — pedestal +
+	## robed figure + flower crown + soft amber emission for guardian aura.
+	var statue: Node3D = Node3D.new()
+	statue.name = "GardenStatue"
+	statue.position = Vector3(D4_CENTER.x - 4.0, 0.0, -8.0)
+	geom.add_child(statue)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.65, 0.62, 0.55)
+	stone_mat.roughness = 0.95
+	# Pedestal (3-tier)
+	var p1: MeshInstance3D = MeshInstance3D.new()
+	var p1m: BoxMesh = BoxMesh.new()
+	p1m.size = Vector3(1.40, 0.30, 1.40)
+	p1.mesh = p1m
+	p1.material_override = stone_mat
+	p1.position = Vector3(0, 0.15, 0)
+	statue.add_child(p1)
+	var p2: MeshInstance3D = MeshInstance3D.new()
+	var p2m: BoxMesh = BoxMesh.new()
+	p2m.size = Vector3(1.10, 0.25, 1.10)
+	p2.mesh = p2m
+	p2.material_override = stone_mat
+	p2.position = Vector3(0, 0.42, 0)
+	statue.add_child(p2)
+	var p3: MeshInstance3D = MeshInstance3D.new()
+	var p3m: CylinderMesh = CylinderMesh.new()
+	p3m.top_radius = 0.45
+	p3m.bottom_radius = 0.50
+	p3m.height = 0.20
+	p3.mesh = p3m
+	p3.material_override = stone_mat
+	p3.position = Vector3(0, 0.65, 0)
+	statue.add_child(p3)
+	# Robe / body (tapered)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.30
+	bm.bottom_radius = 0.45
+	bm.height = 1.40
+	body.mesh = bm
+	body.material_override = stone_mat
+	body.position = Vector3(0, 1.45, 0)
+	statue.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.22
+	hm.height = 0.40
+	head.mesh = hm
+	head.material_override = stone_mat
+	head.position = Vector3(0, 2.30, 0)
+	statue.add_child(head)
+	# Flower crown (torus + small flower spheres)
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var ctm: TorusMesh = TorusMesh.new()
+	ctm.inner_radius = 0.20
+	ctm.outer_radius = 0.26
+	crown.mesh = ctm
+	var crown_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crown_mat.albedo_color = Color(0.85, 0.65, 0.30)
+	crown_mat.emission_enabled = true
+	crown_mat.emission = Color(0.95, 0.65, 0.20)
+	crown_mat.emission_energy_multiplier = 0.55
+	crown_mat.metallic = 0.50
+	crown_mat.roughness = 0.40
+	crown.material_override = crown_mat
+	crown.position = Vector3(0, 2.50, 0)
+	statue.add_child(crown)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.55)
+	light.light_energy = 1.8
+	light.omni_range = 5.0
+	light.position = Vector3(0, 2.30, 0)
+	statue.add_child(light)
+	# Subtle aura pulse
+	var tw: Tween = light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", 2.4, 1.8)
+	tw.tween_property(light, "light_energy", 1.8, 1.8)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 2.50, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.25, 0)
+	sb.add_child(cs)
+	statue.add_child(sb)
+
+
+func _build_d4_forager_npc() -> void:
+	## Epic-4 T73: forager NPC with woven basket carrying glowing mushrooms.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ForagerSlot"
+	slot.position = Vector3(D4_CENTER.x - 2.0, 0.0, 12.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Forager"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Mossfoot")
+	if "npc_id" in npc:
+		npc.set("npc_id", "forager_d4")
+	slot.add_child(npc)
+	# Basket (cylinder, woven brown)
+	var basket: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.28
+	bm.bottom_radius = 0.22
+	bm.height = 0.30
+	basket.mesh = bm
+	var basket_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basket_mat.albedo_color = Color(0.50, 0.32, 0.16)
+	basket_mat.roughness = 0.95
+	basket.material_override = basket_mat
+	basket.position = Vector3(0.45, 0.55, 0.10)
+	slot.add_child(basket)
+	# Mushrooms inside (5 small glowing caps)
+	var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.95, 0.45, 0.20)
+	cap_mat.emission_enabled = true
+	cap_mat.emission = Color(0.85, 0.30, 0.15)
+	cap_mat.emission_energy_multiplier = 0.85
+	cap_mat.roughness = 0.55
+	for i in 5:
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.08
+		cm.height = 0.14
+		cap.mesh = cm
+		cap.material_override = cap_mat
+		cap.position = Vector3(
+			0.45 + randf_range(-0.15, 0.15),
+			0.74,
+			0.10 + randf_range(-0.15, 0.15)
+		)
+		slot.add_child(cap)
+
+
+func _build_d4_fairy_lights(geom: Node) -> void:
+	## Epic-4 T74: string of glowing fairy lights between two posts. Each
+	## bulb is a small emissive sphere with an OmniLight3D.
+	var strand: Node3D = Node3D.new()
+	strand.name = "FairyLights"
+	strand.position = Vector3(D4_CENTER.x - 5.0, 0.0, 0.0)
+	geom.add_child(strand)
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	post_mat.roughness = 0.85
+	# Two posts
+	for sx in [-3.5, 3.5]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.08
+		pm.height = 2.5
+		post.mesh = pm
+		post.material_override = post_mat
+		post.position = Vector3(sx, 1.25, 0)
+		strand.add_child(post)
+		# Post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 1.25, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.10
+		cap.height = 2.5
+		cs.shape = cap
+		sb.add_child(cs)
+		strand.add_child(sb)
+	# Wire (thin cylinder horizontal)
+	var wire: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.012
+	wm.bottom_radius = 0.012
+	wm.height = 7.0
+	wire.mesh = wm
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(0.20, 0.18, 0.15)
+	wire_mat.roughness = 0.90
+	wire.material_override = wire_mat
+	wire.position = Vector3(0, 2.30, 0)
+	wire.rotation_degrees = Vector3(0, 0, 90)
+	strand.add_child(wire)
+	# 9 bulbs spaced along the wire — colored cycling
+	var bulb_colors: Array = [
+		Color(0.95, 0.30, 0.30),
+		Color(0.95, 0.85, 0.30),
+		Color(0.30, 0.95, 0.50),
+		Color(0.30, 0.65, 0.95),
+		Color(0.85, 0.40, 0.95),
+	]
+	for i in 9:
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bm2: SphereMesh = SphereMesh.new()
+		bm2.radius = 0.07
+		bm2.height = 0.14
+		bulb.mesh = bm2
+		var color: Color = bulb_colors[i % bulb_colors.size()]
+		var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bulb_mat.albedo_color = color
+		bulb_mat.emission_enabled = true
+		bulb_mat.emission = color
+		bulb_mat.emission_energy_multiplier = 1.6
+		bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(-3.0 + i * 0.75, 2.20, 0)
+		strand.add_child(bulb)
+		# Tiny light per bulb (cheap range)
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = color
+		light.light_energy = 0.55
+		light.omni_range = 1.6
+		light.position = Vector3(-3.0 + i * 0.75, 2.20, 0)
+		strand.add_child(light)
+		# Pulse tween (offset per bulb)
+		var tw: Tween = light.create_tween().set_loops()
+		tw.tween_interval(i * 0.10)
+		tw.tween_property(light, "light_energy", 1.0, 0.6)
+		tw.tween_property(light, "light_energy", 0.55, 0.6)
+
+
+func _build_d4_petal_drift(geom: Node) -> void:
+	## Epic-4 T75: GPU particles that drift soft pink petals around the
+	## great bloom area, falling slowly downward with random sway.
+	var drift: GPUParticles3D = GPUParticles3D.new()
+	drift.name = "PetalDrift"
+	drift.position = Vector3(D4_CENTER.x, 8.0, 0.0)
+	drift.amount = 80
+	drift.lifetime = 8.0
+	drift.preprocess = 4.0
+	drift.explosiveness = 0.0
+	drift.randomness = 0.6
+	drift.visibility_aabb = AABB(Vector3(-20, -10, -20), Vector3(40, 20, 40))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(18, 0.5, 18)
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 25.0
+	pm.gravity = Vector3(0, -0.4, 0)
+	pm.initial_velocity_min = 0.20
+	pm.initial_velocity_max = 0.55
+	pm.angular_velocity_min = -90.0
+	pm.angular_velocity_max = 90.0
+	pm.scale_min = 0.10
+	pm.scale_max = 0.18
+	pm.color = Color(0.95, 0.65, 0.85, 0.90)
+	drift.process_material = pm
+	# Petal mesh — small flat box
+	var petal_mesh: BoxMesh = BoxMesh.new()
+	petal_mesh.size = Vector3(0.18, 0.02, 0.10)
+	drift.draw_pass_1 = petal_mesh
+	# Material
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.95, 0.60, 0.80)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.85, 0.40, 0.65)
+	pmat.emission_energy_multiplier = 0.40
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	petal_mesh.material = pmat
+	geom.add_child(drift)
 
 
 
