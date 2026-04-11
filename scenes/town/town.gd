@@ -1768,6 +1768,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_fortune_teller_npc()
 	# Epic-3 T65: 6 floating tarot cards
 	_build_d3_tarot_cards(geom)
+	# Epic-3 T66: hanging sky chimes
+	_build_d3_sky_chimes(geom)
+	# Epic-3 T67: 3 spirit altars
+	_build_d3_spirit_altars(geom)
+	# Epic-3 T68: floating crown landmark
+	_build_d3_floating_crown(geom)
+	# Epic-3 T69: grimoire stack
+	_build_d3_grimoire_stack(geom)
+	# Epic-3 T70: Monk NPC walking circular path
+	_build_d3_monk_npc()
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -6380,6 +6390,359 @@ func _build_d3_tarot_cards(geom: Node) -> void:
 		bob.tween_property(card, "position:y", origin_y, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
 		var spin: Tween = create_tween().set_loops()
 		spin.tween_property(card, "rotation:y", TAU, 5.0 + i * 0.5)
+
+
+func _build_d3_sky_chimes(geom: Node) -> void:
+	## Epic-3 T66: 5 hanging sky chimes — long thin metal cylinders
+	## hanging from a horizontal bar between 2 tall poles, swinging
+	## gently as if in a breeze.
+	var chimes: Node3D = Node3D.new()
+	chimes.name = "D3SkyChimes"
+	chimes.position = D3_CENTER + Vector3(15, 0, 4)
+	geom.add_child(chimes)
+	# 2 tall poles
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.06, 0.18)
+	pole_mat.metallic = 0.55
+	pole_mat.roughness = 0.45
+	for sx: float in [-1.40, 1.40]:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.07
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 3.40
+		pole.mesh = pmesh
+		pole.position = Vector3(sx, 1.70, 0)
+		pole.material_override = pole_mat
+		chimes.add_child(pole)
+		# Collision per pole
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 3.40
+		cs.shape = cap
+		cs.position = Vector3(sx, 1.70, 0)
+		sb.add_child(cs)
+		chimes.add_child(sb)
+	# Top bar
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.0, 0.10, 0.10)
+	bar.mesh = bm
+	bar.position = Vector3(0, 3.40, 0)
+	bar.material_override = pole_mat
+	chimes.add_child(bar)
+	# 5 hanging chimes pivoted from the bar
+	var chime_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chime_mat.albedo_color = Color(0.85, 0.85, 0.95)
+	chime_mat.metallic = 0.85
+	chime_mat.roughness = 0.20
+	chime_mat.emission_enabled = true
+	chime_mat.emission = Color(0.55, 0.95, 1.0)
+	chime_mat.emission_energy_multiplier = 0.85
+	for i in 5:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(-1.10 + i * 0.55, 3.40, 0)
+		chimes.add_child(pivot)
+		var chime: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: CylinderMesh = CylinderMesh.new()
+		cmesh.top_radius = 0.06
+		cmesh.bottom_radius = 0.06
+		cmesh.height = 0.85 + i * 0.10
+		chime.mesh = cmesh
+		chime.position = Vector3(0, -(0.85 + i * 0.10) * 0.5, 0)
+		chime.material_override = chime_mat
+		pivot.add_child(chime)
+		# Sway tween
+		var sway: Tween = create_tween().set_loops()
+		sway.tween_property(pivot, "rotation:x", deg_to_rad(8 + i * 2), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		sway.tween_property(pivot, "rotation:x", deg_to_rad(-8 - i * 2), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_spirit_altars(geom: Node) -> void:
+	## Epic-3 T67: 3 small spirit altars in a row — stone pedestals each
+	## with a glowing offering bowl on top + flame.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(15, 0, -3),
+		D3_CENTER + Vector3(15, 0, 0),
+		D3_CENTER + Vector3(15, 0, 3),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 1.0)
+	flame_mat.emission_energy_multiplier = 2.6
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var altar: Node3D = Node3D.new()
+		altar.name = "D3SpiritAltar_%d" % i
+		altar.position = positions[i]
+		geom.add_child(altar)
+		# Pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.85, 1.0, 0.85)
+		ped.mesh = pm
+		ped.position = Vector3(0, 0.50, 0)
+		ped.material_override = stone_mat
+		altar.add_child(ped)
+		# Bowl on top
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.30
+		bm.bottom_radius = 0.18
+		bm.height = 0.20
+		bowl.mesh = bm
+		bowl.position = Vector3(0, 1.10, 0)
+		bowl.material_override = stone_mat
+		altar.add_child(bowl)
+		# Flame inside
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: SphereMesh = SphereMesh.new()
+		fmesh.radius = 0.18
+		fmesh.height = 0.36
+		flame.mesh = fmesh
+		flame.position = Vector3(0, 1.30, 0)
+		flame.material_override = flame_mat
+		altar.add_child(flame)
+		# Pulse the flame
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(flame, "scale", Vector3(1.30, 1.30, 1.30), 0.6 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.6 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		# Per-altar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 1.0, 0.85)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.50, 0)
+		sb.add_child(cs)
+		altar.add_child(sb)
+
+
+func _build_d3_floating_crown(geom: Node) -> void:
+	## Epic-3 T68: a massive floating crown landmark — large 5-pronged
+	## golden crown ring suspended above the judgment dais.
+	var crown: Node3D = Node3D.new()
+	crown.name = "D3FloatingCrown"
+	crown.position = D3_CENTER + Vector3(-15, 6, 14)
+	geom.add_child(crown)
+	# Crown band — torus
+	var band: MeshInstance3D = MeshInstance3D.new()
+	var bm: TorusMesh = TorusMesh.new()
+	bm.inner_radius = 1.20
+	bm.outer_radius = 1.40
+	band.mesh = bm
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(1.0, 0.85, 0.30)
+	bmat.metallic = 0.85
+	bmat.roughness = 0.20
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.95, 0.30)
+	bmat.emission_energy_multiplier = 1.8
+	band.material_override = bmat
+	crown.add_child(band)
+	# 5 vertical prongs around the band
+	for i in 5:
+		var angle: float = (float(i) / 5.0) * TAU
+		var prong: MeshInstance3D = MeshInstance3D.new()
+		var pm: PrismMesh = PrismMesh.new()
+		pm.size = Vector3(0.20, 0.85, 0.20)
+		prong.mesh = pm
+		prong.position = Vector3(cos(angle) * 1.30, 0.55, sin(angle) * 1.30)
+		prong.material_override = bmat
+		crown.add_child(prong)
+		# Tip gem at top of each prong
+		var gem: MeshInstance3D = MeshInstance3D.new()
+		var gm: SphereMesh = SphereMesh.new()
+		gm.radius = 0.12
+		gm.height = 0.24
+		gem.mesh = gm
+		gem.position = Vector3(cos(angle) * 1.30, 0.95, sin(angle) * 1.30)
+		var gmat: StandardMaterial3D = StandardMaterial3D.new()
+		gmat.albedo_color = Color(0.85, 0.40, 1.0)
+		gmat.emission_enabled = true
+		gmat.emission = Color(1.0, 0.55, 1.0)
+		gmat.emission_energy_multiplier = 3.0
+		gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		gem.material_override = gmat
+		crown.add_child(gem)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(crown, "rotation:y", TAU, 12.0)
+	# Bob in place
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(crown, "position:y", 6.55, 2.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(crown, "position:y", 6.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_grimoire_stack(geom: Node) -> void:
+	## Epic-3 T69: a tall stack of 6 magical grimoires — colored book
+	## boxes piled with the top one slightly open and glowing.
+	var stack: Node3D = Node3D.new()
+	stack.name = "D3GrimoireStack"
+	stack.position = D3_CENTER + Vector3(-18, 0, 0)
+	geom.add_child(stack)
+	var book_colors: Array[Color] = [
+		Color(0.55, 0.30, 0.30),
+		Color(0.30, 0.55, 0.30),
+		Color(0.30, 0.30, 0.55),
+		Color(0.55, 0.55, 0.30),
+		Color(0.55, 0.30, 0.55),
+		Color(0.30, 0.55, 0.55),
+	]
+	for i in 6:
+		var book: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.85, 0.18, 0.55)
+		book.mesh = bm
+		book.position = Vector3(randf_range(-0.10, 0.10), 0.10 + i * 0.20, randf_range(-0.10, 0.10))
+		book.rotation = Vector3(0, deg_to_rad(randf_range(-15, 15)), 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = book_colors[i]
+		bmat.metallic = 0.10
+		bmat.roughness = 0.65
+		bmat.emission_enabled = true
+		bmat.emission = book_colors[i]
+		bmat.emission_energy_multiplier = 0.55
+		book.material_override = bmat
+		stack.add_child(book)
+	# Top open book glowing
+	var open_book: MeshInstance3D = MeshInstance3D.new()
+	var obm: BoxMesh = BoxMesh.new()
+	obm.size = Vector3(0.85, 0.10, 0.55)
+	open_book.mesh = obm
+	open_book.position = Vector3(0, 1.40, 0)
+	var obmat: StandardMaterial3D = StandardMaterial3D.new()
+	obmat.albedo_color = Color(0.95, 0.85, 0.55)
+	obmat.emission_enabled = true
+	obmat.emission = Color(1.0, 0.85, 0.55)
+	obmat.emission_energy_multiplier = 1.4
+	obmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	open_book.material_override = obmat
+	stack.add_child(open_book)
+	# Floating glowing rune above the open book
+	var rune: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(0.20, 0.30, 0.20)
+	rune.mesh = rm
+	rune.position = Vector3(0, 1.85, 0)
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.85, 0.40, 1.0)
+	rmat.emission_enabled = true
+	rmat.emission = Color(1.0, 0.55, 1.0)
+	rmat.emission_energy_multiplier = 2.6
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rune.material_override = rmat
+	stack.add_child(rune)
+	# Bob the rune
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(rune, "position:y", 2.10, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(rune, "position:y", 1.85, 1.4).set_ease(Tween.EASE_IN_OUT)
+	# Per-stack collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.95, 1.40, 0.65)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	stack.add_child(sb)
+
+
+func _build_d3_monk_npc() -> void:
+	## Epic-3 T70: a Monk NPC walking a circular path around the great
+	## crystal — slow continuous patrol on a circle.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var monk: Node3D = Node3D.new()
+	monk.name = "D3Monk"
+	monk.position = D3_CENTER + Vector3(8, 0, 0)
+	slots.add_child(monk)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.20, 0.10)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.85, 0.55, 0.20)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	monk.add_child(body)
+	# Wide hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.45
+	hm.height = 0.55
+	hood.mesh = hm
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	monk.add_child(hood)
+	# Bald head — small sphere visible from hood
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.30
+	hmesh.height = 0.55
+	head.mesh = hmesh
+	head.position = Vector3(0, 1.55, 0.10)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.85, 0.55, 0.30)
+	hmat.metallic = 0.10
+	hmat.roughness = 0.55
+	head.material_override = hmat
+	monk.add_child(head)
+	# 2 closed eye dots (small black bars)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.05, 0.05, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.08, 0.08]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.06, 0.02, 0.04)
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.58, 0.36)
+		eye.material_override = eye_mat
+		monk.add_child(eye)
+	# Hands clasped in prayer in front (small sphere)
+	var hands: MeshInstance3D = MeshInstance3D.new()
+	var hands_mesh: SphereMesh = SphereMesh.new()
+	hands_mesh.radius = 0.12
+	hands_mesh.height = 0.24
+	hands.mesh = hands_mesh
+	hands.position = Vector3(0, 0.85, 0.45)
+	hands.material_override = hmat
+	monk.add_child(hands)
+	# Walking circular path tween — 4 quarter-turns around the crystal
+	var center: Vector3 = D3_CENTER
+	var radius: float = 8.0
+	var monk_path: Tween = create_tween().set_loops()
+	for step in 8:
+		var angle: float = (float(step) / 8.0) * TAU
+		var target: Vector3 = center + Vector3(cos(angle) * radius, 0, sin(angle) * radius)
+		monk_path.tween_property(monk, "position", target, 4.0).set_ease(Tween.EASE_IN_OUT)
+		monk_path.tween_property(monk, "rotation:y", -angle, 0.3)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Monk"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.85, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	monk.add_child(label)
 
 
 
