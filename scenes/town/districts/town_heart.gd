@@ -90,6 +90,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_pit_master_npc(town)
 	_build_th_champion_trophy_hall(geom)
 	_build_th_champion_herald_npc(town)
+	_build_th_sky_ceremonial_banners(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -13757,3 +13758,139 @@ func _build_th_champion_herald_npc(town: Node) -> void:
 	var breath: Tween = ovl.create_tween().set_loops()
 	breath.tween_property(ovl, "scale:y", 1.014, 2.2).set_ease(Tween.EASE_IN_OUT)
 	breath.tween_property(ovl, "scale:y", 0.992, 2.2).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_sky_ceremonial_banners(geom: Node) -> void:
+	## Epic-10 T74: Sky Ceremonial Banners — 4 long ceremonial banners hanging
+	## down from above the central beacon, suspended from invisible sky cables.
+	## Each is colored differently (cyan, amber, gold, crimson) with a brass
+	## top crossbar and a tassel at the bottom. Sway gently to create overhead
+	## movement above the plaza.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SkyCeremonialBanners"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.55, 0.12)
+	brass_mat.emission_energy_multiplier = 0.55
+	# Banner color palette (4 entries)
+	var banner_colors: Array[Color] = [
+		Color(0.40, 0.85, 1.0),  # cyan (data)
+		Color(1.0, 0.55, 0.15),  # amber (forge)
+		Color(1.0, 0.78, 0.20),  # gold (champion)
+		Color(0.80, 0.15, 0.20),  # crimson (heroes)
+	]
+	# Banner placement — 4 hanging at NE/NW/SE/SW upper plaza area
+	var banner_radius: float = 4.5
+	var banner_top_y: float = 6.5
+	var banner_h: float = 3.5
+	var banner_w: float = 1.40
+	for i in range(4):
+		var ang: float = float(i) * (PI / 2.0) + PI / 4.0
+		var bx: float = cos(ang) * banner_radius
+		var bz: float = sin(ang) * banner_radius
+		var banner_pivot: Node3D = Node3D.new()
+		banner_pivot.position = Vector3(bx, banner_top_y, bz)
+		# Face inward toward center
+		banner_pivot.rotation.y = atan2(-bx, -bz)
+		pivot.add_child(banner_pivot)
+		# Brass crossbar (horizontal at top)
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.06
+		bm.bottom_radius = 0.06
+		bm.height = banner_w + 0.30
+		bar.mesh = bm
+		bar.material_override = brass_mat
+		bar.position = Vector3(0, 0, 0)
+		bar.rotation.z = PI / 2.0
+		banner_pivot.add_child(bar)
+		# Brass end-cap balls
+		for s in [-1.0, 1.0]:
+			var capb: MeshInstance3D = MeshInstance3D.new()
+			var capm: SphereMesh = SphereMesh.new()
+			capm.radius = 0.10
+			capm.height = 0.20
+			capb.mesh = capm
+			capb.material_override = brass_mat
+			capb.position = Vector3((banner_w + 0.30) * 0.5 * s, 0, 0)
+			banner_pivot.add_child(capb)
+		# Banner cloth (long box hanging down)
+		var cloth_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cloth_mat.albedo_color = banner_colors[i]
+		cloth_mat.metallic = 0.10
+		cloth_mat.roughness = 0.85
+		cloth_mat.emission_enabled = true
+		cloth_mat.emission = banner_colors[i] * 0.85
+		cloth_mat.emission_energy_multiplier = 0.50
+		cloth_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		var cloth: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(banner_w, banner_h, 0.04)
+		cloth.mesh = cmm
+		cloth.material_override = cloth_mat
+		cloth.position = Vector3(0, -banner_h * 0.5 - 0.05, 0)
+		banner_pivot.add_child(cloth)
+		# Brass top trim strip
+		var trim_top: MeshInstance3D = MeshInstance3D.new()
+		var ttm: BoxMesh = BoxMesh.new()
+		ttm.size = Vector3(banner_w, 0.10, 0.06)
+		trim_top.mesh = ttm
+		trim_top.material_override = brass_mat
+		trim_top.position = Vector3(0, -0.12, 0)
+		banner_pivot.add_child(trim_top)
+		# Brass bottom trim
+		var trim_bot: MeshInstance3D = MeshInstance3D.new()
+		var tbm: BoxMesh = BoxMesh.new()
+		tbm.size = Vector3(banner_w, 0.10, 0.06)
+		trim_bot.mesh = tbm
+		trim_bot.material_override = brass_mat
+		trim_bot.position = Vector3(0, -banner_h - 0.05, 0)
+		banner_pivot.add_child(trim_bot)
+		# Tassel pendant at bottom
+		var tassel: MeshInstance3D = MeshInstance3D.new()
+		var tsm: PrismMesh = PrismMesh.new()
+		tsm.size = Vector3(0.30, 0.45, 0.06)
+		tassel.mesh = tsm
+		tassel.material_override = brass_mat
+		tassel.position = Vector3(0, -banner_h - 0.30, 0)
+		tassel.rotation.x = PI  # Tip points down
+		banner_pivot.add_child(tassel)
+		# Center emblem on the cloth (large glowing disc)
+		var em_mat: StandardMaterial3D = StandardMaterial3D.new()
+		em_mat.albedo_color = banner_colors[i] * 1.3
+		em_mat.emission_enabled = true
+		em_mat.emission = banner_colors[i] * 1.5
+		em_mat.emission_energy_multiplier = 4.5
+		em_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var em: MeshInstance3D = MeshInstance3D.new()
+		var emm: SphereMesh = SphereMesh.new()
+		emm.radius = 0.22
+		emm.height = 0.44
+		em.mesh = emm
+		em.material_override = em_mat
+		em.position = Vector3(0, -banner_h * 0.5 - 0.05, -0.04)
+		banner_pivot.add_child(em)
+		# Sway tween (rotation around the crossbar — rotate banner_pivot around X-axis)
+		var phase: float = float(i) * 0.45
+		var sway: Tween = banner_pivot.create_tween().set_loops()
+		sway.tween_interval(phase * 0.4)
+		sway.tween_property(banner_pivot, "rotation:x", 0.10, 2.2).set_ease(Tween.EASE_IN_OUT)
+		sway.tween_property(banner_pivot, "rotation:x", -0.10, 2.2).set_ease(Tween.EASE_IN_OUT)
+		# Emblem pulse
+		var ep: Tween = banner_pivot.create_tween().set_loops()
+		ep.tween_interval(phase)
+		ep.tween_property(em_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+		ep.tween_property(em_mat, "emission_energy_multiplier", 3.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+		# Subtle colored OmniLight from each banner (cast onto the plaza)
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, -banner_h * 0.5, 0)
+		lt.light_color = banner_colors[i]
+		lt.light_energy = 1.05
+		lt.omni_range = 4.5
+		banner_pivot.add_child(lt)
