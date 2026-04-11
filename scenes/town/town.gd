@@ -1915,6 +1915,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_storyteller_npc()
 	# Epic-4 T35: sleeping cat on cushion
 	_build_d4_sleeping_cat(geom)
+	# Epic-4 T36: picnic blanket spread with food
+	_build_d4_picnic_blanket(geom)
+	# Epic-4 T37: wooden vegetable cart
+	_build_d4_veg_cart(geom)
+	# Epic-4 T38: 3 garden gnome statues
+	_build_d4_garden_gnomes(geom)
+	# Epic-4 T39: Beekeeper NPC
+	_build_d4_beekeeper_npc()
+	# Epic-4 T40: honey jars cluster
+	_build_d4_honey_jars(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -3957,6 +3967,305 @@ func _build_d4_sleeping_cat(geom: Node) -> void:
 	var breath: Tween = create_tween().set_loops()
 	breath.tween_property(body, "scale", Vector3(1.45, 0.90, 1.05), 1.4).set_ease(Tween.EASE_IN_OUT)
 	breath.tween_property(body, "scale", Vector3(1.4, 0.85, 1.0), 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d4_picnic_blanket(geom: Node) -> void:
+	## Epic-4 T36: a red picnic blanket spread with a basket and 3 fruits.
+	var picnic: Node3D = Node3D.new()
+	picnic.name = "D4Picnic"
+	picnic.position = D4_CENTER + Vector3(-3, 0, -8)
+	geom.add_child(picnic)
+	# Red checkered blanket — flat box
+	var blanket: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.40, 0.05, 2.40)
+	blanket.mesh = bm
+	blanket.position = Vector3(0, 0.04, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.20, 0.20)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.30, 0.30)
+	bmat.emission_energy_multiplier = 0.45
+	blanket.material_override = bmat
+	picnic.add_child(blanket)
+	# Wicker basket — small brown box
+	var basket: MeshInstance3D = MeshInstance3D.new()
+	var bk: BoxMesh = BoxMesh.new()
+	bk.size = Vector3(0.55, 0.40, 0.40)
+	basket.mesh = bk
+	basket.position = Vector3(0, 0.30, -0.40)
+	var bkmat: StandardMaterial3D = StandardMaterial3D.new()
+	bkmat.albedo_color = Color(0.55, 0.40, 0.20)
+	basket.material_override = bkmat
+	picnic.add_child(basket)
+	# 3 small fruits
+	var fruit_specs: Array = [
+		[Vector3(0.55, 0.18, 0.20), Color(1.0, 0.20, 0.20)],   # apple
+		[Vector3(-0.40, 0.18, 0.30), Color(1.0, 0.65, 0.20)],  # orange
+		[Vector3(0.20, 0.18, 0.65), Color(0.45, 1.0, 0.55)],   # apple
+	]
+	for spec in fruit_specs:
+		var fruit: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.14
+		fm.height = 0.28
+		fruit.mesh = fm
+		fruit.position = spec[0]
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = spec[1]
+		fmat.emission_enabled = true
+		fmat.emission = spec[1]
+		fmat.emission_energy_multiplier = 1.0
+		fruit.material_override = fmat
+		picnic.add_child(fruit)
+
+
+func _build_d4_veg_cart(geom: Node) -> void:
+	## Epic-4 T37: wooden vegetable cart with 2 wheels and colorful veg.
+	var cart: Node3D = Node3D.new()
+	cart.name = "D4VegCart"
+	cart.position = D4_CENTER + Vector3(8, 0, 8)
+	geom.add_child(cart)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	# Cart body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.85, 0.65, 1.20)
+	body.mesh = bm
+	body.position = Vector3(0, 0.65, 0)
+	body.material_override = wood_mat
+	cart.add_child(body)
+	# 2 wheels
+	var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheel_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	for sx: float in [-0.85, 0.85]:
+		var wheel: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.30
+		wm.bottom_radius = 0.30
+		wm.height = 0.10
+		wheel.mesh = wm
+		wheel.position = Vector3(sx, 0.30, 0)
+		wheel.rotation = Vector3(0, 0, deg_to_rad(90))
+		wheel.material_override = wheel_mat
+		cart.add_child(wheel)
+	# Push handle
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.05
+	hm.bottom_radius = 0.05
+	hm.height = 1.20
+	handle.mesh = hm
+	handle.position = Vector3(0, 1.0, -0.85)
+	handle.rotation = Vector3(deg_to_rad(45), 0, 0)
+	handle.material_override = wood_mat
+	cart.add_child(handle)
+	# Vegetables in a heap on top
+	var veg_specs: Array = [
+		[Vector3(-0.40, 1.10, 0.20), Color(1.0, 0.55, 0.20), 0.18],   # carrot
+		[Vector3(0.20, 1.10, -0.20), Color(0.45, 1.0, 0.45), 0.20],   # cabbage
+		[Vector3(0.55, 1.10, 0.20), Color(1.0, 0.20, 0.20), 0.16],    # tomato
+		[Vector3(-0.20, 1.30, -0.10), Color(0.85, 0.65, 0.20), 0.18], # squash
+	]
+	for spec in veg_specs:
+		var veg: MeshInstance3D = MeshInstance3D.new()
+		var vm: SphereMesh = SphereMesh.new()
+		vm.radius = spec[2]
+		vm.height = spec[2] * 2
+		veg.mesh = vm
+		veg.position = spec[0]
+		var vmat: StandardMaterial3D = StandardMaterial3D.new()
+		vmat.albedo_color = spec[1]
+		vmat.emission_enabled = true
+		vmat.emission = spec[1]
+		vmat.emission_energy_multiplier = 1.0
+		veg.material_override = vmat
+		cart.add_child(veg)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 1.40, 1.20)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	cart.add_child(sb)
+
+
+func _build_d4_garden_gnomes(geom: Node) -> void:
+	## Epic-4 T38: 3 garden gnome statues with red conical hats.
+	var positions: Array[Vector3] = [
+		D4_CENTER + Vector3(-6, 0, -3),
+		D4_CENTER + Vector3(-4, 0, -4),
+		D4_CENTER + Vector3(-5, 0, -5),
+	]
+	for i in positions.size():
+		var gnome: Node3D = Node3D.new()
+		gnome.name = "D4Gnome_%d" % i
+		gnome.position = positions[i]
+		gnome.rotation = Vector3(0, deg_to_rad(i * 90), 0)
+		geom.add_child(gnome)
+		# Stocky body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.18
+		bm.bottom_radius = 0.30
+		bm.height = 0.55
+		body.mesh = bm
+		body.position = Vector3(0, 0.27, 0)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.20, 0.55, 0.85)
+		body.material_override = bmat
+		gnome.add_child(body)
+		# Round head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: SphereMesh = SphereMesh.new()
+		hmesh.radius = 0.18
+		hmesh.height = 0.36
+		head.mesh = hmesh
+		head.position = Vector3(0, 0.65, 0)
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = Color(0.95, 0.85, 0.65)
+		head.material_override = hmat
+		gnome.add_child(head)
+		# White beard
+		var beard: MeshInstance3D = MeshInstance3D.new()
+		var bbm: BoxMesh = BoxMesh.new()
+		bbm.size = Vector3(0.20, 0.20, 0.06)
+		beard.mesh = bbm
+		beard.position = Vector3(0, 0.55, 0.16)
+		var bb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bb_mat.albedo_color = Color(0.95, 0.95, 1.0)
+		beard.material_override = bb_mat
+		gnome.add_child(beard)
+		# Tall red conical hat
+		var hat: MeshInstance3D = MeshInstance3D.new()
+		var hat_mesh: PrismMesh = PrismMesh.new()
+		hat_mesh.size = Vector3(0.30, 0.55, 0.30)
+		hat.mesh = hat_mesh
+		hat.position = Vector3(0, 1.05, 0)
+		var hatmat: StandardMaterial3D = StandardMaterial3D.new()
+		hatmat.albedo_color = Color(1.0, 0.20, 0.20)
+		hatmat.emission_enabled = true
+		hatmat.emission = Color(1.0, 0.30, 0.30)
+		hatmat.emission_energy_multiplier = 0.85
+		hat.material_override = hatmat
+		gnome.add_child(hat)
+
+
+func _build_d4_beekeeper_npc() -> void:
+	## Epic-4 T39: Beekeeper NPC near the beehive with a white veil hat.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var bk: Node3D = Node3D.new()
+	bk.name = "D4Beekeeper"
+	bk.position = D4_CENTER + Vector3(13, 0, 12)
+	slots.add_child(bk)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.95, 0.95, 0.95)
+	bmat.metallic = 0.10
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 1.0, 1.0)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	bk.add_child(body)
+	# Wide veil hat — flat cylinder + dome top
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.55
+	brm.bottom_radius = 0.55
+	brm.height = 0.06
+	brim.mesh = brm
+	brim.position = Vector3(0, 1.65, 0)
+	brim.material_override = bmat
+	bk.add_child(brim)
+	# Veil — thin translucent cylinder hanging down
+	var veil: MeshInstance3D = MeshInstance3D.new()
+	var vm: CylinderMesh = CylinderMesh.new()
+	vm.top_radius = 0.40
+	vm.bottom_radius = 0.40
+	vm.height = 0.55
+	veil.mesh = vm
+	veil.position = Vector3(0, 1.40, 0)
+	var vmat: StandardMaterial3D = StandardMaterial3D.new()
+	vmat.albedo_color = Color(0.95, 0.95, 0.95, 0.45)
+	vmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	veil.material_override = vmat
+	bk.add_child(veil)
+	# Top dome
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.30
+	dm.height = 0.30
+	dome.mesh = dm
+	dome.position = Vector3(0, 1.85, 0)
+	dome.scale = Vector3(1.0, 0.55, 1.0)
+	dome.material_override = bmat
+	bk.add_child(dome)
+	var label: Label3D = Label3D.new()
+	label.text = "Beekeeper"
+	label.position = Vector3(0, 2.50, 0)
+	label.modulate = Color(1.0, 0.95, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	bk.add_child(label)
+
+
+func _build_d4_honey_jars(geom: Node) -> void:
+	## Epic-4 T40: 6 honey jars in a 2x3 grid on a small wooden table.
+	var jars: Node3D = Node3D.new()
+	jars.name = "D4HoneyJars"
+	jars.position = D4_CENTER + Vector3(13, 0, 14)
+	geom.add_child(jars)
+	# Wood table
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.40, 0.85, 0.85)
+	table.mesh = tm
+	table.position = Vector3(0, 0.42, 0)
+	table.material_override = wood_mat
+	jars.add_child(table)
+	# 6 honey jars
+	var honey_mat: StandardMaterial3D = StandardMaterial3D.new()
+	honey_mat.albedo_color = Color(1.0, 0.75, 0.20, 0.85)
+	honey_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	honey_mat.emission_enabled = true
+	honey_mat.emission = Color(1.0, 0.85, 0.30)
+	honey_mat.emission_energy_multiplier = 1.4
+	honey_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for r in 2:
+		for c in 3:
+			var jar: MeshInstance3D = MeshInstance3D.new()
+			var jm: CylinderMesh = CylinderMesh.new()
+			jm.top_radius = 0.10
+			jm.bottom_radius = 0.14
+			jm.height = 0.30
+			jar.mesh = jm
+			jar.position = Vector3(-0.40 + c * 0.40, 1.0, -0.18 + r * 0.36)
+			jar.material_override = honey_mat
+			jars.add_child(jar)
+	# Collision around table
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 1.40, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	jars.add_child(sb)
 
 
 
