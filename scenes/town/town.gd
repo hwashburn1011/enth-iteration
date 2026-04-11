@@ -1570,6 +1570,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_zipline(geom)
 	# Epic-2 T70: mechanic NPC with wrenches
 	_build_d2_mechanic_npc()
+	# Epic-2 T71: parkour obstacle course with jump pads + climb walls
+	_build_d2_parkour_course(geom)
+	# Epic-2 T72: orbiting debris belt circling overhead
+	_build_d2_debris_belt(geom)
+	# Epic-2 T73: ancient ruins of broken pillars + partially intact arch
+	_build_d2_ruins(geom)
+	# Epic-2 T74: vertical reality tear (glitching rift)
+	_build_d2_reality_tear(geom)
+	# Epic-2 T75: glitch rain particles falling
+	_build_d2_glitch_rain(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -13617,5 +13627,316 @@ func _build_d2_mechanic_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	mech.add_child(label)
+
+
+func _build_d2_parkour_course(geom: Node) -> void:
+	## Epic-2 T71: a small parkour obstacle course in D2 — 4 jump pads of
+	## ascending heights + 1 climb wall + a finish goal pad. Each pad has
+	## glowing edge trim. Telegraphs traversal training without coding it.
+	var course: Node3D = Node3D.new()
+	course.name = "D2ParkourCourse"
+	course.position = D2_CENTER + Vector3(-2, 0, 14)
+	geom.add_child(course)
+	var pad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pad_mat.albedo_color = Color(0.16, 0.18, 0.22)
+	pad_mat.metallic = 0.85
+	pad_mat.roughness = 0.30
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 1.8
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 jump pads at ascending heights
+	for i in 4:
+		var height: float = 0.5 + i * 0.45
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(1.40, height, 1.40)
+		pad.mesh = pmesh
+		pad.position = Vector3(-3.0 + i * 1.85, height * 0.5, 0)
+		pad.material_override = pad_mat
+		course.add_child(pad)
+		# Top trim ring (4 box edges)
+		for spec in [
+			[Vector3(0, height + 0.05, -0.70), Vector3(1.40, 0.06, 0.06)],
+			[Vector3(0, height + 0.05, 0.70), Vector3(1.40, 0.06, 0.06)],
+			[Vector3(-0.70, height + 0.05, 0), Vector3(0.06, 0.06, 1.40)],
+			[Vector3(0.70, height + 0.05, 0), Vector3(0.06, 0.06, 1.40)],
+		]:
+			var edge: MeshInstance3D = MeshInstance3D.new()
+			var em: BoxMesh = BoxMesh.new()
+			em.size = spec[1]
+			edge.mesh = em
+			edge.position = Vector3(-3.0 + i * 1.85, 0, 0) + (spec[0] as Vector3)
+			edge.material_override = trim_mat
+			course.add_child(edge)
+		# Per-pad collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.40, height, 1.40)
+		cs.shape = cb
+		cs.position = Vector3(-3.0 + i * 1.85, height * 0.5, 0)
+		sb.add_child(cs)
+		course.add_child(sb)
+	# Climb wall at the end
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: BoxMesh = BoxMesh.new()
+	wmesh.size = Vector3(2.40, 3.50, 0.30)
+	wall.mesh = wmesh
+	wall.position = Vector3(5.0, 1.75, 0)
+	wall.material_override = pad_mat
+	course.add_child(wall)
+	# 6 hand-grip prisms across the wall
+	for i in 6:
+		var grip: MeshInstance3D = MeshInstance3D.new()
+		var gmesh: PrismMesh = PrismMesh.new()
+		gmesh.size = Vector3(0.20, 0.18, 0.18)
+		grip.mesh = gmesh
+		grip.position = Vector3(5.0 + (i % 2) * 0.40 - 0.20, 0.50 + i * 0.55, 0.18)
+		grip.rotation = Vector3(0, 0, deg_to_rad(90))
+		grip.material_override = trim_mat
+		course.add_child(grip)
+	# Wall collision
+	var wsb: StaticBody3D = StaticBody3D.new()
+	var wcs: CollisionShape3D = CollisionShape3D.new()
+	var wcb: BoxShape3D = BoxShape3D.new()
+	wcb.size = Vector3(2.40, 3.50, 0.30)
+	wcs.shape = wcb
+	wcs.position = Vector3(5.0, 1.75, 0)
+	wsb.add_child(wcs)
+	course.add_child(wsb)
+	# Finish goal pad — bright green disc on the ground past the wall
+	var goal: MeshInstance3D = MeshInstance3D.new()
+	var gmesh: CylinderMesh = CylinderMesh.new()
+	gmesh.top_radius = 0.85
+	gmesh.bottom_radius = 0.85
+	gmesh.height = 0.06
+	goal.mesh = gmesh
+	goal.position = Vector3(7.0, 0.05, 0)
+	var gmat: StandardMaterial3D = StandardMaterial3D.new()
+	gmat.albedo_color = Color(0.30, 1.0, 0.40)
+	gmat.emission_enabled = true
+	gmat.emission = Color(0.45, 1.0, 0.45)
+	gmat.emission_energy_multiplier = 1.8
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	goal.material_override = gmat
+	course.add_child(goal)
+	# "PARKOUR" sign overhead
+	var label: Label3D = Label3D.new()
+	label.text = "PARKOUR"
+	label.position = Vector3(2.0, 4.40, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	course.add_child(label)
+
+
+func _build_d2_debris_belt(geom: Node) -> void:
+	## Epic-2 T72: orbiting debris belt — 12 small chunks of metal
+	## arranged in a horizontal ring at high altitude, all rotating around
+	## the D2 center on a shared pivot tween.
+	var belt_pivot: Node3D = Node3D.new()
+	belt_pivot.name = "D2DebrisBelt"
+	belt_pivot.position = D2_CENTER + Vector3(0, 16, 0)
+	geom.add_child(belt_pivot)
+	var chunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chunk_mat.albedo_color = Color(0.18, 0.16, 0.14)
+	chunk_mat.metallic = 0.85
+	chunk_mat.roughness = 0.40
+	chunk_mat.emission_enabled = true
+	chunk_mat.emission = Color(1.0, 0.40, 0.20)
+	chunk_mat.emission_energy_multiplier = 0.45
+	for i in 12:
+		var angle: float = (float(i) / 12.0) * TAU
+		var radius: float = 18.0
+		var chunk: MeshInstance3D = MeshInstance3D.new()
+		chunk.name = "DebrisChunk_%d" % i
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(randf_range(0.55, 0.95), randf_range(0.20, 0.40), randf_range(0.55, 0.95))
+		chunk.mesh = cmesh
+		chunk.position = Vector3(cos(angle) * radius, randf_range(-0.5, 0.5), sin(angle) * radius)
+		chunk.rotation = Vector3(deg_to_rad(randf_range(-30, 30)), randf() * TAU, deg_to_rad(randf_range(-30, 30)))
+		chunk.material_override = chunk_mat
+		belt_pivot.add_child(chunk)
+	# Shared pivot rotation tween
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(belt_pivot, "rotation:y", TAU, 24.0)
+
+
+func _build_d2_ruins(geom: Node) -> void:
+	## Epic-2 T73: a cluster of ancient ruins — 4 broken stone pillars at
+	## different heights + 1 partially intact arch (2 pillars + crumbling
+	## lintel). Suggests this district once held an old structure.
+	var ruins: Node3D = Node3D.new()
+	ruins.name = "D2Ruins"
+	ruins.position = D2_CENTER + Vector3(-12, 0, 12)
+	geom.add_child(ruins)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.26, 0.22)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	# 4 broken pillars at different positions/heights
+	var pillar_specs: Array = [
+		[Vector3(-3.0, 0, -1.0), 2.40],
+		[Vector3(-1.5, 0, 1.5), 1.85],
+		[Vector3(0.5, 0, -1.5), 3.20],
+		[Vector3(2.0, 0, 0.5), 2.10],
+	]
+	for spec in pillar_specs:
+		var pos: Vector3 = spec[0]
+		var height: float = spec[1]
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.40
+		pmesh.bottom_radius = 0.50
+		pmesh.height = height
+		pillar.mesh = pmesh
+		pillar.position = pos + Vector3(0, height * 0.5, 0)
+		pillar.rotation = Vector3(deg_to_rad(randf_range(-5, 5)), 0, deg_to_rad(randf_range(-5, 5)))
+		pillar.material_override = stone_mat
+		ruins.add_child(pillar)
+		# Top "broken cap" — small angled cylinder
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: CylinderMesh = CylinderMesh.new()
+		cmesh.top_radius = 0.20
+		cmesh.bottom_radius = 0.40
+		cmesh.height = 0.30
+		cap.mesh = cmesh
+		cap.position = pos + Vector3(0, height + 0.15, 0)
+		cap.rotation = Vector3(deg_to_rad(randf_range(-15, 15)), 0, deg_to_rad(randf_range(-15, 15)))
+		cap.material_override = stone_mat
+		ruins.add_child(cap)
+		# Collision per pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+		cap_shape.radius = 0.50
+		cap_shape.height = height
+		cs.shape = cap_shape
+		cs.position = pos + Vector3(0, height * 0.5, 0)
+		sb.add_child(cs)
+		ruins.add_child(sb)
+	# Partially intact arch — 2 pillars + lintel
+	for sx: float in [-4.5, -2.5]:
+		var arch_pillar: MeshInstance3D = MeshInstance3D.new()
+		var apm: BoxMesh = BoxMesh.new()
+		apm.size = Vector3(0.55, 4.0, 0.55)
+		arch_pillar.mesh = apm
+		arch_pillar.position = Vector3(sx, 2.0, -3.5)
+		arch_pillar.material_override = stone_mat
+		ruins.add_child(arch_pillar)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 4.0, 0.55)
+		cs.shape = cb
+		cs.position = Vector3(sx, 2.0, -3.5)
+		sb.add_child(cs)
+		ruins.add_child(sb)
+	# Crumbling lintel — short slab on top with a missing chunk on one side
+	var lintel: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: BoxMesh = BoxMesh.new()
+	lmesh.size = Vector3(2.20, 0.55, 0.65)
+	lintel.mesh = lmesh
+	lintel.position = Vector3(-3.5, 4.30, -3.5)
+	lintel.rotation = Vector3(0, 0, deg_to_rad(-3))
+	lintel.material_override = stone_mat
+	ruins.add_child(lintel)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "ANCIENT RUINS"
+	label.position = Vector3(-3.5, 5.20, -3.5)
+	label.modulate = Color(0.85, 0.85, 0.65)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	ruins.add_child(label)
+
+
+func _build_d2_reality_tear(geom: Node) -> void:
+	## Epic-2 T74: a vertical "reality tear" — a tall thin emissive rift
+	## that the simulation has torn open. 3 stacked elongated boxes at
+	## random Z offsets, glitching color tween. Magenta/cyan duotone.
+	var tear: Node3D = Node3D.new()
+	tear.name = "D2RealityTear"
+	tear.position = D2_CENTER + Vector3(15, 0, -3)
+	geom.add_child(tear)
+	# 3 stacked rift segments
+	for i in 3:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.30, 2.20, 0.06)
+		seg.mesh = smesh
+		seg.position = Vector3(randf_range(-0.20, 0.20), 1.10 + i * 2.0, randf_range(-0.20, 0.20))
+		seg.rotation = Vector3(0, deg_to_rad(randf_range(-25, 25)), 0)
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(1.0, 0.30, 0.55)
+		mat.emission_enabled = true
+		mat.emission = Color(1.0, 0.30, 0.55)
+		mat.emission_energy_multiplier = 3.4
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		seg.material_override = mat
+		tear.add_child(seg)
+		# Color cycle tween between magenta and cyan
+		var cycle: Tween = create_tween().set_loops()
+		cycle.tween_property(mat, "emission", Color(0.55, 0.95, 1.0), 1.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		cycle.tween_property(mat, "emission", Color(1.0, 0.30, 0.55), 1.4 + i * 0.2).set_ease(Tween.EASE_IN_OUT)
+		# Tiny visibility flicker for glitch feel
+		var flicker: Tween = create_tween().set_loops()
+		flicker.tween_interval(2.0 + randf() * 1.0)
+		flicker.tween_property(seg, "visible", false, 0.0)
+		flicker.tween_interval(0.05)
+		flicker.tween_property(seg, "visible", true, 0.0)
+	# Floating "RIFT" label
+	var label: Label3D = Label3D.new()
+	label.text = "RIFT"
+	label.position = Vector3(0, 7.20, 0)
+	label.modulate = Color(1.0, 0.40, 0.65)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	tear.add_child(label)
+
+
+func _build_d2_glitch_rain(geom: Node) -> void:
+	## Epic-2 T75: glitch rain — magenta GPU particles falling through D2
+	## with light gravity, looking like distorted simulation rain.
+	var rain: GPUParticles3D = GPUParticles3D.new()
+	rain.name = "D2GlitchRain"
+	rain.position = D2_CENTER + Vector3(0, 14, 0)
+	rain.amount = 120
+	rain.lifetime = 5.0
+	rain.preprocess = 2.5
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(22, 0.5, 18)
+	pmat.direction = Vector3(0, -1, 0)
+	pmat.spread = 4.0
+	pmat.initial_velocity_min = 1.4
+	pmat.initial_velocity_max = 2.4
+	pmat.gravity = Vector3(0, -2.0, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.30, 0.55, 1.0)
+	rain.process_material = pmat
+	var drop_mesh: BoxMesh = BoxMesh.new()
+	drop_mesh.size = Vector3(0.04, 0.18, 0.04)
+	var drop_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drop_mat.albedo_color = Color(1.0, 0.30, 0.55)
+	drop_mat.emission_enabled = true
+	drop_mat.emission = Color(1.0, 0.40, 0.65)
+	drop_mat.emission_energy_multiplier = 2.6
+	drop_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	drop_mesh.material = drop_mat
+	rain.draw_pass_1 = drop_mesh
+	geom.add_child(rain)
+
 
 
