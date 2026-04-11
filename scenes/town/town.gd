@@ -25487,6 +25487,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_cliff_stack(geom)
 	# Epic-7 T35: stone stairway
 	_build_d7_stone_stairs(geom)
+	# Epic-7 T36: weapon rack
+	_build_d7_weapon_rack(geom)
+	# Epic-7 T37: archer NPC
+	_build_d7_d7_archer_npc()
+	# Epic-7 T38: archery target stands
+	_build_d7_target_stands(geom)
+	# Epic-7 T39: stone shrine pillars
+	_build_d7_shrine_pillars(geom)
+	# Epic-7 T40: spirit braziers
+	_build_d7_spirit_braziers(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -27829,6 +27839,347 @@ func _build_d7_stone_stairs(geom: Node) -> void:
 		rail.position = Vector3(sx, 1.85, 3.20)
 		rail.rotation_degrees = Vector3(-30, 0, 0)
 		stairs.add_child(rail)
+
+
+func _build_d7_weapon_rack(geom: Node) -> void:
+	## Epic-7 T36: wooden weapon rack with 4 staves and 2 hanging swords.
+	var rack: Node3D = Node3D.new()
+	rack.name = "WeaponRack"
+	rack.position = Vector3(D7_CENTER.x - 8.0, 0.0, -16.0)
+	geom.add_child(rack)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Frame
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(2.85, 2.40, 0.40)
+	frame.mesh = fm
+	frame.material_override = wood_mat
+	frame.position = Vector3(0, 1.20, 0)
+	rack.add_child(frame)
+	# 4 vertical staves leaning against rack
+	for i in 4:
+		var staff: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.05
+		sm.bottom_radius = 0.06
+		sm.height = 2.20
+		staff.mesh = sm
+		staff.material_override = wood_mat
+		staff.position = Vector3(-1.10 + i * 0.45, 1.10, 0.30)
+		staff.rotation_degrees = Vector3(0, 0, 5)
+		rack.add_child(staff)
+	# 2 hanging swords (slim cylinders + small handles)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	for sx in [-0.85, 0.85]:
+		var sword: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.06, 1.40, 0.04)
+		sword.mesh = swm
+		sword.material_override = blade_mat
+		sword.position = Vector3(sx, 1.85, 0.25)
+		rack.add_child(sword)
+		# Handle
+		var handle: MeshInstance3D = MeshInstance3D.new()
+		var hm: BoxMesh = BoxMesh.new()
+		hm.size = Vector3(0.10, 0.20, 0.06)
+		handle.mesh = hm
+		var handle_mat: StandardMaterial3D = StandardMaterial3D.new()
+		handle_mat.albedo_color = Color(0.20, 0.18, 0.10)
+		handle.material_override = handle_mat
+		handle.position = Vector3(sx, 2.65, 0.25)
+		rack.add_child(handle)
+	# Rack collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 2.40, 0.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	rack.add_child(sb)
+
+
+func _build_d7_d7_archer_npc() -> void:
+	## Epic-7 T37: D7 archer NPC — green tunic + held longbow.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7ArcherSlot"
+	slot.position = Vector3(D7_CENTER.x - 6.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Archer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Quill")
+	if "npc_id" in npc:
+		npc.set("npc_id", "archer_d7")
+	slot.add_child(npc)
+	# Green tunic
+	var tunic: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.65, 1.05, 0.40)
+	tunic.mesh = tm
+	var tunic_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tunic_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	tunic_mat.roughness = 0.85
+	tunic.material_override = tunic_mat
+	tunic.position = Vector3(0, 0.55, 0)
+	npc.add_child(tunic)
+	# Longbow (curved torus)
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bm: TorusMesh = TorusMesh.new()
+	bm.inner_radius = 0.55
+	bm.outer_radius = 0.60
+	bow.mesh = bm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	bow.material_override = wood_mat
+	bow.position = Vector3(0.45, 0.85, 0)
+	bow.rotation_degrees = Vector3(0, 0, 90)
+	bow.scale = Vector3(1.0, 0.40, 1.0)
+	npc.add_child(bow)
+
+
+func _build_d7_target_stands(geom: Node) -> void:
+	## Epic-7 T38: 3 archery target stands — wooden frames with concentric
+	## bullseye discs (like the East Plaza but with wood theme).
+	var stands: Node3D = Node3D.new()
+	stands.name = "D7TargetStands"
+	stands.position = Vector3(D7_CENTER.x - 4.0, 0.0, -22.0)
+	geom.add_child(stands)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var ring_white: Color = Color(0.92, 0.92, 0.85)
+	var ring_red: Color = Color(0.85, 0.20, 0.20)
+	var ring_yellow: Color = Color(0.95, 0.85, 0.20)
+	var rings: Array = [
+		{"r": 0.55, "c": ring_white},
+		{"r": 0.40, "c": ring_red},
+		{"r": 0.25, "c": ring_white},
+		{"r": 0.10, "c": ring_yellow},
+	]
+	for i in 3:
+		var stand: Node3D = Node3D.new()
+		stand.position = Vector3(i * 2.40, 0, 0)
+		stands.add_child(stand)
+		# 2 vertical posts
+		for sx in [-0.50, 0.50]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.10, 1.85, 0.10)
+			post.mesh = pm
+			post.material_override = wood_mat
+			post.position = Vector3(sx, 0.92, 0)
+			stand.add_child(post)
+		# Bullseye rings
+		for ring in rings:
+			var disc: MeshInstance3D = MeshInstance3D.new()
+			var dm: CylinderMesh = CylinderMesh.new()
+			dm.top_radius = ring["r"]
+			dm.bottom_radius = ring["r"]
+			dm.height = 0.04
+			disc.mesh = dm
+			var dmat: StandardMaterial3D = StandardMaterial3D.new()
+			dmat.albedo_color = ring["c"]
+			dmat.emission_enabled = true
+			dmat.emission = ring["c"]
+			dmat.emission_energy_multiplier = 0.45
+			dmat.roughness = 0.55
+			disc.material_override = dmat
+			disc.position = Vector3(0, 1.20, 0.0 - rings.find(ring) * 0.005)
+			disc.rotation_degrees = Vector3(90, 0, 0)
+			stand.add_child(disc)
+		# Stand collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.20, 1.85, 0.30)
+		cs.shape = cb
+		sb.add_child(cs)
+		stand.add_child(sb)
+
+
+func _build_d7_shrine_pillars(geom: Node) -> void:
+	## Epic-7 T39: 6 small shrine pillars in a row, each with a tiny
+	## glowing offering bowl on top.
+	var pillars: Node3D = Node3D.new()
+	pillars.name = "ShrinePillars"
+	pillars.position = Vector3(D7_CENTER.x + 8.0, 0.0, -22.0)
+	geom.add_child(pillars)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(1.0, 0.65, 0.30)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(1.0, 0.55, 0.20)
+	glow_mat.emission_energy_multiplier = 3.0
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var pillar: Node3D = Node3D.new()
+		pillar.position = Vector3(i * 1.40, 0, 0)
+		pillars.add_child(pillar)
+		# Stone column
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.22
+		cm.bottom_radius = 0.30
+		cm.height = 1.40
+		col.mesh = cm
+		col.material_override = stone_mat
+		col.position = Vector3(0, 0.70, 0)
+		pillar.add_child(col)
+		# Top bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.22
+		bm.height = 0.18
+		bowl.mesh = bm
+		bowl.material_override = stone_mat
+		bowl.position = Vector3(0, 1.50, 0)
+		pillar.add_child(bowl)
+		# Offering glow (small bright sphere)
+		var offering: MeshInstance3D = MeshInstance3D.new()
+		var om: SphereMesh = SphereMesh.new()
+		om.radius = 0.10
+		om.height = 0.18
+		offering.mesh = om
+		offering.material_override = glow_mat
+		offering.position = Vector3(0, 1.65, 0)
+		pillar.add_child(offering)
+		# Pulse offering
+		var tw: Tween = offering.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(offering, "scale", Vector3.ONE * 1.30, 0.85)
+		tw.tween_property(offering, "scale", Vector3.ONE * 0.85, 0.85)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.70, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.30
+		cap.height = 1.40
+		cs.shape = cap
+		sb.add_child(cs)
+		pillar.add_child(sb)
+
+
+func _build_d7_spirit_braziers(geom: Node) -> void:
+	## Epic-7 T40: 4 spirit braziers — large bronze cauldrons with bright
+	## blue flame cores and rising sparks.
+	var braziers: Node3D = Node3D.new()
+	braziers.name = "SpiritBraziers"
+	braziers.position = Vector3(D7_CENTER.x + 14.0, 0.0, -8.0)
+	geom.add_child(braziers)
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	bronze_mat.metallic = 0.85
+	bronze_mat.roughness = 0.30
+	for i in 4:
+		var brazier: Node3D = Node3D.new()
+		brazier.position = Vector3(i * 1.85, 0, 0)
+		braziers.add_child(brazier)
+		# Large cauldron sphere
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.55
+		bm.height = 0.65
+		bowl.mesh = bm
+		bowl.material_override = bronze_mat
+		bowl.position = Vector3(0, 1.0, 0)
+		bowl.scale = Vector3(1.0, 0.85, 1.0)
+		brazier.add_child(bowl)
+		# 3 tripod legs
+		for j in 3:
+			var ang: float = (TAU / 3.0) * j
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.06
+			lm.bottom_radius = 0.08
+			lm.height = 0.85
+			leg.mesh = lm
+			leg.material_override = bronze_mat
+			leg.position = Vector3(cos(ang) * 0.30, 0.42, sin(ang) * 0.30)
+			leg.rotation = Vector3(deg_to_rad(15) * sin(ang), 0, deg_to_rad(15) * cos(ang))
+			brazier.add_child(leg)
+		# Blue flame core
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.30
+		fm.height = 0.55
+		flame.mesh = fm
+		var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+		flame_mat.albedo_color = Color(0.30, 0.65, 1.0)
+		flame_mat.emission_enabled = true
+		flame_mat.emission = Color(0.30, 0.85, 1.0)
+		flame_mat.emission_energy_multiplier = 4.0
+		flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		flame.material_override = flame_mat
+		flame.position = Vector3(0, 1.20, 0)
+		brazier.add_child(flame)
+		# Flicker
+		var tw: Tween = flame.create_tween().set_loops()
+		tw.tween_interval(i * 0.10)
+		tw.tween_property(flame, "scale", Vector3(1.20, 1.30, 1.20), 0.20)
+		tw.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.20)
+		# Spark particles
+		var sparks: GPUParticles3D = GPUParticles3D.new()
+		sparks.amount = 25
+		sparks.lifetime = 1.85
+		sparks.preprocess = 1.0
+		sparks.position = Vector3(0, 1.40, 0)
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 25.0
+		pm.gravity = Vector3.ZERO
+		pm.initial_velocity_min = 0.55
+		pm.initial_velocity_max = 1.30
+		pm.scale_min = 0.04
+		pm.scale_max = 0.10
+		pm.color = Color(0.30, 0.85, 1.0, 0.85)
+		sparks.process_material = pm
+		var sm_mesh: SphereMesh = SphereMesh.new()
+		sm_mesh.radius = 0.04
+		sm_mesh.height = 0.08
+		sparks.draw_pass_1 = sm_mesh
+		var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sm_mat.albedo_color = Color(0.30, 0.85, 1.0)
+		sm_mat.emission_enabled = true
+		sm_mat.emission = Color(0.30, 0.95, 1.0)
+		sm_mat.emission_energy_multiplier = 3.0
+		sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm_mesh.material = sm_mat
+		brazier.add_child(sparks)
+		# Light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(0.40, 0.85, 1.0)
+		light.light_energy = 2.5
+		light.omni_range = 5.5
+		light.position = Vector3(0, 1.20, 0)
+		brazier.add_child(light)
+		# Brazier collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.55
+		cap.height = 1.40
+		cs.shape = cap
+		sb.add_child(cs)
+		brazier.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
