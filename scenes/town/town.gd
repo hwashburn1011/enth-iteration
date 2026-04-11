@@ -8855,6 +8855,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_cocoa_stand(geom)
 	# Epic-5 T45: cocoa vendor NPC
 	_build_d5_cocoa_vendor_npc()
+	# Epic-5 T46: cryo prison cell with captive glitch
+	_build_d5_cryo_prison(geom)
+	# Epic-5 T47: distant yeti silhouette on the horizon
+	_build_d5_yeti_silhouette(geom)
+	# Epic-5 T48: explorer NPC with pickaxe
+	_build_d5_explorer_npc()
+	# Epic-5 T49: ice spike trap field
+	_build_d5_ice_spike_traps(geom)
+	# Epic-5 T50: GLACIAL WARDEN mini-boss landmark
+	_build_d5_glacial_warden(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -12242,6 +12252,579 @@ func _build_d5_cocoa_vendor_npc() -> void:
 	mug.material_override = mug_mat
 	mug.position = Vector3(0.40, 0.85, 0.18)
 	npc.add_child(mug)
+
+
+func _build_d5_cryo_prison(geom: Node) -> void:
+	## Epic-5 T46: cryo prison cell — single tall reinforced ice cylinder
+	## with steel bars containing a captured red glitch creature inside.
+	var prison: Node3D = Node3D.new()
+	prison.name = "CryoPrison"
+	prison.position = Vector3(D5_CENTER.x + 16.0, 0.0, -2.0)
+	geom.add_child(prison)
+	# Stone base
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	stone_mat.roughness = 0.92
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.10
+	bm.bottom_radius = 1.30
+	bm.height = 0.45
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.22, 0)
+	prison.add_child(base)
+	# Ice cylinder containment chamber
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.55, 0.85, 0.95, 0.60)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.85
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var chamber: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.85
+	cm.bottom_radius = 0.85
+	cm.height = 3.40
+	chamber.mesh = cm
+	chamber.material_override = ice_mat
+	chamber.position = Vector3(0, 2.15, 0)
+	prison.add_child(chamber)
+	# 8 vertical steel bars around the chamber
+	var steel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	steel_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	steel_mat.metallic = 0.85
+	steel_mat.roughness = 0.30
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var brm: CylinderMesh = CylinderMesh.new()
+		brm.top_radius = 0.04
+		brm.bottom_radius = 0.04
+		brm.height = 3.40
+		bar.mesh = brm
+		bar.material_override = steel_mat
+		bar.position = Vector3(cos(ang) * 0.95, 2.15, sin(ang) * 0.95)
+		prison.add_child(bar)
+	# Top metal cap
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var capm: CylinderMesh = CylinderMesh.new()
+	capm.top_radius = 1.05
+	capm.bottom_radius = 1.05
+	capm.height = 0.30
+	cap.mesh = capm
+	cap.material_override = steel_mat
+	cap.position = Vector3(0, 4.00, 0)
+	prison.add_child(cap)
+	# Captured glitch creature inside (red angry blob with twitching eye)
+	var glitch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glitch_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	glitch_mat.emission_enabled = true
+	glitch_mat.emission = Color(0.95, 0.10, 0.10)
+	glitch_mat.emission_energy_multiplier = 1.6
+	glitch_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var glitch: MeshInstance3D = MeshInstance3D.new()
+	var gm: SphereMesh = SphereMesh.new()
+	gm.radius = 0.45
+	gm.height = 0.85
+	glitch.mesh = gm
+	glitch.material_override = glitch_mat
+	glitch.position = Vector3(0, 1.85, 0)
+	prison.add_child(glitch)
+	# Eye
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.10
+	em.height = 0.18
+	eye.mesh = em
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 1.0, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 1.0, 0.30)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = eye_mat
+	eye.position = Vector3(0, 1.92, 0.40)
+	prison.add_child(eye)
+	# Glitch pulse + jitter
+	var tw: Tween = glitch.create_tween().set_loops()
+	tw.tween_property(glitch, "scale", Vector3(1.20, 0.85, 1.20), 0.30)
+	tw.tween_property(glitch, "scale", Vector3(0.85, 1.20, 0.85), 0.30)
+	# Sign at base
+	var label: Label3D = Label3D.new()
+	label.text = "CONTAINMENT\nUNIT 0xDEADBEEF"
+	label.modulate = Color(0.95, 0.85, 0.30)
+	label.outline_modulate = Color(0.20, 0.10, 0.05)
+	label.outline_size = 4
+	label.font_size = 36
+	label.pixel_size = 0.0045
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.position = Vector3(0, 0.85, 1.20)
+	prison.add_child(label)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 1.10
+	cyl.height = 4.20
+	cs.shape = cyl
+	sb.add_child(cs)
+	prison.add_child(sb)
+
+
+func _build_d5_yeti_silhouette(geom: Node) -> void:
+	## Epic-5 T47: large dark yeti silhouette on the far horizon — pure
+	## flat dark unshaded material so it reads like a distant shape against
+	## the snow. Visual storytelling: something hunts beyond the cache.
+	var yeti: Node3D = Node3D.new()
+	yeti.name = "YetiSilhouette"
+	yeti.position = Vector3(D5_CENTER.x + 28.0, 0.0, -22.0)
+	geom.add_child(yeti)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.12, 0.15)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body (large box)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.40, 4.20, 1.40)
+	body.mesh = bm
+	body.material_override = dark_mat
+	body.position = Vector3(0, 2.50, 0)
+	yeti.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.85
+	hm.height = 1.40
+	head.mesh = hm
+	head.material_override = dark_mat
+	head.position = Vector3(0, 5.20, 0)
+	yeti.add_child(head)
+	# 2 huge arms (long boxes)
+	for sx in [-1.85, 1.85]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.85, 3.40, 0.85)
+		arm.mesh = am
+		arm.material_override = dark_mat
+		arm.position = Vector3(sx, 2.50, 0)
+		yeti.add_child(arm)
+	# 2 glowing red eyes (the only color visible at distance)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.10, 0.10)
+	eye_mat.emission_energy_multiplier = 4.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.30, 0.30]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.10
+		em.height = 0.20
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 5.40, 0.85)
+		yeti.add_child(eye)
+		# Slow blink (scale flicker)
+		var tw: Tween = eye.create_tween().set_loops()
+		tw.tween_interval(2.0 + randf() * 1.5)
+		tw.tween_property(eye, "scale:y", 0.10, 0.10)
+		tw.tween_property(eye, "scale:y", 1.0, 0.10)
+	# Subtle sway in place to suggest breathing
+	var ts: Tween = yeti.create_tween().set_loops()
+	ts.tween_property(yeti, "rotation_degrees:y", 4.0, 3.0)
+	ts.tween_property(yeti, "rotation_degrees:y", -4.0, 3.0)
+
+
+func _build_d5_explorer_npc() -> void:
+	## Epic-5 T48: arctic explorer NPC carrying a tall pickaxe and wearing
+	## a backpack and snow-goggles.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ExplorerSlot"
+	slot.position = Vector3(D5_CENTER.x + 14.0, 0.0, 4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Explorer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tundratrek")
+	if "npc_id" in npc:
+		npc.set("npc_id", "explorer_d5")
+	slot.add_child(npc)
+	# Snowsuit (orange)
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.75, 1.10, 0.50)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	suit_mat.roughness = 0.85
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.55, 0)
+	npc.add_child(suit)
+	# Backpack
+	var pack: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.55, 0.85, 0.30)
+	pack.mesh = pm
+	var pack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pack_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	pack_mat.roughness = 0.85
+	pack.material_override = pack_mat
+	pack.position = Vector3(0, 0.65, -0.32)
+	npc.add_child(pack)
+	# Bedroll on backpack
+	var roll: MeshInstance3D = MeshInstance3D.new()
+	var rm: CylinderMesh = CylinderMesh.new()
+	rm.top_radius = 0.10
+	rm.bottom_radius = 0.10
+	rm.height = 0.55
+	roll.mesh = rm
+	var roll_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roll_mat.albedo_color = Color(0.85, 0.65, 0.30)
+	roll_mat.roughness = 0.85
+	roll.material_override = roll_mat
+	roll.position = Vector3(0, 1.10, -0.40)
+	roll.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(roll)
+	# Snow goggles strip
+	var goggles: MeshInstance3D = MeshInstance3D.new()
+	var gmm: BoxMesh = BoxMesh.new()
+	gmm.size = Vector3(0.42, 0.10, 0.06)
+	goggles.mesh = gmm
+	var gog_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gog_mat.albedo_color = Color(0.30, 0.45, 0.95, 0.85)
+	gog_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	gog_mat.emission_enabled = true
+	gog_mat.emission = Color(0.30, 0.55, 0.95)
+	gog_mat.emission_energy_multiplier = 1.4
+	gog_mat.metallic = 0.55
+	gog_mat.roughness = 0.20
+	goggles.material_override = gog_mat
+	goggles.position = Vector3(0, 1.42, 0.21)
+	npc.add_child(goggles)
+	# Pickaxe (handle + head)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.04
+	hmm.bottom_radius = 0.05
+	hmm.height = 1.65
+	handle.mesh = hmm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0.45, 0.85, 0)
+	npc.add_child(handle)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm2: PrismMesh = PrismMesh.new()
+	hm2.size = Vector3(0.10, 0.10, 0.55)
+	head.mesh = hm2
+	var steel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	steel_mat.albedo_color = Color(0.50, 0.55, 0.60)
+	steel_mat.metallic = 0.85
+	steel_mat.roughness = 0.30
+	head.material_override = steel_mat
+	head.position = Vector3(0.45, 1.65, 0)
+	head.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(head)
+
+
+func _build_d5_ice_spike_traps(geom: Node) -> void:
+	## Epic-5 T49: ice spike trap field — 12 sharp upward-pointing ice
+	## spikes scattered in a hostile area, with a cyan glow base.
+	var field: Node3D = Node3D.new()
+	field.name = "IceSpikeTraps"
+	field.position = Vector3(D5_CENTER.x + 22.0, 0.0, -10.0)
+	geom.add_child(field)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.85
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var sharp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sharp_mat.albedo_color = Color(0.85, 0.95, 1.0)
+	sharp_mat.emission_enabled = true
+	sharp_mat.emission = Color(0.65, 0.95, 1.0)
+	sharp_mat.emission_energy_multiplier = 1.6
+	sharp_mat.metallic = 0.55
+	sharp_mat.roughness = 0.20
+	for i in 12:
+		var spike: Node3D = Node3D.new()
+		spike.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0.0,
+			randf_range(-2.5, 2.5)
+		)
+		field.add_child(spike)
+		# Base ice crystal
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bm: PrismMesh = PrismMesh.new()
+		bm.size = Vector3(0.30, 0.40, 0.30)
+		base.mesh = bm
+		base.material_override = ice_mat
+		base.position = Vector3(0, 0.20, 0)
+		spike.add_child(base)
+		# Sharp tall spike
+		var s: MeshInstance3D = MeshInstance3D.new()
+		var sm: PrismMesh = PrismMesh.new()
+		sm.size = Vector3(0.20, 1.40 + randf() * 0.55, 0.20)
+		s.mesh = sm
+		s.material_override = sharp_mat
+		s.position = Vector3(0, 1.05 + sm.size.y * 0.5 - 0.65, 0)
+		spike.add_child(s)
+		# Spike collision (capsule)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.18
+		cap.height = 1.85
+		cs.shape = cap
+		sb.add_child(cs)
+		spike.add_child(sb)
+	# Warning glow at field center
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.95, 0.20, 0.20)
+	light.light_energy = 1.4
+	light.omni_range = 6.0
+	light.position = Vector3(0, 1.85, 0)
+	field.add_child(light)
+	# Pulse warning
+	var tw: Tween = light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", 2.4, 0.55)
+	tw.tween_property(light, "light_energy", 1.4, 0.55)
+
+
+func _build_d5_glacial_warden(geom: Node) -> void:
+	## Epic-5 T50: GLACIAL WARDEN — D5 mid-boss landmark. Tall ice knight
+	## with a massive frost greatsword, tower shield, and a billboard label.
+	var warden: Node3D = Node3D.new()
+	warden.name = "GlacialWarden"
+	warden.position = Vector3(D5_CENTER.x + 4.0, 0.0, -12.0)
+	geom.add_child(warden)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.80, 0.95)
+	ice_mat.emission_energy_multiplier = 0.45
+	ice_mat.metallic = 0.65
+	ice_mat.roughness = 0.20
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.30, 1.0, 1.0)
+	rune_mat.emission_energy_multiplier = 3.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone pedestal
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.50, 0.55)
+	stone_mat.roughness = 0.92
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(3.20, 0.55, 3.20)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.27, 0)
+	warden.add_child(ped)
+	# Body — massive ice torso
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.65, 2.40, 1.10)
+	torso.mesh = tm
+	torso.material_override = ice_mat
+	torso.position = Vector3(0, 1.95, 0)
+	warden.add_child(torso)
+	# Head — armored helm
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.95, 0.85, 0.85)
+	helm.mesh = hm
+	helm.material_override = ice_mat
+	helm.position = Vector3(0, 3.55, 0)
+	warden.add_child(helm)
+	# Glowing eye visor (cyan slit)
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.10, 0.04)
+	visor.mesh = vm
+	visor.material_override = rune_mat
+	visor.position = Vector3(0, 3.65, 0.42)
+	warden.add_child(visor)
+	# Crown spikes on helm (3)
+	for i in 3:
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.18, 0.40, 0.18)
+		spike.mesh = spm
+		spike.material_override = ice_mat
+		spike.position = Vector3(-0.30 + i * 0.30, 4.10, 0)
+		warden.add_child(spike)
+	# 2 shoulder pauldrons
+	for sx in [-1.20, 1.20]:
+		var pauldron: MeshInstance3D = MeshInstance3D.new()
+		var prm: SphereMesh = SphereMesh.new()
+		prm.radius = 0.55
+		prm.height = 0.85
+		pauldron.mesh = prm
+		pauldron.material_override = ice_mat
+		pauldron.position = Vector3(sx, 2.95, 0)
+		pauldron.scale = Vector3(0.85, 0.65, 0.85)
+		warden.add_child(pauldron)
+	# Right arm (holding the sword)
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.55, 1.85, 0.55)
+	right_arm.mesh = ram
+	right_arm.material_override = ice_mat
+	right_arm.position = Vector3(1.30, 1.95, 0)
+	warden.add_child(right_arm)
+	# Left arm (holding the shield)
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.55, 1.85, 0.55)
+	left_arm.mesh = lam
+	left_arm.material_override = ice_mat
+	left_arm.position = Vector3(-1.30, 1.95, 0)
+	warden.add_child(left_arm)
+	# 2 legs
+	for sx in [-0.45, 0.45]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lgm: BoxMesh = BoxMesh.new()
+		lgm.size = Vector3(0.55, 0.95, 0.55)
+		leg.mesh = lgm
+		leg.material_override = ice_mat
+		leg.position = Vector3(sx, 1.05, 0)
+		warden.add_child(leg)
+	# Massive frost greatsword (long blade + crossguard + handle)
+	var sword_root: Node3D = Node3D.new()
+	sword_root.position = Vector3(1.85, 2.85, 0)
+	sword_root.rotation_degrees = Vector3(0, 0, -25)
+	warden.add_child(sword_root)
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blm: PrismMesh = PrismMesh.new()
+	blm.size = Vector3(0.35, 3.20, 0.10)
+	blade.mesh = blm
+	blade.material_override = ice_mat
+	blade.position = Vector3(0, 1.60, 0)
+	sword_root.add_child(blade)
+	# Glowing rune line down the blade
+	var rune: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(0.06, 2.85, 0.04)
+	rune.mesh = rmm
+	rune.material_override = rune_mat
+	rune.position = Vector3(0, 1.60, 0.07)
+	sword_root.add_child(rune)
+	# Crossguard
+	var guard: MeshInstance3D = MeshInstance3D.new()
+	var gm2: BoxMesh = BoxMesh.new()
+	gm2.size = Vector3(0.85, 0.18, 0.20)
+	guard.mesh = gm2
+	guard.material_override = ice_mat
+	guard.position = Vector3(0, 0.0, 0)
+	sword_root.add_child(guard)
+	# Handle (wrapped in dark leather)
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hndm: CylinderMesh = CylinderMesh.new()
+	hndm.top_radius = 0.08
+	hndm.bottom_radius = 0.08
+	hndm.height = 0.55
+	handle.mesh = hndm
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.20, 0.18, 0.15)
+	leather_mat.roughness = 0.85
+	handle.material_override = leather_mat
+	handle.position = Vector3(0, -0.40, 0)
+	sword_root.add_child(handle)
+	# Pommel
+	var pommel: MeshInstance3D = MeshInstance3D.new()
+	var pmm2: SphereMesh = SphereMesh.new()
+	pmm2.radius = 0.14
+	pmm2.height = 0.24
+	pommel.mesh = pmm2
+	pommel.material_override = rune_mat
+	pommel.position = Vector3(0, -0.75, 0)
+	sword_root.add_child(pommel)
+	# Tower shield (large box on left arm)
+	var shield: Node3D = Node3D.new()
+	shield.position = Vector3(-1.85, 1.95, 0.65)
+	warden.add_child(shield)
+	var shield_face: MeshInstance3D = MeshInstance3D.new()
+	var shfm: BoxMesh = BoxMesh.new()
+	shfm.size = Vector3(1.30, 2.20, 0.20)
+	shield_face.mesh = shfm
+	shield_face.material_override = ice_mat
+	shield.add_child(shield_face)
+	# Shield rune emblem (cyan diamond)
+	var emblem: MeshInstance3D = MeshInstance3D.new()
+	var elm: PrismMesh = PrismMesh.new()
+	elm.size = Vector3(0.55, 0.85, 0.06)
+	emblem.mesh = elm
+	emblem.material_override = rune_mat
+	emblem.position = Vector3(0, 0, 0.13)
+	shield.add_child(emblem)
+	# Big aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.85, 1.0)
+	light.light_energy = 4.5
+	light.omni_range = 14.0
+	light.position = Vector3(0, 3.40, 0)
+	warden.add_child(light)
+	# Light pulse
+	var tw: Tween = light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", 5.5, 1.8)
+	tw.tween_property(light, "light_energy", 4.0, 1.8)
+	# Title labels
+	var title: Label3D = Label3D.new()
+	title.text = "THE GLACIAL WARDEN"
+	title.modulate = Color(0.40, 0.95, 1.0)
+	title.outline_modulate = Color(0.05, 0.20, 0.30)
+	title.outline_size = 12
+	title.font_size = 80
+	title.pixel_size = 0.013
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 5.80, 0)
+	warden.add_child(title)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Sworn keeper of frozen memory"
+	subtitle.modulate = Color(0.85, 0.95, 1.0)
+	subtitle.outline_modulate = Color(0.10, 0.20, 0.30)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.010
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 5.10, 0)
+	warden.add_child(subtitle)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.95, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 4.20, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	warden.add_child(sb)
+	# Pedestal collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	psb.position = Vector3(0, 0.27, 0)
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(3.20, 0.55, 3.20)
+	pcs.shape = pcb
+	psb.add_child(pcs)
+	warden.add_child(psb)
 
 
 
