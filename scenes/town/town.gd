@@ -1842,6 +1842,8 @@ func _build_district_3(geom: Node) -> void:
 	_build_district_4(geom)
 	# === EPIC 5: Frozen Cache — The Cryogenic Archive ===
 	_build_district_5(geom)
+	# === EPIC 6: Neon Bazaar — The All-Night Market ===
+	_build_district_6(geom)
 
 
 func _build_district_4(geom: Node) -> void:
@@ -17093,6 +17095,379 @@ func _build_d5_frost_monarch(geom: Node) -> void:
 	psb.add_child(pcs)
 	monarch.add_child(psb)
 
+
+const D6_CENTER := Vector3(400, 0, 0)
+
+
+func _build_district_6(geom: Node) -> void:
+	## Epic 6 entry point — Neon Bazaar, the all-night cybermarket.
+	# Epic-6 T1: extend boundary + D6 dark night ground
+	_extend_boundary_for_d6(geom)
+	_build_d6_ground(geom)
+	# Epic-6 T2: neon entrance arch
+	_build_d6_entrance_arch(geom)
+	# Epic-6 T3: GREAT NEON SIGN landmark
+	_build_d6_great_sign(geom)
+	# Epic-6 T4: bazaar host NPC (greeter)
+	_build_d6_bazaar_host_npc()
+
+
+func _extend_boundary_for_d6(geom: Node) -> void:
+	## Epic-6 T1a: push the east boundary wall from x=330 out to x=430.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 430.0
+
+
+func _build_d6_ground(geom: Node) -> void:
+	## Epic-6 T1b: D6 ground — dark slate grid floor with magenta/cyan
+	## emissive grid lines suggesting wet pavement at night.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(80, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.mesh = plane
+	var ground_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ground_mat.albedo_color = Color(0.10, 0.08, 0.18)
+	ground_mat.emission_enabled = true
+	ground_mat.emission = Color(0.30, 0.10, 0.45)
+	ground_mat.emission_energy_multiplier = 0.20
+	ground_mat.metallic = 0.30
+	ground_mat.roughness = 0.30
+	ground.material_override = ground_mat
+	ground.position = Vector3(D6_CENTER.x, 0.01, 0)
+	ground.name = "D6NeonGround"
+	geom.add_child(ground)
+	# 5 magenta grid stripes running west-east + 3 cyan running north-south
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 1.6
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 5:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(75.0, 0.04, 0.18)
+		stripe.mesh = sm
+		stripe.material_override = magenta_mat
+		stripe.position = Vector3(D6_CENTER.x, 0.04, -16.0 + i * 8.0)
+		geom.add_child(stripe)
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_energy_multiplier = 1.6
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.18, 0.04, 36.0)
+		stripe.mesh = sm
+		stripe.material_override = cyan_mat
+		stripe.position = Vector3(D6_CENTER.x - 24.0 + i * 24.0, 0.04, 0)
+		geom.add_child(stripe)
+
+
+func _build_d6_entrance_arch(geom: Node) -> void:
+	## Epic-6 T2: neon entrance arch — twin black metal pillars with bright
+	## emissive magenta tubes outlining a doorway shape, with small bulbs.
+	var arch: Node3D = Node3D.new()
+	arch.name = "D6NeonArch"
+	arch.position = Vector3(D6_CENTER.x - 32.0, 0.0, 0.0)
+	geom.add_child(arch)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	black_mat.metallic = 0.85
+	black_mat.roughness = 0.30
+	var neon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	neon_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	neon_mat.emission_enabled = true
+	neon_mat.emission = Color(0.95, 0.20, 0.85)
+	neon_mat.emission_energy_multiplier = 3.5
+	neon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 2 black metal support pillars
+	for sx in [-2.85, 2.85]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.55, 5.85, 0.55)
+		pillar.mesh = pm
+		pillar.material_override = black_mat
+		pillar.position = Vector3(sx, 2.92, 0)
+		arch.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 2.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 5.85, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		arch.add_child(sb)
+		# Vertical neon tube on each pillar
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.06
+		tm.bottom_radius = 0.06
+		tm.height = 5.50
+		tube.mesh = tm
+		tube.material_override = neon_mat
+		tube.position = Vector3(sx, 2.85, 0.32)
+		arch.add_child(tube)
+	# Top horizontal neon crossbar
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: CylinderMesh = CylinderMesh.new()
+	cbm.top_radius = 0.06
+	cbm.bottom_radius = 0.06
+	cbm.height = 6.0
+	crossbar.mesh = cbm
+	crossbar.material_override = neon_mat
+	crossbar.position = Vector3(0, 5.85, 0.32)
+	crossbar.rotation_degrees = Vector3(0, 0, 90)
+	arch.add_child(crossbar)
+	# 8 hanging bulbs along the crossbar
+	for i in 8:
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.10
+		bm.height = 0.20
+		bulb.mesh = bm
+		bulb.material_override = neon_mat
+		bulb.position = Vector3(-2.50 + i * 0.71, 5.55, 0.32)
+		arch.add_child(bulb)
+	# Bright magenta light under the arch
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 3.5
+	light.omni_range = 10.0
+	light.position = Vector3(0, 4.20, 0)
+	arch.add_child(light)
+	# Pulse the light
+	var tw: Tween = light.create_tween().set_loops()
+	tw.tween_property(light, "light_energy", 4.5, 1.4)
+	tw.tween_property(light, "light_energy", 3.0, 1.4)
+
+
+func _build_d6_great_sign(geom: Node) -> void:
+	## Epic-6 T3: GREAT NEON SIGN landmark — towering vertical sign with
+	## flashing "BAZAAR" letters + flickering tube outline + scrolling
+	## arrow chase lights along the bottom edge.
+	var sign: Node3D = Node3D.new()
+	sign.name = "GreatNeonSign"
+	sign.position = Vector3(D6_CENTER.x, 0.0, 0.0)
+	geom.add_child(sign)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	black_mat.metallic = 0.85
+	black_mat.roughness = 0.30
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 4.0
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.30, 1.0, 1.0)
+	cyan_mat.emission_energy_multiplier = 4.0
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var yellow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	yellow_mat.albedo_color = Color(1.0, 0.85, 0.20)
+	yellow_mat.emission_enabled = true
+	yellow_mat.emission = Color(1.0, 0.85, 0.20)
+	yellow_mat.emission_energy_multiplier = 4.0
+	yellow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Tall central support post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.55, 9.50, 0.55)
+	post.mesh = pm
+	post.material_override = black_mat
+	post.position = Vector3(0, 4.75, -1.20)
+	sign.add_child(post)
+	# Sign face board (vertical large box)
+	var board: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(4.20, 7.50, 0.30)
+	board.mesh = bm
+	board.material_override = black_mat
+	board.position = Vector3(0, 6.50, 0)
+	sign.add_child(board)
+	# Magenta border tube outlining the board
+	for w in [
+		{"size": Vector3(4.20, 0.10, 0.04), "pos": Vector3(0,  3.85, 0.18)},
+		{"size": Vector3(4.20, 0.10, 0.04), "pos": Vector3(0, 10.25, 0.18)},
+		{"size": Vector3(0.10, 6.50, 0.04), "pos": Vector3(-2.10, 6.50, 0.18)},
+		{"size": Vector3(0.10, 6.50, 0.04), "pos": Vector3( 2.10, 6.50, 0.18)},
+	]:
+		var border: MeshInstance3D = MeshInstance3D.new()
+		var bom: BoxMesh = BoxMesh.new()
+		bom.size = w["size"]
+		border.mesh = bom
+		border.material_override = magenta_mat
+		border.position = w["pos"]
+		sign.add_child(border)
+	# Big "BAZAAR" Label3D
+	var label: Label3D = Label3D.new()
+	label.text = "BAZAAR"
+	label.modulate = Color(1.0, 1.0, 1.0)
+	label.outline_modulate = Color(0.95, 0.20, 0.85)
+	label.outline_size = 18
+	label.font_size = 144
+	label.pixel_size = 0.018
+	label.position = Vector3(0, 7.50, 0.20)
+	sign.add_child(label)
+	var sub: Label3D = Label3D.new()
+	sub.text = "OPEN ALL HOURS"
+	sub.modulate = Color(0.30, 1.0, 1.0)
+	sub.outline_modulate = Color(0.05, 0.20, 0.30)
+	sub.outline_size = 8
+	sub.font_size = 56
+	sub.pixel_size = 0.012
+	sub.position = Vector3(0, 5.85, 0.20)
+	sign.add_child(sub)
+	# Flicker tween on the magenta border (cycle visibility)
+	var tw: Tween = sign.create_tween().set_loops()
+	tw.tween_interval(2.0)
+	tw.tween_property(label, "modulate:a", 0.30, 0.05)
+	tw.tween_property(label, "modulate:a", 1.0, 0.05)
+	tw.tween_interval(0.5)
+	tw.tween_property(label, "modulate:a", 0.30, 0.05)
+	tw.tween_property(label, "modulate:a", 1.0, 0.10)
+	# Bottom chase-arrow lights (8 yellow bulbs sequencing left → right)
+	for i in 8:
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bbm: SphereMesh = SphereMesh.new()
+		bbm.radius = 0.16
+		bbm.height = 0.30
+		bulb.mesh = bbm
+		bulb.material_override = yellow_mat
+		bulb.position = Vector3(-1.85 + i * 0.55, 3.20, 0.22)
+		sign.add_child(bulb)
+		# Sequenced flicker
+		var tb: Tween = bulb.create_tween().set_loops()
+		tb.tween_interval(i * 0.10)
+		tb.tween_property(bulb, "scale", Vector3.ONE * 1.40, 0.08)
+		tb.tween_property(bulb, "scale", Vector3.ONE * 0.85, 0.08)
+		tb.tween_interval(0.55)
+	# Massive central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 5.5
+	light.omni_range = 22.0
+	light.position = Vector3(0, 6.50, 1.20)
+	sign.add_child(light)
+	# Light pulse
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 1.4)
+	twl.tween_property(light, "light_energy", 5.5, 1.4)
+	# Sign + post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.75, -0.45)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 9.50, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	sign.add_child(sb)
+
+
+func _build_d6_bazaar_host_npc() -> void:
+	## Epic-6 T4: bazaar host NPC at the entrance — gold-trimmed coat,
+	## confident pose, top hat with a glowing magenta band.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BazaarHostSlot"
+	slot.position = Vector3(D6_CENTER.x - 28.0, 0.0, 4.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "BazaarHost"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Argent")
+	if "npc_id" in npc:
+		npc.set("npc_id", "host_d6")
+	slot.add_child(npc)
+	# Long dark coat with gold trim hint
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.10, 0.08, 0.18)
+	coat_mat.metallic = 0.25
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Gold trim line down the front
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.06, 1.10, 0.04)
+	trim.mesh = tm
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 0.85
+	gold_mat.metallic = 0.85
+	gold_mat.roughness = 0.20
+	trim.material_override = gold_mat
+	trim.position = Vector3(0, 0.60, 0.24)
+	npc.add_child(trim)
+	# Top hat (cylinder + flat brim)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.32
+	brm.bottom_radius = 0.32
+	brm.height = 0.04
+	brim.mesh = brm
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	hat_mat.metallic = 0.30
+	hat_mat.roughness = 0.40
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 1.45, 0)
+	npc.add_child(brim)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.22
+	hm.bottom_radius = 0.22
+	hm.height = 0.45
+	hat.mesh = hm
+	hat.material_override = hat_mat
+	hat.position = Vector3(0, 1.70, 0)
+	npc.add_child(hat)
+	# Magenta hat band
+	var band: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.23
+	bm.bottom_radius = 0.23
+	bm.height = 0.06
+	band.mesh = bm
+	var band_mat: StandardMaterial3D = StandardMaterial3D.new()
+	band_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	band_mat.emission_enabled = true
+	band_mat.emission = Color(0.95, 0.20, 0.85)
+	band_mat.emission_energy_multiplier = 2.5
+	band_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	band.material_override = band_mat
+	band.position = Vector3(0, 1.50, 0)
+	npc.add_child(band)
+	# Cane held in hand (thin black cylinder)
+	var cane: MeshInstance3D = MeshInstance3D.new()
+	var canem: CylinderMesh = CylinderMesh.new()
+	canem.top_radius = 0.025
+	canem.bottom_radius = 0.03
+	canem.height = 1.40
+	cane.mesh = canem
+	cane.material_override = hat_mat
+	cane.position = Vector3(0.45, 0.70, 0.10)
+	npc.add_child(cane)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
