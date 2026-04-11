@@ -32784,6 +32784,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_message_bottles(geom)
 	# Epic-8 T75: tide depth markers
 	_build_d8_tide_markers(geom)
+	# Epic-8 T76: customs office building
+	_build_d8_customs_office(geom)
+	# Epic-8 T77: customs officer NPC
+	_build_d8_customs_officer_npc()
+	# Epic-8 T78: anchor chain pile
+	_build_d8_anchor_chain(geom)
+	# Epic-8 T79: whale watching tower
+	_build_d8_whale_watch_tower(geom)
+	# Epic-8 T80: tied barrels at dock edge
+	_build_d8_tied_barrels(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -37985,6 +37995,480 @@ func _build_d8_tide_markers(geom: Node) -> void:
 		cs.shape = cap
 		sb.add_child(cs)
 		post.add_child(sb)
+
+
+func _build_d8_customs_office(geom: Node) -> void:
+	## Epic-8 T76: small wooden customs office — square building with sloped
+	## roof, two windows, hanging sign reading "CUSTOMS".
+	var office: Node3D = Node3D.new()
+	office.name = "D8CustomsOffice"
+	office.position = Vector3(D8_CENTER.x + 40, 0, -6)
+	geom.add_child(office)
+	# Walls (warm tan wood)
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.62, 0.48, 0.30)
+	wall_mat.roughness = 0.78
+	var walls: MeshInstance3D = MeshInstance3D.new()
+	var wb: BoxMesh = BoxMesh.new()
+	wb.size = Vector3(4.4, 3.0, 4.0)
+	walls.mesh = wb
+	walls.material_override = wall_mat
+	walls.position = Vector3(0, 1.5, 0)
+	office.add_child(walls)
+	# Roof (red prism)
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.55, 0.18, 0.15)
+	roof_mat.roughness = 0.65
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var pm: PrismMesh = PrismMesh.new()
+	pm.size = Vector3(4.6, 1.4, 4.2)
+	roof.mesh = pm
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 3.7, 0)
+	office.add_child(roof)
+	# Door (dark wood)
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	door_mat.roughness = 0.7
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var db: BoxMesh = BoxMesh.new()
+	db.size = Vector3(0.85, 1.85, 0.06)
+	door.mesh = db
+	door.material_override = door_mat
+	door.position = Vector3(0, 0.95, 2.03)
+	office.add_child(door)
+	# Door handle
+	var handle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	handle_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	handle_mat.metallic = 0.95
+	handle_mat.roughness = 0.20
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.04
+	hm.height = 0.08
+	handle.mesh = hm
+	handle.material_override = handle_mat
+	handle.position = Vector3(0.30, 0.95, 2.07)
+	office.add_child(handle)
+	# Two windows (cyan emissive)
+	var win_mat: StandardMaterial3D = StandardMaterial3D.new()
+	win_mat.albedo_color = Color(0.55, 0.85, 0.95)
+	win_mat.emission_enabled = true
+	win_mat.emission = Color(0.45, 0.85, 0.95)
+	win_mat.emission_energy_multiplier = 0.95
+	for sx in [-1.3, 1.3]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wbm: BoxMesh = BoxMesh.new()
+		wbm.size = Vector3(0.85, 0.85, 0.06)
+		win.mesh = wbm
+		win.material_override = win_mat
+		win.position = Vector3(sx, 1.65, 2.03)
+		office.add_child(win)
+		# Window frame cross
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(0.30, 0.18, 0.10)
+		var fh: MeshInstance3D = MeshInstance3D.new()
+		var fhb: BoxMesh = BoxMesh.new()
+		fhb.size = Vector3(0.85, 0.05, 0.07)
+		fh.mesh = fhb
+		fh.material_override = fmat
+		fh.position = Vector3(sx, 1.65, 2.05)
+		office.add_child(fh)
+		var fv: MeshInstance3D = MeshInstance3D.new()
+		var fvb: BoxMesh = BoxMesh.new()
+		fvb.size = Vector3(0.05, 0.85, 0.07)
+		fv.mesh = fvb
+		fv.material_override = fmat
+		fv.position = Vector3(sx, 1.65, 2.05)
+		office.add_child(fv)
+	# Hanging sign bracket
+	var bracket: MeshInstance3D = MeshInstance3D.new()
+	var brb: BoxMesh = BoxMesh.new()
+	brb.size = Vector3(0.06, 0.06, 0.85)
+	bracket.mesh = brb
+	bracket.material_override = door_mat
+	bracket.position = Vector3(2.3, 2.7, 2.40)
+	office.add_child(bracket)
+	# Sign body
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.92, 0.85, 0.65)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.85, 0.75, 0.55)
+	sign_mat.emission_energy_multiplier = 0.45
+	var sign_node: MeshInstance3D = MeshInstance3D.new()
+	var sb: BoxMesh = BoxMesh.new()
+	sb.size = Vector3(0.06, 0.65, 1.05)
+	sign_node.mesh = sb
+	sign_node.material_override = sign_mat
+	sign_node.position = Vector3(2.3, 2.30, 2.85)
+	office.add_child(sign_node)
+	# Sign label "CUSTOMS"
+	var label: Label3D = Label3D.new()
+	label.text = "CUSTOMS"
+	label.font_size = 64
+	label.modulate = Color(0.20, 0.10, 0.05)
+	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	label.position = Vector3(2.36, 2.30, 2.85)
+	label.rotation_degrees = Vector3(0, 90, 0)
+	office.add_child(label)
+	# Sway tween for sign
+	var sway: Tween = sign_node.create_tween().set_loops()
+	sway.tween_property(sign_node, "rotation_degrees:x", 5.0, 1.4)
+	sway.tween_property(sign_node, "rotation_degrees:x", -5.0, 1.4)
+	# Building collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.5, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cbs: BoxShape3D = BoxShape3D.new()
+	cbs.size = Vector3(4.4, 3.0, 4.0)
+	cs.shape = cbs
+	stb.add_child(cs)
+	office.add_child(stb)
+
+
+func _build_d8_customs_officer_npc() -> void:
+	## Epic-8 T77: customs officer NPC — green uniform with badge, peaked cap,
+	## holding a leather ledger and a brass stamp.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D8CustomsOfficerSlot"
+	slot.position = Vector3(D8_CENTER.x + 38, 0, -3)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D8CustomsOfficer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Inspector Tariff")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d8_customs_officer")
+	slot.add_child(npc)
+	# Olive green uniform
+	var uni_mat: StandardMaterial3D = StandardMaterial3D.new()
+	uni_mat.albedo_color = Color(0.30, 0.35, 0.18)
+	uni_mat.roughness = 0.75
+	var uni: MeshInstance3D = MeshInstance3D.new()
+	var ub: BoxMesh = BoxMesh.new()
+	ub.size = Vector3(0.85, 1.05, 0.55)
+	uni.mesh = ub
+	uni.material_override = uni_mat
+	uni.position = Vector3(0, 1.05, 0)
+	npc.add_child(uni)
+	# Brass badge (round emissive disc)
+	var badge_mat: StandardMaterial3D = StandardMaterial3D.new()
+	badge_mat.albedo_color = Color(0.95, 0.75, 0.25)
+	badge_mat.metallic = 0.95
+	badge_mat.roughness = 0.15
+	badge_mat.emission_enabled = true
+	badge_mat.emission = Color(0.95, 0.75, 0.25)
+	badge_mat.emission_energy_multiplier = 0.6
+	var badge: MeshInstance3D = MeshInstance3D.new()
+	var bsm: SphereMesh = SphereMesh.new()
+	bsm.radius = 0.10
+	bsm.height = 0.06
+	badge.mesh = bsm
+	badge.material_override = badge_mat
+	badge.position = Vector3(-0.20, 1.30, 0.30)
+	npc.add_child(badge)
+	# Peaked cap
+	var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.20, 0.25, 0.12)
+	cap_mat.roughness = 0.7
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.32
+	cm.bottom_radius = 0.34
+	cm.height = 0.18
+	cap.mesh = cm
+	cap.material_override = cap_mat
+	cap.position = Vector3(0, 1.95, 0)
+	npc.add_child(cap)
+	var peak: MeshInstance3D = MeshInstance3D.new()
+	var pkb: BoxMesh = BoxMesh.new()
+	pkb.size = Vector3(0.50, 0.04, 0.20)
+	peak.mesh = pkb
+	peak.material_override = cap_mat
+	peak.position = Vector3(0, 1.86, 0.28)
+	npc.add_child(peak)
+	# Cap badge (small brass square on front)
+	var cb: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(0.12, 0.10, 0.02)
+	cb.mesh = cbm
+	cb.material_override = badge_mat
+	cb.position = Vector3(0, 1.96, 0.34)
+	npc.add_child(cb)
+	# Leather ledger held in left hand
+	var ldg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ldg_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	ldg_mat.roughness = 0.6
+	var ledger: MeshInstance3D = MeshInstance3D.new()
+	var ldb: BoxMesh = BoxMesh.new()
+	ldb.size = Vector3(0.40, 0.50, 0.10)
+	ledger.mesh = ldb
+	ledger.material_override = ldg_mat
+	ledger.position = Vector3(-0.40, 1.05, 0.35)
+	ledger.rotation_degrees = Vector3(-15, -10, 0)
+	npc.add_child(ledger)
+	# Brass stamp (small cylinder)
+	var stamp: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.06
+	stm.bottom_radius = 0.06
+	stm.height = 0.18
+	stamp.mesh = stm
+	stamp.material_override = badge_mat
+	stamp.position = Vector3(0.40, 1.10, 0.35)
+	stamp.rotation_degrees = Vector3(-30, 0, 0)
+	npc.add_child(stamp)
+
+
+func _build_d8_anchor_chain(geom: Node) -> void:
+	## Epic-8 T78: heavy iron anchor chain coiled on the dock — concentric
+	## rings of dark metal links with a big iron anchor at the center.
+	var pile: Node3D = Node3D.new()
+	pile.name = "D8AnchorChain"
+	pile.position = Vector3(D8_CENTER.x + 12, 0, 5)
+	geom.add_child(pile)
+	# Iron material
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.18, 0.18, 0.20)
+	iron.metallic = 0.85
+	iron.roughness = 0.55
+	# Coil: 4 concentric torus rings
+	for i in range(4):
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 1.0 - i * 0.22
+		tm.outer_radius = 1.18 - i * 0.22
+		ring.mesh = tm
+		ring.material_override = iron
+		ring.position = Vector3(0, 0.10 + i * 0.12, 0)
+		pile.add_child(ring)
+	# Big anchor at center
+	var anchor: Node3D = Node3D.new()
+	anchor.position = Vector3(0, 0.55, 0)
+	pile.add_child(anchor)
+	# Shank (vertical bar)
+	var shank: MeshInstance3D = MeshInstance3D.new()
+	var skm: BoxMesh = BoxMesh.new()
+	skm.size = Vector3(0.18, 1.40, 0.18)
+	shank.mesh = skm
+	shank.material_override = iron
+	shank.position = Vector3(0, 0.70, 0)
+	anchor.add_child(shank)
+	# Stock (horizontal bar at top)
+	var stock: MeshInstance3D = MeshInstance3D.new()
+	var stm2: BoxMesh = BoxMesh.new()
+	stm2.size = Vector3(1.10, 0.12, 0.12)
+	stock.mesh = stm2
+	stock.material_override = iron
+	stock.position = Vector3(0, 1.30, 0)
+	anchor.add_child(stock)
+	# Top ring
+	var ring_top: MeshInstance3D = MeshInstance3D.new()
+	var rtm: TorusMesh = TorusMesh.new()
+	rtm.inner_radius = 0.10
+	rtm.outer_radius = 0.18
+	ring_top.mesh = rtm
+	ring_top.material_override = iron
+	ring_top.position = Vector3(0, 1.50, 0)
+	anchor.add_child(ring_top)
+	# Two flukes (curved arms at bottom — use prism)
+	for sx in [-0.45, 0.45]:
+		var fluke: MeshInstance3D = MeshInstance3D.new()
+		var fpm: PrismMesh = PrismMesh.new()
+		fpm.size = Vector3(0.55, 0.60, 0.16)
+		fluke.mesh = fpm
+		fluke.material_override = iron
+		fluke.position = Vector3(sx, 0.20, 0)
+		fluke.rotation_degrees = Vector3(0, 0, -25 if sx < 0 else 25)
+		anchor.add_child(fluke)
+	# Pile collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 1.30
+	cyl.height = 1.10
+	cs.shape = cyl
+	sb.add_child(cs)
+	pile.add_child(sb)
+
+
+func _build_d8_whale_watch_tower(geom: Node) -> void:
+	## Epic-8 T79: tall whale-watching observation platform — wooden tower with
+	## ladder and big mounted brass binoculars at the top.
+	var tower: Node3D = Node3D.new()
+	tower.name = "D8WhaleWatchTower"
+	tower.position = Vector3(D8_CENTER.x + 55, 0, -14)
+	geom.add_child(tower)
+	# 4 corner posts
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	wood_mat.roughness = 0.85
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lb: BoxMesh = BoxMesh.new()
+			lb.size = Vector3(0.20, 6.0, 0.20)
+			leg.mesh = lb
+			leg.material_override = wood_mat
+			leg.position = Vector3(sx, 3.0, sz)
+			tower.add_child(leg)
+	# Cross-braces (X on each side)
+	for ang_z in [0.0, 180.0]:
+		var brace: MeshInstance3D = MeshInstance3D.new()
+		var bb: BoxMesh = BoxMesh.new()
+		bb.size = Vector3(2.8, 0.10, 0.10)
+		brace.mesh = bb
+		brace.material_override = wood_mat
+		brace.position = Vector3(0, 2.0, sin(deg_to_rad(ang_z)) * 0.0 + (1.0 if ang_z == 0 else -1.0))
+		brace.rotation_degrees = Vector3(0, 0, 35)
+		tower.add_child(brace)
+	# Top platform
+	var deck_mat: StandardMaterial3D = StandardMaterial3D.new()
+	deck_mat.albedo_color = Color(0.55, 0.40, 0.25)
+	deck_mat.roughness = 0.8
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(2.6, 0.18, 2.6)
+	deck.mesh = dm
+	deck.material_override = deck_mat
+	deck.position = Vector3(0, 6.0, 0)
+	tower.add_child(deck)
+	# Railing (4 sides — thin boxes)
+	for r in range(4):
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rb: BoxMesh = BoxMesh.new()
+		rb.size = Vector3(2.6, 0.08, 0.06)
+		rail.mesh = rb
+		rail.material_override = wood_mat
+		rail.position = Vector3(0, 6.55, 0)
+		rail.rotation_degrees = Vector3(0, r * 90, 0)
+		var off: float = 1.30
+		if r == 0: rail.position += Vector3(0, 0, off)
+		elif r == 1: rail.position += Vector3(off, 0, 0)
+		elif r == 2: rail.position += Vector3(0, 0, -off)
+		else: rail.position += Vector3(-off, 0, 0)
+		tower.add_child(rail)
+	# Brass binoculars (two large cylinders side by side)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.15
+	for sx in [-0.18, 0.18]:
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tcm: CylinderMesh = CylinderMesh.new()
+		tcm.top_radius = 0.16
+		tcm.bottom_radius = 0.20
+		tcm.height = 0.85
+		tube.mesh = tcm
+		tube.material_override = brass
+		tube.position = Vector3(sx, 6.95, 0.30)
+		tube.rotation_degrees = Vector3(75, 0, 0)
+		tower.add_child(tube)
+	# Mount post
+	var mount: MeshInstance3D = MeshInstance3D.new()
+	var mpm: CylinderMesh = CylinderMesh.new()
+	mpm.top_radius = 0.10
+	mpm.bottom_radius = 0.15
+	mpm.height = 0.50
+	mount.mesh = mpm
+	mount.material_override = brass
+	mount.position = Vector3(0, 6.40, 0.30)
+	tower.add_child(mount)
+	# Ladder (vertical bar with rungs)
+	for i in range(8):
+		var rung: MeshInstance3D = MeshInstance3D.new()
+		var rgm: BoxMesh = BoxMesh.new()
+		rgm.size = Vector3(0.55, 0.06, 0.06)
+		rung.mesh = rgm
+		rung.material_override = wood_mat
+		rung.position = Vector3(0, 0.30 + i * 0.70, 1.10)
+		tower.add_child(rung)
+	# Tower collision (4 leg posts as a single box)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.4, 6.0, 2.4)
+	cs.shape = bs
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d8_tied_barrels(geom: Node) -> void:
+	## Epic-8 T80: 5 wooden barrels tied together at the dock edge, bobbing
+	## gently with rope strung between them.
+	var dock_barrels: Node3D = Node3D.new()
+	dock_barrels.name = "D8TiedBarrels"
+	dock_barrels.position = Vector3(D8_CENTER.x - 5, 0.4, 12)
+	geom.add_child(dock_barrels)
+	# Wood + iron band materials
+	var wood: StandardMaterial3D = StandardMaterial3D.new()
+	wood.albedo_color = Color(0.48, 0.30, 0.15)
+	wood.roughness = 0.85
+	var band_mat: StandardMaterial3D = StandardMaterial3D.new()
+	band_mat.albedo_color = Color(0.20, 0.18, 0.18)
+	band_mat.metallic = 0.7
+	band_mat.roughness = 0.45
+	for i in range(5):
+		var barrel: Node3D = Node3D.new()
+		barrel.position = Vector3(i * 1.10, 0, 0)
+		dock_barrels.add_child(barrel)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.36
+		bm.bottom_radius = 0.36
+		bm.height = 0.85
+		body.mesh = bm
+		body.material_override = wood
+		body.position = Vector3(0, 0.42, 0)
+		barrel.add_child(body)
+		# Iron bands (top + bottom)
+		for sy in [0.15, 0.65]:
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var tm: TorusMesh = TorusMesh.new()
+			tm.inner_radius = 0.36
+			tm.outer_radius = 0.40
+			band.mesh = tm
+			band.material_override = band_mat
+			band.position = Vector3(0, sy, 0)
+			barrel.add_child(band)
+		# Per-barrel bob tween (offset phases)
+		var tw: Tween = barrel.create_tween().set_loops()
+		var phase: float = float(i) * 0.18
+		tw.tween_property(barrel, "position:y", 0.18 + phase, 1.6).from(-0.05)
+		tw.tween_property(barrel, "position:y", -0.05, 1.6)
+		# Per-barrel collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.36
+		cyl.height = 0.85
+		cs.shape = cyl
+		sb.add_child(cs)
+		barrel.add_child(sb)
+	# Connecting rope (long thin cylinder spanning all barrels)
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.78, 0.65, 0.40)
+	rope_mat.roughness = 0.85
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rcm: CylinderMesh = CylinderMesh.new()
+	rcm.top_radius = 0.04
+	rcm.bottom_radius = 0.04
+	rcm.height = 5.0
+	rope.mesh = rcm
+	rope.material_override = rope_mat
+	rope.position = Vector3(2.20, 0.85, 0)
+	rope.rotation_degrees = Vector3(0, 0, 90)
+	dock_barrels.add_child(rope)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
