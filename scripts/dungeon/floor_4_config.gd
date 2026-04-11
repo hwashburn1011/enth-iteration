@@ -23,7 +23,11 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 				wave2.enemy_types = ["rogue_process", "rogue_process", "memory_leak"]
 				wave2.spawn_count = 3
 				spawner.waves = [wave1, wave2]
-		4:  # Elevated — 2 of each (6 total)
+		4:  # Pillars (encore) — heavy rogue press before elite finale
+			if spawner:
+				spawner.enemy_types = ["rogue_process", "rogue_process", "rogue_process", "memory_leak"]
+				spawner.spawn_count = 5
+		5:  # Elevated — 2 of each (6 total)
 			if spawner:
 				spawner.enemy_types = ["glitch_bug", "glitch_bug", "memory_leak", "memory_leak", "rogue_process", "rogue_process"]
 				spawner.spawn_count = 6

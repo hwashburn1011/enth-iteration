@@ -12,4 +12,4 @@
 script = ExtResource("1_fd")
 floor_name = "Corrupted Cache"
 floor_number = 4
-room_sequence = [ExtResource("2_ambush"), ExtResource("3_pillars"), ExtResource("4_turn"), ExtResource("5_arena"), ExtResource("6_elevated"), ExtResource("7_loot")]
+room_sequence = [ExtResource("2_ambush"), ExtResource("3_pillars"), ExtResource("4_turn"), ExtResource("5_arena"), ExtResource("3_pillars"), ExtResource("6_elevated"), ExtResource("7_loot")]
