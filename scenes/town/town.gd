@@ -25507,6 +25507,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_incense_columns(geom)
 	# Epic-7 T45: ancient sage NPC
 	_build_d7_ancient_sage_npc()
+	# Epic-7 T46: hidden cave entrance
+	_build_d7_cave_entrance(geom)
+	# Epic-7 T47: cave hermit NPC
+	_build_d7_cave_hermit_npc()
+	# Epic-7 T48: burial cairns
+	_build_d7_burial_cairns(geom)
+	# Epic-7 T49: rune monoliths
+	_build_d7_rune_monoliths(geom)
+	# Epic-7 T50: STONE COLOSSUS mid-boss landmark
+	_build_d7_stone_colossus(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -28525,6 +28535,433 @@ func _build_d7_ancient_sage_npc() -> void:
 	staff.material_override = wood_mat
 	staff.position = Vector3(0.45, 0.92, 0)
 	npc.add_child(staff)
+
+
+func _build_d7_cave_entrance(geom: Node) -> void:
+	## Epic-7 T46: hidden cave entrance — flattened sphere half-dome of dark
+	## rock + dark interior plug + soft amber inner light.
+	var cave: Node3D = Node3D.new()
+	cave.name = "D7CaveEntrance"
+	cave.position = Vector3(D7_CENTER.x + 28.0, 0.0, 12.0)
+	geom.add_child(cave)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	rock_mat.roughness = 0.92
+	# Half-dome
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 3.40
+	dm.height = 5.40
+	dome.mesh = dm
+	dome.material_override = rock_mat
+	dome.position = Vector3(0, 2.20, 0)
+	dome.scale = Vector3(1.0, 0.85, 1.0)
+	cave.add_child(dome)
+	# Dark interior plug
+	var dark: MeshInstance3D = MeshInstance3D.new()
+	var darkm: CylinderMesh = CylinderMesh.new()
+	darkm.top_radius = 1.85
+	darkm.bottom_radius = 1.85
+	darkm.height = 0.20
+	dark.mesh = darkm
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.04, 0.03, 0.05)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dark.material_override = dark_mat
+	dark.position = Vector3(0, 1.85, 1.40)
+	dark.rotation_degrees = Vector3(90, 0, 0)
+	cave.add_child(dark)
+	# Inner amber light
+	var inner: OmniLight3D = OmniLight3D.new()
+	inner.light_color = Color(1.0, 0.65, 0.30)
+	inner.light_energy = 1.85
+	inner.omni_range = 5.5
+	inner.position = Vector3(0, 1.55, 0.85)
+	cave.add_child(inner)
+	# Cave dome collision (sphere shape)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var sphere: SphereShape3D = SphereShape3D.new()
+	sphere.radius = 2.85
+	cs.shape = sphere
+	sb.add_child(cs)
+	cave.add_child(sb)
+
+
+func _build_d7_cave_hermit_npc() -> void:
+	## Epic-7 T47: cave hermit NPC at the cave entrance — ragged grey
+	## cloak + held gnarled staff with crystal head.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CaveHermitSlot"
+	slot.position = Vector3(D7_CENTER.x + 26.0, 0.0, 12.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CaveHermit"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Stoneheart")
+	if "npc_id" in npc:
+		npc.set("npc_id", "hermit_d7")
+	slot.add_child(npc)
+	# Ragged grey cloak
+	var cloak: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	cloak.mesh = cm
+	var cloak_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloak_mat.albedo_color = Color(0.30, 0.30, 0.32)
+	cloak_mat.roughness = 0.95
+	cloak.material_override = cloak_mat
+	cloak.position = Vector3(0, 0.60, 0)
+	npc.add_child(cloak)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.22
+	hm.height = 0.40
+	hood.mesh = hm
+	hood.material_override = cloak_mat
+	hood.position = Vector3(0, 1.45, 0)
+	npc.add_child(hood)
+	# Gnarled wooden staff
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.roughness = 0.92
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.05
+	stm.bottom_radius = 0.07
+	stm.height = 1.85
+	staff.mesh = stm
+	staff.material_override = wood_mat
+	staff.position = Vector3(0.45, 0.92, 0)
+	npc.add_child(staff)
+	# Crystal head on staff (small bright sphere)
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var cmm: SphereMesh = SphereMesh.new()
+	cmm.radius = 0.12
+	cmm.height = 0.20
+	crystal.mesh = cmm
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.85, 0.65, 0.30)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(1.0, 0.65, 0.20)
+	crystal_mat.emission_energy_multiplier = 3.0
+	crystal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	crystal.material_override = crystal_mat
+	crystal.position = Vector3(0.45, 1.92, 0)
+	npc.add_child(crystal)
+
+
+func _build_d7_burial_cairns(geom: Node) -> void:
+	## Epic-7 T48: 5 small burial cairns spread out — mounds of stones
+	## with small stick markers.
+	var cairns: Node3D = Node3D.new()
+	cairns.name = "BurialCairns"
+	cairns.position = Vector3(D7_CENTER.x + 18.0, 0.0, -22.0)
+	geom.add_child(cairns)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.35, 0.25)
+	stone_mat.roughness = 0.92
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.roughness = 0.92
+	for i in 5:
+		var cairn: Node3D = Node3D.new()
+		cairn.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0,
+			randf_range(-2.5, 2.5)
+		)
+		cairns.add_child(cairn)
+		# 4 stones forming a small mound
+		for j in 4:
+			var stone: MeshInstance3D = MeshInstance3D.new()
+			var sm: SphereMesh = SphereMesh.new()
+			sm.radius = 0.30
+			sm.height = 0.40
+			stone.mesh = sm
+			stone.material_override = stone_mat
+			stone.position = Vector3(
+				randf_range(-0.18, 0.18),
+				0.18 + j * 0.20,
+				randf_range(-0.18, 0.18)
+			)
+			stone.scale = Vector3(1.0, 0.55, 1.0)
+			cairn.add_child(stone)
+		# Small stick marker
+		var stick: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.025
+		stm.bottom_radius = 0.025
+		stm.height = 0.55
+		stick.mesh = stm
+		stick.material_override = wood_mat
+		stick.position = Vector3(0, 1.10, 0)
+		cairn.add_child(stick)
+
+
+func _build_d7_rune_monoliths(geom: Node) -> void:
+	## Epic-7 T49: 5 ancient rune monoliths in a row — tall narrow stone
+	## slabs with carved glowing rune symbols.
+	var monos: Node3D = Node3D.new()
+	monos.name = "RuneMonoliths"
+	monos.position = Vector3(D7_CENTER.x + 22.0, 0.0, -8.0)
+	geom.add_child(monos)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_energy_multiplier = 3.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 5:
+		var mono: Node3D = Node3D.new()
+		mono.position = Vector3(i * 1.85, 0, 0)
+		monos.add_child(mono)
+		# Stone slab
+		var slab: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.85, 3.40 + (i % 3) * 0.30, 0.40)
+		slab.mesh = sm
+		slab.material_override = stone_mat
+		slab.position = Vector3(0, sm.size.y * 0.5, 0)
+		mono.add_child(slab)
+		# Rune carving
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.40, 1.40, 0.04)
+		rune.mesh = rm
+		rune.material_override = rune_mat
+		rune.position = Vector3(0, sm.size.y * 0.5, 0.22)
+		mono.add_child(rune)
+		# Pulse rune
+		var tw: Tween = rune.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(rune, "scale:y", 1.20, 0.85)
+		tw.tween_property(rune, "scale:y", 0.85, 0.85)
+		# Slab collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, sm.size.y * 0.5, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = sm.size
+		cs.shape = cb
+		sb.add_child(cs)
+		mono.add_child(sb)
+
+
+func _build_d7_stone_colossus(geom: Node) -> void:
+	## Epic-7 T50: STONE COLOSSUS — D7 mid-boss landmark. Massive stone
+	## titan with hammer, glowing amber rune body cracks, and a halo of
+	## floating boulders.
+	var col: Node3D = Node3D.new()
+	col.name = "StoneColossus"
+	col.position = Vector3(D7_CENTER.x + 4.0, 0.0, -22.0)
+	geom.add_child(col)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var dark_stone: StandardMaterial3D = StandardMaterial3D.new()
+	dark_stone.albedo_color = Color(0.40, 0.30, 0.20)
+	dark_stone.roughness = 0.92
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.55, 0.10)
+	rune_mat.emission_energy_multiplier = 4.0
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(3.85, 0.55, 3.85)
+	ped.mesh = pm
+	ped.material_override = dark_stone
+	ped.position = Vector3(0, 0.27, 0)
+	col.add_child(ped)
+	# Massive torso block
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(2.40, 3.40, 1.85)
+	torso.mesh = tm
+	torso.material_override = stone_mat
+	torso.position = Vector3(0, 2.40, 0)
+	col.add_child(torso)
+	# 3 vertical rune cracks down the torso
+	for i in 3:
+		var crack: MeshInstance3D = MeshInstance3D.new()
+		var crm: BoxMesh = BoxMesh.new()
+		crm.size = Vector3(0.10, 2.40, 0.06)
+		crack.mesh = crm
+		crack.material_override = rune_mat
+		crack.position = Vector3(-0.65 + i * 0.65, 2.40, 0.95)
+		col.add_child(crack)
+		# Pulse cracks
+		var tw: Tween = crack.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(crack, "scale:y", 1.20, 1.0)
+		tw.tween_property(crack, "scale:y", 0.85, 1.0)
+	# Helmet/head block
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(1.40, 1.30, 1.30)
+	head.mesh = hm
+	head.material_override = stone_mat
+	head.position = Vector3(0, 4.85, 0)
+	col.add_child(head)
+	# 2 glowing eye slits
+	for sx in [-0.30, 0.30]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.18, 0.10, 0.04)
+		eye.mesh = em
+		eye.material_override = rune_mat
+		eye.position = Vector3(sx, 4.95, 0.65)
+		col.add_child(eye)
+	# Crown spikes (3 angular shards)
+	for i in 3:
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var spm: PrismMesh = PrismMesh.new()
+		spm.size = Vector3(0.20, 0.55 + i * 0.10, 0.20)
+		spike.mesh = spm
+		spike.material_override = stone_mat
+		spike.position = Vector3(-0.40 + i * 0.40, 5.85, 0)
+		col.add_child(spike)
+	# Shoulder pauldrons
+	for sx in [-1.65, 1.65]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var prm: BoxMesh = BoxMesh.new()
+		prm.size = Vector3(0.95, 0.65, 1.10)
+		paul.mesh = prm
+		paul.material_override = stone_mat
+		paul.position = Vector3(sx, 3.95, 0)
+		col.add_child(paul)
+	# 2 thick arms
+	for sx in [-1.85, 1.85]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.85, 2.40, 0.85)
+		arm.mesh = am
+		arm.material_override = stone_mat
+		arm.position = Vector3(sx, 2.40, 0)
+		col.add_child(arm)
+	# 2 legs
+	for sx in [-0.65, 0.65]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.85, 1.10, 1.10)
+		leg.mesh = lm
+		leg.material_override = stone_mat
+		leg.position = Vector3(sx, 1.10, 0)
+		col.add_child(leg)
+	# Massive stone hammer (held by right arm)
+	var hammer_root: Node3D = Node3D.new()
+	hammer_root.position = Vector3(2.40, 3.20, 0)
+	hammer_root.rotation_degrees = Vector3(0, 0, -25)
+	col.add_child(hammer_root)
+	# Handle
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hndm: CylinderMesh = CylinderMesh.new()
+	hndm.top_radius = 0.10
+	hndm.bottom_radius = 0.10
+	hndm.height = 2.85
+	handle.mesh = hndm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.roughness = 0.92
+	handle.material_override = wood_mat
+	handle.position = Vector3(0, 1.40, 0)
+	hammer_root.add_child(handle)
+	# Hammer head (huge stone block)
+	var hammer_head: MeshInstance3D = MeshInstance3D.new()
+	var hhm: BoxMesh = BoxMesh.new()
+	hhm.size = Vector3(0.95, 0.85, 1.40)
+	hammer_head.mesh = hhm
+	hammer_head.material_override = stone_mat
+	hammer_head.position = Vector3(0, 2.85, 0)
+	hammer_root.add_child(hammer_head)
+	# Glowing rune line on hammer head
+	var hrune: MeshInstance3D = MeshInstance3D.new()
+	var hrm: BoxMesh = BoxMesh.new()
+	hrm.size = Vector3(0.06, 0.55, 0.10)
+	hrune.mesh = hrm
+	hrune.material_override = rune_mat
+	hrune.position = Vector3(0, 2.85, 0.75)
+	hammer_root.add_child(hrune)
+	# 6 floating boulders orbiting the head
+	var halo: Node3D = Node3D.new()
+	halo.position = Vector3(0, 5.50, 0)
+	col.add_child(halo)
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var boulder: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.40, 0.40, 0.40)
+		boulder.mesh = bm
+		boulder.material_override = stone_mat
+		boulder.position = Vector3(cos(ang) * 2.40, 0, sin(ang) * 2.40)
+		boulder.rotation_degrees = Vector3(randf_range(-30, 30), randf_range(0, 360), randf_range(-30, 30))
+		halo.add_child(boulder)
+	var trot: Tween = halo.create_tween().set_loops()
+	trot.tween_property(halo, "rotation_degrees:y", 360.0, 14.0)
+	trot.tween_property(halo, "rotation_degrees:y", 0.0, 0.0)
+	# Massive aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.20)
+	light.light_energy = 5.5
+	light.omni_range = 18.0
+	light.position = Vector3(0, 4.20, 0)
+	col.add_child(light)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 1.6)
+	twl.tween_property(light, "light_energy", 5.0, 1.6)
+	# Title labels
+	var title: Label3D = Label3D.new()
+	title.text = "THE STONE COLOSSUS"
+	title.modulate = Color(1.0, 0.85, 0.45)
+	title.outline_modulate = Color(0.20, 0.10, 0.05)
+	title.outline_size = 12
+	title.font_size = 80
+	title.pixel_size = 0.013
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 7.40, 0)
+	col.add_child(title)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Carved from the first iteration"
+	subtitle.modulate = Color(0.85, 0.95, 1.0)
+	subtitle.outline_modulate = Color(0.20, 0.10, 0.05)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.011
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 6.80, 0)
+	col.add_child(subtitle)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 5.85, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	col.add_child(sb)
+	# Pedestal collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	psb.position = Vector3(0, 0.27, 0)
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(3.85, 0.55, 3.85)
+	pcs.shape = pcb
+	psb.add_child(pcs)
+	col.add_child(psb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
