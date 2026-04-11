@@ -32684,6 +32684,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_warning_bell(geom)
 	# Epic-8 T25: net mending station
 	_build_d8_net_mending(geom)
+	# Epic-8 T26: distant kraken silhouette
+	_build_d8_kraken(geom)
+	# Epic-8 T27: harpooner NPC
+	_build_d8_harpooner_npc()
+	# Epic-8 T28: signal flag pole
+	_build_d8_signal_flags(geom)
+	# Epic-8 T29: floating buoys
+	_build_d8_buoys(geom)
+	# Epic-8 T30: jellyfish glow particles
+	_build_d8_jellyfish_glow(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -34322,6 +34332,278 @@ func _build_d8_net_mending(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	station.add_child(sb)
+
+
+func _build_d8_kraken(geom: Node) -> void:
+	## Epic-8 T26: distant kraken silhouette — large dark tentacles
+	## emerging from the water + 2 glowing red eyes peeking out.
+	var kraken: Node3D = Node3D.new()
+	kraken.name = "Kraken"
+	kraken.position = Vector3(D8_CENTER.x + 28.0, 0.0, -22.0)
+	geom.add_child(kraken)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.12, 0.18)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body lump (large flat sphere)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 2.40
+	bm.height = 2.85
+	body.mesh = bm
+	body.material_override = dark_mat
+	body.position = Vector3(0, 1.40, 0)
+	body.scale = Vector3(1.30, 0.55, 1.30)
+	kraken.add_child(body)
+	# 6 large tentacles emerging upward
+	for i in 6:
+		var ang: float = (TAU / 6.0) * i
+		var tentacle: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.30
+		tm.bottom_radius = 0.85
+		tm.height = 5.50 + (i % 3) * 1.40
+		tentacle.mesh = tm
+		tentacle.material_override = dark_mat
+		tentacle.position = Vector3(cos(ang) * 1.85, 2.85 + (i % 3) * 0.85, sin(ang) * 1.85)
+		tentacle.rotation = Vector3(deg_to_rad(15) * sin(ang), 0, deg_to_rad(15) * cos(ang))
+		kraken.add_child(tentacle)
+		# Subtle wave tween per tentacle
+		var tw: Tween = tentacle.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(tentacle, "rotation_degrees:z", 6.0, 1.85)
+		tw.tween_property(tentacle, "rotation_degrees:z", -6.0, 1.85)
+	# 2 glowing red eyes peeking out
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.10, 0.10)
+	eye_mat.emission_energy_multiplier = 4.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.55, 0.55]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.22
+		em.height = 0.40
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 1.85, 1.40)
+		kraken.add_child(eye)
+		# Slow blink tween
+		var tw: Tween = eye.create_tween().set_loops()
+		tw.tween_interval(2.5 + randf() * 1.5)
+		tw.tween_property(eye, "scale:y", 0.10, 0.10)
+		tw.tween_property(eye, "scale:y", 1.0, 0.10)
+
+
+func _build_d8_harpooner_npc() -> void:
+	## Epic-8 T27: harpooner NPC — leather vest + held large harpoon spear.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "HarpoonerSlot"
+	slot.position = Vector3(D8_CENTER.x + 12.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Harpooner"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Spinepoint")
+	if "npc_id" in npc:
+		npc.set("npc_id", "harpooner_d8")
+	slot.add_child(npc)
+	# Brown leather vest
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.85, 0.40)
+	vest.mesh = vm
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	vest_mat.metallic = 0.30
+	vest_mat.roughness = 0.55
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 0.65, 0)
+	npc.add_child(vest)
+	# Large harpoon spear (long handle + spearhead)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.05
+	hmm.bottom_radius = 0.06
+	hmm.height = 2.40
+	handle.mesh = hmm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0.45, 1.20, 0)
+	npc.add_child(handle)
+	# Steel spearhead
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmm2: PrismMesh = PrismMesh.new()
+	hmm2.size = Vector3(0.10, 0.55, 0.10)
+	head.mesh = hmm2
+	var steel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	steel_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	steel_mat.metallic = 0.95
+	steel_mat.roughness = 0.05
+	head.material_override = steel_mat
+	head.position = Vector3(0.45, 2.55, 0)
+	npc.add_child(head)
+
+
+func _build_d8_signal_flags(geom: Node) -> void:
+	## Epic-8 T28: tall signal flag pole — wooden mast with 4 colored
+	## semaphore-style flags hanging.
+	var flags: Node3D = Node3D.new()
+	flags.name = "SignalFlags"
+	flags.position = Vector3(D8_CENTER.x + 22.0, 0.0, -8.0)
+	geom.add_child(flags)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Tall pole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.06
+	pm.bottom_radius = 0.10
+	pm.height = 5.85
+	pole.mesh = pm
+	pole.material_override = wood_mat
+	pole.position = Vector3(0, 2.92, 0)
+	flags.add_child(pole)
+	# Pole collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.10
+	cap.height = 5.85
+	cs.shape = cap
+	sb.add_child(cs)
+	flags.add_child(sb)
+	# 4 colored signal flags
+	var flag_colors: Array = [
+		Color(0.95, 0.20, 0.20),
+		Color(0.20, 0.30, 0.85),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.85, 0.30),
+	]
+	for i in 4:
+		var flag: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.65, 0.40, 0.04)
+		flag.mesh = fm
+		var col: Color = flag_colors[i]
+		var flag_mat: StandardMaterial3D = StandardMaterial3D.new()
+		flag_mat.albedo_color = col
+		flag_mat.emission_enabled = true
+		flag_mat.emission = col
+		flag_mat.emission_energy_multiplier = 0.65
+		flag_mat.roughness = 0.85
+		flag.material_override = flag_mat
+		flag.position = Vector3(0.40, 4.85 - i * 0.85, 0)
+		flags.add_child(flag)
+		# Sway
+		var tw: Tween = flag.create_tween().set_loops()
+		tw.tween_interval(i * 0.15)
+		tw.tween_property(flag, "rotation_degrees:y", 8.0, 1.4)
+		tw.tween_property(flag, "rotation_degrees:y", -8.0, 1.4)
+
+
+func _build_d8_buoys(geom: Node) -> void:
+	## Epic-8 T29: 5 floating buoys — colorful round floats with bobbing
+	## tweens, marking a channel.
+	var buoys: Node3D = Node3D.new()
+	buoys.name = "Buoys"
+	buoys.position = Vector3(D8_CENTER.x + 8.0, 0.20, 8.0)
+	geom.add_child(buoys)
+	var buoy_colors: Array = [
+		Color(0.95, 0.20, 0.20),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.85, 0.30),
+		Color(0.95, 0.55, 0.20),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 5:
+		var buoy: Node3D = Node3D.new()
+		buoy.position = Vector3(i * 2.40, 0, 0)
+		buoys.add_child(buoy)
+		# Float ball
+		var ball: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.30
+		bm.height = 0.55
+		ball.mesh = bm
+		var col: Color = buoy_colors[i]
+		var ball_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ball_mat.albedo_color = col
+		ball_mat.emission_enabled = true
+		ball_mat.emission = col
+		ball_mat.emission_energy_multiplier = 1.4
+		ball_mat.metallic = 0.30
+		ball_mat.roughness = 0.30
+		ball.material_override = ball_mat
+		buoy.add_child(ball)
+		# Top stick (mast with flag)
+		var stick: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.025
+		stm.bottom_radius = 0.025
+		stm.height = 0.55
+		stick.mesh = stm
+		var stick_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stick_mat.albedo_color = Color(0.45, 0.28, 0.12)
+		stick_mat.roughness = 0.85
+		stick.material_override = stick_mat
+		stick.position = Vector3(0, 0.55, 0)
+		buoy.add_child(stick)
+		# Bobbing tween
+		var tw: Tween = buoy.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(buoy, "position:y", 0.40, 1.4)
+		tw.tween_property(buoy, "position:y", 0.20, 1.4)
+
+
+func _build_d8_jellyfish_glow(geom: Node) -> void:
+	## Epic-8 T30: jellyfish glow particles — soft purple/pink GPU particles
+	## floating gently across the harbor like bioluminescent jellyfish.
+	var jellies: GPUParticles3D = GPUParticles3D.new()
+	jellies.name = "JellyfishGlow"
+	jellies.position = Vector3(D8_CENTER.x, 1.5, 0.0)
+	jellies.amount = 50
+	jellies.lifetime = 14.0
+	jellies.preprocess = 7.0
+	jellies.explosiveness = 0.0
+	jellies.randomness = 0.85
+	jellies.visibility_aabb = AABB(Vector3(-40, -2, -25), Vector3(80, 8, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(35, 1, 22)
+	pm.direction = Vector3(0.20, 0.10, 0.05)
+	pm.spread = 65.0
+	pm.gravity = Vector3(0.05, 0.10, 0.04)
+	pm.initial_velocity_min = 0.10
+	pm.initial_velocity_max = 0.30
+	pm.scale_min = 0.18
+	pm.scale_max = 0.40
+	pm.color = Color(0.85, 0.55, 0.95, 0.65)
+	jellies.process_material = pm
+	# Jelly mesh
+	var jelly_mesh: SphereMesh = SphereMesh.new()
+	jelly_mesh.radius = 0.18
+	jelly_mesh.height = 0.30
+	jellies.draw_pass_1 = jelly_mesh
+	var jelly_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jelly_mat.albedo_color = Color(0.85, 0.55, 0.95, 0.55)
+	jelly_mat.emission_enabled = true
+	jelly_mat.emission = Color(0.95, 0.55, 0.95)
+	jelly_mat.emission_energy_multiplier = 1.85
+	jelly_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	jelly_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	jelly_mesh.material = jelly_mat
+	geom.add_child(jellies)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
