@@ -1480,6 +1480,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_shipping_containers(geom)
 	# Epic-2 T25: large wandering glitch beast (mini-boss visual)
 	_build_d2_glitch_beast(geom)
+	# Epic-2 T26: open-air repair workshop with welding sparks
+	_build_d2_repair_workshop(geom)
+	# Epic-2 T27: 4 holographic graffiti tags on walls + ground
+	_build_d2_holo_graffiti(geom)
+	# Epic-2 T28: scattered drone wreckage debris field
+	_build_d2_drone_wreckage(geom)
+	# Epic-2 T29: patrolling watchman NPC
+	_build_d2_watchman_npc()
+	# Epic-2 T30: 5 ground smoke vents
+	_build_d2_smoke_vents(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -9685,5 +9695,396 @@ func _build_d2_glitch_beast(geom: Node) -> void:
 	label.font_size = 22
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	beast.add_child(label)
+
+
+func _build_d2_repair_workshop(geom: Node) -> void:
+	## Epic-2 T26: open-air repair workshop — anvil + workbench + active
+	## welding spark emitter. Sells "stuff gets fixed here, not bought".
+	var shop: Node3D = Node3D.new()
+	shop.name = "D2RepairWorkshop"
+	shop.position = D2_CENTER + Vector3(-18, 0, 4)
+	geom.add_child(shop)
+	# Workbench
+	var bench_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bench_mat.albedo_color = Color(0.20, 0.16, 0.10)
+	bench_mat.metallic = 0.30
+	bench_mat.roughness = 0.65
+	var bench: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.4, 0.95, 1.0)
+	bench.mesh = bm
+	bench.position = Vector3(0, 0.47, 0)
+	bench.material_override = bench_mat
+	shop.add_child(bench)
+	# Anvil — small block on top of bench
+	var anvil_mat: StandardMaterial3D = StandardMaterial3D.new()
+	anvil_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	anvil_mat.metallic = 0.85
+	anvil_mat.roughness = 0.30
+	var anvil: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.65, 0.30, 0.40)
+	anvil.mesh = am
+	anvil.position = Vector3(0.5, 1.10, 0)
+	anvil.material_override = anvil_mat
+	shop.add_child(anvil)
+	# Half-finished blade lying on the anvil — heated orange tip
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blade_mesh: BoxMesh = BoxMesh.new()
+	blade_mesh.size = Vector3(0.85, 0.04, 0.10)
+	blade.mesh = blade_mesh
+	blade.position = Vector3(0.5, 1.30, 0)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.40, 0.20)
+	blade_mat.emission_enabled = true
+	blade_mat.emission = Color(1.0, 0.55, 0.20)
+	blade_mat.emission_energy_multiplier = 1.6
+	blade_mat.metallic = 0.65
+	blade_mat.roughness = 0.30
+	blade.material_override = blade_mat
+	shop.add_child(blade)
+	# Active welding spark emitter at the bench
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 40
+	sparks.lifetime = 0.65
+	sparks.position = Vector3(0.5, 1.32, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.10
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 60.0
+	pmat.initial_velocity_min = 1.4
+	pmat.initial_velocity_max = 2.4
+	pmat.gravity = Vector3(0, -3.0, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.08
+	pmat.color = Color(1.0, 0.85, 0.30, 1.0)
+	sparks.process_material = pmat
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.04
+	sm.height = 0.08
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(1.0, 0.95, 0.40)
+	sm_mat.emission_energy_multiplier = 2.6
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = sm_mat
+	sparks.draw_pass_1 = sm
+	shop.add_child(sparks)
+	# Tool wall behind the bench — 4 hanging tools
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wmesh: BoxMesh = BoxMesh.new()
+	wmesh.size = Vector3(2.6, 1.85, 0.08)
+	wall.mesh = wmesh
+	wall.position = Vector3(0, 1.85, -0.55)
+	wall.material_override = anvil_mat
+	shop.add_child(wall)
+	for i in 4:
+		var tool: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.10, 0.55, 0.05)
+		tool.mesh = tm
+		tool.position = Vector3(-0.95 + i * 0.65, 1.85, -0.50)
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = Color(0.30, 0.30, 0.35)
+		tmat.metallic = 0.85
+		tool.material_override = tmat
+		shop.add_child(tool)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "REPAIRS"
+	label.position = Vector3(0, 3.0, 0)
+	label.modulate = Color(1.0, 0.65, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	shop.add_child(label)
+	# Collision around the bench
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.4, 1.4)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.7, 0)
+	sb.add_child(cs)
+	shop.add_child(sb)
+
+
+func _build_d2_holo_graffiti(geom: Node) -> void:
+	## Epic-2 T27: 4 holographic graffiti tags floating on D2 walls. Each
+	## is a brightly colored emissive label with intentional misalignment
+	## like spray paint, mounted on the boundary wall area.
+	var tags: Array = [
+		[D2_CENTER + Vector3(-18, 1.8, -16), "404", Color(1.0, 0.30, 0.55)],
+		[D2_CENTER + Vector3(-12, 2.5, -16), "GLITCH", Color(0.55, 0.95, 1.0)],
+		[D2_CENTER + Vector3(8, 2.0, -16), "FREE BIT", Color(1.0, 0.95, 0.30)],
+		[D2_CENTER + Vector3(20, 1.8, -16), "RUN", Color(0.40, 1.0, 0.55)],
+	]
+	for spec in tags:
+		var pos: Vector3 = spec[0]
+		var text: String = spec[1]
+		var color: Color = spec[2]
+		var tag: Label3D = Label3D.new()
+		tag.text = text
+		tag.position = pos
+		tag.modulate = color
+		tag.outline_modulate = Color(0, 0, 0, 0.85)
+		tag.outline_size = 5
+		tag.font_size = 32
+		tag.no_depth_test = true
+		tag.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		geom.add_child(tag)
+
+
+func _build_d2_drone_wreckage(geom: Node) -> void:
+	## Epic-2 T28: a debris field of 6 broken drone parts scattered on the
+	## ground — propellers, fuselage halves, smoking pieces. Tells a story
+	## of "couriers tried to fly through here and got knocked down".
+	var field: Node3D = Node3D.new()
+	field.name = "D2DroneWreckage"
+	field.position = D2_CENTER + Vector3(2, 0, 14)
+	geom.add_child(field)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.40
+	# 2 broken propeller discs
+	for i in 2:
+		var prop: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.30
+		pmesh.bottom_radius = 0.30
+		pmesh.height = 0.04
+		prop.mesh = pmesh
+		prop.position = Vector3(-1.5 + i * 3.0, 0.05, randf_range(-0.5, 0.5))
+		prop.rotation = Vector3(deg_to_rad(randf_range(-30, 30)), randf() * TAU, deg_to_rad(randf_range(-30, 30)))
+		prop.material_override = dark_mat
+		field.add_child(prop)
+	# 3 fuselage chunks (small boxes)
+	for i in 3:
+		var chunk: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.55, 0.18, 0.65)
+		chunk.mesh = cmesh
+		chunk.position = Vector3(randf_range(-2, 2), 0.10, randf_range(-2, 2))
+		chunk.rotation = Vector3(deg_to_rad(randf_range(-25, 25)), randf() * TAU, deg_to_rad(randf_range(-25, 25)))
+		chunk.material_override = dark_mat
+		field.add_child(chunk)
+	# 1 smoking battery — has a sparking emitter
+	var battery: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.30, 0.18, 0.30)
+	battery.mesh = bm
+	battery.position = Vector3(0, 0.10, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.85, 0.30, 0.20)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.40, 0.20)
+	bmat.emission_energy_multiplier = 1.6
+	battery.material_override = bmat
+	field.add_child(battery)
+	# Spark emitter from the battery
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 18
+	sparks.lifetime = 0.85
+	sparks.position = Vector3(0, 0.30, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.08
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 50.0
+	pmat.initial_velocity_min = 0.85
+	pmat.initial_velocity_max = 1.4
+	pmat.gravity = Vector3(0, -1.5, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.08
+	pmat.color = Color(1.0, 0.85, 0.30, 1.0)
+	sparks.process_material = pmat
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.04
+	sm.height = 0.08
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(1.0, 0.95, 0.40)
+	sm_mat.emission_energy_multiplier = 2.6
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = sm_mat
+	sparks.draw_pass_1 = sm
+	field.add_child(sparks)
+
+
+func _build_d2_watchman_npc() -> void:
+	## Epic-2 T29: a patrolling D2 watchman NPC marching back and forth
+	## along the boundary. Wears a heavy armor body, has a glowing red
+	## visor strip, and carries a long pulse rifle.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var watch: Node3D = Node3D.new()
+	watch.name = "D2Watchman"
+	watch.position = D2_CENTER + Vector3(18, 0, -10)
+	slots.add_child(watch)
+	# Body — heavy armored capsule
+	var armor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	armor_mat.albedo_color = Color(0.20, 0.16, 0.14)
+	armor_mat.metallic = 0.65
+	armor_mat.roughness = 0.40
+	armor_mat.emission_enabled = true
+	armor_mat.emission = Color(0.85, 0.30, 0.20)
+	armor_mat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = armor_mat
+	watch.add_child(body)
+	# Helmet — dark cylinder
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: CylinderMesh = CylinderMesh.new()
+	hmesh.top_radius = 0.35
+	hmesh.bottom_radius = 0.40
+	hmesh.height = 0.50
+	helmet.mesh = hmesh
+	helmet.position = Vector3(0, 1.55, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.10, 0.10, 0.12)
+	hmat.metallic = 0.85
+	hmat.roughness = 0.30
+	helmet.material_override = hmat
+	watch.add_child(helmet)
+	# Red glowing visor strip across the front
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vmesh: BoxMesh = BoxMesh.new()
+	vmesh.size = Vector3(0.55, 0.10, 0.04)
+	visor.mesh = vmesh
+	visor.position = Vector3(0, 1.55, 0.34)
+	var vmat: StandardMaterial3D = StandardMaterial3D.new()
+	vmat.albedo_color = Color(1.0, 0.20, 0.20)
+	vmat.emission_enabled = true
+	vmat.emission = Color(1.0, 0.30, 0.30)
+	vmat.emission_energy_multiplier = 2.6
+	vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = vmat
+	watch.add_child(visor)
+	# Pulse rifle held diagonally across the body
+	var rifle_root: Node3D = Node3D.new()
+	rifle_root.position = Vector3(0.20, 0.85, 0.40)
+	rifle_root.rotation = Vector3(0, deg_to_rad(20), deg_to_rad(-25))
+	watch.add_child(rifle_root)
+	# Rifle body
+	var rifle: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.10, 0.18, 1.40)
+	rifle.mesh = rmesh
+	rifle.material_override = hmat
+	rifle_root.add_child(rifle)
+	# Glowing barrel tip
+	var muzzle: MeshInstance3D = MeshInstance3D.new()
+	var mm: SphereMesh = SphereMesh.new()
+	mm.radius = 0.10
+	mm.height = 0.20
+	muzzle.mesh = mm
+	muzzle.position = Vector3(0, 0, -0.85)
+	var muz_mat: StandardMaterial3D = StandardMaterial3D.new()
+	muz_mat.albedo_color = Color(1.0, 0.40, 0.20)
+	muz_mat.emission_enabled = true
+	muz_mat.emission = Color(1.0, 0.55, 0.20)
+	muz_mat.emission_energy_multiplier = 2.4
+	muz_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	muzzle.material_override = muz_mat
+	rifle_root.add_child(muzzle)
+	# Patrol path — back and forth along z
+	var origin: Vector3 = D2_CENTER + Vector3(18, 0, -10)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(watch, "rotation:y", deg_to_rad(180), 0.4)
+	patrol.tween_property(watch, "position", origin + Vector3(0, 0, -8), 6.0)
+	patrol.tween_property(watch, "rotation:y", 0.0, 0.4)
+	patrol.tween_property(watch, "position", origin, 6.0)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Watchman"
+	label.position = Vector3(0, 2.10, 0)
+	label.modulate = Color(1.0, 0.55, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	watch.add_child(label)
+
+
+func _build_d2_smoke_vents(geom: Node) -> void:
+	## Epic-2 T30: 5 ground steam/smoke vents emitting upward streams.
+	## Each is a small dark grate with a particle column rising from it.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(-10, 0, 6),
+		D2_CENTER + Vector3(0, 0, -8),
+		D2_CENTER + Vector3(8, 0, 12),
+		D2_CENTER + Vector3(20, 0, -2),
+		D2_CENTER + Vector3(-4, 0, -16),
+	]
+	for i in positions.size():
+		var vent: Node3D = Node3D.new()
+		vent.name = "D2SmokeVent_%d" % i
+		vent.position = positions[i]
+		geom.add_child(vent)
+		# Grate — dark short cylinder flush with ground
+		var grate: MeshInstance3D = MeshInstance3D.new()
+		var gmesh: CylinderMesh = CylinderMesh.new()
+		gmesh.top_radius = 0.45
+		gmesh.bottom_radius = 0.45
+		gmesh.height = 0.10
+		grate.mesh = gmesh
+		grate.position = Vector3(0, 0.05, 0)
+		var gmat: StandardMaterial3D = StandardMaterial3D.new()
+		gmat.albedo_color = Color(0.06, 0.06, 0.10)
+		gmat.metallic = 0.65
+		gmat.roughness = 0.55
+		gmat.emission_enabled = true
+		gmat.emission = Color(0.85, 0.30, 0.20)
+		gmat.emission_energy_multiplier = 0.55
+		grate.material_override = gmat
+		vent.add_child(grate)
+		# 4 cross bars on top to look like a grate
+		for b in 4:
+			var bar: MeshInstance3D = MeshInstance3D.new()
+			var bmesh: BoxMesh = BoxMesh.new()
+			bmesh.size = Vector3(0.85, 0.04, 0.06)
+			bar.mesh = bmesh
+			bar.position = Vector3(0, 0.13, -0.30 + b * 0.20)
+			bar.material_override = gmat
+			vent.add_child(bar)
+		# Smoke particles rising
+		var smoke: GPUParticles3D = GPUParticles3D.new()
+		smoke.amount = 24
+		smoke.lifetime = 3.0
+		smoke.position = Vector3(0, 0.40, 0)
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		pmat.emission_sphere_radius = 0.30
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 18.0
+		pmat.initial_velocity_min = 0.45
+		pmat.initial_velocity_max = 0.85
+		pmat.gravity = Vector3.ZERO
+		pmat.scale_min = 0.30
+		pmat.scale_max = 0.55
+		pmat.color = Color(0.40, 0.40, 0.50, 0.55)
+		smoke.process_material = pmat
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.30
+		sm.height = 0.60
+		var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sm_mat.albedo_color = Color(0.40, 0.40, 0.50, 0.55)
+		sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm.material = sm_mat
+		smoke.draw_pass_1 = sm
+		vent.add_child(smoke)
+
 
 
