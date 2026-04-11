@@ -18,6 +18,7 @@ const TOWN_CENTER: Vector3 = Vector3(0, 0, 0)
 func build(town: Node, geom: Node) -> void:
 	print("[TownHeartBuilder] start")
 	_build_th_beacon_monument(geom)
+	_build_th_compass_plaza(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -233,3 +234,151 @@ func _build_th_beacon_monument(geom: Node) -> void:
 	# Slow spire spin so the cage rotates around the cores
 	var spin: Tween = pivot.create_tween().set_loops()
 	spin.tween_property(cage, "rotation:y", TAU, 8.0)
+
+
+func _build_th_compass_plaza(geom: Node) -> void:
+	## Epic-10 T2: paved compass plaza floor surrounding the beacon, with
+	## 8 radial paths shooting out in cardinal/ordinal directions, a
+	## central rune ring, and concentric paving circles. The actual hub
+	## ground that the player walks on around the beacon monument.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_CompassPlaza"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.22, 0.24, 0.28)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var dark_stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_stone_mat.albedo_color = Color(0.16, 0.18, 0.22)
+	dark_stone_mat.metallic = 0.18
+	dark_stone_mat.roughness = 0.85
+	dark_stone_mat.emission_enabled = true
+	dark_stone_mat.emission = Color(0.25, 0.40, 0.55)
+	dark_stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var seam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	seam_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	seam_mat.emission_enabled = true
+	seam_mat.emission = Color(0.45, 0.85, 1.0)
+	seam_mat.emission_energy_multiplier = 5.5
+	seam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Wide outer plaza disc (low ground slab) ----
+	var outer: MeshInstance3D = MeshInstance3D.new()
+	var om: CylinderMesh = CylinderMesh.new()
+	om.top_radius = 14.00
+	om.bottom_radius = 14.20
+	om.height = 0.10
+	outer.mesh = om
+	outer.material_override = stone_mat
+	outer.position = Vector3(0, 0.05, 0)
+	pivot.add_child(outer)
+	# Plaza collision (so player has solid ground under the beacon)
+	var plaza_sb: StaticBody3D = StaticBody3D.new()
+	plaza_sb.position = Vector3(0, 0.05, 0)
+	var plaza_cs: CollisionShape3D = CollisionShape3D.new()
+	var plaza_cyl: CylinderShape3D = CylinderShape3D.new()
+	plaza_cyl.top_radius = 14.00
+	plaza_cyl.bottom_radius = 14.20
+	plaza_cyl.height = 0.20
+	plaza_cs.shape = plaza_cyl
+	plaza_sb.add_child(plaza_cs)
+	pivot.add_child(plaza_sb)
+	# ---- Inner ring (lighter accent disc) ----
+	var inner: MeshInstance3D = MeshInstance3D.new()
+	var im: CylinderMesh = CylinderMesh.new()
+	im.top_radius = 9.50
+	im.bottom_radius = 9.50
+	im.height = 0.08
+	inner.mesh = im
+	inner.material_override = dark_stone_mat
+	inner.position = Vector3(0, 0.10, 0)
+	pivot.add_child(inner)
+	# ---- Brass concentric ring trim (between outer and inner) ----
+	var trim_outer: MeshInstance3D = MeshInstance3D.new()
+	var tom: TorusMesh = TorusMesh.new()
+	tom.inner_radius = 13.40
+	tom.outer_radius = 13.85
+	trim_outer.mesh = tom
+	trim_outer.material_override = brass_mat
+	trim_outer.position = Vector3(0, 0.13, 0)
+	pivot.add_child(trim_outer)
+	var trim_inner: MeshInstance3D = MeshInstance3D.new()
+	var tim: TorusMesh = TorusMesh.new()
+	tim.inner_radius = 9.10
+	tim.outer_radius = 9.45
+	trim_inner.mesh = tim
+	trim_inner.material_override = brass_mat
+	trim_inner.position = Vector3(0, 0.13, 0)
+	pivot.add_child(trim_inner)
+	# ---- Central rune ring (just outside the beacon pedestal at radius ~5) ----
+	var rune_ring: MeshInstance3D = MeshInstance3D.new()
+	var rrm: TorusMesh = TorusMesh.new()
+	rrm.inner_radius = 4.80
+	rrm.outer_radius = 5.20
+	rune_ring.mesh = rrm
+	rune_ring.material_override = seam_mat
+	rune_ring.position = Vector3(0, 0.14, 0)
+	pivot.add_child(rune_ring)
+	# ---- 8 radial paths shooting out from the rune ring to the outer rim ----
+	# Each path is a long narrow box laid flat on the plaza
+	for i in 8:
+		var ang: float = float(i) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		# Path slab — center of the path is at radius (5.5 + 13) / 2 ≈ 9.25
+		var path: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(8.20, 0.06, 1.40)
+		path.mesh = pm
+		path.material_override = brass_mat
+		path.position = Vector3(dx * 9.40, 0.16, dz * 9.40)
+		path.rotation.y = ang
+		pivot.add_child(path)
+		# Glowing center seam stripe down the middle of each path
+		var seam: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(7.80, 0.05, 0.20)
+		seam.mesh = sm
+		seam.material_override = seam_mat
+		seam.position = Vector3(dx * 9.40, 0.20, dz * 9.40)
+		seam.rotation.y = ang
+		pivot.add_child(seam)
+	# ---- Inner ring of 16 small brass paving studs at radius ~7.5 ----
+	for i in 16:
+		var ang: float = float(i) / 16.0 * TAU
+		var stud: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.18
+		stm.bottom_radius = 0.18
+		stm.height = 0.05
+		stud.mesh = stm
+		stud.material_override = brass_mat
+		stud.position = Vector3(cos(ang) * 7.50, 0.15, sin(ang) * 7.50)
+		pivot.add_child(stud)
+	# ---- Outer ring of 24 small brass paving studs at radius ~12 ----
+	for i in 24:
+		var ang: float = float(i) / 24.0 * TAU
+		var stud: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.16
+		stm.bottom_radius = 0.16
+		stm.height = 0.05
+		stud.mesh = stm
+		stud.material_override = brass_mat
+		stud.position = Vector3(cos(ang) * 12.00, 0.15, sin(ang) * 12.00)
+		pivot.add_child(stud)
+	# ---- Slow seam pulse ----
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(seam_mat, "emission_energy_multiplier", 7.5, 2.4).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(seam_mat, "emission_energy_multiplier", 4.0, 2.4).set_ease(Tween.EASE_IN_OUT)
