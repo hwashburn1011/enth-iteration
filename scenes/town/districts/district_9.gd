@@ -118,6 +118,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_boss_arena_floor(geom)
 	_build_d9_forge_lord(geom)
 	_build_d9_welcome_banner(geom)
+	_build_d9_ambient_atmosphere(geom)
 	print("[D9Builder] done")
 
 
@@ -11981,4 +11982,84 @@ func _build_d9_welcome_banner(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_ambient_atmosphere(geom: Node) -> void:
+	## Epic-9 T98: D9 ambient volcanic atmosphere — 6 large red ember fog
+	## puffs floating across the district at low altitude (semi-transparent
+	## emissive spheres acting as poor man's volumetric fog), 4 distant
+	## warm-glow OmniLights at altitude to add ambient red wash, and 2
+	## wide ash plume drift particle emitters.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_AmbientAtmosphere"
+	pivot.position = D9_CENTER
+	geom.add_child(pivot)
+	# Materials
+	var fog_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fog_mat.albedo_color = Color(0.85, 0.30, 0.10, 0.18)
+	fog_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fog_mat.emission_enabled = true
+	fog_mat.emission = Color(1.0, 0.40, 0.10)
+	fog_mat.emission_energy_multiplier = 1.20
+	fog_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- 6 large red fog puffs spread across D9 at low altitude ----
+	var fog_positions: Array = [
+		Vector3(-15.0, 4.0, -10.0),
+		Vector3(15.0, 4.0, -8.0),
+		Vector3(0.0, 5.0, 0.0),
+		Vector3(-12.0, 4.0, 12.0),
+		Vector3(20.0, 4.5, 5.0),
+		Vector3(-25.0, 5.0, -22.0),
+	]
+	for fp in fog_positions:
+		var puff: MeshInstance3D = MeshInstance3D.new()
+		var psm: SphereMesh = SphereMesh.new()
+		psm.radius = 5.50
+		psm.height = 11.00
+		puff.mesh = psm
+		puff.material_override = fog_mat
+		puff.position = fp
+		puff.scale = Vector3(1.0, 0.55, 1.0)
+		pivot.add_child(puff)
+	# ---- 4 distant ambient warm OmniLights at altitude (red wash) ----
+	var altitude_lights: Array = [
+		Vector3(-20.0, 14.0, -12.0),
+		Vector3(20.0, 14.0, -12.0),
+		Vector3(-20.0, 14.0, 12.0),
+		Vector3(20.0, 14.0, 12.0),
+	]
+	for ap in altitude_lights:
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = ap
+		lt.light_color = Color(1.0, 0.45, 0.15)
+		lt.light_energy = 1.6
+		lt.omni_range = 28.0
+		pivot.add_child(lt)
+	# ---- 2 wide ash plume drift particle emitters at altitude ----
+	for ax in [-20.0, 20.0]:
+		var plume: GPUParticles3D = GPUParticles3D.new()
+		plume.position = Vector3(ax, 12.0, 0)
+		plume.amount = 50
+		plume.lifetime = 6.0
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pmat.emission_box_extents = Vector3(8.0, 0.5, 25.0)
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 28.0
+		pmat.initial_velocity_min = 0.5
+		pmat.initial_velocity_max = 1.0
+		pmat.gravity = Vector3(0.3, 0.4, 0)
+		pmat.scale_min = 0.45
+		pmat.scale_max = 0.85
+		pmat.color = Color(0.85, 0.35, 0.15, 0.50)
+		plume.process_material = pmat
+		var pmesh: SphereMesh = SphereMesh.new()
+		pmesh.radius = 0.30
+		pmesh.height = 0.60
+		plume.draw_pass_1 = pmesh
+		pivot.add_child(plume)
+	# Slow fog pulse — material breathes its emission
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(fog_mat, "emission_energy_multiplier", 1.65, 2.4).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(fog_mat, "emission_energy_multiplier", 0.95, 2.4).set_ease(Tween.EASE_IN_OUT)
 
