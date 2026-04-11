@@ -111,6 +111,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_slagmaster_borg_npc(town)
 	_build_d9_sky_cinder_fall(geom)
 	_build_d9_forge_heart_acolyte_npc(town)
+	_build_d9_boss_approach_gate(geom)
 	print("[D9Builder] done")
 
 
@@ -10549,4 +10550,185 @@ func _build_d9_forge_heart_acolyte_npc(town: Node) -> void:
 	var apulse: Tween = npc.create_tween().set_loops()
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	apulse.tween_property(amber_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_boss_approach_gate(geom: Node) -> void:
+	## Epic-9 T91: pair of tall runic warning pillars marking the entrance
+	## to the FORGE LORD's approach. 8m basalt obelisk pillars with brass
+	## bands, vertical glowing rune stripes, crowning ember braziers, and
+	## warning chains hanging between them across the path.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_BossApproachGate"
+	# South of the boss arena (which will go at -22 Z)
+	pivot.position = D9_CENTER + Vector3(0, 0, -16)
+	geom.add_child(pivot)
+	# Materials
+	var basalt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	basalt_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	basalt_mat.metallic = 0.20
+	basalt_mat.roughness = 0.85
+	basalt_mat.emission_enabled = true
+	basalt_mat.emission = Color(0.55, 0.18, 0.05)
+	basalt_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.45, 0.05)
+	rune_mat.emission_energy_multiplier = 6.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 9.0
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Build a pillar at +/- offset
+	for px in [-5.5, 5.5]:
+		var pgroup: Node3D = Node3D.new()
+		pgroup.name = "Pillar_" + str(int(px))
+		pgroup.position = Vector3(px, 0, 0)
+		pivot.add_child(pgroup)
+		# ---- Stepped basalt base (2 levels) ----
+		var base1: MeshInstance3D = MeshInstance3D.new()
+		var b1m: BoxMesh = BoxMesh.new()
+		b1m.size = Vector3(2.20, 0.50, 2.20)
+		base1.mesh = b1m
+		base1.material_override = basalt_mat
+		base1.position = Vector3(0, 0.25, 0)
+		pgroup.add_child(base1)
+		var base2: MeshInstance3D = MeshInstance3D.new()
+		var b2m: BoxMesh = BoxMesh.new()
+		b2m.size = Vector3(1.70, 0.40, 1.70)
+		base2.mesh = b2m
+		base2.material_override = basalt_mat
+		base2.position = Vector3(0, 0.70, 0)
+		pgroup.add_child(base2)
+		# Base collision
+		var base_sb: StaticBody3D = StaticBody3D.new()
+		base_sb.position = Vector3(0, 0.45, 0)
+		var base_cs: CollisionShape3D = CollisionShape3D.new()
+		var base_bsh: BoxShape3D = BoxShape3D.new()
+		base_bsh.size = Vector3(2.20, 0.90, 2.20)
+		base_cs.shape = base_bsh
+		base_sb.add_child(base_cs)
+		pgroup.add_child(base_sb)
+		# ---- Tall pillar shaft (8m basalt obelisk) ----
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.20, 8.00, 1.20)
+		shaft.mesh = sm
+		shaft.material_override = basalt_mat
+		shaft.position = Vector3(0, 4.90, 0)
+		pgroup.add_child(shaft)
+		# Shaft collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 4.90, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(1.20, 8.00, 1.20)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pgroup.add_child(sb)
+		# ---- 3 brass bands wrapping the shaft ----
+		for by in [2.40, 5.20, 7.80]:
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(1.30, 0.18, 1.30)
+			band.mesh = bm
+			band.material_override = brass_mat
+			band.position = Vector3(0, by, 0)
+			pgroup.add_child(band)
+		# ---- Vertical glowing rune stripe down the inner face ----
+		# Inner face = side facing the path center (+/- X depending on side)
+		var inner_z_sign: float = 1.0 if px > 0 else -1.0
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: BoxMesh = BoxMesh.new()
+		rmesh.size = Vector3(0.18, 6.50, 0.06)
+		rune.mesh = rmesh
+		rune.material_override = rune_mat
+		rune.position = Vector3(-0.62 * inner_z_sign, 4.90, 0)
+		pgroup.add_child(rune)
+		# 4 rune crossbars on the stripe
+		for ry in [3.00, 4.50, 6.00, 7.50]:
+			var cross: MeshInstance3D = MeshInstance3D.new()
+			var cmm: BoxMesh = BoxMesh.new()
+			cmm.size = Vector3(0.06, 0.10, 0.40)
+			cross.mesh = cmm
+			cross.material_override = rune_mat
+			cross.position = Vector3(-0.65 * inner_z_sign, ry, 0)
+			pgroup.add_child(cross)
+		# ---- Crowning ember brazier on top ----
+		# Brazier bowl
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bowm: SphereMesh = SphereMesh.new()
+		bowm.radius = 0.45
+		bowm.height = 0.75
+		bowl.mesh = bowm
+		bowl.material_override = brass_mat
+		bowl.position = Vector3(0, 9.30, 0)
+		bowl.scale = Vector3(1.0, 0.55, 1.0)
+		pgroup.add_child(bowl)
+		# Brazier flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.35
+		flm.height = 0.70
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(0, 9.65, 0)
+		pgroup.add_child(flame)
+		# Brazier OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 9.65, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 4.5
+		lt.omni_range = 14.0
+		pgroup.add_child(lt)
+		# Ember mote shower from each brazier
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = Vector3(0, 9.85, 0)
+		motes.amount = 22
+		motes.lifetime = 2.4
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 18.0
+		pmat.initial_velocity_min = 0.6
+		pmat.initial_velocity_max = 1.2
+		pmat.gravity = Vector3(0, 0.4, 0)
+		pmat.scale_min = 0.06
+		pmat.scale_max = 0.12
+		pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.05
+		psmesh.height = 0.10
+		motes.draw_pass_1 = psmesh
+		pgroup.add_child(motes)
+	# ---- Iron warning chains hanging between the pillars (3 sagging rows) ----
+	for cy in [3.20, 5.20, 7.20]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var chm: BoxMesh = BoxMesh.new()
+		chm.size = Vector3(11.00, 0.10, 0.10)
+		chain.mesh = chm
+		chain.material_override = iron_mat
+		chain.position = Vector3(0, cy, 0)
+		pivot.add_child(chain)
+	# ---- Pulse: rune + flame breathe ----
+	var rpulse: Tween = pivot.create_tween().set_loops()
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 8.0, 0.5).set_ease(Tween.EASE_IN_OUT)
 
