@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 
 EventBus="*res://scripts/autoloads/event_bus.gd"
 GameManager="*res://scripts/autoloads/game_manager.gd"
+IterationManager="*res://scripts/autoloads/iteration_manager.gd"
 EnemyPool="*res://scripts/systems/enemy_pool.gd"
 RespawnManager="*res://scripts/systems/respawn_manager.gd"
 SaveManager="*res://scripts/autoloads/save_manager.gd"

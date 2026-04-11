@@ -4,7 +4,7 @@ extends Node
 
 const SAVE_PATH: String = "user://save_data.json"
 const BACKUP_DIR: String = "user://backups/"
-const SCHEMA_VERSION: int = 1
+const SCHEMA_VERSION: int = 2
 
 var current_data: Dictionary = {}
 var last_save_time: float = 0.0
@@ -198,6 +198,14 @@ func save_game() -> bool:
 	current_data["dungeon"]["highest_floor_reached"] = GameManager.get_meta(&"highest_floor", 0) as int
 	current_data["dungeon"]["total_runs"] = GameManager.get_meta(&"total_runs", 0) as int
 
+	# 6. Progression — IterationManager state. Without this, every load
+	# resets to iteration 1 and the central compaction conceit silently
+	# never advances even after a player completes the loop.
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"to_save_data"):
+			current_data["progression"] = im.to_save_data()
+
 	# Create backup before writing
 	_create_backup()
 
@@ -268,6 +276,14 @@ func _migrate_save(data: Dictionary, from_version: int, to_version: int) -> Dict
 					if key not in migrated:
 						migrated[key] = defaults[key]
 				migrated["schema_version"] = 1
+			1:
+				# v1 → v2: introduce progression section for IterationManager.
+				# Existing v1 saves have no iteration data, so default to 1
+				# (a v1 save was made before iteration tracking existed,
+				# meaning the player never advanced past the first loop).
+				if "progression" not in migrated:
+					migrated["progression"] = {"current_iteration": 1}
+				migrated["schema_version"] = 2
 	return migrated
 
 
@@ -331,6 +347,15 @@ func _apply_loaded_data(data: Dictionary) -> void:
 	var dungeon: Dictionary = data.get("dungeon", defaults["dungeon"]) as Dictionary
 	GameManager.set_meta(&"highest_floor", int(dungeon.get("highest_floor_reached", 0)))
 	GameManager.set_meta(&"total_runs", int(dungeon.get("total_runs", 0)))
+
+	# 6. Progression — restore IterationManager state. Loads BEFORE the scene
+	# change so any node that reads current_iteration in _ready picks up the
+	# right value on first tick instead of starting at 1 and re-syncing later.
+	var progression: Dictionary = data.get("progression", defaults["progression"]) as Dictionary
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"from_save_data"):
+			im.from_save_data(progression)
 
 	# Player, inventory, and equipment are applied after scene load
 	# (player node must exist). Store data for deferred application.
@@ -478,5 +503,8 @@ func get_default_save_data() -> Dictionary:
 			"master_volume": 1.0,
 			"music_volume": 0.8,
 			"sfx_volume": 1.0,
+		},
+		"progression": {
+			"current_iteration": 1,
 		},
 	}
