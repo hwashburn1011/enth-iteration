@@ -32814,6 +32814,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_shore_patrol_npc()
 	# Epic-8 T90: circling seagull flock
 	_build_d8_circling_gulls(geom)
+	# Epic-8 T91: boss arena whirlpool teaser
+	_build_d8_whirlpool_teaser(geom)
+	# Epic-8 T92: ship graveyard masts
+	_build_d8_ship_graveyard(geom)
+	# Epic-8 T93: storm cloud volume
+	_build_d8_storm_clouds(geom)
+	# Epic-8 T94: tentacle silhouettes
+	_build_d8_tentacle_silhouettes(geom)
+	# Epic-8 T95: warning siren post
+	_build_d8_warning_siren(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -39397,6 +39407,371 @@ func _build_d8_circling_gulls(geom: Node) -> void:
 		var orbit: Tween = pivot.create_tween().set_loops()
 		var phase: float = float(i) * 0.5
 		orbit.tween_property(pivot, "rotation_degrees:y", float(i) * 45.0 + 360.0, 18.0 + phase).from(float(i) * 45.0)
+
+
+func _build_d8_whirlpool_teaser(geom: Node) -> void:
+	## Epic-8 T91: boss arena teaser — large dark whirlpool circle in the
+	## water with concentric spinning rings and glowing violet runes around
+	## the perimeter. Sets up the finale boss arrival.
+	var pool: Node3D = Node3D.new()
+	pool.name = "D8WhirlpoolTeaser"
+	pool.position = Vector3(D8_CENTER.x + 70, 0.05, -2)
+	geom.add_child(pool)
+	# Outer dark water disc
+	var dark_water: StandardMaterial3D = StandardMaterial3D.new()
+	dark_water.albedo_color = Color(0.05, 0.08, 0.15)
+	dark_water.metallic = 0.4
+	dark_water.roughness = 0.20
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dcm: CylinderMesh = CylinderMesh.new()
+	dcm.top_radius = 6.0
+	dcm.bottom_radius = 6.0
+	dcm.height = 0.05
+	disc.mesh = dcm
+	disc.material_override = dark_water
+	disc.position = Vector3(0, 0.05, 0)
+	pool.add_child(disc)
+	# 3 concentric spinning ring meshes (torus)
+	var swirl_mat: StandardMaterial3D = StandardMaterial3D.new()
+	swirl_mat.albedo_color = Color(0.20, 0.10, 0.35)
+	swirl_mat.emission_enabled = true
+	swirl_mat.emission = Color(0.55, 0.30, 0.85)
+	swirl_mat.emission_energy_multiplier = 1.4
+	for i in range(3):
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 4.5 - i * 1.2
+		tm.outer_radius = 4.7 - i * 1.2
+		ring.mesh = tm
+		ring.material_override = swirl_mat
+		ring.position = Vector3(0, 0.10 + i * 0.02, 0)
+		pool.add_child(ring)
+		var spin: Tween = ring.create_tween().set_loops()
+		var dir: float = 1.0 if (i % 2 == 0) else -1.0
+		spin.tween_property(ring, "rotation_degrees:y", dir * 360.0, 5.0 + i * 1.5).from(0.0)
+	# Central dark sink (smaller deep cylinder)
+	var sink_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sink_mat.albedo_color = Color(0.0, 0.02, 0.05)
+	sink_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var sink: MeshInstance3D = MeshInstance3D.new()
+	var scm: CylinderMesh = CylinderMesh.new()
+	scm.top_radius = 1.4
+	scm.bottom_radius = 0.4
+	scm.height = 0.85
+	sink.mesh = scm
+	sink.material_override = sink_mat
+	sink.position = Vector3(0, -0.30, 0)
+	pool.add_child(sink)
+	# 8 violet rune pillars around the perimeter
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.55, 0.30, 0.85)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.65, 0.35, 0.95)
+	rune_mat.emission_energy_multiplier = 2.2
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in range(8):
+		var ang: float = float(i) * (TAU / 8.0)
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rb: BoxMesh = BoxMesh.new()
+		rb.size = Vector3(0.30, 1.10, 0.30)
+		rune.mesh = rb
+		rune.material_override = rune_mat
+		rune.position = Vector3(cos(ang) * 5.5, 0.55, sin(ang) * 5.5)
+		pool.add_child(rune)
+		var pulse: Tween = rune.create_tween().set_loops()
+		pulse.tween_property(rune_mat, "emission_energy_multiplier", 3.5, 1.2)
+		pulse.tween_property(rune_mat, "emission_energy_multiplier", 1.5, 1.2)
+	# Violet light source
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(0.65, 0.35, 0.95)
+	lt.light_energy = 3.0
+	lt.omni_range = 12.0
+	lt.position = Vector3(0, 1.0, 0)
+	pool.add_child(lt)
+
+
+func _build_d8_ship_graveyard(geom: Node) -> void:
+	## Epic-8 T92: broken mast graveyard — 6 splintered ship masts sticking
+	## out of the water at irregular angles, ropes hanging off, faded sails.
+	var grave: Node3D = Node3D.new()
+	grave.name = "D8ShipGraveyard"
+	grave.position = Vector3(D8_CENTER.x + 60, 0, -22)
+	geom.add_child(grave)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.20, 0.12)
+	wood_mat.roughness = 0.92
+	var sail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sail_mat.albedo_color = Color(0.65, 0.60, 0.52, 0.85)
+	sail_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sail_mat.roughness = 0.85
+	sail_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var spots: Array[Vector3] = [
+		Vector3(-7, 0, -3),
+		Vector3(-3, 0, 4),
+		Vector3(2, 0, -2),
+		Vector3(6, 0, 5),
+		Vector3(9, 0, -4),
+		Vector3(-9, 0, 2),
+	]
+	for i in range(spots.size()):
+		var spot: Vector3 = spots[i]
+		var mast_root: Node3D = Node3D.new()
+		mast_root.position = spot
+		mast_root.rotation_degrees = Vector3(
+			-15.0 + float(i % 3) * 8.0,
+			float(i) * 47.0,
+			-12.0 + float(i % 4) * 6.0,
+		)
+		grave.add_child(mast_root)
+		# Mast pole
+		var height: float = 4.5 + float(i % 3) * 1.0
+		var mast: MeshInstance3D = MeshInstance3D.new()
+		var mcm: CylinderMesh = CylinderMesh.new()
+		mcm.top_radius = 0.10
+		mcm.bottom_radius = 0.20
+		mcm.height = height
+		mast.mesh = mcm
+		mast.material_override = wood_mat
+		mast.position = Vector3(0, height * 0.5, 0)
+		mast_root.add_child(mast)
+		# Cross-yard
+		if i % 2 == 0:
+			var yard: MeshInstance3D = MeshInstance3D.new()
+			var yb: BoxMesh = BoxMesh.new()
+			yb.size = Vector3(2.4, 0.10, 0.10)
+			yard.mesh = yb
+			yard.material_override = wood_mat
+			yard.position = Vector3(0, height * 0.65, 0)
+			mast_root.add_child(yard)
+			# Tattered sail (small box)
+			var sail: MeshInstance3D = MeshInstance3D.new()
+			var sbm: BoxMesh = BoxMesh.new()
+			sbm.size = Vector3(2.0, 1.20, 0.04)
+			sail.mesh = sbm
+			sail.material_override = sail_mat
+			sail.position = Vector3(0, height * 0.50, 0)
+			mast_root.add_child(sail)
+			var sway: Tween = sail.create_tween().set_loops()
+			sway.tween_property(sail, "rotation_degrees:y", 6.0, 1.4)
+			sway.tween_property(sail, "rotation_degrees:y", -6.0, 1.4)
+		# Mast collision (capsule)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, height * 0.5, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.18
+		cap.height = height
+		cs.shape = cap
+		sb.add_child(cs)
+		mast_root.add_child(sb)
+
+
+func _build_d8_storm_clouds(geom: Node) -> void:
+	## Epic-8 T93: dark storm cloud volume above the harbor — large flat
+	## dark sphere with violet rim emission and slow drift, foreshadows
+	## the gathering finale storm.
+	var clouds: Node3D = Node3D.new()
+	clouds.name = "D8StormClouds"
+	clouds.position = Vector3(D8_CENTER.x + 50, 18, -5)
+	geom.add_child(clouds)
+	var cloud_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloud_mat.albedo_color = Color(0.10, 0.08, 0.18, 0.85)
+	cloud_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cloud_mat.emission_enabled = true
+	cloud_mat.emission = Color(0.20, 0.10, 0.35)
+	cloud_mat.emission_energy_multiplier = 0.55
+	cloud_mat.roughness = 0.95
+	# 5 overlapping cloud blobs
+	var positions: Array[Vector3] = [
+		Vector3(0, 0, 0),
+		Vector3(7, 1, 4),
+		Vector3(-7, -0.5, 3),
+		Vector3(5, 0.5, -5),
+		Vector3(-6, 1, -4),
+	]
+	for i in range(positions.size()):
+		var blob: MeshInstance3D = MeshInstance3D.new()
+		var bsm: SphereMesh = SphereMesh.new()
+		bsm.radius = 4.5 + float(i % 3) * 0.8
+		bsm.height = 4.0 + float(i % 3) * 0.5
+		blob.mesh = bsm
+		blob.material_override = cloud_mat
+		blob.scale = Vector3(1.4, 0.55, 1.4)
+		blob.position = positions[i]
+		clouds.add_child(blob)
+		# Per-blob slow drift
+		var drift: Tween = blob.create_tween().set_loops()
+		var off: float = float(i) * 0.6
+		var base: Vector3 = positions[i]
+		drift.tween_property(blob, "position", base + Vector3(1.0, 0.4, 0.5), 4.0 + off)
+		drift.tween_property(blob, "position", base, 4.0 + off)
+	# Lightning flash light (low energy normally, periodic flash via tween)
+	var flash: OmniLight3D = OmniLight3D.new()
+	flash.light_color = Color(0.85, 0.65, 0.95)
+	flash.light_energy = 0.5
+	flash.omni_range = 25.0
+	flash.position = Vector3(0, 0, 0)
+	clouds.add_child(flash)
+	var pulse: Tween = flash.create_tween().set_loops()
+	pulse.tween_property(flash, "light_energy", 4.5, 0.10)
+	pulse.tween_property(flash, "light_energy", 0.5, 0.20)
+	pulse.tween_property(flash, "light_energy", 3.5, 0.08)
+	pulse.tween_property(flash, "light_energy", 0.5, 4.0)
+
+
+func _build_d8_tentacle_silhouettes(geom: Node) -> void:
+	## Epic-8 T94: ominous tentacle silhouettes rising from deep water around
+	## the whirlpool — 5 dark tapered tentacles with cyan suckers.
+	var tents: Node3D = Node3D.new()
+	tents.name = "D8TentacleSilhouettes"
+	tents.position = Vector3(D8_CENTER.x + 70, 0, -2)
+	geom.add_child(tents)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.08, 0.10, 0.18)
+	dark_mat.metallic = 0.4
+	dark_mat.roughness = 0.55
+	var sucker_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sucker_mat.albedo_color = Color(0.30, 0.85, 0.95)
+	sucker_mat.emission_enabled = true
+	sucker_mat.emission = Color(0.45, 0.92, 1.0)
+	sucker_mat.emission_energy_multiplier = 1.6
+	sucker_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in range(5):
+		var ang: float = float(i) * (TAU / 5.0) + 0.4
+		var radius: float = 7.0
+		var tent: Node3D = Node3D.new()
+		tent.position = Vector3(cos(ang) * radius, 0, sin(ang) * radius)
+		tent.rotation_degrees = Vector3(0, -rad_to_deg(ang) - 90, 0)
+		tents.add_child(tent)
+		# Tentacle: 5 stacked tapered cylinder segments curving outward
+		for s in range(5):
+			var seg: MeshInstance3D = MeshInstance3D.new()
+			var sm: CylinderMesh = CylinderMesh.new()
+			sm.top_radius = 0.18 - s * 0.025
+			sm.bottom_radius = 0.30 - s * 0.025
+			sm.height = 0.95
+			seg.mesh = sm
+			seg.material_override = dark_mat
+			var lean: float = float(s) * 0.15
+			seg.position = Vector3(lean, 0.50 + s * 0.85, lean * 0.4)
+			seg.rotation_degrees = Vector3(0, 0, -float(s) * 8.0)
+			tent.add_child(seg)
+			# 2 cyan suckers per segment
+			for sk in range(2):
+				var sucker: MeshInstance3D = MeshInstance3D.new()
+				var spm: SphereMesh = SphereMesh.new()
+				spm.radius = 0.06
+				spm.height = 0.08
+				sucker.mesh = spm
+				sucker.material_override = sucker_mat
+				sucker.position = Vector3(lean + 0.18, 0.50 + s * 0.85 + (-0.15 if sk == 0 else 0.20), lean * 0.4)
+				tent.add_child(sucker)
+		# Per-tentacle slow sway tween
+		var sway: Tween = tent.create_tween().set_loops()
+		var phase: float = float(i) * 0.4
+		sway.tween_property(tent, "rotation_degrees:z", 6.0, 1.8 + phase)
+		sway.tween_property(tent, "rotation_degrees:z", -6.0, 1.8 + phase)
+
+
+func _build_d8_warning_siren(geom: Node) -> void:
+	## Epic-8 T95: tall warning siren post — striped pole with a rotating
+	## red emergency light and a horn megaphone, foreshadowing imminent
+	## boss arrival.
+	var siren: Node3D = Node3D.new()
+	siren.name = "D8WarningSiren"
+	siren.position = Vector3(D8_CENTER.x + 58, 0, 8)
+	geom.add_child(siren)
+	# Striped pole (yellow/black hazard bands)
+	var yellow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	yellow_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	yellow_mat.emission_enabled = true
+	yellow_mat.emission = Color(0.92, 0.82, 0.20)
+	yellow_mat.emission_energy_multiplier = 0.30
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.10, 0.12)
+	for i in range(8):
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.12
+		bm.bottom_radius = 0.13
+		bm.height = 0.55
+		band.mesh = bm
+		band.material_override = yellow_mat if (i % 2 == 0) else black_mat
+		band.position = Vector3(0, 0.30 + i * 0.55, 0)
+		siren.add_child(band)
+	# Top platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.30
+	pcm.bottom_radius = 0.30
+	pcm.height = 0.10
+	platform.mesh = pcm
+	platform.material_override = black_mat
+	platform.position = Vector3(0, 4.80, 0)
+	siren.add_child(platform)
+	# Rotating red beacon (emissive sphere on a pivot)
+	var beacon_pivot: Node3D = Node3D.new()
+	beacon_pivot.position = Vector3(0, 5.10, 0)
+	siren.add_child(beacon_pivot)
+	var beacon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beacon_mat.albedo_color = Color(1.0, 0.20, 0.18)
+	beacon_mat.emission_enabled = true
+	beacon_mat.emission = Color(1.0, 0.20, 0.15)
+	beacon_mat.emission_energy_multiplier = 3.5
+	beacon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var beacon: MeshInstance3D = MeshInstance3D.new()
+	var bsm: SphereMesh = SphereMesh.new()
+	bsm.radius = 0.22
+	bsm.height = 0.44
+	beacon.mesh = bsm
+	beacon.material_override = beacon_mat
+	beacon.position = Vector3(0, 0, 0)
+	beacon_pivot.add_child(beacon)
+	# Beam emitter (long red emissive prism)
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var bbm: BoxMesh = BoxMesh.new()
+	bbm.size = Vector3(6.0, 0.18, 0.32)
+	beam.mesh = bbm
+	beam.material_override = beacon_mat
+	beam.position = Vector3(3.0, 0, 0)
+	beacon_pivot.add_child(beam)
+	# Red light source
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.20, 0.18)
+	lt.light_energy = 3.0
+	lt.omni_range = 14.0
+	beacon_pivot.add_child(lt)
+	var spin: Tween = beacon_pivot.create_tween().set_loops()
+	spin.tween_property(beacon_pivot, "rotation_degrees:y", 360.0, 2.5).from(0.0)
+	# Pulse beacon brightness
+	var pulse: Tween = beacon.create_tween().set_loops()
+	pulse.tween_property(beacon_mat, "emission_energy_multiplier", 5.0, 0.6)
+	pulse.tween_property(beacon_mat, "emission_energy_multiplier", 2.0, 0.6)
+	# Megaphone horn (cone pointing outward)
+	var horn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	horn_mat.albedo_color = Color(0.45, 0.42, 0.40)
+	horn_mat.metallic = 0.65
+	horn_mat.roughness = 0.45
+	var horn: MeshInstance3D = MeshInstance3D.new()
+	var hcm: CylinderMesh = CylinderMesh.new()
+	hcm.top_radius = 0.45
+	hcm.bottom_radius = 0.10
+	hcm.height = 0.65
+	horn.mesh = hcm
+	horn.material_override = horn_mat
+	horn.position = Vector3(0.55, 4.20, 0)
+	horn.rotation_degrees = Vector3(0, 0, -90)
+	siren.add_child(horn)
+	# Pole collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.40, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.18
+	cap.height = 5.0
+	cs.shape = cap
+	sb.add_child(cs)
+	siren.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
