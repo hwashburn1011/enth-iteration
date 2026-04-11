@@ -1838,6 +1838,453 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_ambient_fills(geom)
 	# Epic-3 T100: FINALE — massive Arcane Overseer landmark
 	_build_d3_arcane_overseer_landmark(geom)
+	# === EPIC 4: Bloom Cluster — The Sandbox Greenhouse ===
+	_build_district_4(geom)
+
+
+func _build_district_4(geom: Node) -> void:
+	## Epic 4 entry point — Bloom Cluster, the green organic biome.
+	# Epic-4 T1: extend boundary + D4 ground
+	_extend_boundary_for_d4(geom)
+	_build_d4_ground(geom)
+	# Epic-4 T2: vine-covered entrance arch
+	_build_d4_entrance_arch(geom)
+	# Epic-4 T3: GREAT BLOOM landmark
+	_build_d4_great_bloom(geom)
+	# Epic-4 T4: friendly bloomling creature (decorative pet)
+	_build_d4_bloomling(geom)
+	# Epic-4 T5: Gardener NPC
+	_build_d4_gardener_npc()
+
+
+const D4_CENTER := Vector3(220, 0, 0)
+
+
+func _extend_boundary_for_d4(geom: Node) -> void:
+	## Epic-4 T1a: push the east boundary wall from x=180 out to x=260.
+	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
+	if east_wall:
+		east_wall.position.x = 260.0
+
+
+func _build_d4_ground(geom: Node) -> void:
+	## Epic-4 T1b: D4 ground — green organic floor extending from x=190 to
+	## x=250. Uses a green grid shader variant.
+	var plane: PlaneMesh = PlaneMesh.new()
+	plane.size = Vector2(60, 40)
+	var ground: MeshInstance3D = MeshInstance3D.new()
+	ground.name = "D4Ground"
+	ground.mesh = plane
+	ground.position = Vector3(220, 0, 0)
+	# Green organic grid shader
+	var shader: Shader = Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded;
+uniform vec3 base_color = vec3(0.04, 0.10, 0.04);
+uniform vec3 grid_color = vec3(0.30, 1.00, 0.40);
+uniform float grid_scale = 1.4;
+uniform float line_width = 0.04;
+
+void fragment() {
+	vec2 uv = UV * grid_scale * 30.0;
+	vec2 grid = abs(fract(uv - 0.5) - 0.5) / fwidth(uv);
+	float line = min(grid.x, grid.y);
+	float strength = 1.0 - min(line, 1.0);
+	vec3 color = mix(base_color, grid_color, strength * 0.85);
+	ALBEDO = color;
+}
+"""
+	var smat: ShaderMaterial = ShaderMaterial.new()
+	smat.shader = shader
+	ground.material_override = smat
+	geom.add_child(ground)
+	# Ground collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(60, 0.10, 40)
+	cs.shape = bs
+	cs.position = Vector3(0, -0.05, 0)
+	sb.add_child(cs)
+	ground.add_child(sb)
+
+
+func _build_d4_entrance_arch(geom: Node) -> void:
+	## Epic-4 T2: a wide vine-covered organic arch reading "BLOOM CLUSTER".
+	var arch: Node3D = Node3D.new()
+	arch.name = "D4EntranceArch"
+	arch.position = Vector3(192, 0, 0)
+	geom.add_child(arch)
+	# Wood material with green emission
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.metallic = 0.10
+	wood_mat.roughness = 0.65
+	wood_mat.emission_enabled = true
+	wood_mat.emission = Color(0.45, 1.0, 0.55)
+	wood_mat.emission_energy_multiplier = 0.35
+	# 2 wide pillars
+	for sx: float in [-4.5, 4.5]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.65
+		pmesh.bottom_radius = 0.85
+		pmesh.height = 8.0
+		pillar.mesh = pmesh
+		pillar.position = Vector3(sx, 4.0, 0)
+		pillar.material_override = wood_mat
+		arch.add_child(pillar)
+		# Spiral vine wrapping the pillar (small green torus rings up the column)
+		for v in 6:
+			var vine: MeshInstance3D = MeshInstance3D.new()
+			var vmesh: TorusMesh = TorusMesh.new()
+			vmesh.inner_radius = 0.85
+			vmesh.outer_radius = 0.95
+			vine.mesh = vmesh
+			vine.position = Vector3(sx, 1.0 + v * 1.20, 0)
+			var vmat: StandardMaterial3D = StandardMaterial3D.new()
+			vmat.albedo_color = Color(0.30, 0.65, 0.30)
+			vmat.emission_enabled = true
+			vmat.emission = Color(0.45, 1.0, 0.55)
+			vmat.emission_energy_multiplier = 1.4
+			vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			vine.material_override = vmat
+			arch.add_child(vine)
+		# Collision per pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.95
+		cap.height = 8.0
+		cs.shape = cap
+		cs.position = Vector3(sx, 4.0, 0)
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Top wood crossbar
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(11.0, 0.85, 1.40)
+	crossbar.mesh = cm
+	crossbar.position = Vector3(0, 8.40, 0)
+	crossbar.material_override = wood_mat
+	arch.add_child(crossbar)
+	# Big bloom flower in center of crossbar — pink+yellow petals
+	var bloom: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.55
+	bm.height = 1.10
+	bloom.mesh = bm
+	bloom.position = Vector3(0, 9.30, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(1.0, 0.55, 0.85)
+	bmat.emission_enabled = true
+	bmat.emission = Color(1.0, 0.65, 0.85)
+	bmat.emission_energy_multiplier = 2.4
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bloom.material_override = bmat
+	arch.add_child(bloom)
+	# Pulse the bloom
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(bloom, "scale", Vector3(1.30, 1.30, 1.30), 1.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(bloom, "scale", Vector3(0.85, 0.85, 0.85), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# District name on crossbar both sides
+	for fz: float in [-0.71, 0.71]:
+		var label: Label3D = Label3D.new()
+		label.text = "BLOOM CLUSTER"
+		label.position = Vector3(0, 8.40, fz)
+		label.rotation = Vector3(0, deg_to_rad(0 if fz > 0 else 180), 0)
+		label.modulate = Color(0.45, 1.0, 0.55)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 26
+		label.no_depth_test = true
+		arch.add_child(label)
+
+
+func _build_d4_great_bloom(geom: Node) -> void:
+	## Epic-4 T3: GREAT BLOOM — a 10m-tall flower in the center. Massive
+	## stem cylinder + multi-layered petal sphere arrangement on top.
+	var bloom_root: Node3D = Node3D.new()
+	bloom_root.name = "D4GreatBloom"
+	bloom_root.position = D4_CENTER
+	geom.add_child(bloom_root)
+	# Tall thick stem cylinder
+	var stem_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stem_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	stem_mat.emission_enabled = true
+	stem_mat.emission = Color(0.45, 1.0, 0.55)
+	stem_mat.emission_energy_multiplier = 0.85
+	stem_mat.metallic = 0.20
+	stem_mat.roughness = 0.55
+	var stem: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.45
+	smesh.bottom_radius = 0.85
+	smesh.height = 6.0
+	stem.mesh = smesh
+	stem.position = Vector3(0, 3.0, 0)
+	stem.material_override = stem_mat
+	bloom_root.add_child(stem)
+	# Pivot for the flower head
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 6.0, 0)
+	bloom_root.add_child(pivot)
+	# Center sphere — glowing yellow pollen pod
+	var center: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.85
+	cm.height = 1.70
+	center.mesh = cm
+	center.position = Vector3(0, 0, 0)
+	var center_mat: StandardMaterial3D = StandardMaterial3D.new()
+	center_mat.albedo_color = Color(1.0, 0.95, 0.30)
+	center_mat.emission_enabled = true
+	center_mat.emission = Color(1.0, 0.95, 0.30)
+	center_mat.emission_energy_multiplier = 3.0
+	center_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	center.material_override = center_mat
+	pivot.add_child(center)
+	# 8 large petal spheres arranged around the center
+	var petal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	petal_mat.albedo_color = Color(1.0, 0.55, 0.85)
+	petal_mat.emission_enabled = true
+	petal_mat.emission = Color(1.0, 0.65, 0.85)
+	petal_mat.emission_energy_multiplier = 1.8
+	petal_mat.metallic = 0.20
+	petal_mat.roughness = 0.30
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var petal: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.85
+		pm.height = 1.70
+		petal.mesh = pm
+		petal.position = Vector3(cos(angle) * 1.55, 0, sin(angle) * 1.55)
+		petal.scale = Vector3(0.85, 0.4, 1.20)
+		petal.material_override = petal_mat
+		pivot.add_child(petal)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 16.0)
+	# Bob in place
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(pivot, "position:y", 6.55, 2.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(pivot, "position:y", 6.0, 2.4).set_ease(Tween.EASE_IN_OUT)
+	# Real OmniLight from the bloom
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 0, 0)
+	light.light_color = Color(1.0, 0.85, 0.65)
+	light.light_energy = 3.0
+	light.omni_range = 22.0
+	pivot.add_child(light)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "GREAT BLOOM"
+	label.position = Vector3(0, 8.85, 0)
+	label.modulate = Color(1.0, 0.65, 0.85)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	bloom_root.add_child(label)
+	# Collision around stem
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 1.0
+	cap.height = 6.0
+	cs.shape = cap
+	cs.position = Vector3(0, 3.0, 0)
+	sb.add_child(cs)
+	bloom_root.add_child(sb)
+
+
+func _build_d4_bloomling(geom: Node) -> void:
+	## Epic-4 T4: a friendly bloomling — small plant creature with a
+	## flower head, 2 leaf arms, and a wandering hop animation.
+	var bloomling: Node3D = Node3D.new()
+	bloomling.name = "D4Bloomling"
+	bloomling.position = D4_CENTER + Vector3(8, 0, 4)
+	geom.add_child(bloomling)
+	# Body — short capsule
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.30, 0.65, 0.30)
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.45, 1.0, 0.55)
+	body_mat.emission_energy_multiplier = 0.85
+	body_mat.metallic = 0.10
+	body_mat.roughness = 0.55
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: SphereMesh = SphereMesh.new()
+	bmesh.radius = 0.40
+	bmesh.height = 0.65
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.40, 0)
+	body.material_override = body_mat
+	bloomling.add_child(body)
+	# Flower head — sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.30
+	hmesh.height = 0.60
+	head.mesh = hmesh
+	head.position = Vector3(0, 0.95, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(1.0, 0.55, 0.85)
+	hmat.emission_enabled = true
+	hmat.emission = Color(1.0, 0.65, 0.85)
+	hmat.emission_energy_multiplier = 2.0
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	head.material_override = hmat
+	bloomling.add_child(head)
+	# 2 white eye dots
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 0.95, 0.25)
+		eye.material_override = eye_mat
+		bloomling.add_child(eye)
+	# 2 leaf arms — flat angled boxes
+	for sx: float in [-1.0, 1.0]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.40, 0.04, 0.20)
+		arm.mesh = am
+		arm.position = Vector3(sx * 0.55, 0.50, 0)
+		arm.rotation = Vector3(0, 0, sign(sx) * deg_to_rad(20))
+		arm.material_override = body_mat
+		bloomling.add_child(arm)
+	# Hop tween
+	var hop: Tween = create_tween().set_loops()
+	hop.tween_property(body, "position:y", 0.65, 0.4).set_ease(Tween.EASE_OUT)
+	hop.tween_property(body, "position:y", 0.40, 0.30).set_ease(Tween.EASE_IN)
+	hop.tween_interval(0.5)
+	# Slow patrol path
+	var origin: Vector3 = D4_CENTER + Vector3(8, 0, 4)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(bloomling, "position", origin + Vector3(4, 0, 4), 6.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(bloomling, "position", origin + Vector3(-4, 0, 4), 6.0).set_ease(Tween.EASE_IN_OUT)
+	patrol.tween_property(bloomling, "position", origin, 6.0).set_ease(Tween.EASE_IN_OUT)
+	# Friendly name
+	var label: Label3D = Label3D.new()
+	label.text = "Bloomling"
+	label.position = Vector3(0, 1.55, 0)
+	label.modulate = Color(0.45, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	bloomling.add_child(label)
+
+
+func _build_d4_gardener_npc() -> void:
+	## Epic-4 T5: Gardener NPC — friendly green-robed figure with a small
+	## watering can in one hand and a flower-petal hat.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var gardener: Node3D = Node3D.new()
+	gardener.name = "D4Gardener"
+	gardener.position = D4_CENTER + Vector3(-12, 0, 4)
+	slots.add_child(gardener)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.30, 0.65, 0.30)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.55
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.45, 1.0, 0.55)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	gardener.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.36
+	hmesh.height = 0.65
+	head.mesh = hmesh
+	head.position = Vector3(0, 1.55, 0)
+	head.material_override = bmat
+	gardener.add_child(head)
+	# Petal hat (3 layered torus)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(1.0, 0.55, 0.85)
+	hat_mat.emission_enabled = true
+	hat_mat.emission = Color(1.0, 0.65, 0.85)
+	hat_mat.emission_energy_multiplier = 1.4
+	hat_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var petal: MeshInstance3D = MeshInstance3D.new()
+		var pm: TorusMesh = TorusMesh.new()
+		pm.inner_radius = 0.30 - i * 0.05
+		pm.outer_radius = 0.45 - i * 0.05
+		petal.mesh = pm
+		petal.position = Vector3(0, 1.85 + i * 0.10, 0)
+		petal.material_override = hat_mat
+		gardener.add_child(petal)
+	# 2 brown eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.55, 0.32)
+		eye.material_override = eye_mat
+		gardener.add_child(eye)
+	# Watering can held in front (small box + spout)
+	var can_mat: StandardMaterial3D = StandardMaterial3D.new()
+	can_mat.albedo_color = Color(0.55, 0.55, 0.65)
+	can_mat.metallic = 0.85
+	can_mat.roughness = 0.30
+	var can: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.30, 0.30, 0.30)
+	can.mesh = cm
+	can.position = Vector3(0.45, 0.85, 0.30)
+	can.material_override = can_mat
+	gardener.add_child(can)
+	# Spout cylinder
+	var spout: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.04
+	sm.bottom_radius = 0.06
+	sm.height = 0.40
+	spout.mesh = sm
+	spout.position = Vector3(0.65, 0.95, 0.30)
+	spout.rotation = Vector3(0, 0, deg_to_rad(60))
+	spout.material_override = can_mat
+	gardener.add_child(spout)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Gardener"
+	label.position = Vector3(0, 2.45, 0)
+	label.modulate = Color(0.45, 1.0, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	gardener.add_child(label)
+
 
 
 const D3_CENTER := Vector3(150, 0, 0)
