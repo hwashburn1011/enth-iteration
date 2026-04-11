@@ -25,6 +25,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_perimeter_lampposts(geom)
 	_build_th_save_shrine(geom)
 	_build_th_quest_board(geom)
+	_build_th_stash_chest(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -1421,3 +1422,170 @@ func _build_th_quest_board(geom: Node) -> void:
 	var fpulse2: Tween = pivot.create_tween().set_loops()
 	fpulse2.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.45).set_ease(Tween.EASE_IN_OUT)
 	fpulse2.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.45).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_stash_chest(geom: Node) -> void:
+	## Epic-10 T9: large stash chest on the SW radial path. Stepped basalt
+	## stand, brass-bound iron chest body with 4 brass corner reinforcements
+	## and 3 iron strap bands, glowing cyan data lock at the front, brass
+	## hinges along the lid, and a small holographic inventory icon
+	## hovering above the lid.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_StashChest"
+	# SW radial path (angle = 5*pi/4 from +X), at radius 6.5
+	var ang: float = 5.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 6.5, 0, sin(ang) * 6.5)
+	# Face the beacon (perpendicular to the radial direction, facing inward)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.45, 0.55, 0.65)
+	iron_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 7.0
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt stand ----
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var stm: BoxMesh = BoxMesh.new()
+	stm.size = Vector3(2.20, 0.40, 1.40)
+	stand.mesh = stm
+	stand.material_override = stone_mat
+	stand.position = Vector3(0, 0.20, 0)
+	pivot.add_child(stand)
+	# Stand collision
+	var stand_sb: StaticBody3D = StaticBody3D.new()
+	stand_sb.position = Vector3(0, 0.20, 0)
+	var stand_cs: CollisionShape3D = CollisionShape3D.new()
+	var stand_bsh: BoxShape3D = BoxShape3D.new()
+	stand_bsh.size = Vector3(2.20, 0.40, 1.40)
+	stand_cs.shape = stand_bsh
+	stand_sb.add_child(stand_cs)
+	pivot.add_child(stand_sb)
+	# ---- Iron chest body ----
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.85, 1.10, 1.10)
+	body.mesh = bm
+	body.material_override = iron_mat
+	body.position = Vector3(0, 0.95, 0)
+	pivot.add_child(body)
+	# Chest collision
+	var body_sb: StaticBody3D = StaticBody3D.new()
+	body_sb.position = Vector3(0, 0.95, 0)
+	var body_cs: CollisionShape3D = CollisionShape3D.new()
+	var body_bsh: BoxShape3D = BoxShape3D.new()
+	body_bsh.size = Vector3(1.85, 1.10, 1.10)
+	body_cs.shape = body_bsh
+	body_sb.add_child(body_cs)
+	pivot.add_child(body_sb)
+	# ---- 4 brass corner reinforcements (small box caps at each top corner) ----
+	for cx in [-0.85, 0.85]:
+		for cz in [-0.50, 0.50]:
+			var corner: MeshInstance3D = MeshInstance3D.new()
+			var cmm: BoxMesh = BoxMesh.new()
+			cmm.size = Vector3(0.20, 0.20, 0.20)
+			corner.mesh = cmm
+			corner.material_override = brass_mat
+			corner.position = Vector3(cx, 1.40, cz)
+			pivot.add_child(corner)
+	# ---- 3 iron strap bands wrapping around the body ----
+	for sx in [-0.50, 0.0, 0.50]:
+		var strap: MeshInstance3D = MeshInstance3D.new()
+		var smm: BoxMesh = BoxMesh.new()
+		smm.size = Vector3(0.10, 1.20, 1.18)
+		strap.mesh = smm
+		strap.material_override = brass_mat
+		strap.position = Vector3(sx, 0.95, 0)
+		pivot.add_child(strap)
+	# ---- Glowing cyan data lock at the front center ----
+	# Lock body
+	var lock: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(0.30, 0.40, 0.10)
+	lock.mesh = lm
+	lock.material_override = brass_mat
+	lock.position = Vector3(0, 0.85, -0.62)
+	pivot.add_child(lock)
+	# Lock keyhole (small unshaded cyan circle)
+	var keyhole: MeshInstance3D = MeshInstance3D.new()
+	var khm: SphereMesh = SphereMesh.new()
+	khm.radius = 0.08
+	khm.height = 0.16
+	keyhole.mesh = khm
+	keyhole.material_override = data_mat
+	keyhole.position = Vector3(0, 0.95, -0.68)
+	pivot.add_child(keyhole)
+	# ---- Brass hinges along the back of the lid (3 small box hinges) ----
+	for hx in [-0.65, 0.0, 0.65]:
+		var hinge: MeshInstance3D = MeshInstance3D.new()
+		var hgm: BoxMesh = BoxMesh.new()
+		hgm.size = Vector3(0.18, 0.10, 0.20)
+		hinge.mesh = hgm
+		hinge.material_override = brass_mat
+		hinge.position = Vector3(hx, 1.50, 0.50)
+		pivot.add_child(hinge)
+	# ---- Small holographic inventory icon hovering above the chest ----
+	# Brass post mount on the back of the chest
+	var icon_post: MeshInstance3D = MeshInstance3D.new()
+	var ipm: CylinderMesh = CylinderMesh.new()
+	ipm.top_radius = 0.04
+	ipm.bottom_radius = 0.05
+	ipm.height = 0.85
+	icon_post.mesh = ipm
+	icon_post.material_override = brass_mat
+	icon_post.position = Vector3(0, 1.85, 0.45)
+	pivot.add_child(icon_post)
+	# Floating inventory icon — small unshaded cyan grid (4 boxes in a 2x2)
+	var icon_pivot: Node3D = Node3D.new()
+	icon_pivot.position = Vector3(0, 2.40, 0.45)
+	pivot.add_child(icon_pivot)
+	for ix in [-0.10, 0.10]:
+		for iy in [-0.10, 0.10]:
+			var cell: MeshInstance3D = MeshInstance3D.new()
+			var cellm: BoxMesh = BoxMesh.new()
+			cellm.size = Vector3(0.16, 0.16, 0.04)
+			cell.mesh = cellm
+			cell.material_override = data_mat
+			cell.position = Vector3(ix, iy, 0)
+			icon_pivot.add_child(cell)
+	# ---- Strong cyan OmniLight from the lock + icon ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.50, -0.40)
+	lt.light_color = Color(0.45, 0.85, 1.0)
+	lt.light_energy = 2.6
+	lt.omni_range = 7.5
+	pivot.add_child(lt)
+	# ---- Pulses ----
+	# Data material pulse — keyhole + icon grid breathe together
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Slow icon spin so the holographic grid rotates above the chest
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(icon_pivot, "rotation:y", TAU, 6.0)
+	# Subtle hover bob on the icon
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(icon_pivot, "position:y", 2.55, 1.4).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(icon_pivot, "position:y", 2.30, 1.4).set_ease(Tween.EASE_IN_OUT)
