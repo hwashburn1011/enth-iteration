@@ -17240,6 +17240,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_koi_fish(geom)
 	# Epic-6 T70: small street shrine
 	_build_d6_street_shrine(geom)
+	# Epic-6 T71: cyber barbershop
+	_build_d6_barbershop(geom)
+	# Epic-6 T72: barber NPC
+	_build_d6_barber_npc()
+	# Epic-6 T73: hanging lantern string
+	_build_d6_lantern_string(geom)
+	# Epic-6 T74: vending bot creature
+	_build_d6_vending_bot(geom)
+	# Epic-6 T75: cyber graffiti mural
+	_build_d6_cyber_mural(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -23000,6 +23010,414 @@ func _build_d6_street_shrine(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	shrine.add_child(sb)
+
+
+func _build_d6_barbershop(geom: Node) -> void:
+	## Epic-6 T71: cyber barbershop — slim storefront with the iconic
+	## rotating red/white/blue pole + a styling chair + mirror.
+	var shop: Node3D = Node3D.new()
+	shop.name = "Barbershop"
+	shop.position = Vector3(D6_CENTER.x + 12.0, 0.0, -22.0)
+	geom.add_child(shop)
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.85, 0.85, 0.92)
+	wall_mat.roughness = 0.55
+	# Walls
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(3.85, 3.20, 0.30)
+	wall.mesh = wm
+	wall.material_override = wall_mat
+	wall.position = Vector3(0, 1.60, -1.20)
+	shop.add_child(wall)
+	for sx in [-1.85, 1.85]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.30, 3.20, 2.55)
+		side.mesh = swm
+		side.material_override = wall_mat
+		side.position = Vector3(sx, 1.60, 0)
+		shop.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(3.85, 0.18, 2.85)
+	roof.mesh = rm
+	roof.material_override = wall_mat
+	roof.position = Vector3(0, 3.30, 0)
+	shop.add_child(roof)
+	# Rotating barber pole (vertical cylinder with red+white+blue stripes)
+	var pole_pivot: Node3D = Node3D.new()
+	pole_pivot.position = Vector3(2.0, 1.40, 1.20)
+	shop.add_child(pole_pivot)
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.10
+	pm.bottom_radius = 0.10
+	pm.height = 1.85
+	pole.mesh = pm
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	pole.material_override = pole_mat
+	pole_pivot.add_child(pole)
+	# Red and blue stripe (boxes wrapping the pole)
+	var red_mat: StandardMaterial3D = StandardMaterial3D.new()
+	red_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	red_mat.emission_enabled = true
+	red_mat.emission = Color(0.95, 0.20, 0.20)
+	red_mat.emission_energy_multiplier = 1.4
+	var blue_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blue_mat.albedo_color = Color(0.20, 0.30, 0.95)
+	blue_mat.emission_enabled = true
+	blue_mat.emission = Color(0.20, 0.30, 0.95)
+	blue_mat.emission_energy_multiplier = 1.4
+	for i in 6:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.22, 0.10, 0.02)
+		stripe.mesh = sm
+		stripe.material_override = red_mat if i % 2 == 0 else blue_mat
+		stripe.position = Vector3(0, -0.85 + i * 0.30, 0.10)
+		pole_pivot.add_child(stripe)
+	# Spin pivot
+	var tw: Tween = pole_pivot.create_tween().set_loops()
+	tw.tween_property(pole_pivot, "rotation_degrees:y", 360.0, 4.0)
+	tw.tween_property(pole_pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Styling chair (red leather)
+	var chair: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 0.30, 0.85)
+	chair.mesh = cm
+	var chair_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chair_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	chair.material_override = chair_mat
+	chair.position = Vector3(0, 0.85, -0.30)
+	shop.add_child(chair)
+	# Chair backrest
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.85, 1.10, 0.18)
+	back.mesh = bm
+	back.material_override = chair_mat
+	back.position = Vector3(0, 1.55, -0.65)
+	shop.add_child(back)
+	# Mirror behind chair (glowing rectangle)
+	var mirror: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.85, 1.40, 0.04)
+	mirror.mesh = mm
+	var mirror_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mirror_mat.albedo_color = Color(0.65, 0.85, 1.0)
+	mirror_mat.emission_enabled = true
+	mirror_mat.emission = Color(0.65, 0.85, 1.0)
+	mirror_mat.emission_energy_multiplier = 0.85
+	mirror_mat.metallic = 0.85
+	mirror_mat.roughness = 0.05
+	mirror.material_override = mirror_mat
+	mirror.position = Vector3(0, 2.0, -1.05)
+	shop.add_child(mirror)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.95, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 2.40, 0.50)
+	shop.add_child(light)
+	# Shop collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.60, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.85, 3.20, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	shop.add_child(sb)
+
+
+func _build_d6_barber_npc() -> void:
+	## Epic-6 T72: barber NPC — striped vest + holding scissors.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BarberSlot"
+	slot.position = Vector3(D6_CENTER.x + 12.0, 0.0, -21.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Barber"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Snip")
+	if "npc_id" in npc:
+		npc.set("npc_id", "barber_d6")
+	slot.add_child(npc)
+	# White vest
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.85, 0.40)
+	vest.mesh = vm
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	vest_mat.roughness = 0.65
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 0.65, 0)
+	npc.add_child(vest)
+	# Red bow tie
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.18, 0.06, 0.06)
+	bow.mesh = bm
+	var bow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bow_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	bow.material_override = bow_mat
+	bow.position = Vector3(0, 1.10, 0.20)
+	npc.add_child(bow)
+	# Scissors (2 tiny crossed cylinders)
+	var scissors: Node3D = Node3D.new()
+	scissors.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(scissors)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	for i in 2:
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var bm2: BoxMesh = BoxMesh.new()
+		bm2.size = Vector3(0.04, 0.20, 0.02)
+		blade.mesh = bm2
+		blade.material_override = blade_mat
+		blade.rotation_degrees = Vector3(0, 0, 25.0 if i == 0 else -25.0)
+		scissors.add_child(blade)
+
+
+func _build_d6_lantern_string(geom: Node) -> void:
+	## Epic-6 T73: long string of hanging colored paper lanterns running
+	## across the bazaar at high altitude.
+	var string: Node3D = Node3D.new()
+	string.name = "LanternString"
+	string.position = Vector3(D6_CENTER.x, 6.0, 0.0)
+	geom.add_child(string)
+	# Long horizontal wire
+	var wire: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 0.018
+	wm.bottom_radius = 0.018
+	wm.height = 50.0
+	wire.mesh = wm
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(0.20, 0.18, 0.22)
+	wire_mat.roughness = 0.85
+	wire.material_override = wire_mat
+	wire.rotation_degrees = Vector3(0, 0, 90)
+	string.add_child(wire)
+	# 18 colored lanterns hanging
+	var lantern_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.95, 0.65, 0.20),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+		Color(0.55, 0.30, 0.95),
+	]
+	for i in 18:
+		var lantern: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.22
+		lm.height = 0.40
+		lantern.mesh = lm
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = lantern_colors[i % 6]
+		lmat.emission_enabled = true
+		lmat.emission = lantern_colors[i % 6]
+		lmat.emission_energy_multiplier = 2.5
+		lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		lantern.material_override = lmat
+		lantern.position = Vector3(-22.0 + i * 2.60, -0.30, 0)
+		lantern.scale = Vector3(1.0, 1.30, 1.0)
+		string.add_child(lantern)
+		# Small light per lantern
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = lantern_colors[i % 6]
+		light.light_energy = 1.0
+		light.omni_range = 2.5
+		light.position = Vector3(-22.0 + i * 2.60, -0.30, 0)
+		string.add_child(light)
+		# Subtle sway
+		var tw: Tween = lantern.create_tween().set_loops()
+		tw.tween_interval(i * 0.10)
+		tw.tween_property(lantern, "rotation_degrees:z", 6.0, 1.4)
+		tw.tween_property(lantern, "rotation_degrees:z", -6.0, 1.4)
+
+
+func _build_d6_vending_bot(geom: Node) -> void:
+	## Epic-6 T74: small wheeled vending bot — round body + 2 wheels +
+	## floating menu screen + colored item slots.
+	var bot: Node3D = Node3D.new()
+	bot.name = "VendingBot"
+	bot.position = Vector3(D6_CENTER.x - 16.0, 0.0, -22.0)
+	geom.add_child(bot)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Body sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.55
+	bm.height = 0.95
+	body.mesh = bm
+	body.material_override = metal_mat
+	body.position = Vector3(0, 0.85, 0)
+	bot.add_child(body)
+	# 2 wheels
+	for sx in [-0.40, 0.40]:
+		var wheel: MeshInstance3D = MeshInstance3D.new()
+		var wm: CylinderMesh = CylinderMesh.new()
+		wm.top_radius = 0.20
+		wm.bottom_radius = 0.20
+		wm.height = 0.10
+		wheel.mesh = wm
+		var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wheel_mat.albedo_color = Color(0.10, 0.10, 0.15)
+		wheel_mat.roughness = 0.85
+		wheel.material_override = wheel_mat
+		wheel.position = Vector3(sx, 0.20, 0)
+		wheel.rotation_degrees = Vector3(0, 0, 90)
+		bot.add_child(wheel)
+	# Menu screen on body
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var smm: BoxMesh = BoxMesh.new()
+	smm.size = Vector3(0.55, 0.40, 0.04)
+	screen.mesh = smm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 1.0, 1.0)
+	screen_mat.emission_energy_multiplier = 2.5
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 0.85, 0.55)
+	bot.add_child(screen)
+	# Item slot bumps (3 colored small spheres)
+	var item_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 3:
+		var slot_bump: MeshInstance3D = MeshInstance3D.new()
+		var sbm: SphereMesh = SphereMesh.new()
+		sbm.radius = 0.06
+		sbm.height = 0.12
+		slot_bump.mesh = sbm
+		var sb_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sb_mat.albedo_color = item_colors[i]
+		sb_mat.emission_enabled = true
+		sb_mat.emission = item_colors[i]
+		sb_mat.emission_energy_multiplier = 2.0
+		slot_bump.material_override = sb_mat
+		slot_bump.position = Vector3(-0.18 + i * 0.18, 0.40, 0.50)
+		bot.add_child(slot_bump)
+	# Bot patrol back and forth
+	var tw: Tween = bot.create_tween().set_loops()
+	tw.tween_property(bot, "position:x", D6_CENTER.x - 14.0, 3.0)
+	tw.tween_property(bot, "rotation_degrees:y", 180.0, 0.4)
+	tw.tween_property(bot, "position:x", D6_CENTER.x - 18.0, 3.0)
+	tw.tween_property(bot, "rotation_degrees:y", 0.0, 0.4)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: SphereShape3D = SphereShape3D.new()
+	cap.radius = 0.55
+	cs.shape = cap
+	sb.add_child(cs)
+	bot.add_child(sb)
+
+
+func _build_d6_cyber_mural(geom: Node) -> void:
+	## Epic-6 T75: large cyber graffiti mural — wide dark wall with a big
+	## colorful spray-paint splash + text "404".
+	var mural: Node3D = Node3D.new()
+	mural.name = "CyberMural"
+	mural.position = Vector3(D6_CENTER.x + 28.0, 0.0, -22.0)
+	geom.add_child(mural)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.15, 0.12, 0.18)
+	dark_mat.roughness = 0.85
+	# Wide wall
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(6.50, 4.20, 0.30)
+	wall.mesh = wm
+	wall.material_override = dark_mat
+	wall.position = Vector3(0, 2.10, 0)
+	mural.add_child(wall)
+	# Background splash blob
+	var blob_colors: Array = [
+		Color(0.95, 0.20, 0.85),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.85, 0.20),
+		Color(0.95, 0.30, 0.30),
+	]
+	for i in 12:
+		var blob: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.40 + randf() * 0.35
+		bm.height = 0.20
+		blob.mesh = bm
+		var blob_mat: StandardMaterial3D = StandardMaterial3D.new()
+		blob_mat.albedo_color = blob_colors[i % 5]
+		blob_mat.emission_enabled = true
+		blob_mat.emission = blob_colors[i % 5]
+		blob_mat.emission_energy_multiplier = 2.0
+		blob_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		blob.material_override = blob_mat
+		blob.position = Vector3(
+			randf_range(-2.85, 2.85),
+			0.85 + randf_range(0, 2.85),
+			0.18
+		)
+		blob.scale = Vector3(1.0, 0.85, 0.10)
+		mural.add_child(blob)
+	# Big "404" Label
+	var label: Label3D = Label3D.new()
+	label.text = "404"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.10, 0.05, 0.20)
+	label.outline_size = 16
+	label.font_size = 144
+	label.pixel_size = 0.018
+	label.position = Vector3(0, 2.55, 0.20)
+	mural.add_child(label)
+	var sub: Label3D = Label3D.new()
+	sub.text = "RESET FOUND"
+	sub.modulate = Color(0.30, 1.0, 1.0)
+	sub.outline_modulate = Color(0.05, 0.20, 0.30)
+	sub.outline_size = 6
+	sub.font_size = 48
+	sub.pixel_size = 0.010
+	sub.position = Vector3(0, 1.20, 0.20)
+	mural.add_child(sub)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.95, 0.30, 0.85)
+	light.light_energy = 2.0
+	light.omni_range = 6.5
+	light.position = Vector3(0, 2.55, 1.85)
+	mural.add_child(light)
+	# Wall collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(6.50, 4.20, 0.30)
+	cs.shape = cb
+	sb.add_child(cs)
+	mural.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
