@@ -86,6 +86,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_lava_ferry_boat(geom)
 	_build_d9_obsidian_merchant_stall(geom)
 	_build_d9_forge_guildhall(geom)
+	_build_d9_guildmaster_vorn_npc(town)
 	print("[D9Builder] done")
 
 
@@ -6380,5 +6381,175 @@ func _build_d9_forge_guildhall(geom: Node) -> void:
 	var flick: Tween = pivot.create_tween().set_loops()
 	flick.tween_property(torch_mat, "emission_energy_multiplier", 10.0, 0.35).set_ease(Tween.EASE_IN_OUT)
 	flick.tween_property(torch_mat, "emission_energy_multiplier", 7.0, 0.35).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_guildmaster_vorn_npc(town: Node) -> void:
+	## Epic-9 T66: Guildmaster Vorn — proud, decorated NPC standing at the
+	## forge guildhall front doors. Brass-trimmed leather robe, ceremonial
+	## guild medallion, two-handed warhammer planted at his side, and a
+	## brazier helm with rising ember motes.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9GuildmasterVornSlot"
+	# Stand just in front of the guildhall doors (guildhall at +38, -16; doors face -Z)
+	slot.position = Vector3(D9_CENTER.x + 38, 0, -20)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9GuildmasterVorn"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Guildmaster Vorn")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_guildmaster_vorn")
+	slot.add_child(npc)
+	# Leather robe — wide chest box
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.18, 0.10, 0.08)
+	robe_mat.roughness = 0.80
+	robe_mat.metallic = 0.15
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.55, 0.18, 0.05)
+	robe_mat.emission_energy_multiplier = 0.18
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rb: BoxMesh = BoxMesh.new()
+	rb.size = Vector3(1.10, 1.40, 0.65)
+	robe.mesh = rb
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 1.05, 0)
+	npc.add_child(robe)
+	# Brass robe trim — vertical strip down the chest
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 1.0
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.18, 1.30, 0.06)
+	trim.mesh = tm
+	trim.material_override = brass_mat
+	trim.position = Vector3(0, 1.05, -0.34)
+	npc.add_child(trim)
+	# Brass shoulder pauldrons
+	for sx in [-0.62, 0.62]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.22
+		pm.height = 0.44
+		paul.mesh = pm
+		paul.material_override = brass_mat
+		paul.position = Vector3(sx, 1.65, 0)
+		paul.scale = Vector3(1.0, 0.55, 1.0)
+		npc.add_child(paul)
+	# Guild medallion — glowing torus on chest
+	var med_mat: StandardMaterial3D = StandardMaterial3D.new()
+	med_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	med_mat.emission_enabled = true
+	med_mat.emission = Color(1.0, 0.50, 0.10)
+	med_mat.emission_energy_multiplier = 5.5
+	med_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var medallion: MeshInstance3D = MeshInstance3D.new()
+	var medm: TorusMesh = TorusMesh.new()
+	medm.inner_radius = 0.10
+	medm.outer_radius = 0.18
+	medallion.mesh = medm
+	medallion.material_override = med_mat
+	medallion.position = Vector3(0, 1.55, -0.36)
+	medallion.rotation.x = PI / 2.0
+	npc.add_child(medallion)
+	# Brazier helm — wide bowl on the head
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hmm: SphereMesh = SphereMesh.new()
+	hmm.radius = 0.35
+	hmm.height = 0.65
+	helm.mesh = hmm
+	helm.material_override = brass_mat
+	helm.position = Vector3(0, 1.95, 0)
+	helm.scale = Vector3(1.0, 0.70, 1.0)
+	npc.add_child(helm)
+	# Helm crown rim — torus
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rmm: TorusMesh = TorusMesh.new()
+	rmm.inner_radius = 0.30
+	rmm.outer_radius = 0.40
+	rim.mesh = rmm
+	rim.material_override = brass_mat
+	rim.position = Vector3(0, 1.92, 0)
+	rim.rotation.x = PI / 2.0
+	npc.add_child(rim)
+	# Ember motes rising from the helm bowl
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 2.15, 0)
+	motes.amount = 16
+	motes.lifetime = 2.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 14.0
+	pmat.initial_velocity_min = 0.5
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3(0, 0.3, 0)
+	pmat.scale_min = 0.05
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	npc.add_child(motes)
+	# Two-handed warhammer planted at his side — long shaft + massive head
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(1.0, 0.30, 0.05)
+	iron_mat.emission_energy_multiplier = 0.50
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.80
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var shm: CylinderMesh = CylinderMesh.new()
+	shm.top_radius = 0.07
+	shm.bottom_radius = 0.08
+	shm.height = 1.85
+	shaft.mesh = shm
+	shaft.material_override = wood_mat
+	shaft.position = Vector3(0.62, 0.95, 0)
+	npc.add_child(shaft)
+	# Hammer head — chunky double-faced box
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var headm: BoxMesh = BoxMesh.new()
+	headm.size = Vector3(0.45, 0.40, 0.55)
+	head.mesh = headm
+	head.material_override = iron_mat
+	head.position = Vector3(0.62, 1.95, 0)
+	npc.add_child(head)
+	# Hammer head brass cap
+	for capz in [-0.30, 0.30]:
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(0.50, 0.45, 0.06)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0.62, 1.95, capz)
+		npc.add_child(cap)
+	# Helm warm glow OmniLight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.20, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 2.4
+	lt.omni_range = 5.5
+	npc.add_child(lt)
+	# Medallion pulse
+	var med_pulse: Tween = npc.create_tween().set_loops()
+	med_pulse.tween_property(med_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	med_pulse.tween_property(med_mat, "emission_energy_multiplier", 4.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 
 
