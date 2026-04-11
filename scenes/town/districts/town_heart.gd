@@ -33,6 +33,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_banner_streamers(geom)
 	_build_th_ambient_data_motes(geom)
 	_build_th_vendor_npc(town)
+	_build_th_combat_trainer_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -2726,3 +2727,239 @@ func _build_th_vendor_npc(town: Node) -> void:
 	var fpulse: Tween = npc.create_tween().set_loops()
 	fpulse.tween_property(feather_mat, "emission_energy_multiplier", 7.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(feather_mat, "emission_energy_multiplier", 4.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_combat_trainer_npc(town: Node) -> void:
+	## Epic-10 T17: Combat Trainer Vex — armored swordsman NPC at the
+	## practice dummy stand on the W radial path. Iron breastplate +
+	## brass shoulder pauldrons, brass helm with glowing amber visor
+	## slit, and a glowing sword on a pivot doing a continuous overhead
+	## chop swing demonstrating combat technique.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THCombatTrainerVexSlot"
+	# Stand near the practice dummy at W radial path radius 6.5, slightly offset
+	slot.position = TOWN_CENTER + Vector3(-5.5, 0, 0.85)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THCombatTrainerVex"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Combat Trainer Vex")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_combat_trainer_vex")
+	# Face the dummy (-X direction)
+	npc.rotation.y = -PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.45, 0.55, 0.65)
+	iron_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.5
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	# ---- Iron breastplate (chest box) ----
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.05, 1.30, 0.55)
+	torso.mesh = tm
+	torso.material_override = iron_mat
+	torso.position = Vector3(0, 1.20, 0)
+	npc.add_child(torso)
+	# Brass chest plate seam
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var seamesh: BoxMesh = BoxMesh.new()
+	seamesh.size = Vector3(0.18, 1.20, 0.06)
+	seam.mesh = seamesh
+	seam.material_override = brass_mat
+	seam.position = Vector3(0, 1.20, -0.30)
+	npc.add_child(seam)
+	# Glowing chest core sphere
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var ccm: SphereMesh = SphereMesh.new()
+	ccm.radius = 0.10
+	ccm.height = 0.20
+	core.mesh = ccm
+	core.material_override = amber_mat
+	core.position = Vector3(0, 1.40, -0.32)
+	npc.add_child(core)
+	# Leather belt at the waist
+	var belt: MeshInstance3D = MeshInstance3D.new()
+	var belt_m: BoxMesh = BoxMesh.new()
+	belt_m.size = Vector3(1.10, 0.18, 0.60)
+	belt.mesh = belt_m
+	belt.material_override = leather_mat
+	belt.position = Vector3(0, 0.65, 0)
+	npc.add_child(belt)
+	# Brass belt buckle
+	var buckle: MeshInstance3D = MeshInstance3D.new()
+	var bkm: BoxMesh = BoxMesh.new()
+	bkm.size = Vector3(0.20, 0.18, 0.06)
+	buckle.mesh = bkm
+	buckle.material_override = brass_mat
+	buckle.position = Vector3(0, 0.65, -0.32)
+	npc.add_child(buckle)
+	# ---- Brass shoulder pauldrons ----
+	for sx in [-0.65, 0.65]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.25
+		pm.height = 0.45
+		paul.mesh = pm
+		paul.material_override = brass_mat
+		paul.position = Vector3(sx, 1.80, 0)
+		paul.scale = Vector3(1.0, 0.55, 1.0)
+		npc.add_child(paul)
+	# ---- Brass helm with visor slit ----
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hmm: BoxMesh = BoxMesh.new()
+	hmm.size = Vector3(0.65, 0.65, 0.65)
+	helm.mesh = hmm
+	helm.material_override = iron_mat
+	helm.position = Vector3(0, 2.15, 0)
+	npc.add_child(helm)
+	# Helm crown ridge (small prism)
+	var crown_ridge: MeshInstance3D = MeshInstance3D.new()
+	var crm: PrismMesh = PrismMesh.new()
+	crm.size = Vector3(0.20, 0.20, 0.65)
+	crown_ridge.mesh = crm
+	crown_ridge.material_override = brass_mat
+	crown_ridge.position = Vector3(0, 2.55, 0)
+	npc.add_child(crown_ridge)
+	# Visor slit (glowing horizontal stripe)
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.45, 0.08, 0.04)
+	visor.mesh = vm
+	visor.material_override = amber_mat
+	visor.position = Vector3(0, 2.18, -0.34)
+	npc.add_child(visor)
+	# ---- Left arm (down with shield) ----
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.20, 0.85, 0.20)
+	left_arm.mesh = lam
+	left_arm.material_override = iron_mat
+	left_arm.position = Vector3(-0.65, 1.20, 0)
+	npc.add_child(left_arm)
+	# Round brass shield held in left hand
+	var shield: MeshInstance3D = MeshInstance3D.new()
+	var shm: CylinderMesh = CylinderMesh.new()
+	shm.top_radius = 0.30
+	shm.bottom_radius = 0.30
+	shm.height = 0.10
+	shield.mesh = shm
+	shield.material_override = brass_mat
+	shield.position = Vector3(-0.85, 0.80, -0.20)
+	shield.rotation.x = PI / 2.0
+	shield.rotation.z = PI / 2.0
+	npc.add_child(shield)
+	# Shield glowing center boss
+	var boss: MeshInstance3D = MeshInstance3D.new()
+	var bossm: SphereMesh = SphereMesh.new()
+	bossm.radius = 0.10
+	bossm.height = 0.20
+	boss.mesh = bossm
+	boss.material_override = amber_mat
+	boss.position = Vector3(-0.92, 0.80, -0.20)
+	npc.add_child(boss)
+	# ---- Right arm with sword on a pivot at the shoulder ----
+	var sword_pivot: Node3D = Node3D.new()
+	sword_pivot.position = Vector3(0.65, 1.65, 0)
+	npc.add_child(sword_pivot)
+	# Right arm box
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.18, 0.85, 0.18)
+	right_arm.mesh = ram
+	right_arm.material_override = iron_mat
+	right_arm.position = Vector3(0, -0.42, 0)
+	sword_pivot.add_child(right_arm)
+	# Sword grip (wood cylinder)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	var grip: MeshInstance3D = MeshInstance3D.new()
+	var gm: CylinderMesh = CylinderMesh.new()
+	gm.top_radius = 0.05
+	gm.bottom_radius = 0.05
+	gm.height = 0.32
+	grip.mesh = gm
+	grip.material_override = wood_mat
+	grip.position = Vector3(0, -0.95, 0)
+	sword_pivot.add_child(grip)
+	# Brass crossguard
+	var guard: MeshInstance3D = MeshInstance3D.new()
+	var gdm: BoxMesh = BoxMesh.new()
+	gdm.size = Vector3(0.40, 0.07, 0.08)
+	guard.mesh = gdm
+	guard.material_override = brass_mat
+	guard.position = Vector3(0, -1.13, 0)
+	sword_pivot.add_child(guard)
+	# Iron blade (long box)
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var bldm: BoxMesh = BoxMesh.new()
+	bldm.size = Vector3(0.16, 1.30, 0.05)
+	blade.mesh = bldm
+	blade.material_override = iron_mat
+	blade.position = Vector3(0, -1.85, 0)
+	sword_pivot.add_child(blade)
+	# Glowing blade core stripe
+	var blade_core: MeshInstance3D = MeshInstance3D.new()
+	var bcm: BoxMesh = BoxMesh.new()
+	bcm.size = Vector3(0.04, 1.20, 0.06)
+	blade_core.mesh = bcm
+	blade_core.material_override = amber_mat
+	blade_core.position = Vector3(0, -1.85, 0)
+	sword_pivot.add_child(blade_core)
+	# Blade tip prism
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tipm: PrismMesh = PrismMesh.new()
+	tipm.size = Vector3(0.16, 0.20, 0.05)
+	tip.mesh = tipm
+	tip.material_override = iron_mat
+	tip.position = Vector3(0, -2.55, 0)
+	tip.rotation.x = PI
+	sword_pivot.add_child(tip)
+	# Initial pose — sword rests at his side
+	sword_pivot.rotation.x = 0.10
+	# ---- Subtle warm OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.80, -0.30)
+	lt.light_color = Color(1.0, 0.65, 0.20)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Overhead chop swing tween — sword raises high then chops down ----
+	var chop: Tween = npc.create_tween().set_loops()
+	chop.tween_property(sword_pivot, "rotation:x", -2.40, 0.65).set_ease(Tween.EASE_OUT)
+	chop.tween_property(sword_pivot, "rotation:x", -2.40, 0.40)
+	chop.tween_property(sword_pivot, "rotation:x", 0.85, 0.30).set_ease(Tween.EASE_IN)
+	chop.tween_property(sword_pivot, "rotation:x", 0.10, 0.40).set_ease(Tween.EASE_OUT)
+	chop.tween_property(sword_pivot, "rotation:x", 0.10, 0.80)
+	# Shared chest core + visor + blade core + shield boss pulse
+	var apulse: Tween = npc.create_tween().set_loops()
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
