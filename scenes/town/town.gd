@@ -17130,6 +17130,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_rain(geom)
 	# Epic-6 T15: cyber rickshaw vehicle
 	_build_d6_cyber_rickshaw(geom)
+	# Epic-6 T16: tattoo parlor sign
+	_build_d6_tattoo_parlor(geom)
+	# Epic-6 T17: tattoo artist NPC
+	_build_d6_tattoo_artist_npc()
+	# Epic-6 T18: arcade cabinets
+	_build_d6_arcade_cabinets(geom)
+	# Epic-6 T19: arcade kid NPC
+	_build_d6_arcade_kid_npc()
+	# Epic-6 T20: ground puddle decals
+	_build_d6_puddles(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -18295,6 +18305,407 @@ func _build_d6_cyber_rickshaw(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	rick.add_child(sb)
+
+
+func _build_d6_tattoo_parlor(geom: Node) -> void:
+	## Epic-6 T16: tattoo parlor — small storefront with neon "INK" sign,
+	## a tattoo chair, and floating tattoo pattern holograms.
+	var parlor: Node3D = Node3D.new()
+	parlor.name = "TattooParlor"
+	parlor.position = Vector3(D6_CENTER.x + 18.0, 0.0, 8.0)
+	geom.add_child(parlor)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.18, 0.10, 0.20)
+	dark_mat.metallic = 0.40
+	dark_mat.roughness = 0.55
+	# Storefront wall
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(3.85, 3.40, 0.30)
+	wall.mesh = wm
+	wall.material_override = dark_mat
+	wall.position = Vector3(0, 1.70, -1.20)
+	parlor.add_child(wall)
+	# Side walls
+	for sx in [-1.85, 1.85]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.30, 3.40, 2.20)
+		side.mesh = swm
+		side.material_override = dark_mat
+		side.position = Vector3(sx, 1.70, 0)
+		parlor.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(3.85, 0.18, 2.40)
+	roof.mesh = rm
+	roof.material_override = dark_mat
+	roof.position = Vector3(0, 3.50, 0)
+	parlor.add_child(roof)
+	# Neon "INK" sign
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(2.20, 0.85, 0.06)
+	sign.mesh = snm
+	var neon_mat: StandardMaterial3D = StandardMaterial3D.new()
+	neon_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	neon_mat.emission_enabled = true
+	neon_mat.emission = Color(0.30, 1.0, 1.0)
+	neon_mat.emission_energy_multiplier = 3.5
+	neon_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sign.material_override = neon_mat
+	sign.position = Vector3(0, 2.85, 1.21)
+	parlor.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "INK"
+	label.modulate = Color(0.05, 0.10, 0.20)
+	label.outline_modulate = Color(0.30, 1.0, 1.0)
+	label.outline_size = 8
+	label.font_size = 84
+	label.pixel_size = 0.012
+	label.position = Vector3(0, 2.85, 1.26)
+	parlor.add_child(label)
+	# Tattoo chair (red, inside the parlor)
+	var chair_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chair_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	chair_mat.metallic = 0.30
+	chair_mat.roughness = 0.45
+	var chair: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 0.30, 1.65)
+	chair.mesh = cm
+	chair.material_override = chair_mat
+	chair.position = Vector3(0, 0.55, -0.30)
+	parlor.add_child(chair)
+	# Chair backrest
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.85, 1.30, 0.18)
+	back.mesh = bm
+	back.material_override = chair_mat
+	back.position = Vector3(0, 1.10, -1.0)
+	back.rotation_degrees = Vector3(-25, 0, 0)
+	parlor.add_child(back)
+	# 3 floating tattoo pattern holograms above the chair
+	var pattern_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pattern_mat.albedo_color = Color(0.95, 0.20, 0.85, 0.65)
+	pattern_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pattern_mat.emission_enabled = true
+	pattern_mat.emission = Color(0.95, 0.20, 0.85)
+	pattern_mat.emission_energy_multiplier = 2.5
+	pattern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var pattern: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.30, 0.30, 0.04)
+		pattern.mesh = pm
+		pattern.material_override = pattern_mat
+		pattern.position = Vector3(-0.50 + i * 0.50, 2.40, 0.30)
+		parlor.add_child(pattern)
+		# Slow spin
+		var tw: Tween = pattern.create_tween().set_loops()
+		tw.tween_property(pattern, "rotation_degrees:y", 360.0, 4.0 + i * 0.4)
+		tw.tween_property(pattern, "rotation_degrees:y", 0.0, 0.0)
+	# Cyan light from sign
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.30, 1.0, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 2.85, 1.85)
+	parlor.add_child(light)
+	# Parlor box collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.85, 3.40, 2.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	parlor.add_child(sb)
+
+
+func _build_d6_tattoo_artist_npc() -> void:
+	## Epic-6 T17: tattoo artist NPC — sleeveless dark shirt, glowing
+	## tattoo gun in hand.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "TattooArtistSlot"
+	slot.position = Vector3(D6_CENTER.x + 18.0, 0.0, 9.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "TattooArtist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Inkwell")
+	if "npc_id" in npc:
+		npc.set("npc_id", "tattoo_d6")
+	slot.add_child(npc)
+	# Sleeveless dark shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 1.05, 0.40)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.15, 0.10, 0.18)
+	shirt_mat.roughness = 0.85
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.55, 0)
+	npc.add_child(shirt)
+	# Tattoo gun (small handle + tip)
+	var gun: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(0.10, 0.20, 0.10)
+	gun.mesh = gm
+	var gun_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gun_mat.albedo_color = Color(0.30, 0.30, 0.35)
+	gun_mat.metallic = 0.85
+	gun_mat.roughness = 0.30
+	gun.material_override = gun_mat
+	gun.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(gun)
+	# Tip glow
+	var tip: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 0.04
+	tm.height = 0.08
+	tip.mesh = tm
+	var tip_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tip_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	tip_mat.emission_enabled = true
+	tip_mat.emission = Color(0.30, 1.0, 1.0)
+	tip_mat.emission_energy_multiplier = 4.0
+	tip_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	tip.material_override = tip_mat
+	tip.position = Vector3(0.40, 1.0, 0.20)
+	npc.add_child(tip)
+	# Bandana (small dark sphere on head)
+	var bandana: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.20
+	bm.height = 0.32
+	bandana.mesh = bm
+	var bandana_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bandana_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	bandana_mat.roughness = 0.85
+	bandana.material_override = bandana_mat
+	bandana.position = Vector3(0, 1.45, 0)
+	bandana.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(bandana)
+
+
+func _build_d6_arcade_cabinets(geom: Node) -> void:
+	## Epic-6 T18: row of 4 arcade cabinets — tall boxes with glowing screens
+	## and joystick + button bumps on the front control panel.
+	var arcade: Node3D = Node3D.new()
+	arcade.name = "ArcadeCabinets"
+	arcade.position = Vector3(D6_CENTER.x + 4.0, 0.0, 14.0)
+	geom.add_child(arcade)
+	var cab_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cab_mat.albedo_color = Color(0.20, 0.18, 0.30)
+	cab_mat.metallic = 0.30
+	cab_mat.roughness = 0.55
+	var cab_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 4:
+		var cab: Node3D = Node3D.new()
+		cab.position = Vector3(i * 1.30, 0, 0)
+		arcade.add_child(cab)
+		# Tall cabinet
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.10, 2.40, 0.85)
+		body.mesh = bm
+		body.material_override = cab_mat
+		body.position = Vector3(0, 1.20, 0)
+		cab.add_child(body)
+		# Glowing screen
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.85, 0.65, 0.06)
+		screen.mesh = sm
+		var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+		screen_mat.albedo_color = cab_colors[i]
+		screen_mat.emission_enabled = true
+		screen_mat.emission = cab_colors[i]
+		screen_mat.emission_energy_multiplier = 3.5
+		screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		screen.material_override = screen_mat
+		screen.position = Vector3(0, 1.95, 0.42)
+		cab.add_child(screen)
+		# Marquee at top
+		var marquee: MeshInstance3D = MeshInstance3D.new()
+		var mm: BoxMesh = BoxMesh.new()
+		mm.size = Vector3(1.10, 0.30, 0.20)
+		marquee.mesh = mm
+		var marquee_mat: StandardMaterial3D = StandardMaterial3D.new()
+		marquee_mat.albedo_color = cab_colors[i]
+		marquee_mat.emission_enabled = true
+		marquee_mat.emission = cab_colors[i]
+		marquee_mat.emission_energy_multiplier = 2.0
+		marquee_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		marquee.material_override = marquee_mat
+		marquee.position = Vector3(0, 2.45, 0.40)
+		cab.add_child(marquee)
+		# Control panel (slanted box)
+		var panel: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(1.10, 0.30, 0.40)
+		panel.mesh = pmm
+		panel.material_override = cab_mat
+		panel.position = Vector3(0, 1.30, 0.42)
+		panel.rotation_degrees = Vector3(-25, 0, 0)
+		cab.add_child(panel)
+		# Joystick (small ball on stick)
+		var stick: MeshInstance3D = MeshInstance3D.new()
+		var stm: CylinderMesh = CylinderMesh.new()
+		stm.top_radius = 0.025
+		stm.bottom_radius = 0.025
+		stm.height = 0.18
+		stick.mesh = stm
+		var stick_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stick_mat.albedo_color = Color(0.10, 0.10, 0.15)
+		stick_mat.metallic = 0.85
+		stick.material_override = stick_mat
+		stick.position = Vector3(-0.25, 1.50, 0.55)
+		cab.add_child(stick)
+		var ball: MeshInstance3D = MeshInstance3D.new()
+		var blm: SphereMesh = SphereMesh.new()
+		blm.radius = 0.045
+		blm.height = 0.09
+		ball.mesh = blm
+		var ball_mat: StandardMaterial3D = StandardMaterial3D.new()
+		ball_mat.albedo_color = Color(0.95, 0.20, 0.20)
+		ball.material_override = ball_mat
+		ball.position = Vector3(-0.25, 1.60, 0.55)
+		cab.add_child(ball)
+		# 3 buttons (red, green, blue)
+		var btn_colors: Array = [Color(0.95, 0.20, 0.20), Color(0.30, 0.95, 0.30), Color(0.30, 0.30, 0.95)]
+		for b in 3:
+			var btn: MeshInstance3D = MeshInstance3D.new()
+			var bnm: SphereMesh = SphereMesh.new()
+			bnm.radius = 0.05
+			bnm.height = 0.08
+			btn.mesh = bnm
+			var bnm_mat: StandardMaterial3D = StandardMaterial3D.new()
+			bnm_mat.albedo_color = btn_colors[b]
+			bnm_mat.emission_enabled = true
+			bnm_mat.emission = btn_colors[b]
+			bnm_mat.emission_energy_multiplier = 1.4
+			btn.material_override = bnm_mat
+			btn.position = Vector3(0.10 + b * 0.15, 1.55, 0.55)
+			cab.add_child(btn)
+		# Screen flicker
+		var tw: Tween = screen.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(screen, "scale:y", 1.20, 0.30)
+		tw.tween_property(screen, "scale:y", 0.85, 0.30)
+		# Cabinet collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.20, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.10, 2.40, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		cab.add_child(sb)
+
+
+func _build_d6_arcade_kid_npc() -> void:
+	## Epic-6 T19: arcade kid NPC playing one of the cabinets — small scale
+	## villager + bright t-shirt + backwards cap.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ArcadeKidSlot"
+	slot.position = Vector3(D6_CENTER.x + 5.0, 0.0, 13.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "ArcadeKid"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Pixel")
+	if "npc_id" in npc:
+		npc.set("npc_id", "arcade_kid_d6")
+	npc.scale = Vector3(0.75, 0.75, 0.75)
+	slot.add_child(npc)
+	# Bright t-shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.55, 0.65, 0.30)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	shirt_mat.emission_enabled = true
+	shirt_mat.emission = Color(0.30, 0.95, 0.55)
+	shirt_mat.emission_energy_multiplier = 0.45
+	shirt_mat.roughness = 0.65
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.55, 0)
+	npc.add_child(shirt)
+	# Backwards cap (cylinder + small brim)
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.20
+	cm.bottom_radius = 0.20
+	cm.height = 0.18
+	cap.mesh = cm
+	var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cap_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	cap.material_override = cap_mat
+	cap.position = Vector3(0, 1.50, 0)
+	npc.add_child(cap)
+	# Brim (back-facing)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var bbm: BoxMesh = BoxMesh.new()
+	bbm.size = Vector3(0.30, 0.04, 0.20)
+	brim.mesh = bbm
+	brim.material_override = cap_mat
+	brim.position = Vector3(0, 1.42, -0.20)
+	npc.add_child(brim)
+
+
+func _build_d6_puddles(geom: Node) -> void:
+	## Epic-6 T20: 8 small puddle decals scattered across the bazaar floor —
+	## thin emissive flat discs to suggest wet pavement reflections.
+	var puddles: Node3D = Node3D.new()
+	puddles.name = "Puddles"
+	puddles.position = Vector3(D6_CENTER.x, 0.02, 0.0)
+	geom.add_child(puddles)
+	var puddle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	puddle_mat.albedo_color = Color(0.30, 0.55, 0.95, 0.65)
+	puddle_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	puddle_mat.emission_enabled = true
+	puddle_mat.emission = Color(0.30, 0.65, 0.95)
+	puddle_mat.emission_energy_multiplier = 0.85
+	puddle_mat.metallic = 0.55
+	puddle_mat.roughness = 0.05
+	for i in 8:
+		var puddle: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.85 + randf() * 0.45
+		pm.bottom_radius = 0.85 + randf() * 0.45
+		pm.height = 0.04
+		puddle.mesh = pm
+		puddle.material_override = puddle_mat
+		puddle.position = Vector3(
+			randf_range(-30, 30),
+			0.02,
+			randf_range(-15, 15)
+		)
+		puddle.scale = Vector3(1.0, 1.0, 0.65 + randf() * 0.55)
+		puddles.add_child(puddle)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
