@@ -1708,6 +1708,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_phantom_warrior_npc()
 	# Epic-3 T35: short illusion bridge
 	_build_d3_illusion_bridge(geom)
+	# Epic-3 T36: levitating runes ring around great crystal
+	_build_d3_levitating_runes(geom)
+	# Epic-3 T37: ancient observatory dome
+	_build_d3_observatory_dome(geom)
+	# Epic-3 T38: portal pad with rotating beams
+	_build_d3_portal_pad(geom)
+	# Epic-3 T39: Ritualist NPC
+	_build_d3_ritualist_npc()
+	# Epic-3 T40: 4 violet flame braziers
+	_build_d3_violet_braziers(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -4228,6 +4238,366 @@ func _build_d3_illusion_bridge(geom: Node) -> void:
 	label.font_size = 16
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	bridge.add_child(label)
+
+
+func _build_d3_levitating_runes(geom: Node) -> void:
+	## Epic-3 T36: 12 levitating glowing rune cubes orbiting horizontally
+	## around the great crystal at chest height. Pivot rotation tween.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D3LevitatingRunes"
+	pivot.position = D3_CENTER + Vector3(0, 1.40, 0)
+	geom.add_child(pivot)
+	for i in 12:
+		var angle: float = (float(i) / 12.0) * TAU
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		rune.name = "Rune_%d" % i
+		var rmesh: BoxMesh = BoxMesh.new()
+		rmesh.size = Vector3(0.18, 0.18, 0.18)
+		rune.mesh = rmesh
+		rune.position = Vector3(cos(angle) * 5.0, 0, sin(angle) * 5.0)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(0.85, 0.40, 1.0)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.55, 1.0)
+		rmat.emission_energy_multiplier = 2.4
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rune.material_override = rmat
+		pivot.add_child(rune)
+	# Rotate the entire pivot
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 12.0)
+
+
+func _build_d3_observatory_dome(geom: Node) -> void:
+	## Epic-3 T37: an ancient observatory dome — large hemisphere on a
+	## stone base with a slit opening + a small telescope poking out.
+	var dome: Node3D = Node3D.new()
+	dome.name = "D3ObservatoryDome"
+	dome.position = D3_CENTER + Vector3(-20, 0, -16)
+	geom.add_child(dome)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	# Cylinder base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.85
+	bm.bottom_radius = 2.0
+	bm.height = 2.40
+	base.mesh = bm
+	base.position = Vector3(0, 1.20, 0)
+	base.material_override = stone_mat
+	dome.add_child(base)
+	# Hemispherical dome roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: SphereMesh = SphereMesh.new()
+	rmesh.radius = 1.85
+	rmesh.height = 1.85
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 2.40, 0)
+	roof.scale = Vector3(1.0, 0.5, 1.0)
+	roof.material_override = stone_mat
+	dome.add_child(roof)
+	# Telescope poking out at an angle (cylinder)
+	var scope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scope_mat.albedo_color = Color(0.10, 0.13, 0.18)
+	scope_mat.metallic = 0.85
+	scope_mat.roughness = 0.30
+	var scope: MeshInstance3D = MeshInstance3D.new()
+	var smesh: CylinderMesh = CylinderMesh.new()
+	smesh.top_radius = 0.18
+	smesh.bottom_radius = 0.20
+	smesh.height = 1.85
+	scope.mesh = smesh
+	scope.position = Vector3(0.55, 3.0, 0.55)
+	scope.rotation = Vector3(deg_to_rad(60), deg_to_rad(45), 0)
+	scope.material_override = scope_mat
+	dome.add_child(scope)
+	# Glowing telescope tip lens
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lmesh: SphereMesh = SphereMesh.new()
+	lmesh.radius = 0.20
+	lmesh.height = 0.40
+	lens.mesh = lmesh
+	lens.position = Vector3(1.10, 3.55, 1.10)
+	var lmat: StandardMaterial3D = StandardMaterial3D.new()
+	lmat.albedo_color = Color(0.55, 0.95, 1.0)
+	lmat.emission_enabled = true
+	lmat.emission = Color(0.55, 0.95, 1.0)
+	lmat.emission_energy_multiplier = 2.6
+	lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lens.material_override = lmat
+	dome.add_child(lens)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "OBSERVATORY"
+	label.position = Vector3(0, 4.65, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	dome.add_child(label)
+	# Collision around the building
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.0, 4.0, 4.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 2.0, 0)
+	sb.add_child(cs)
+	dome.add_child(sb)
+
+
+func _build_d3_portal_pad(geom: Node) -> void:
+	## Epic-3 T38: portal pad — circular dais on the ground with 4
+	## upright energy beams forming a square gate, slowly rotating.
+	var portal: Node3D = Node3D.new()
+	portal.name = "D3PortalPad"
+	portal.position = D3_CENTER + Vector3(20, 0, 12)
+	geom.add_child(portal)
+	# Stone dais
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var dais: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 1.85
+	dm.bottom_radius = 2.0
+	dm.height = 0.30
+	dais.mesh = dm
+	dais.position = Vector3(0, 0.15, 0)
+	dais.material_override = stone_mat
+	portal.add_child(dais)
+	# Inner glowing disc
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var disc_mesh: CylinderMesh = CylinderMesh.new()
+	disc_mesh.top_radius = 1.55
+	disc_mesh.bottom_radius = 1.55
+	disc_mesh.height = 0.06
+	disc.mesh = disc_mesh
+	disc.position = Vector3(0, 0.32, 0)
+	var disc_mat: StandardMaterial3D = StandardMaterial3D.new()
+	disc_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	disc_mat.emission_enabled = true
+	disc_mat.emission = Color(1.0, 0.55, 1.0)
+	disc_mat.emission_energy_multiplier = 2.4
+	disc_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	disc.material_override = disc_mat
+	portal.add_child(disc)
+	# Beam pivot — 4 upright beams that rotate around the center
+	var beam_pivot: Node3D = Node3D.new()
+	portal.add_child(beam_pivot)
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var beam: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		bmesh.size = Vector3(0.18, 3.40, 0.18)
+		beam.mesh = bmesh
+		beam.position = Vector3(cos(angle) * 1.40, 1.85, sin(angle) * 1.40)
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.85, 0.40, 1.0)
+		bmat.emission_enabled = true
+		bmat.emission = Color(1.0, 0.55, 1.0)
+		bmat.emission_energy_multiplier = 3.0
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		beam.material_override = bmat
+		beam_pivot.add_child(beam)
+	# Rotate the beam pivot
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(beam_pivot, "rotation:y", TAU, 8.0)
+	# Real OmniLight inside
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 1.85, 0)
+	light.light_color = Color(1.0, 0.55, 1.0)
+	light.light_energy = 2.4
+	light.omni_range = 8.0
+	portal.add_child(light)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "PORTAL PAD"
+	label.position = Vector3(0, 4.0, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	portal.add_child(label)
+
+
+func _build_d3_ritualist_npc() -> void:
+	## Epic-3 T39: Ritualist NPC standing by the ritual circle with arms
+	## outstretched, casting a spell. Has glowing palms and a tall hat.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var rit: Node3D = Node3D.new()
+	rit.name = "D3Ritualist"
+	rit.position = D3_CENTER + Vector3(0, 0, 4)
+	rit.rotation = Vector3(0, deg_to_rad(180), 0)
+	slots.add_child(rit)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.10, 0.30)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	rit.add_child(body)
+	# Tall conical hat (prism)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.55, 0.85, 0.55)
+	hat.mesh = hm
+	hat.position = Vector3(0, 1.85, 0)
+	hat.material_override = bmat
+	rit.add_child(hat)
+	# 2 violet eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.36)
+		eye.material_override = eye_mat
+		rit.add_child(eye)
+	# Outstretched arms with glowing palms
+	for sx: float in [-1.0, 1.0]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.85, 0.18, 0.18)
+		arm.mesh = am
+		arm.position = Vector3(sx * 0.65, 0.95, 0.30)
+		arm.material_override = bmat
+		rit.add_child(arm)
+		# Glowing palm sphere
+		var palm: MeshInstance3D = MeshInstance3D.new()
+		var pm: SphereMesh = SphereMesh.new()
+		pm.radius = 0.18
+		pm.height = 0.36
+		palm.mesh = pm
+		palm.position = Vector3(sx * 1.0, 0.95, 0.30)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(1.0, 0.55, 1.0)
+		pmat.emission_enabled = true
+		pmat.emission = Color(1.0, 0.55, 1.0)
+		pmat.emission_energy_multiplier = 3.0
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		palm.material_override = pmat
+		rit.add_child(palm)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Ritualist"
+	label.position = Vector3(0, 2.85, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	rit.add_child(label)
+
+
+func _build_d3_violet_braziers(geom: Node) -> void:
+	## Epic-3 T40: 4 violet flame braziers at the corners of the great
+	## crystal platform — stone bowls with flame particles rising from them.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-3, 0, -3),
+		D3_CENTER + Vector3(3, 0, -3),
+		D3_CENTER + Vector3(-3, 0, 3),
+		D3_CENTER + Vector3(3, 0, 3),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	for i in positions.size():
+		var brazier: Node3D = Node3D.new()
+		brazier.name = "D3Brazier_%d" % i
+		brazier.position = positions[i]
+		geom.add_child(brazier)
+		# Stem column
+		var stem: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.18
+		sm.bottom_radius = 0.22
+		sm.height = 1.20
+		stem.mesh = sm
+		stem.position = Vector3(0, 0.60, 0)
+		stem.material_override = stone_mat
+		brazier.add_child(stem)
+		# Bowl on top — wider cylinder
+		var bowl: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.40
+		bm.bottom_radius = 0.18
+		bm.height = 0.30
+		bowl.mesh = bm
+		bowl.position = Vector3(0, 1.30, 0)
+		bowl.material_override = stone_mat
+		brazier.add_child(bowl)
+		# Flame particles rising
+		var flame: GPUParticles3D = GPUParticles3D.new()
+		flame.amount = 30
+		flame.lifetime = 1.4
+		flame.position = Vector3(0, 1.55, 0)
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		pmat.emission_sphere_radius = 0.20
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 12.0
+		pmat.initial_velocity_min = 1.0
+		pmat.initial_velocity_max = 1.85
+		pmat.gravity = Vector3.ZERO
+		pmat.scale_min = 0.18
+		pmat.scale_max = 0.35
+		pmat.color = Color(1.0, 0.55, 1.0, 1.0)
+		flame.process_material = pmat
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.18
+		fm.height = 0.36
+		var fmat: StandardMaterial3D = StandardMaterial3D.new()
+		fmat.albedo_color = Color(1.0, 0.55, 1.0)
+		fmat.emission_enabled = true
+		fmat.emission = Color(1.0, 0.55, 1.0)
+		fmat.emission_energy_multiplier = 2.6
+		fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		fm.material = fmat
+		flame.draw_pass_1 = fm
+		brazier.add_child(flame)
+		# OmniLight from the brazier
+		var light: OmniLight3D = OmniLight3D.new()
+		light.position = Vector3(0, 1.65, 0)
+		light.light_color = Color(1.0, 0.55, 1.0)
+		light.light_energy = 1.4
+		light.omni_range = 4.5
+		brazier.add_child(light)
+		# Collision around brazier
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.30
+		cap.height = 1.40
+		cs.shape = cap
+		cs.position = Vector3(0, 0.70, 0)
+		sb.add_child(cs)
+		brazier.add_child(sb)
 
 
 
