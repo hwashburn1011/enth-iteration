@@ -25527,6 +25527,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_cave_paintings(geom)
 	# Epic-7 T55: mountain shaman NPC
 	_build_d7_shaman_npc()
+	# Epic-7 T56: ancient gate ruin
+	_build_d7_gate_ruin(geom)
+	# Epic-7 T57: archaeologist NPC
+	_build_d7_d7_archaeologist_npc()
+	# Epic-7 T58: ancient tomb
+	_build_d7_ancient_tomb(geom)
+	# Epic-7 T59: tomb guardian statue
+	_build_d7_tomb_guardian(geom)
+	# Epic-7 T60: floating dust motes
+	_build_d7_dust_motes(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -29299,6 +29309,362 @@ func _build_d7_shaman_npc() -> void:
 	drum.position = Vector3(0.40, 0.85, 0.20)
 	drum.rotation_degrees = Vector3(0, 0, 90)
 	npc.add_child(drum)
+
+
+func _build_d7_gate_ruin(geom: Node) -> void:
+	## Epic-7 T56: ancient gate ruin — broken stone arch with one
+	## collapsed pillar + scattered rubble.
+	var ruin: Node3D = Node3D.new()
+	ruin.name = "GateRuin"
+	ruin.position = Vector3(D7_CENTER.x - 12.0, 0.0, -22.0)
+	geom.add_child(ruin)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.50, 0.40, 0.25)
+	stone_mat.roughness = 0.92
+	# Standing pillar
+	var standing: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.85, 4.20, 0.85)
+	standing.mesh = sm
+	standing.material_override = stone_mat
+	standing.position = Vector3(-1.85, 2.10, 0)
+	ruin.add_child(standing)
+	# Collapsed pillar (lying on its side)
+	var fallen: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.85, 4.20, 0.85)
+	fallen.mesh = fm
+	fallen.material_override = stone_mat
+	fallen.position = Vector3(1.85, 0.42, 0.85)
+	fallen.rotation_degrees = Vector3(0, 0, 90)
+	ruin.add_child(fallen)
+	# Broken arch top fragment (small angled box)
+	var arch_frag: MeshInstance3D = MeshInstance3D.new()
+	var afm: BoxMesh = BoxMesh.new()
+	afm.size = Vector3(2.0, 0.55, 0.85)
+	arch_frag.mesh = afm
+	arch_frag.material_override = stone_mat
+	arch_frag.position = Vector3(-1.20, 4.20, 0)
+	arch_frag.rotation_degrees = Vector3(0, 0, -25)
+	ruin.add_child(arch_frag)
+	# 5 scattered rubble blocks
+	for i in 5:
+		var rub: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.40 + randf() * 0.30, 0.30, 0.40 + randf() * 0.30)
+		rub.mesh = rm
+		rub.material_override = stone_mat
+		rub.position = Vector3(
+			randf_range(-2.5, 2.5),
+			0.18,
+			randf_range(-1.85, 1.85)
+		)
+		rub.rotation_degrees = Vector3(0, randf_range(0, 360), 0)
+		ruin.add_child(rub)
+	# Standing pillar collision
+	var sb1: StaticBody3D = StaticBody3D.new()
+	sb1.position = Vector3(-1.85, 2.10, 0)
+	var cs1: CollisionShape3D = CollisionShape3D.new()
+	var cb1: BoxShape3D = BoxShape3D.new()
+	cb1.size = Vector3(0.85, 4.20, 0.85)
+	cs1.shape = cb1
+	sb1.add_child(cs1)
+	ruin.add_child(sb1)
+	# Fallen pillar collision (large box)
+	var sb2: StaticBody3D = StaticBody3D.new()
+	sb2.position = Vector3(1.85, 0.42, 0.85)
+	var cs2: CollisionShape3D = CollisionShape3D.new()
+	var cb2: BoxShape3D = BoxShape3D.new()
+	cb2.size = Vector3(4.20, 0.85, 0.85)
+	cs2.shape = cb2
+	sb2.add_child(cs2)
+	ruin.add_child(sb2)
+
+
+func _build_d7_d7_archaeologist_npc() -> void:
+	## Epic-7 T57: D7 archaeologist NPC — beige expedition hat + dusty
+	## brown coat + small dig brush in hand.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D7ArchaeologistSlot"
+	slot.position = Vector3(D7_CENTER.x - 10.0, 0.0, -22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D7Archaeologist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sandsift")
+	if "npc_id" in npc:
+		npc.set("npc_id", "archaeo_d7")
+	slot.add_child(npc)
+	# Dusty brown coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.05, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	coat_mat.roughness = 0.85
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.55, 0)
+	npc.add_child(coat)
+	# Beige expedition hat (wide brim disc + dome)
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.30
+	brm.bottom_radius = 0.30
+	brm.height = 0.04
+	brim.mesh = brm
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.85, 0.75, 0.55)
+	hat_mat.roughness = 0.85
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 1.45, 0)
+	npc.add_child(brim)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: CylinderMesh = CylinderMesh.new()
+	dmm.top_radius = 0.20
+	dmm.bottom_radius = 0.20
+	dmm.height = 0.20
+	dome.mesh = dmm
+	dome.material_override = hat_mat
+	dome.position = Vector3(0, 1.55, 0)
+	npc.add_child(dome)
+	# Dig brush (small wooden cylinder + tan bristle tip)
+	var brush_handle: MeshInstance3D = MeshInstance3D.new()
+	var bhm: CylinderMesh = CylinderMesh.new()
+	bhm.top_radius = 0.025
+	bhm.bottom_radius = 0.025
+	bhm.height = 0.20
+	brush_handle.mesh = bhm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	brush_handle.material_override = wood_mat
+	brush_handle.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(brush_handle)
+
+
+func _build_d7_ancient_tomb(geom: Node) -> void:
+	## Epic-7 T58: ancient tomb — large rectangular stone sarcophagus
+	## with carved lid + 2 short candles at the corners.
+	var tomb: Node3D = Node3D.new()
+	tomb.name = "AncientTomb"
+	tomb.position = Vector3(D7_CENTER.x - 4.0, 0.0, -22.0)
+	geom.add_child(tomb)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Sarcophagus base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.20, 1.10, 0.95)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.55, 0)
+	tomb.add_child(base)
+	# Carved lid (slightly larger box on top)
+	var lid: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(2.40, 0.30, 1.10)
+	lid.mesh = lm
+	var lid_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lid_mat.albedo_color = Color(0.65, 0.55, 0.35)
+	lid_mat.emission_enabled = true
+	lid_mat.emission = Color(0.55, 0.40, 0.15)
+	lid_mat.emission_energy_multiplier = 0.30
+	lid_mat.roughness = 0.85
+	lid.material_override = lid_mat
+	lid.position = Vector3(0, 1.25, 0)
+	tomb.add_child(lid)
+	# Engraved symbol on lid (small glowing rune)
+	var rune: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(0.55, 0.04, 0.40)
+	rune.mesh = rmm
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(1.0, 0.65, 0.20)
+	rune_mat.emission_energy_multiplier = 2.5
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	rune.material_override = rune_mat
+	rune.position = Vector3(0, 1.42, 0)
+	tomb.add_child(rune)
+	# 2 corner candles
+	for sx in [-1.0, 1.0]:
+		var candle: MeshInstance3D = MeshInstance3D.new()
+		var ccm: CylinderMesh = CylinderMesh.new()
+		ccm.top_radius = 0.06
+		ccm.bottom_radius = 0.06
+		ccm.height = 0.45
+		candle.mesh = ccm
+		var wax_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wax_mat.albedo_color = Color(0.92, 0.85, 0.65)
+		wax_mat.roughness = 0.85
+		candle.material_override = wax_mat
+		candle.position = Vector3(sx, 1.65, -0.40)
+		tomb.add_child(candle)
+		# Flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.06
+		fm.height = 0.12
+		flame.mesh = fm
+		var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+		flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+		flame_mat.emission_enabled = true
+		flame_mat.emission = Color(1.0, 0.55, 0.10)
+		flame_mat.emission_energy_multiplier = 3.5
+		flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		flame.material_override = flame_mat
+		flame.position = Vector3(sx, 1.92, -0.40)
+		tomb.add_child(flame)
+		# Flicker
+		var tw: Tween = flame.create_tween().set_loops()
+		tw.tween_property(flame, "scale", Vector3(1.20, 1.30, 1.20), 0.20)
+		tw.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.20)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 1.85
+	light.omni_range = 4.5
+	light.position = Vector3(0, 1.85, 0)
+	tomb.add_child(light)
+	# Tomb collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.85, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	tomb.add_child(sb)
+
+
+func _build_d7_tomb_guardian(geom: Node) -> void:
+	## Epic-7 T59: stone guardian statue beside the tomb — animal-headed
+	## sentinel with crossed arms.
+	var guard: Node3D = Node3D.new()
+	guard.name = "TombGuardian"
+	guard.position = Vector3(D7_CENTER.x - 1.0, 0.0, -22.0)
+	geom.add_child(guard)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.85, 1.85, 0.55)
+	body.mesh = bm
+	body.material_override = stone_mat
+	body.position = Vector3(0, 1.20, 0)
+	guard.add_child(body)
+	# Animal head (sphere with snout box for jackal/wolf look)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.30
+	hm.height = 0.55
+	head.mesh = hm
+	head.material_override = stone_mat
+	head.position = Vector3(0, 2.40, 0)
+	head.scale = Vector3(0.85, 1.0, 1.20)
+	guard.add_child(head)
+	# Snout
+	var snout: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(0.18, 0.18, 0.30)
+	snout.mesh = snm
+	snout.material_override = stone_mat
+	snout.position = Vector3(0, 2.30, 0.30)
+	guard.add_child(snout)
+	# 2 ears (small prisms)
+	for sx in [-0.18, 0.18]:
+		var ear: MeshInstance3D = MeshInstance3D.new()
+		var em: PrismMesh = PrismMesh.new()
+		em.size = Vector3(0.10, 0.20, 0.06)
+		ear.mesh = em
+		ear.material_override = stone_mat
+		ear.position = Vector3(sx, 2.85, 0)
+		guard.add_child(ear)
+	# 2 crossed arms (thin horizontal boxes)
+	for i in 2:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.65, 0.18, 0.18)
+		arm.mesh = am
+		arm.material_override = stone_mat
+		arm.position = Vector3(0, 0.95, 0.30)
+		arm.rotation_degrees = Vector3(0, 0, 12.0 if i == 0 else -12.0)
+		guard.add_child(arm)
+	# Glowing amber eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.65, 0.20)
+	eye_mat.emission_energy_multiplier = 3.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.05
+		em.height = 0.10
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 2.40, 0.32)
+		guard.add_child(eye)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 2.85, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	guard.add_child(sb)
+
+
+func _build_d7_dust_motes(geom: Node) -> void:
+	## Epic-7 T60: ambient dust motes drifting through the air — gentle
+	## warm GPU particles giving the district atmospheric depth.
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.name = "DustMotes"
+	motes.position = Vector3(D7_CENTER.x, 4.0, 0.0)
+	motes.amount = 100
+	motes.lifetime = 12.0
+	motes.preprocess = 6.0
+	motes.explosiveness = 0.0
+	motes.randomness = 0.85
+	motes.visibility_aabb = AABB(Vector3(-40, -4, -20), Vector3(80, 12, 40))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(35, 4, 20)
+	pm.direction = Vector3(0.20, 0.10, 0.10)
+	pm.spread = 65.0
+	pm.gravity = Vector3(0.05, -0.05, 0.02)
+	pm.initial_velocity_min = 0.10
+	pm.initial_velocity_max = 0.30
+	pm.scale_min = 0.04
+	pm.scale_max = 0.10
+	pm.color = Color(0.95, 0.85, 0.55, 0.65)
+	motes.process_material = pm
+	var mote_mesh: SphereMesh = SphereMesh.new()
+	mote_mesh.radius = 0.04
+	mote_mesh.height = 0.08
+	motes.draw_pass_1 = mote_mesh
+	var mote_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mote_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	mote_mat.emission_enabled = true
+	mote_mat.emission = Color(0.95, 0.75, 0.30)
+	mote_mat.emission_energy_multiplier = 1.4
+	mote_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mote_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mote_mesh.material = mote_mat
+	geom.add_child(motes)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
