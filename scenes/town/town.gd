@@ -1718,6 +1718,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_ritualist_npc()
 	# Epic-3 T40: 4 violet flame braziers
 	_build_d3_violet_braziers(geom)
+	# Epic-3 T41: spell circle puzzle with 4 colored runes
+	_build_d3_spell_puzzle(geom)
+	# Epic-3 T42: vertical floating platform staircase
+	_build_d3_floating_stair(geom)
+	# Epic-3 T43: chained ancient statue
+	_build_d3_chained_statue(geom)
+	# Epic-3 T44: Librarian NPC
+	_build_d3_librarian_npc()
+	# Epic-3 T45: 4 elemental wisps in 4 colors
+	_build_d3_elemental_wisps(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -4598,6 +4608,296 @@ func _build_d3_violet_braziers(geom: Node) -> void:
 		cs.position = Vector3(0, 0.70, 0)
 		sb.add_child(cs)
 		brazier.add_child(sb)
+
+
+func _build_d3_spell_puzzle(geom: Node) -> void:
+	## Epic-3 T41: a spell circle puzzle on the ground — 4 colored rune
+	## tiles in a square arrangement, each pulsing in a different color.
+	## Looks like a "step on these in order" puzzle.
+	var puzzle: Node3D = Node3D.new()
+	puzzle.name = "D3SpellPuzzle"
+	puzzle.position = D3_CENTER + Vector3(-12, 0.06, 14)
+	geom.add_child(puzzle)
+	# Outer circle frame
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: TorusMesh = TorusMesh.new()
+	fmesh.inner_radius = 1.85
+	fmesh.outer_radius = 2.10
+	frame.mesh = fmesh
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.16, 0.10, 0.20)
+	fmat.metallic = 0.55
+	fmat.roughness = 0.45
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.85, 0.40, 1.0)
+	fmat.emission_energy_multiplier = 0.85
+	frame.material_override = fmat
+	puzzle.add_child(frame)
+	# 4 colored rune tiles
+	var tile_specs: Array = [
+		[Vector3(-1.0, 0.04, 0), Color(0.55, 0.95, 1.0), "I"],
+		[Vector3(1.0, 0.04, 0), Color(1.0, 0.55, 0.20), "II"],
+		[Vector3(0, 0.04, -1.0), Color(0.45, 1.0, 0.55), "III"],
+		[Vector3(0, 0.04, 1.0), Color(0.85, 0.40, 1.0), "IV"],
+	]
+	for spec in tile_specs:
+		var tile: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.65, 0.10, 0.65)
+		tile.mesh = tm
+		tile.position = spec[0]
+		var color: Color = spec[1]
+		var tmat: StandardMaterial3D = StandardMaterial3D.new()
+		tmat.albedo_color = color
+		tmat.emission_enabled = true
+		tmat.emission = color
+		tmat.emission_energy_multiplier = 1.8
+		tmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		tile.material_override = tmat
+		puzzle.add_child(tile)
+		# Roman numeral on top
+		var label: Label3D = Label3D.new()
+		label.text = spec[2]
+		label.position = (spec[0] as Vector3) + Vector3(0, 0.07, 0)
+		label.rotation = Vector3(deg_to_rad(-90), 0, 0)
+		label.modulate = Color(1, 1, 1)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 16
+		label.no_depth_test = true
+		puzzle.add_child(label)
+		# Pulse on independent timing
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(tmat, "emission_energy_multiplier", 3.0, 0.85 + tile.position.x * 0.1).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(tmat, "emission_energy_multiplier", 1.4, 0.85 + tile.position.x * 0.1).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_floating_stair(geom: Node) -> void:
+	## Epic-3 T42: a vertical "floating platform staircase" — 8 small
+	## platforms hovering at ascending heights forming a climbable path
+	## up to 8m altitude.
+	var stair: Node3D = Node3D.new()
+	stair.name = "D3FloatingStair"
+	stair.position = D3_CENTER + Vector3(20, 0, -12)
+	geom.add_child(stair)
+	var pad_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pad_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	pad_mat.metallic = 0.55
+	pad_mat.roughness = 0.45
+	pad_mat.emission_enabled = true
+	pad_mat.emission = Color(0.85, 0.40, 1.0)
+	pad_mat.emission_energy_multiplier = 0.55
+	for i in 8:
+		var pad: MeshInstance3D = MeshInstance3D.new()
+		pad.name = "StairPad_%d" % i
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(1.40, 0.20, 1.40)
+		pad.mesh = pm
+		pad.position = Vector3(i * 0.85, 1.0 + i * 0.85, sin(i * 0.5) * 0.55)
+		pad.material_override = pad_mat
+		stair.add_child(pad)
+		# Bob each pad slightly on its own timing
+		var origin: Vector3 = pad.position
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(pad, "position:y", origin.y + 0.20, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(pad, "position:y", origin.y, 1.4 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		# Per-pad collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.40, 0.20, 1.40)
+		cs.shape = cb
+		cs.position = origin
+		sb.add_child(cs)
+		stair.add_child(sb)
+
+
+func _build_d3_chained_statue(geom: Node) -> void:
+	## Epic-3 T43: a chained ancient statue — humanoid stone figure with
+	## 4 thin chain cylinders binding it to the ground. Tells "ancient
+	## power was sealed here".
+	var statue: Node3D = Node3D.new()
+	statue.name = "D3ChainedStatue"
+	statue.position = D3_CENTER + Vector3(8, 0, 16)
+	geom.add_child(statue)
+	# Stone body
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.16, 0.26)
+	stone_mat.metallic = 0.40
+	stone_mat.roughness = 0.55
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.20, 1.85, 0.85)
+	torso.mesh = tm
+	torso.position = Vector3(0, 1.30, 0)
+	torso.material_override = stone_mat
+	statue.add_child(torso)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.45
+	hm.height = 0.85
+	head.mesh = hm
+	head.position = Vector3(0, 2.65, 0)
+	head.material_override = stone_mat
+	statue.add_child(head)
+	# 2 dim violet eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.55, 1.0)
+	eye_mat.emission_energy_multiplier = 1.4
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.15, 0.15]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.07
+		em.height = 0.14
+		eye.mesh = em
+		eye.position = Vector3(ex, 2.70, 0.36)
+		eye.material_override = eye_mat
+		statue.add_child(eye)
+	# 4 chain cylinders binding it to the ground at angles
+	var chain_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chain_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	chain_mat.metallic = 0.85
+	chain_mat.roughness = 0.30
+	for i in 4:
+		var angle: float = (float(i) / 4.0) * TAU
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.06
+		cm.bottom_radius = 0.06
+		cm.height = 2.40
+		chain.mesh = cm
+		chain.position = Vector3(cos(angle) * 0.95, 1.20, sin(angle) * 0.95)
+		# Tilt chains outward toward ground
+		chain.rotation = Vector3(sin(angle) * deg_to_rad(40), 0, -cos(angle) * deg_to_rad(40))
+		chain.material_override = chain_mat
+		statue.add_child(chain)
+	# Collision around statue
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 3.40, 1.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.70, 0)
+	sb.add_child(cs)
+	statue.add_child(sb)
+
+
+func _build_d3_librarian_npc() -> void:
+	## Epic-3 T44: Librarian NPC standing next to the floating bookshelves
+	## holding an open glowing book in front of them.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var lib: Node3D = Node3D.new()
+	lib.name = "D3Librarian"
+	lib.position = D3_CENTER + Vector3(-18, 0, 1)
+	slots.add_child(lib)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.16, 0.30)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.55, 0.30, 0.85)
+	bmat.emission_energy_multiplier = 0.40
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.42
+	bmesh.height = 1.30
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	lib.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.36
+	hm.height = 0.65
+	head.mesh = hm
+	head.position = Vector3(0, 1.55, 0)
+	head.material_override = bmat
+	lib.add_child(head)
+	# Round glasses (2 small black torus)
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.08, 0.08, 0.10)
+	glass_mat.metallic = 0.55
+	glass_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.13, 0.13]:
+		var glass: MeshInstance3D = MeshInstance3D.new()
+		var gm: TorusMesh = TorusMesh.new()
+		gm.inner_radius = 0.06
+		gm.outer_radius = 0.10
+		glass.mesh = gm
+		glass.position = Vector3(ex, 1.55, 0.30)
+		glass.rotation = Vector3(deg_to_rad(90), 0, 0)
+		glass.material_override = glass_mat
+		lib.add_child(glass)
+	# Open book held in front (2 angled boxes)
+	var book_mat: StandardMaterial3D = StandardMaterial3D.new()
+	book_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	book_mat.emission_enabled = true
+	book_mat.emission = Color(1.0, 0.85, 0.55)
+	book_mat.emission_energy_multiplier = 1.4
+	book_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx: float in [-0.18, 0.18]:
+		var page: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.30, 0.04, 0.40)
+		page.mesh = pm
+		page.position = Vector3(sx, 0.85, 0.55)
+		page.rotation = Vector3(0, 0, sign(sx) * deg_to_rad(15))
+		page.material_override = book_mat
+		lib.add_child(page)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Librarian"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.85, 0.55)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lib.add_child(label)
+
+
+func _build_d3_elemental_wisps(geom: Node) -> void:
+	## Epic-3 T45: 4 elemental wisps in different colors (fire/ice/leaf/
+	## storm) drifting near the spell puzzle as if guarding it.
+	var wisp_specs: Array = [
+		[D3_CENTER + Vector3(-10, 2.5, 13), Color(1.0, 0.40, 0.20)],
+		[D3_CENTER + Vector3(-14, 2.5, 13), Color(0.55, 0.95, 1.0)],
+		[D3_CENTER + Vector3(-12, 3.5, 11), Color(0.45, 1.0, 0.55)],
+		[D3_CENTER + Vector3(-12, 3.5, 16), Color(1.0, 0.95, 0.30)],
+	]
+	for i in wisp_specs.size():
+		var wisp: MeshInstance3D = MeshInstance3D.new()
+		wisp.name = "D3ElementalWisp_%d" % i
+		var wm: SphereMesh = SphereMesh.new()
+		wm.radius = 0.20
+		wm.height = 0.40
+		wisp.mesh = wm
+		wisp.position = wisp_specs[i][0]
+		var color: Color = wisp_specs[i][1]
+		var wmat: StandardMaterial3D = StandardMaterial3D.new()
+		wmat.albedo_color = color
+		wmat.emission_enabled = true
+		wmat.emission = color
+		wmat.emission_energy_multiplier = 3.0
+		wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		wisp.material_override = wmat
+		geom.add_child(wisp)
+		# Pulse + bob
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(wisp, "scale", Vector3(1.40, 1.40, 1.40), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(wisp, "scale", Vector3(0.85, 0.85, 0.85), 0.85 + i * 0.1).set_ease(Tween.EASE_IN_OUT)
+		var origin: Vector3 = wisp_specs[i][0]
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(wisp, "position:y", origin.y + 0.55, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(wisp, "position:y", origin.y, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
 
 
 
