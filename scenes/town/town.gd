@@ -32871,6 +32871,16 @@ func _build_district_9(geom: Node) -> void:
 	_build_d9_smelting_furnace(geom)
 	# Epic-9 T15: tool rack
 	_build_d9_tool_rack(geom)
+	# Epic-9 T16: iron golem guardian
+	_build_d9_iron_golem(geom)
+	# Epic-9 T17: bubbling lava pool
+	_build_d9_lava_pool(geom)
+	# Epic-9 T18: forging table with blueprint
+	_build_d9_forging_table(geom)
+	# Epic-9 T19: armored weapon mannequin
+	_build_d9_weapon_mannequin(geom)
+	# Epic-9 T20: soot vents
+	_build_d9_soot_vents(geom)
 
 
 func _extend_boundary_for_d9(geom: Node) -> void:
@@ -41706,6 +41716,499 @@ func _build_d9_tool_rack(geom: Node) -> void:
 	cs.shape = bs
 	stb.add_child(cs)
 	rack.add_child(stb)
+
+
+func _build_d9_iron_golem(geom: Node) -> void:
+	## Epic-9 T16: massive standing iron golem guardian — boxy humanoid
+	## construct with glowing orange forge-eyes and a hammer-fist.
+	var golem: Node3D = Node3D.new()
+	golem.name = "D9IronGolem"
+	golem.position = Vector3(D9_CENTER.x + 4, 0, -12)
+	geom.add_child(golem)
+	# Iron base material
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.30, 0.28, 0.30)
+	iron.metallic = 0.92
+	iron.roughness = 0.45
+	# Stone-pad base
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.42, 0.40)
+	stone_mat.roughness = 0.85
+	var pad: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 1.65
+	pcm.bottom_radius = 1.85
+	pcm.height = 0.30
+	pad.mesh = pcm
+	pad.material_override = stone_mat
+	pad.position = Vector3(0, 0.15, 0)
+	golem.add_child(pad)
+	# Legs (2 thick boxes)
+	for sx in [-0.45, 0.45]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lb: BoxMesh = BoxMesh.new()
+		lb.size = Vector3(0.55, 1.85, 0.55)
+		leg.mesh = lb
+		leg.material_override = iron
+		leg.position = Vector3(sx, 1.20, 0)
+		golem.add_child(leg)
+	# Torso (big chest box)
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(1.85, 1.85, 1.10)
+	torso.mesh = tb
+	torso.material_override = iron
+	torso.position = Vector3(0, 3.05, 0)
+	golem.add_child(torso)
+	# Glowing chest core (orange emissive disc)
+	var core_mat: StandardMaterial3D = StandardMaterial3D.new()
+	core_mat.albedo_color = Color(1.0, 0.45, 0.10)
+	core_mat.emission_enabled = true
+	core_mat.emission = Color(1.0, 0.55, 0.18)
+	core_mat.emission_energy_multiplier = 3.5
+	core_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var csm: SphereMesh = SphereMesh.new()
+	csm.radius = 0.40
+	csm.height = 0.20
+	core.mesh = csm
+	core.material_override = core_mat
+	core.position = Vector3(0, 3.10, 0.58)
+	golem.add_child(core)
+	var pulse: Tween = core.create_tween().set_loops()
+	pulse.tween_property(core_mat, "emission_energy_multiplier", 5.5, 1.0)
+	pulse.tween_property(core_mat, "emission_energy_multiplier", 2.0, 1.0)
+	# Head (smaller iron box on top)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(0.95, 0.85, 0.85)
+	head.mesh = hb
+	head.material_override = iron
+	head.position = Vector3(0, 4.40, 0)
+	golem.add_child(head)
+	# Glowing forge eyes (2 emissive boxes)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.55, 0.18)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.62, 0.22)
+	eye_mat.emission_energy_multiplier = 4.5
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-0.20, 0.20]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var eb: BoxMesh = BoxMesh.new()
+		eb.size = Vector3(0.18, 0.10, 0.04)
+		eye.mesh = eb
+		eye.material_override = eye_mat
+		eye.position = Vector3(sx, 4.45, 0.44)
+		golem.add_child(eye)
+	# Eye omni light
+	var eye_lt: OmniLight3D = OmniLight3D.new()
+	eye_lt.light_color = Color(1.0, 0.55, 0.18)
+	eye_lt.light_energy = 2.0
+	eye_lt.omni_range = 5.0
+	eye_lt.position = Vector3(0, 4.45, 0.55)
+	golem.add_child(eye_lt)
+	# Left arm (regular box arm)
+	var arm_l: MeshInstance3D = MeshInstance3D.new()
+	var alb: BoxMesh = BoxMesh.new()
+	alb.size = Vector3(0.50, 1.85, 0.50)
+	arm_l.mesh = alb
+	arm_l.material_override = iron
+	arm_l.position = Vector3(-1.20, 3.05, 0)
+	golem.add_child(arm_l)
+	# Right arm with hammer-fist (oversized iron box at the end)
+	var arm_r: MeshInstance3D = MeshInstance3D.new()
+	arm_r.mesh = alb
+	arm_r.material_override = iron
+	arm_r.position = Vector3(1.20, 3.05, 0)
+	golem.add_child(arm_r)
+	var fist: MeshInstance3D = MeshInstance3D.new()
+	var fb: BoxMesh = BoxMesh.new()
+	fb.size = Vector3(0.85, 0.85, 0.85)
+	fist.mesh = fb
+	fist.material_override = iron
+	fist.position = Vector3(1.20, 1.85, 0)
+	golem.add_child(fist)
+	# Slow head sway tween
+	var sway: Tween = head.create_tween().set_loops()
+	sway.tween_property(head, "rotation_degrees:y", 8.0, 2.5)
+	sway.tween_property(head, "rotation_degrees:y", -8.0, 2.5)
+	# Golem collision (single capsule)
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 2.35, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+	cap_shape.radius = 1.20
+	cap_shape.height = 4.7
+	cs.shape = cap_shape
+	stb.add_child(cs)
+	golem.add_child(stb)
+
+
+func _build_d9_lava_pool(geom: Node) -> void:
+	## Epic-9 T17: sunken bubbling lava pool — wide circular pit with stone
+	## rim, glowing emissive lava surface, and rising lava droplet particles.
+	var pool: Node3D = Node3D.new()
+	pool.name = "D9LavaPool"
+	pool.position = Vector3(D9_CENTER.x - 18, 0.05, -2)
+	geom.add_child(pool)
+	# Stone rim (wide low cylinder)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.16)
+	stone_mat.roughness = 0.85
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rcm: CylinderMesh = CylinderMesh.new()
+	rcm.top_radius = 3.20
+	rcm.bottom_radius = 3.50
+	rcm.height = 0.45
+	rim.mesh = rcm
+	rim.material_override = stone_mat
+	rim.position = Vector3(0, 0.22, 0)
+	pool.add_child(rim)
+	# Lava surface (slightly recessed emissive disc)
+	var lava_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lava_mat.albedo_color = Color(1.0, 0.42, 0.10)
+	lava_mat.emission_enabled = true
+	lava_mat.emission = Color(1.0, 0.58, 0.18)
+	lava_mat.emission_energy_multiplier = 4.0
+	lava_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var lava: MeshInstance3D = MeshInstance3D.new()
+	var lcm: CylinderMesh = CylinderMesh.new()
+	lcm.top_radius = 2.85
+	lcm.bottom_radius = 2.85
+	lcm.height = 0.10
+	lava.mesh = lcm
+	lava.material_override = lava_mat
+	lava.position = Vector3(0, 0.30, 0)
+	pool.add_child(lava)
+	var pulse: Tween = lava.create_tween().set_loops()
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 6.0, 1.6)
+	pulse.tween_property(lava_mat, "emission_energy_multiplier", 2.5, 1.6)
+	# 3 stone rocks poking out of the lava
+	for i in range(3):
+		var ang: float = float(i) * (TAU / 3.0)
+		var rock: MeshInstance3D = MeshInstance3D.new()
+		var rsm: SphereMesh = SphereMesh.new()
+		rsm.radius = 0.45
+		rsm.height = 0.85
+		rock.mesh = rsm
+		rock.material_override = stone_mat
+		rock.position = Vector3(cos(ang) * 1.6, 0.50, sin(ang) * 1.6)
+		rock.scale = Vector3(1.0, 0.6, 1.0)
+		pool.add_child(rock)
+	# Bright orange omni light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.light_color = Color(1.0, 0.55, 0.18)
+	lt.light_energy = 5.0
+	lt.omni_range = 14.0
+	lt.position = Vector3(0, 1.5, 0)
+	pool.add_child(lt)
+	# Lava droplet GPU particles rising up and falling back
+	var drops: GPUParticles3D = GPUParticles3D.new()
+	drops.position = Vector3(0, 0.4, 0)
+	drops.amount = 80
+	drops.lifetime = 2.4
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	pm.emission_ring_radius = 2.6
+	pm.emission_ring_inner_radius = 0.5
+	pm.emission_ring_height = 0.05
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 25.0
+	pm.initial_velocity_min = 1.5
+	pm.initial_velocity_max = 3.0
+	pm.gravity = Vector3(0, -4.0, 0)
+	pm.scale_min = 0.10
+	pm.scale_max = 0.22
+	pm.color = Color(1.0, 0.55, 0.18, 1.0)
+	drops.process_material = pm
+	var drop_mesh: SphereMesh = SphereMesh.new()
+	drop_mesh.radius = 0.10
+	drop_mesh.height = 0.20
+	drops.draw_pass_1 = drop_mesh
+	pool.add_child(drops)
+	# Pool collision (rim only — center is impassable lava but no actual hit body needed since stone rim blocks entry)
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.22, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cyl: CylinderShape3D = CylinderShape3D.new()
+	cyl.radius = 3.30
+	cyl.height = 0.60
+	cs.shape = cyl
+	stb.add_child(cs)
+	pool.add_child(stb)
+
+
+func _build_d9_forging_table(geom: Node) -> void:
+	## Epic-9 T18: stone forging table with a glowing weapon blueprint laid
+	## across the top — ancient runes etched into the surface.
+	var table: Node3D = Node3D.new()
+	table.name = "D9ForgingTable"
+	table.position = Vector3(D9_CENTER.x - 4, 0, -8)
+	geom.add_child(table)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	# Tabletop (wide flat box)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tb: BoxMesh = BoxMesh.new()
+	tb.size = Vector3(2.40, 0.18, 1.40)
+	top.mesh = tb
+	top.material_override = stone_mat
+	top.position = Vector3(0, 0.95, 0)
+	table.add_child(top)
+	# 4 stone legs
+	for sx in [-1.0, 1.0]:
+		for sz in [-0.55, 0.55]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lb: BoxMesh = BoxMesh.new()
+			lb.size = Vector3(0.20, 0.85, 0.20)
+			leg.mesh = lb
+			leg.material_override = stone_mat
+			leg.position = Vector3(sx, 0.42, sz)
+			table.add_child(leg)
+	# Glowing parchment blueprint on the table (cyan emissive box)
+	var blue_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blue_mat.albedo_color = Color(0.20, 0.55, 0.85)
+	blue_mat.emission_enabled = true
+	blue_mat.emission = Color(0.30, 0.65, 0.95)
+	blue_mat.emission_energy_multiplier = 1.6
+	blue_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var blueprint: MeshInstance3D = MeshInstance3D.new()
+	var bb: BoxMesh = BoxMesh.new()
+	bb.size = Vector3(1.40, 0.04, 0.95)
+	blueprint.mesh = bb
+	blueprint.material_override = blue_mat
+	blueprint.position = Vector3(0, 1.06, 0)
+	table.add_child(blueprint)
+	# Stylized weapon outline on the blueprint (white emissive thin boxes)
+	var line_mat: StandardMaterial3D = StandardMaterial3D.new()
+	line_mat.albedo_color = Color(0.92, 0.95, 1.0)
+	line_mat.emission_enabled = true
+	line_mat.emission = Color(0.92, 0.95, 1.0)
+	line_mat.emission_energy_multiplier = 2.0
+	line_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Sword silhouette: long blade + cross guard + short hilt
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blb: BoxMesh = BoxMesh.new()
+	blb.size = Vector3(0.85, 0.02, 0.10)
+	blade.mesh = blb
+	blade.material_override = line_mat
+	blade.position = Vector3(0.0, 1.10, 0)
+	table.add_child(blade)
+	var guard: MeshInstance3D = MeshInstance3D.new()
+	var gb: BoxMesh = BoxMesh.new()
+	gb.size = Vector3(0.04, 0.02, 0.40)
+	guard.mesh = gb
+	guard.material_override = line_mat
+	guard.position = Vector3(0.45, 1.10, 0)
+	table.add_child(guard)
+	var hilt: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(0.20, 0.02, 0.06)
+	hilt.mesh = hb
+	hilt.material_override = line_mat
+	hilt.position = Vector3(0.60, 1.10, 0)
+	table.add_child(hilt)
+	# Cyan blueprint pulse
+	var pulse: Tween = blueprint.create_tween().set_loops()
+	pulse.tween_property(blue_mat, "emission_energy_multiplier", 2.4, 1.4)
+	pulse.tween_property(blue_mat, "emission_energy_multiplier", 1.0, 1.4)
+	# Table collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.40, 1.10, 1.40)
+	cs.shape = bs
+	stb.add_child(cs)
+	table.add_child(stb)
+
+
+func _build_d9_weapon_mannequin(geom: Node) -> void:
+	## Epic-9 T19: armored display mannequin with full plate armor + sword,
+	## standing on a stone pedestal.
+	var mann: Node3D = Node3D.new()
+	mann.name = "D9WeaponMannequin"
+	mann.position = Vector3(D9_CENTER.x + 16, 0, -2)
+	geom.add_child(mann)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.42, 0.40, 0.42)
+	stone_mat.roughness = 0.85
+	var iron: StandardMaterial3D = StandardMaterial3D.new()
+	iron.albedo_color = Color(0.55, 0.58, 0.62)
+	iron.metallic = 0.92
+	iron.roughness = 0.30
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pcm: CylinderMesh = CylinderMesh.new()
+	pcm.top_radius = 0.85
+	pcm.bottom_radius = 0.95
+	pcm.height = 0.65
+	ped.mesh = pcm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.32, 0)
+	mann.add_child(ped)
+	# Boots (2 wide boxes)
+	for sx in [-0.20, 0.20]:
+		var boot: MeshInstance3D = MeshInstance3D.new()
+		var bb: BoxMesh = BoxMesh.new()
+		bb.size = Vector3(0.22, 0.18, 0.32)
+		boot.mesh = bb
+		boot.material_override = iron
+		boot.position = Vector3(sx, 0.78, 0.04)
+		mann.add_child(boot)
+	# Greaves (calves)
+	for sx in [-0.20, 0.20]:
+		var greave: MeshInstance3D = MeshInstance3D.new()
+		var gb: BoxMesh = BoxMesh.new()
+		gb.size = Vector3(0.22, 0.65, 0.22)
+		greave.mesh = gb
+		greave.material_override = iron
+		greave.position = Vector3(sx, 1.20, 0)
+		mann.add_child(greave)
+	# Cuirass (chest piece)
+	var cuirass: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.85, 0.95, 0.55)
+	cuirass.mesh = cb
+	cuirass.material_override = iron
+	cuirass.position = Vector3(0, 2.05, 0)
+	mann.add_child(cuirass)
+	# Brass shoulder pauldrons
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.20
+	for sx in [-0.50, 0.50]:
+		var pld: MeshInstance3D = MeshInstance3D.new()
+		var psm: SphereMesh = SphereMesh.new()
+		psm.radius = 0.20
+		psm.height = 0.40
+		pld.mesh = psm
+		pld.material_override = brass
+		pld.position = Vector3(sx, 2.40, 0)
+		mann.add_child(pld)
+	# Helmet (full bucket helm)
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hb: BoxMesh = BoxMesh.new()
+	hb.size = Vector3(0.50, 0.55, 0.50)
+	helm.mesh = hb
+	helm.material_override = iron
+	helm.position = Vector3(0, 2.85, 0)
+	mann.add_child(helm)
+	# Visor slit (dark)
+	var slit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	slit_mat.albedo_color = Color(0.05, 0.05, 0.08)
+	slit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var slit: MeshInstance3D = MeshInstance3D.new()
+	var slm: BoxMesh = BoxMesh.new()
+	slm.size = Vector3(0.32, 0.06, 0.04)
+	slit.mesh = slm
+	slit.material_override = slit_mat
+	slit.position = Vector3(0, 2.85, 0.27)
+	mann.add_child(slit)
+	# Sword hanging at the side (straight blade prism + hilt)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.78, 0.82, 0.88)
+	blade_mat.metallic = 0.92
+	blade_mat.roughness = 0.20
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blb: BoxMesh = BoxMesh.new()
+	blb.size = Vector3(0.10, 1.30, 0.04)
+	blade.mesh = blb
+	blade.material_override = blade_mat
+	blade.position = Vector3(0.55, 1.40, 0)
+	mann.add_child(blade)
+	var hilt: MeshInstance3D = MeshInstance3D.new()
+	var hb2: BoxMesh = BoxMesh.new()
+	hb2.size = Vector3(0.06, 0.30, 0.04)
+	hilt.mesh = hb2
+	hilt.material_override = brass
+	hilt.position = Vector3(0.55, 2.20, 0)
+	mann.add_child(hilt)
+	var crossguard: MeshInstance3D = MeshInstance3D.new()
+	var cgb: BoxMesh = BoxMesh.new()
+	cgb.size = Vector3(0.30, 0.05, 0.05)
+	crossguard.mesh = cgb
+	crossguard.material_override = brass
+	crossguard.position = Vector3(0.55, 2.05, 0)
+	mann.add_child(crossguard)
+	# Mannequin collision
+	var stb: StaticBody3D = StaticBody3D.new()
+	stb.position = Vector3(0, 1.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap_shape: CapsuleShape3D = CapsuleShape3D.new()
+	cap_shape.radius = 0.55
+	cap_shape.height = 3.0
+	cs.shape = cap_shape
+	stb.add_child(cs)
+	mann.add_child(stb)
+
+
+func _build_d9_soot_vents(geom: Node) -> void:
+	## Epic-9 T20: 5 ground soot vents puffing dark smoke at irregular spots.
+	var vents: Node3D = Node3D.new()
+	vents.name = "D9SootVents"
+	vents.position = Vector3(D9_CENTER.x, 0.05, 0)
+	geom.add_child(vents)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.16)
+	stone_mat.roughness = 0.85
+	var spots: Array[Vector3] = [
+		Vector3(-22, 0, 6),
+		Vector3(20, 0, -8),
+		Vector3(-8, 0, 12),
+		Vector3(15, 0, 9),
+		Vector3(-15, 0, -12),
+	]
+	for i in range(spots.size()):
+		var pos: Vector3 = spots[i]
+		var vent: Node3D = Node3D.new()
+		vent.position = pos
+		vents.add_child(vent)
+		# Stone rim ring
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var tm: TorusMesh = TorusMesh.new()
+		tm.inner_radius = 0.40
+		tm.outer_radius = 0.55
+		ring.mesh = tm
+		ring.material_override = stone_mat
+		ring.position = Vector3(0, 0.10, 0)
+		vent.add_child(ring)
+		# Dark hole disc
+		var hole_mat: StandardMaterial3D = StandardMaterial3D.new()
+		hole_mat.albedo_color = Color(0.04, 0.03, 0.05)
+		hole_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var hole: MeshInstance3D = MeshInstance3D.new()
+		var hcm: CylinderMesh = CylinderMesh.new()
+		hcm.top_radius = 0.40
+		hcm.bottom_radius = 0.40
+		hcm.height = 0.05
+		hole.mesh = hcm
+		hole.material_override = hole_mat
+		hole.position = Vector3(0, 0.05, 0)
+		vent.add_child(hole)
+		# Smoke puff GPU particles
+		var smoke: GPUParticles3D = GPUParticles3D.new()
+		smoke.position = Vector3(0, 0.10, 0)
+		smoke.amount = 20
+		smoke.lifetime = 3.5
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 22.0
+		pm.initial_velocity_min = 0.55
+		pm.initial_velocity_max = 1.10
+		pm.gravity = Vector3(0, 0.20, 0)
+		pm.scale_min = 0.30
+		pm.scale_max = 0.65
+		pm.color = Color(0.20, 0.18, 0.20, 0.65)
+		smoke.process_material = pm
+		var smoke_mesh: SphereMesh = SphereMesh.new()
+		smoke_mesh.radius = 0.20
+		smoke_mesh.height = 0.40
+		smoke.draw_pass_1 = smoke_mesh
+		vent.add_child(smoke)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
