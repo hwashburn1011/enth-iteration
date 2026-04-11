@@ -8875,6 +8875,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_rune_monument(geom)
 	# Epic-5 T55: arctic fox creature
 	_build_d5_arctic_fox(geom)
+	# Epic-5 T56: ice fishing huts
+	_build_d5_ice_fishing_huts(geom)
+	# Epic-5 T57: ice angler NPC
+	_build_d5_ice_angler_npc()
+	# Epic-5 T58: aurora data altar
+	_build_d5_aurora_altar(geom)
+	# Epic-5 T59: snowy pine grove
+	_build_d5_pine_grove(geom)
+	# Epic-5 T60: snowman
+	_build_d5_snowman(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -13236,6 +13246,497 @@ func _build_d5_arctic_fox(geom: Node) -> void:
 	th.tween_property(fox, "position:y", 0.10, 0.30)
 	th.tween_property(fox, "position:y", 0.0, 0.30)
 	th.tween_interval(0.85)
+
+
+func _build_d5_ice_fishing_huts(geom: Node) -> void:
+	## Epic-5 T56: 3 small wooden ice fishing huts arranged on a frozen
+	## flat — boxy houses with sloped prism roofs and a small chimney each.
+	var village: Node3D = Node3D.new()
+	village.name = "IceFishingHuts"
+	village.position = Vector3(D5_CENTER.x + 14.0, 0.0, 8.0)
+	geom.add_child(village)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	roof_mat.roughness = 0.85
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.95, 0.85, 0.30)
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(1.0, 0.85, 0.30)
+	window_mat.emission_energy_multiplier = 2.5
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var positions: Array = [
+		Vector3(0, 0, 0),
+		Vector3(2.85, 0, 1.40),
+		Vector3(-2.40, 0, 1.85),
+	]
+	for i in positions.size():
+		var hut: Node3D = Node3D.new()
+		hut.position = positions[i]
+		hut.rotation_degrees = Vector3(0, randf_range(-25, 25), 0)
+		village.add_child(hut)
+		# Box body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.65, 1.40, 1.40)
+		body.mesh = bm
+		body.material_override = wood_mat
+		body.position = Vector3(0, 0.70, 0)
+		hut.add_child(body)
+		# Sloped prism roof
+		var roof: MeshInstance3D = MeshInstance3D.new()
+		var rm: PrismMesh = PrismMesh.new()
+		rm.size = Vector3(1.85, 0.65, 1.55)
+		roof.mesh = rm
+		roof.material_override = roof_mat
+		roof.position = Vector3(0, 1.70, 0)
+		hut.add_child(roof)
+		# Door
+		var door: MeshInstance3D = MeshInstance3D.new()
+		var dm: BoxMesh = BoxMesh.new()
+		dm.size = Vector3(0.40, 0.85, 0.06)
+		door.mesh = dm
+		door.material_override = roof_mat
+		door.position = Vector3(0, 0.42, 0.72)
+		hut.add_child(door)
+		# Glowing window
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.30, 0.30, 0.04)
+		win.mesh = wm
+		win.material_override = window_mat
+		win.position = Vector3(-0.45, 0.95, 0.72)
+		hut.add_child(win)
+		# Chimney
+		var chimney: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.20, 0.55, 0.20)
+		chimney.mesh = cmm
+		chimney.material_override = roof_mat
+		chimney.position = Vector3(0.45, 2.20, 0)
+		hut.add_child(chimney)
+		# Smoke (small steam particles from chimney)
+		var smoke: GPUParticles3D = GPUParticles3D.new()
+		smoke.amount = 18
+		smoke.lifetime = 2.5
+		smoke.preprocess = 1.0
+		smoke.position = Vector3(0.45, 2.55, 0)
+		var pm_smoke: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm_smoke.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+		pm_smoke.direction = Vector3(0.10, 1, 0.05)
+		pm_smoke.spread = 18.0
+		pm_smoke.gravity = Vector3(0.05, 0.55, 0)
+		pm_smoke.initial_velocity_min = 0.20
+		pm_smoke.initial_velocity_max = 0.55
+		pm_smoke.scale_min = 0.18
+		pm_smoke.scale_max = 0.40
+		pm_smoke.color = Color(0.85, 0.85, 0.90, 0.55)
+		smoke.process_material = pm_smoke
+		var sm_mesh: SphereMesh = SphereMesh.new()
+		sm_mesh.radius = 0.18
+		sm_mesh.height = 0.36
+		smoke.draw_pass_1 = sm_mesh
+		var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sm_mat.albedo_color = Color(0.85, 0.85, 0.90, 0.45)
+		sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm_mesh.material = sm_mat
+		hut.add_child(smoke)
+		# Window light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.85, 0.30)
+		light.light_energy = 1.4
+		light.omni_range = 3.5
+		light.position = Vector3(-0.45, 0.95, 0.85)
+		hut.add_child(light)
+		# Hut collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.70, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.65, 1.40, 1.40)
+		cs.shape = cb
+		sb.add_child(cs)
+		hut.add_child(sb)
+
+
+func _build_d5_ice_angler_npc() -> void:
+	## Epic-5 T57: ice angler NPC seated outside one of the huts.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "IceAnglerSlot"
+	slot.position = Vector3(D5_CENTER.x + 12.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "IceAngler"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Hooksby")
+	if "npc_id" in npc:
+		npc.set("npc_id", "angler_d5")
+	slot.add_child(npc)
+	# Heavy green coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.75, 1.05, 0.50)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.20, 0.45, 0.20)
+	coat_mat.roughness = 0.85
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.55, 0)
+	npc.add_child(coat)
+	# Knit beanie
+	var beanie: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.22
+	bm.height = 0.34
+	beanie.mesh = bm
+	var beanie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beanie_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	beanie_mat.roughness = 0.95
+	beanie.material_override = beanie_mat
+	beanie.position = Vector3(0, 1.50, 0)
+	beanie.scale = Vector3(1.0, 0.65, 1.0)
+	npc.add_child(beanie)
+	# Pom-pom on top
+	var pompom: MeshInstance3D = MeshInstance3D.new()
+	var pm: SphereMesh = SphereMesh.new()
+	pm.radius = 0.08
+	pm.height = 0.16
+	pompom.mesh = pm
+	var pom_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pom_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	pompom.material_override = pom_mat
+	pompom.position = Vector3(0, 1.65, 0)
+	npc.add_child(pompom)
+	# Held caught fish (small grey/silver prism)
+	var fish: MeshInstance3D = MeshInstance3D.new()
+	var fm: PrismMesh = PrismMesh.new()
+	fm.size = Vector3(0.30, 0.10, 0.10)
+	fish.mesh = fm
+	var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fish_mat.albedo_color = Color(0.65, 0.75, 0.85)
+	fish_mat.metallic = 0.55
+	fish_mat.roughness = 0.30
+	fish.material_override = fish_mat
+	fish.position = Vector3(0.45, 0.85, 0.20)
+	fish.rotation_degrees = Vector3(0, 0, 90)
+	npc.add_child(fish)
+	# Held tail wiggle
+	var tw: Tween = fish.create_tween().set_loops()
+	tw.tween_property(fish, "rotation_degrees:x", 15.0, 0.30)
+	tw.tween_property(fish, "rotation_degrees:x", -15.0, 0.30)
+
+
+func _build_d5_aurora_altar(geom: Node) -> void:
+	## Epic-5 T58: aurora data altar — a low circular ice altar with three
+	## floating data shards spinning above it, gathering aurora light.
+	var altar: Node3D = Node3D.new()
+	altar.name = "AuroraDataAltar"
+	altar.position = Vector3(D5_CENTER.x - 8.0, 0.0, -16.0)
+	geom.add_child(altar)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.65
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	# 2-tier circular altar
+	var t1: MeshInstance3D = MeshInstance3D.new()
+	var t1m: CylinderMesh = CylinderMesh.new()
+	t1m.top_radius = 1.85
+	t1m.bottom_radius = 2.10
+	t1m.height = 0.30
+	t1.mesh = t1m
+	t1.material_override = ice_mat
+	t1.position = Vector3(0, 0.15, 0)
+	altar.add_child(t1)
+	var t2: MeshInstance3D = MeshInstance3D.new()
+	var t2m: CylinderMesh = CylinderMesh.new()
+	t2m.top_radius = 1.30
+	t2m.bottom_radius = 1.55
+	t2m.height = 0.30
+	t2.mesh = t2m
+	t2.material_override = ice_mat
+	t2.position = Vector3(0, 0.45, 0)
+	altar.add_child(t2)
+	# Center glow disc
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.30, 1.0, 1.0)
+	glow_mat.emission_energy_multiplier = 3.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var gm: CylinderMesh = CylinderMesh.new()
+	gm.top_radius = 0.85
+	gm.bottom_radius = 0.85
+	gm.height = 0.04
+	glow.mesh = gm
+	glow.material_override = glow_mat
+	glow.position = Vector3(0, 0.62, 0)
+	altar.add_child(glow)
+	# 3 floating shards on a pivot
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 1.85, 0)
+	altar.add_child(pivot)
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var shard: MeshInstance3D = MeshInstance3D.new()
+		var shm: PrismMesh = PrismMesh.new()
+		shm.size = Vector3(0.30, 0.85, 0.30)
+		shard.mesh = shm
+		shard.material_override = glow_mat
+		shard.position = Vector3(cos(ang) * 0.85, 0, sin(ang) * 0.85)
+		shard.rotation = Vector3(0, ang, 0)
+		pivot.add_child(shard)
+	var trot: Tween = pivot.create_tween().set_loops()
+	trot.tween_property(pivot, "rotation_degrees:y", 360.0, 8.0)
+	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Aura beam straight up
+	var beam: MeshInstance3D = MeshInstance3D.new()
+	var beam_m: CylinderMesh = CylinderMesh.new()
+	beam_m.top_radius = 0.10
+	beam_m.bottom_radius = 0.55
+	beam_m.height = 9.0
+	beam.mesh = beam_m
+	var beam_mat: StandardMaterial3D = StandardMaterial3D.new()
+	beam_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.45)
+	beam_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	beam_mat.emission_enabled = true
+	beam_mat.emission = Color(0.30, 0.95, 1.0)
+	beam_mat.emission_energy_multiplier = 1.8
+	beam_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	beam.material_override = beam_mat
+	beam.position = Vector3(0, 5.50, 0)
+	altar.add_child(beam)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 3.5
+	light.omni_range = 8.0
+	light.position = Vector3(0, 1.85, 0)
+	altar.add_child(light)
+	# Altar collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.30, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 2.10
+	cap.height = 0.65
+	cs.shape = cap
+	sb.add_child(cs)
+	altar.add_child(sb)
+
+
+func _build_d5_pine_grove(geom: Node) -> void:
+	## Epic-5 T59: 8 snow-dusted pine trees clustered together — dark green
+	## prism cones with white snow caps.
+	var grove: Node3D = Node3D.new()
+	grove.name = "PineGrove"
+	grove.position = Vector3(D5_CENTER.x - 22.0, 0.0, -16.0)
+	geom.add_child(grove)
+	var trunk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trunk_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	trunk_mat.roughness = 0.95
+	var pine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pine_mat.albedo_color = Color(0.20, 0.45, 0.20)
+	pine_mat.emission_enabled = true
+	pine_mat.emission = Color(0.15, 0.40, 0.15)
+	pine_mat.emission_energy_multiplier = 0.18
+	pine_mat.roughness = 0.85
+	var snow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	snow_mat.albedo_color = Color(0.95, 0.97, 1.0)
+	snow_mat.emission_enabled = true
+	snow_mat.emission = Color(0.85, 0.92, 1.0)
+	snow_mat.emission_energy_multiplier = 0.30
+	snow_mat.roughness = 0.55
+	for i in 8:
+		var tree: Node3D = Node3D.new()
+		tree.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0.0,
+			randf_range(-3.5, 3.5)
+		)
+		grove.add_child(tree)
+		# Trunk
+		var trunk: MeshInstance3D = MeshInstance3D.new()
+		var trm: CylinderMesh = CylinderMesh.new()
+		trm.top_radius = 0.12
+		trm.bottom_radius = 0.18
+		trm.height = 1.20
+		trunk.mesh = trm
+		trunk.material_override = trunk_mat
+		trunk.position = Vector3(0, 0.60, 0)
+		tree.add_child(trunk)
+		# 3 stacked cone tiers
+		for c in 3:
+			var cone: MeshInstance3D = MeshInstance3D.new()
+			var cmm: PrismMesh = PrismMesh.new()
+			cmm.size = Vector3(1.40 - c * 0.30, 1.10 - c * 0.10, 1.40 - c * 0.30)
+			cone.mesh = cmm
+			cone.material_override = pine_mat
+			cone.position = Vector3(0, 1.30 + c * 0.85, 0)
+			tree.add_child(cone)
+		# Snow caps on tiers (small white prisms on top)
+		for c in 3:
+			var snow_cap: MeshInstance3D = MeshInstance3D.new()
+			var sm: PrismMesh = PrismMesh.new()
+			sm.size = Vector3(0.85 - c * 0.20, 0.15, 0.85 - c * 0.20)
+			snow_cap.mesh = sm
+			snow_cap.material_override = snow_mat
+			snow_cap.position = Vector3(0, 1.85 + c * 0.85, 0)
+			tree.add_child(snow_cap)
+		# Trunk collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.60, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.18
+		cap.height = 1.20
+		cs.shape = cap
+		sb.add_child(cs)
+		tree.add_child(sb)
+
+
+func _build_d5_snowman(geom: Node) -> void:
+	## Epic-5 T60: classic snowman — 3 stacked snow spheres + carrot nose +
+	## coal eyes/buttons + stick arms + scarf + top hat.
+	var snowman: Node3D = Node3D.new()
+	snowman.name = "Snowman"
+	snowman.position = Vector3(D5_CENTER.x - 4.0, 0.0, 12.0)
+	geom.add_child(snowman)
+	var snow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	snow_mat.albedo_color = Color(0.95, 0.97, 1.0)
+	snow_mat.emission_enabled = true
+	snow_mat.emission = Color(0.85, 0.92, 1.0)
+	snow_mat.emission_energy_multiplier = 0.30
+	snow_mat.roughness = 0.55
+	# 3 stacked snow spheres (bottom → top)
+	var sizes: Array = [0.55, 0.40, 0.30]
+	var ys: Array = [0.55, 1.30, 1.85]
+	for i in 3:
+		var ball: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = sizes[i]
+		bm.height = sizes[i] * 2.0
+		ball.mesh = bm
+		ball.material_override = snow_mat
+		ball.position = Vector3(0, ys[i], 0)
+		snowman.add_child(ball)
+	# Carrot nose
+	var nose: MeshInstance3D = MeshInstance3D.new()
+	var nm: PrismMesh = PrismMesh.new()
+	nm.size = Vector3(0.06, 0.06, 0.20)
+	nose.mesh = nm
+	var nose_mat: StandardMaterial3D = StandardMaterial3D.new()
+	nose_mat.albedo_color = Color(0.95, 0.55, 0.10)
+	nose_mat.emission_enabled = true
+	nose_mat.emission = Color(0.95, 0.45, 0.05)
+	nose_mat.emission_energy_multiplier = 0.30
+	nose.material_override = nose_mat
+	nose.position = Vector3(0, 1.85, 0.30)
+	nose.rotation_degrees = Vector3(90, 0, 0)
+	snowman.add_child(nose)
+	# 2 coal eyes
+	var coal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coal_mat.albedo_color = Color(0.05, 0.05, 0.08)
+	coal_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.045
+		em.height = 0.09
+		eye.mesh = em
+		eye.material_override = coal_mat
+		eye.position = Vector3(ex, 1.95, 0.25)
+		snowman.add_child(eye)
+	# 3 coal buttons on the body
+	for i in 3:
+		var btn: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.05
+		bm.height = 0.10
+		btn.mesh = bm
+		btn.material_override = coal_mat
+		btn.position = Vector3(0, 1.10 + i * 0.18, 0.42 - i * 0.04)
+		snowman.add_child(btn)
+	# 2 stick arms (thin cylinders)
+	var stick_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stick_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	stick_mat.roughness = 0.95
+	for sx in [-1, 1]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.025
+		am.bottom_radius = 0.035
+		am.height = 0.85
+		arm.mesh = am
+		arm.material_override = stick_mat
+		arm.position = Vector3(sx * 0.55, 1.30, 0)
+		arm.rotation_degrees = Vector3(0, 0, sx * 35.0)
+		snowman.add_child(arm)
+	# Scarf (red box around the neck)
+	var scarf: MeshInstance3D = MeshInstance3D.new()
+	var scm: BoxMesh = BoxMesh.new()
+	scm.size = Vector3(0.65, 0.10, 0.65)
+	scarf.mesh = scm
+	var scarf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scarf_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	scarf_mat.roughness = 0.85
+	scarf.material_override = scarf_mat
+	scarf.position = Vector3(0, 1.65, 0)
+	snowman.add_child(scarf)
+	# Trailing scarf end
+	var scarf_end: MeshInstance3D = MeshInstance3D.new()
+	var sem: BoxMesh = BoxMesh.new()
+	sem.size = Vector3(0.10, 0.45, 0.06)
+	scarf_end.mesh = sem
+	scarf_end.material_override = scarf_mat
+	scarf_end.position = Vector3(0.20, 1.45, 0.20)
+	snowman.add_child(scarf_end)
+	# Black top hat (cylinder + flat brim disc)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.10, 0.10, 0.12)
+	hat_mat.metallic = 0.30
+	hat_mat.roughness = 0.40
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: CylinderMesh = CylinderMesh.new()
+	brm.top_radius = 0.32
+	brm.bottom_radius = 0.32
+	brm.height = 0.04
+	brim.mesh = brm
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 2.18, 0)
+	snowman.add_child(brim)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.22
+	hm.bottom_radius = 0.22
+	hm.height = 0.40
+	hat.mesh = hm
+	hat.material_override = hat_mat
+	hat.position = Vector3(0, 2.40, 0)
+	snowman.add_child(hat)
+	# Snowman collision (capsule)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.55
+	cap.height = 2.20
+	cs.shape = cap
+	sb.add_child(cs)
+	snowman.add_child(sb)
 
 
 
