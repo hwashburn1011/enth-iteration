@@ -32724,6 +32724,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_gunpowder_barrels(geom)
 	# Epic-8 T45: lifeguard tower
 	_build_d8_lifeguard_tower(geom)
+	# Epic-8 T46: pirate flag pole
+	_build_d8_pirate_flag(geom)
+	# Epic-8 T47: pirate captain NPC
+	_build_d8_pirate_captain_npc()
+	# Epic-8 T48: pirate crew
+	_build_d8_pirate_crew(geom)
+	# Epic-8 T49: parrot creatures
+	_build_d8_parrots(geom)
+	# Epic-8 T50: SEA TYRANT mid-boss landmark
+	_build_d8_sea_tyrant(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -35636,6 +35646,462 @@ func _build_d8_lifeguard_tower(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	tower.add_child(sb)
+
+
+func _build_d8_pirate_flag(geom: Node) -> void:
+	## Epic-8 T46: tall pirate flag pole — black skull and crossbones flag
+	## flying high, marking pirate territory.
+	var flag: Node3D = Node3D.new()
+	flag.name = "PirateFlag"
+	flag.position = Vector3(D8_CENTER.x + 4.0, 0.0, -22.0)
+	geom.add_child(flag)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	wood_mat.roughness = 0.92
+	# Tall pole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.10
+	pm.bottom_radius = 0.18
+	pm.height = 6.85
+	pole.mesh = pm
+	pole.material_override = wood_mat
+	pole.position = Vector3(0, 3.42, 0)
+	flag.add_child(pole)
+	# Pole collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.42, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.18
+	cap.height = 6.85
+	cs.shape = cap
+	sb.add_child(cs)
+	flag.add_child(sb)
+	# Black flag cloth
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.40, 1.40, 0.06)
+	cloth.mesh = cm
+	var cloth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloth_mat.albedo_color = Color(0.05, 0.04, 0.08)
+	cloth_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	cloth.material_override = cloth_mat
+	cloth.position = Vector3(1.20, 5.85, 0)
+	flag.add_child(cloth)
+	# White skull (sphere)
+	var skull: MeshInstance3D = MeshInstance3D.new()
+	var skm: SphereMesh = SphereMesh.new()
+	skm.radius = 0.30
+	skm.height = 0.45
+	skull.mesh = skm
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	white_mat.emission_enabled = true
+	white_mat.emission = Color(0.95, 0.95, 0.92)
+	white_mat.emission_energy_multiplier = 0.85
+	skull.material_override = white_mat
+	skull.position = Vector3(1.20, 6.0, 0.10)
+	flag.add_child(skull)
+	# Crossbones (2 small white bars)
+	for i in 2:
+		var bone: MeshInstance3D = MeshInstance3D.new()
+		var bmm: BoxMesh = BoxMesh.new()
+		bmm.size = Vector3(0.55, 0.06, 0.04)
+		bone.mesh = bmm
+		bone.material_override = white_mat
+		bone.position = Vector3(1.20, 5.55, 0.10)
+		bone.rotation_degrees = Vector3(0, 0, 45.0 if i == 0 else -45.0)
+		flag.add_child(bone)
+	# Subtle flag wave
+	var tw: Tween = cloth.create_tween().set_loops()
+	tw.tween_property(cloth, "rotation_degrees:y", 6.0, 1.4)
+	tw.tween_property(cloth, "rotation_degrees:y", -6.0, 1.4)
+
+
+func _build_d8_pirate_captain_npc() -> void:
+	## Epic-8 T47: pirate captain NPC — long red coat + tricorn hat +
+	## peg leg + held cutlass.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "PirateCaptainSlot"
+	slot.position = Vector3(D8_CENTER.x + 6.0, 0.0, -22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "PirateCaptain"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Blackcurrent")
+	if "npc_id" in npc:
+		npc.set("npc_id", "pirate_captain_d8")
+	slot.add_child(npc)
+	# Long red coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.75, 1.30, 0.50)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.65, 0.10, 0.10)
+	coat_mat.metallic = 0.30
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.65, 0)
+	npc.add_child(coat)
+	# Tricorn hat
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	hat_mat.metallic = 0.30
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var brim: MeshInstance3D = MeshInstance3D.new()
+		var brm: BoxMesh = BoxMesh.new()
+		brm.size = Vector3(0.40, 0.04, 0.18)
+		brim.mesh = brm
+		brim.material_override = hat_mat
+		brim.position = Vector3(cos(ang) * 0.18, 1.45, sin(ang) * 0.18)
+		brim.rotation = Vector3(0, -ang + PI * 0.5, 0)
+		npc.add_child(brim)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dmm: SphereMesh = SphereMesh.new()
+	dmm.radius = 0.20
+	dmm.height = 0.30
+	dome.mesh = dmm
+	dome.material_override = hat_mat
+	dome.position = Vector3(0, 1.55, 0)
+	dome.scale = Vector3(1.0, 0.85, 1.0)
+	npc.add_child(dome)
+	# Peg leg (small wooden cylinder where right leg should be)
+	var peg: MeshInstance3D = MeshInstance3D.new()
+	var pgm: CylinderMesh = CylinderMesh.new()
+	pgm.top_radius = 0.05
+	pgm.bottom_radius = 0.08
+	pgm.height = 0.55
+	peg.mesh = pgm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	peg.material_override = wood_mat
+	peg.position = Vector3(0.18, 0.18, 0)
+	npc.add_child(peg)
+	# Cutlass (curved blade)
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blm: PrismMesh = PrismMesh.new()
+	blm.size = Vector3(0.06, 0.85, 0.06)
+	blade.mesh = blm
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	blade_mat.metallic = 0.95
+	blade_mat.roughness = 0.05
+	blade.material_override = blade_mat
+	blade.position = Vector3(0.45, 1.0, 0.20)
+	blade.rotation_degrees = Vector3(0, 0, -25)
+	npc.add_child(blade)
+
+
+func _build_d8_pirate_crew(geom: Node) -> void:
+	## Epic-8 T48: 3 pirate crew member figures with bandanas + striped shirts.
+	var crew: Node3D = Node3D.new()
+	crew.name = "PirateCrew"
+	crew.position = Vector3(D8_CENTER.x + 8.0, 0.0, -22.0)
+	geom.add_child(crew)
+	var stripe_colors: Array = [
+		Color(0.85, 0.20, 0.30),
+		Color(0.20, 0.30, 0.55),
+		Color(0.30, 0.65, 0.30),
+	]
+	var bandana_colors: Array = [
+		Color(0.85, 0.20, 0.20),
+		Color(0.20, 0.30, 0.85),
+		Color(0.95, 0.85, 0.20),
+	]
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 1.40, 0,  0.85),
+		Vector3(-1.20, 0,  0.55),
+	]
+	for i in 3:
+		var pirate: Node3D = Node3D.new()
+		pirate.position = positions[i]
+		crew.add_child(pirate)
+		# Body shirt
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 1.05, 0.40)
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = stripe_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = stripe_colors[i]
+		body_mat.emission_energy_multiplier = 0.30
+		body.material_override = body_mat
+		body.position = Vector3(0, 0.55, 0)
+		pirate.add_child(body)
+		# 2 white horizontal stripes
+		var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stripe_mat.albedo_color = Color(0.95, 0.95, 0.92)
+		for sy in [0.45, 0.65]:
+			var stripe: MeshInstance3D = MeshInstance3D.new()
+			var stm: BoxMesh = BoxMesh.new()
+			stm.size = Vector3(0.55, 0.06, 0.06)
+			stripe.mesh = stm
+			stripe.material_override = stripe_mat
+			stripe.position = Vector3(0, sy, 0.21)
+			pirate.add_child(stripe)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+		head.material_override = skin_mat
+		head.position = Vector3(0, 1.20, 0)
+		pirate.add_child(head)
+		# Bandana on top
+		var bandana: MeshInstance3D = MeshInstance3D.new()
+		var bdm: CylinderMesh = CylinderMesh.new()
+		bdm.top_radius = 0.20
+		bdm.bottom_radius = 0.20
+		bdm.height = 0.10
+		bandana.mesh = bdm
+		var bandana_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bandana_mat.albedo_color = bandana_colors[i]
+		bandana_mat.emission_enabled = true
+		bandana_mat.emission = bandana_colors[i]
+		bandana_mat.emission_energy_multiplier = 0.85
+		bandana.material_override = bandana_mat
+		bandana.position = Vector3(0, 1.30, 0)
+		pirate.add_child(bandana)
+
+
+func _build_d8_parrots(geom: Node) -> void:
+	## Epic-8 T49: 3 colorful parrots perched on small wooden posts.
+	var parrots: Node3D = Node3D.new()
+	parrots.name = "Parrots"
+	parrots.position = Vector3(D8_CENTER.x + 12.0, 0.0, -22.0)
+	geom.add_child(parrots)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var parrot_colors: Array = [
+		Color(0.95, 0.20, 0.20),
+		Color(0.20, 0.65, 0.95),
+		Color(0.30, 0.95, 0.30),
+	]
+	for i in 3:
+		var perch: Node3D = Node3D.new()
+		perch.position = Vector3(i * 1.40, 0, 0)
+		parrots.add_child(perch)
+		# Wooden perch post
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.06
+		pm.bottom_radius = 0.10
+		pm.height = 1.85
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(0, 0.92, 0)
+		perch.add_child(post)
+		# Parrot body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.18
+		bm.height = 0.32
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = parrot_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = parrot_colors[i]
+		body_mat.emission_energy_multiplier = 0.85
+		body.material_override = body_mat
+		body.position = Vector3(0, 2.0, 0)
+		body.scale = Vector3(0.85, 1.0, 1.30)
+		perch.add_child(body)
+		# Beak (small yellow prism)
+		var beak: MeshInstance3D = MeshInstance3D.new()
+		var bkm: PrismMesh = PrismMesh.new()
+		bkm.size = Vector3(0.05, 0.05, 0.10)
+		beak.mesh = bkm
+		var beak_mat: StandardMaterial3D = StandardMaterial3D.new()
+		beak_mat.albedo_color = Color(0.95, 0.85, 0.20)
+		beak.material_override = beak_mat
+		beak.position = Vector3(0, 2.0, 0.20)
+		beak.rotation_degrees = Vector3(90, 0, 0)
+		perch.add_child(beak)
+		# Tail (small contrasting prism)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: PrismMesh = PrismMesh.new()
+		tm.size = Vector3(0.10, 0.30, 0.06)
+		tail.mesh = tm
+		var tail_mat: StandardMaterial3D = StandardMaterial3D.new()
+		tail_mat.albedo_color = parrot_colors[(i + 1) % 3]
+		tail_mat.emission_enabled = true
+		tail_mat.emission = parrot_colors[(i + 1) % 3]
+		tail_mat.emission_energy_multiplier = 0.85
+		tail.material_override = tail_mat
+		tail.position = Vector3(0, 1.85, -0.20)
+		tail.rotation_degrees = Vector3(-25, 0, 0)
+		perch.add_child(tail)
+		# Slow head bob
+		var tw: Tween = body.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(body, "position:y", 2.10, 0.55)
+		tw.tween_property(body, "position:y", 2.0, 0.55)
+
+
+func _build_d8_sea_tyrant(geom: Node) -> void:
+	## Epic-8 T50: SEA TYRANT — D8 mid-boss landmark. Massive dark sea
+	## monster figurehead with multiple tentacles, glowing red eyes, and
+	## a halo of orbiting jellyfish.
+	var tyrant: Node3D = Node3D.new()
+	tyrant.name = "SeaTyrant"
+	tyrant.position = Vector3(D8_CENTER.x + 22.0, 0.0, -22.0)
+	geom.add_child(tyrant)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.15, 0.20, 0.25)
+	dark_mat.metallic = 0.55
+	dark_mat.roughness = 0.45
+	var darker_mat: StandardMaterial3D = StandardMaterial3D.new()
+	darker_mat.albedo_color = Color(0.10, 0.15, 0.20)
+	darker_mat.metallic = 0.55
+	darker_mat.roughness = 0.45
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	stone_mat.metallic = 0.65
+	# Stone pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(4.20, 0.55, 4.20)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.27, 0)
+	tyrant.add_child(ped)
+	# Massive body (large flat sphere)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 2.40
+	bm.height = 3.40
+	body.mesh = bm
+	body.material_override = dark_mat
+	body.position = Vector3(0, 2.40, 0)
+	body.scale = Vector3(1.20, 1.0, 1.40)
+	tyrant.add_child(body)
+	# 8 large tentacles emerging from the body
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var tentacle: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.30
+		tm.bottom_radius = 0.85
+		tm.height = 5.50 + (i % 4) * 1.40
+		tentacle.mesh = tm
+		tentacle.material_override = darker_mat
+		tentacle.position = Vector3(cos(ang) * 1.85, 4.0 + (i % 4) * 1.10, sin(ang) * 1.85)
+		tentacle.rotation = Vector3(deg_to_rad(20) * sin(ang), 0, deg_to_rad(20) * cos(ang))
+		tyrant.add_child(tentacle)
+		# Wave tween
+		var tw: Tween = tentacle.create_tween().set_loops()
+		tw.tween_interval(i * 0.15)
+		tw.tween_property(tentacle, "rotation_degrees:z", 8.0, 1.6)
+		tw.tween_property(tentacle, "rotation_degrees:z", -8.0, 1.6)
+	# 3 glowing red eyes on the body
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.10, 0.10)
+	eye_mat.emission_energy_multiplier = 5.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i + PI * 0.5
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.30
+		em.height = 0.55
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(cos(ang) * 1.40, 2.85, sin(ang) * 1.40 + 1.85)
+		tyrant.add_child(eye)
+		# Pulse
+		var twe: Tween = eye.create_tween().set_loops()
+		twe.tween_interval(i * 0.30)
+		twe.tween_property(eye, "scale", Vector3.ONE * 1.30, 0.85)
+		twe.tween_property(eye, "scale", Vector3.ONE * 0.85, 0.85)
+	# Halo of 8 orbiting jellyfish (small purple spheres)
+	var halo: Node3D = Node3D.new()
+	halo.position = Vector3(0, 4.85, 0)
+	tyrant.add_child(halo)
+	var jelly_mat: StandardMaterial3D = StandardMaterial3D.new()
+	jelly_mat.albedo_color = Color(0.85, 0.30, 0.95)
+	jelly_mat.emission_enabled = true
+	jelly_mat.emission = Color(0.95, 0.30, 0.95)
+	jelly_mat.emission_energy_multiplier = 3.5
+	jelly_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var jelly: MeshInstance3D = MeshInstance3D.new()
+		var jmm: SphereMesh = SphereMesh.new()
+		jmm.radius = 0.30
+		jmm.height = 0.55
+		jelly.mesh = jmm
+		jelly.material_override = jelly_mat
+		jelly.position = Vector3(cos(ang) * 4.20, 0, sin(ang) * 4.20)
+		halo.add_child(jelly)
+	var trot: Tween = halo.create_tween().set_loops()
+	trot.tween_property(halo, "rotation_degrees:y", 360.0, 14.0)
+	trot.tween_property(halo, "rotation_degrees:y", 0.0, 0.0)
+	# Massive aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.30, 0.95)
+	light.light_energy = 5.5
+	light.omni_range = 22.0
+	light.position = Vector3(0, 4.20, 0)
+	tyrant.add_child(light)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 2.0)
+	twl.tween_property(light, "light_energy", 4.5, 2.0)
+	# Title labels
+	var title: Label3D = Label3D.new()
+	title.text = "THE SEA TYRANT"
+	title.modulate = Color(0.85, 0.30, 0.95)
+	title.outline_modulate = Color(0.05, 0.10, 0.20)
+	title.outline_size = 12
+	title.font_size = 80
+	title.pixel_size = 0.013
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 9.0, 0)
+	tyrant.add_child(title)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Devourer of forgotten data"
+	subtitle.modulate = Color(0.85, 0.95, 1.0)
+	subtitle.outline_modulate = Color(0.05, 0.10, 0.20)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.011
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 8.30, 0)
+	tyrant.add_child(subtitle)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.40, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: SphereShape3D = SphereShape3D.new()
+	cap.radius = 3.40
+	cs.shape = cap
+	sb.add_child(cs)
+	tyrant.add_child(sb)
+	# Pedestal collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	psb.position = Vector3(0, 0.27, 0)
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(4.20, 0.55, 4.20)
+	pcs.shape = pcb
+	psb.add_child(pcs)
+	tyrant.add_child(psb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
