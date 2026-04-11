@@ -1490,6 +1490,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_watchman_npc()
 	# Epic-2 T30: 5 ground smoke vents
 	_build_d2_smoke_vents(geom)
+	# Epic-2 T31: cluster of glowing toxic barrels
+	_build_d2_toxic_barrels(geom)
+	# Epic-2 T32: half-buried giant mechanical arm
+	_build_d2_buried_arm(geom)
+	# Epic-2 T33: campfire pit with seated NPCs
+	_build_d2_fire_pit(geom)
+	# Epic-2 T34: wrecked hover-bike at the side of the road
+	_build_d2_hoverbike_wreck(geom)
+	# Epic-2 T35: vertical code stream waterfall
+	_build_d2_code_waterfall(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -10087,4 +10097,445 @@ func _build_d2_smoke_vents(geom: Node) -> void:
 		vent.add_child(smoke)
 
 
+func _build_d2_toxic_barrels(geom: Node) -> void:
+	## Epic-2 T31: cluster of 6 yellow toxic barrels with glowing rims +
+	## hazard symbols. Some are tipped over, some upright. Sells "this
+	## stuff is dangerous, the workers couldn't seal it back up".
+	var cluster: Node3D = Node3D.new()
+	cluster.name = "D2ToxicBarrels"
+	cluster.position = D2_CENTER + Vector3(-3, 0, -8)
+	geom.add_child(cluster)
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.85, 0.65, 0.10)
+	body_mat.metallic = 0.45
+	body_mat.roughness = 0.55
+	var rim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rim_mat.albedo_color = Color(0.30, 1.0, 0.30)
+	rim_mat.emission_enabled = true
+	rim_mat.emission = Color(0.45, 1.0, 0.40)
+	rim_mat.emission_energy_multiplier = 1.8
+	rim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var barrel_specs: Array = [
+		[Vector3(0.0, 0.55, 0.0), Vector3(0, 0, 0)],
+		[Vector3(1.2, 0.55, 0.4), Vector3(0, 0, 0)],
+		[Vector3(-1.0, 0.55, 0.6), Vector3(0, 0, 0)],
+		[Vector3(0.5, 0.55, -1.2), Vector3(0, 0, 0)],
+		[Vector3(2.2, 0.30, -0.6), Vector3(deg_to_rad(85), deg_to_rad(20), 0)],
+		[Vector3(-1.8, 0.30, -0.4), Vector3(deg_to_rad(80), deg_to_rad(-30), 0)],
+	]
+	for i in barrel_specs.size():
+		var barrel: Node3D = Node3D.new()
+		barrel.name = "Barrel_%d" % i
+		barrel.position = barrel_specs[i][0]
+		barrel.rotation = barrel_specs[i][1]
+		cluster.add_child(barrel)
+		# Body cylinder
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CylinderMesh = CylinderMesh.new()
+		bmesh.top_radius = 0.40
+		bmesh.bottom_radius = 0.40
+		bmesh.height = 1.05
+		body.mesh = bmesh
+		body.material_override = body_mat
+		barrel.add_child(body)
+		# Top + bottom rim
+		for ry: float in [-0.50, 0.50]:
+			var rim: MeshInstance3D = MeshInstance3D.new()
+			var rmesh: TorusMesh = TorusMesh.new()
+			rmesh.inner_radius = 0.40
+			rmesh.outer_radius = 0.45
+			rim.mesh = rmesh
+			rim.position = Vector3(0, ry, 0)
+			rim.material_override = rim_mat
+			barrel.add_child(rim)
+		# Hazard sign label on the side
+		var hazard: Label3D = Label3D.new()
+		hazard.text = "☢"
+		hazard.position = Vector3(0, 0, 0.41)
+		hazard.modulate = Color(0.10, 0.10, 0.10)
+		hazard.outline_size = 0
+		hazard.font_size = 32
+		hazard.no_depth_test = true
+		barrel.add_child(hazard)
+	# Collision around the cluster
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.5, 1.20, 3.0)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.60, 0)
+	sb.add_child(cs)
+	cluster.add_child(sb)
+
+
+func _build_d2_buried_arm(geom: Node) -> void:
+	## Epic-2 T32: half-buried giant mechanical arm sticking out of the
+	## ground at an angle, frozen in a gripping pose. 4 segments + a
+	## 4-fingered claw at the top. Mysterious lore-piece scale prop.
+	var arm: Node3D = Node3D.new()
+	arm.name = "D2BuriedArm"
+	arm.position = D2_CENTER + Vector3(0, 0, 18)
+	arm.rotation = Vector3(0, deg_to_rad(35), deg_to_rad(-30))
+	geom.add_child(arm)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.40
+	# 4 stacked arm segments (each smaller than the last)
+	var segment_sizes: Array[float] = [1.20, 1.0, 0.85, 0.65]
+	var current_y: float = 0.0
+	for i in segment_sizes.size():
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		var seg_height: float = 1.6
+		smesh.size = Vector3(segment_sizes[i], seg_height, segment_sizes[i])
+		seg.mesh = smesh
+		seg.position = Vector3(0, current_y + seg_height * 0.5, 0)
+		seg.material_override = metal_mat
+		arm.add_child(seg)
+		# Glowing joint ring at the bottom of each segment except the first
+		if i > 0:
+			var joint: MeshInstance3D = MeshInstance3D.new()
+			var jm: TorusMesh = TorusMesh.new()
+			jm.inner_radius = segment_sizes[i] * 0.55
+			jm.outer_radius = segment_sizes[i] * 0.70
+			joint.mesh = jm
+			joint.position = Vector3(0, current_y, 0)
+			var jmat: StandardMaterial3D = StandardMaterial3D.new()
+			jmat.albedo_color = Color(1.0, 0.40, 0.20)
+			jmat.emission_enabled = true
+			jmat.emission = Color(1.0, 0.55, 0.20)
+			jmat.emission_energy_multiplier = 1.8
+			jmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			joint.material_override = jmat
+			arm.add_child(joint)
+		current_y += seg_height
+	# 4 finger claws at the top, splayed outward
+	for f in 4:
+		var angle: float = (float(f) / 4.0) * TAU
+		var finger: MeshInstance3D = MeshInstance3D.new()
+		var fmesh: BoxMesh = BoxMesh.new()
+		fmesh.size = Vector3(0.18, 1.20, 0.18)
+		finger.mesh = fmesh
+		finger.position = Vector3(cos(angle) * 0.45, current_y + 0.50, sin(angle) * 0.45)
+		finger.rotation = Vector3(deg_to_rad(20) * sin(angle), 0, deg_to_rad(20) * cos(angle))
+		finger.material_override = metal_mat
+		arm.add_child(finger)
+	# Collision around the base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.85
+	cap.height = current_y
+	cs.shape = cap
+	cs.position = Vector3(0, current_y * 0.5, 0)
+	sb.add_child(cs)
+	arm.add_child(sb)
+
+
+func _build_d2_fire_pit(geom: Node) -> void:
+	## Epic-2 T33: campfire pit with crackling fire particles + 2 small
+	## NPCs (silhouette capsules) seated around it. The first sign of
+	## "people gather here for warmth" in the dangerous district.
+	var fire: Node3D = Node3D.new()
+	fire.name = "D2FirePit"
+	fire.position = D2_CENTER + Vector3(-12, 0, 10)
+	geom.add_child(fire)
+	# Stone ring
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.14, 0.12)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.55
+	for s in 8:
+		var angle: float = (float(s) / 8.0) * TAU
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.35, 0.20, 0.30)
+		stone.mesh = smesh
+		stone.position = Vector3(cos(angle) * 0.85, 0.10, sin(angle) * 0.85)
+		stone.rotation = Vector3(0, -angle, 0)
+		stone.material_override = stone_mat
+		fire.add_child(stone)
+	# Logs in center (4 crossed cylinders)
+	var log_mat: StandardMaterial3D = StandardMaterial3D.new()
+	log_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	log_mat.metallic = 0.10
+	log_mat.roughness = 0.65
+	for i in 4:
+		var log_mesh: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.10
+		lm.bottom_radius = 0.10
+		lm.height = 1.0
+		log_mesh.mesh = lm
+		log_mesh.position = Vector3(0, 0.20, 0)
+		log_mesh.rotation = Vector3(deg_to_rad(85), deg_to_rad(45 * i), 0)
+		log_mesh.material_override = log_mat
+		fire.add_child(log_mesh)
+	# Glowing ember core
+	var ember: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.30
+	em.height = 0.60
+	ember.mesh = em
+	ember.position = Vector3(0, 0.30, 0)
+	var em_mat: StandardMaterial3D = StandardMaterial3D.new()
+	em_mat.albedo_color = Color(1.0, 0.55, 0.20)
+	em_mat.emission_enabled = true
+	em_mat.emission = Color(1.0, 0.65, 0.20)
+	em_mat.emission_energy_multiplier = 2.6
+	em_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ember.material_override = em_mat
+	fire.add_child(ember)
+	# Pulse ember
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(ember, "scale", Vector3(1.20, 1.20, 1.20), 0.6).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(ember, "scale", Vector3(0.95, 0.95, 0.95), 0.6).set_ease(Tween.EASE_IN_OUT)
+	# Real omni light from fire
+	var light: OmniLight3D = OmniLight3D.new()
+	light.position = Vector3(0, 0.5, 0)
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 2.4
+	light.omni_range = 7.0
+	fire.add_child(light)
+	# Flame particles rising
+	var flames: GPUParticles3D = GPUParticles3D.new()
+	flames.amount = 50
+	flames.lifetime = 1.4
+	flames.position = Vector3(0, 0.45, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 0.25
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 1.4
+	pmat.initial_velocity_max = 2.4
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.18
+	pmat.scale_max = 0.35
+	pmat.color = Color(1.0, 0.55, 0.20, 1.0)
+	flames.process_material = pmat
+	var flame_mesh: SphereMesh = SphereMesh.new()
+	flame_mesh.radius = 0.18
+	flame_mesh.height = 0.36
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.55, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_energy_multiplier = 2.4
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flame_mesh.material = flame_mat
+	flames.draw_pass_1 = flame_mesh
+	fire.add_child(flames)
+	# 2 seated silhouettes (capsules) around the fire
+	var sit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sit_mat.albedo_color = Color(0.16, 0.10, 0.06)
+	sit_mat.metallic = 0.10
+	sit_mat.roughness = 0.65
+	for spec in [[Vector3(-1.7, 0.35, 0), Color(1.0, 0.65, 0.30)], [Vector3(1.7, 0.35, 0), Color(1.0, 0.55, 0.20)]]:
+		var npc: MeshInstance3D = MeshInstance3D.new()
+		var nmesh: CapsuleMesh = CapsuleMesh.new()
+		nmesh.radius = 0.30
+		nmesh.height = 0.55
+		npc.mesh = nmesh
+		npc.position = spec[0]
+		npc.rotation = Vector3(deg_to_rad(15), 0, 0)
+		npc.material_override = sit_mat
+		fire.add_child(npc)
+		# Glowing eye facing the fire
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var eye_mesh: SphereMesh = SphereMesh.new()
+		eye_mesh.radius = 0.05
+		eye_mesh.height = 0.10
+		eye.mesh = eye_mesh
+		var to_fire_x: float = -sign(spec[0].x) * 0.30
+		eye.position = (spec[0] as Vector3) + Vector3(to_fire_x, 0.10, 0)
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		var eye_color: Color = spec[1]
+		eye_mat.albedo_color = eye_color
+		eye_mat.emission_enabled = true
+		eye_mat.emission = eye_color
+		eye_mat.emission_energy_multiplier = 2.6
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		eye.material_override = eye_mat
+		fire.add_child(eye)
+
+
+func _build_d2_hoverbike_wreck(geom: Node) -> void:
+	## Epic-2 T34: a wrecked hover-bike at the side of the road, tilted on
+	## its side, with one engine pod sparking. Tells "fast travel exists
+	## here but it's deadly".
+	var bike: Node3D = Node3D.new()
+	bike.name = "D2HoverbikeWreck"
+	bike.position = D2_CENTER + Vector3(10, 0, -16)
+	bike.rotation = Vector3(0, deg_to_rad(-25), deg_to_rad(35))
+	geom.add_child(bike)
+	# Main fuselage — long box
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	hull_mat.metallic = 0.85
+	hull_mat.roughness = 0.30
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(1.40, 0.40, 0.55)
+	hull.mesh = hmesh
+	hull.position = Vector3(0, 0.45, 0)
+	hull.material_override = hull_mat
+	bike.add_child(hull)
+	# Pointy nose (prism)
+	var nose: MeshInstance3D = MeshInstance3D.new()
+	var nmesh: PrismMesh = PrismMesh.new()
+	nmesh.size = Vector3(0.55, 0.40, 0.55)
+	nose.mesh = nmesh
+	nose.position = Vector3(0.95, 0.45, 0)
+	nose.rotation = Vector3(0, deg_to_rad(90), 0)
+	nose.material_override = hull_mat
+	bike.add_child(nose)
+	# Handlebars (thin bar across)
+	var bar: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CylinderMesh = CylinderMesh.new()
+	bmesh.top_radius = 0.05
+	bmesh.bottom_radius = 0.05
+	bmesh.height = 0.85
+	bar.mesh = bmesh
+	bar.position = Vector3(0.55, 0.55, 0)
+	bar.rotation = Vector3(deg_to_rad(90), 0, 0)
+	bar.material_override = hull_mat
+	bike.add_child(bar)
+	# 2 engine pods on each side
+	var engine_mat: StandardMaterial3D = StandardMaterial3D.new()
+	engine_mat.albedo_color = Color(0.30, 0.10, 0.06)
+	engine_mat.emission_enabled = true
+	engine_mat.emission = Color(1.0, 0.40, 0.20)
+	engine_mat.emission_energy_multiplier = 0.85
+	engine_mat.metallic = 0.55
+	for sz: float in [-0.55, 0.55]:
+		var pod: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.18
+		pmesh.bottom_radius = 0.22
+		pmesh.height = 1.0
+		pod.mesh = pmesh
+		pod.position = Vector3(-0.30, 0.45, sz)
+		pod.rotation = Vector3(deg_to_rad(90), 0, 0)
+		pod.material_override = engine_mat
+		bike.add_child(pod)
+	# Sparks from one engine
+	var sparks: GPUParticles3D = GPUParticles3D.new()
+	sparks.amount = 24
+	sparks.lifetime = 0.85
+	sparks.position = Vector3(-0.80, 0.45, 0.55)
+	var spmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	spmat.emission_sphere_radius = 0.10
+	spmat.direction = Vector3(-1, 0.5, 0)
+	spmat.spread = 50.0
+	spmat.initial_velocity_min = 1.4
+	spmat.initial_velocity_max = 2.4
+	spmat.gravity = Vector3(0, -2.0, 0)
+	spmat.scale_min = 0.04
+	spmat.scale_max = 0.10
+	spmat.color = Color(1.0, 0.85, 0.30, 1.0)
+	sparks.process_material = spmat
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.05
+	sm.height = 0.10
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(1.0, 0.95, 0.40)
+	sm_mat.emission_energy_multiplier = 2.6
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm.material = sm_mat
+	sparks.draw_pass_1 = sm
+	bike.add_child(sparks)
+	# Collision around the wreck
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 1.0, 1.6)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.45, 0)
+	sb.add_child(cs)
+	bike.add_child(sb)
+
+
+func _build_d2_code_waterfall(geom: Node) -> void:
+	## Epic-2 T35: a vertical "code stream waterfall" — a tall narrow
+	## column of green emissive characters falling from a high broken
+	## conduit at the back of the district. Particles + a Label3D ribbon.
+	var fall: Node3D = Node3D.new()
+	fall.name = "D2CodeWaterfall"
+	fall.position = D2_CENTER + Vector3(-22, 0, -2)
+	geom.add_child(fall)
+	# Broken conduit pipe at the top (small box)
+	var pipe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pipe_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	pipe_mat.metallic = 0.85
+	pipe_mat.roughness = 0.30
+	var pipe: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: CylinderMesh = CylinderMesh.new()
+	pmesh.top_radius = 0.30
+	pmesh.bottom_radius = 0.30
+	pmesh.height = 1.4
+	pipe.mesh = pmesh
+	pipe.position = Vector3(0, 7.5, 0)
+	pipe.rotation = Vector3(0, 0, deg_to_rad(90))
+	pipe.material_override = pipe_mat
+	fall.add_child(pipe)
+	# Falling green particles
+	var stream: GPUParticles3D = GPUParticles3D.new()
+	stream.amount = 80
+	stream.lifetime = 3.5
+	stream.position = Vector3(0, 7.0, 0)
+	var spmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	spmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	spmat.emission_sphere_radius = 0.20
+	spmat.direction = Vector3(0, -1, 0)
+	spmat.spread = 4.0
+	spmat.initial_velocity_min = 0.85
+	spmat.initial_velocity_max = 1.40
+	spmat.gravity = Vector3(0, -1.5, 0)
+	spmat.scale_min = 0.10
+	spmat.scale_max = 0.18
+	spmat.color = Color(0.40, 1.0, 0.55, 1.0)
+	stream.process_material = spmat
+	var bit: BoxMesh = BoxMesh.new()
+	bit.size = Vector3(0.10, 0.18, 0.04)
+	var bit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bit_mat.albedo_color = Color(0.40, 1.0, 0.55)
+	bit_mat.emission_enabled = true
+	bit_mat.emission = Color(0.55, 1.0, 0.55)
+	bit_mat.emission_energy_multiplier = 2.6
+	bit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bit.material = bit_mat
+	stream.draw_pass_1 = bit
+	fall.add_child(stream)
+	# 3 floating "01" Label3D ribbons inside the column
+	for i in 3:
+		var ribbon: Label3D = Label3D.new()
+		ribbon.text = "01010\n10110\n01101"
+		ribbon.position = Vector3(randf_range(-0.20, 0.20), 5.0 - i * 1.6, 0)
+		ribbon.modulate = Color(0.40, 1.0, 0.55)
+		ribbon.outline_modulate = Color(0, 0, 0, 0.85)
+		ribbon.outline_size = 3
+		ribbon.font_size = 16
+		ribbon.no_depth_test = true
+		ribbon.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		fall.add_child(ribbon)
+		# Drift down + reset
+		var drift: Tween = create_tween().set_loops()
+		var origin_y: float = ribbon.position.y
+		drift.tween_property(ribbon, "position:y", origin_y - 4.0, 3.5)
+		drift.tween_property(ribbon, "position:y", origin_y, 0.05)
+	# Collision around the conduit pipe
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.40
+	cap.height = 1.4
+	cs.shape = cap
+	cs.position = Vector3(0, 7.5, 0)
+	sb.add_child(cs)
+	fall.add_child(sb)
 
