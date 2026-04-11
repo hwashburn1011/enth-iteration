@@ -74,6 +74,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_courier_hut(geom)
 	_build_th_bookstall(geom)
 	_build_th_postman_npc(town)
+	_build_th_bookkeeper_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -10157,3 +10158,192 @@ func _build_th_postman_npc(town: Node) -> void:
 	var spulse: Tween = npc.create_tween().set_loops()
 	spulse.tween_property(seal_mat, "emission_energy_multiplier", 8.5, 1.4).set_ease(Tween.EASE_IN_OUT)
 	spulse.tween_property(seal_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_bookkeeper_npc(town: Node) -> void:
+	## Epic-10 T58: Bookstall Keeper Inkwell — librarian NPC standing
+	## behind the bookstall counter, holding an open glowing book.
+	## Long blue scholar robe with brass collar trim, brass quill pinned
+	## at the shoulder, monocle eyepiece, open book held in both hands
+	## at chest height with cyan glowing pages.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "THBookstallKeeperSlot"
+	# Stand behind the bookstall counter (SE perimeter at radius 13.0, slightly inside the building)
+	var ang: float = 7.0 * PI / 4.0
+	slot.position = TOWN_CENTER + Vector3(cos(ang) * 13.20, 0, sin(ang) * 13.20)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "THBookstallKeeperInkwell"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Bookstall Keeper Inkwell")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_bookstall_keeper_inkwell")
+	# Face inward toward the beacon
+	npc.rotation.y = -ang + PI / 2.0
+	slot.add_child(npc)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.18, 0.30, 0.55)
+	robe_mat.roughness = 0.85
+	robe_mat.metallic = 0.18
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.30, 0.55, 1.0)
+	robe_mat.emission_energy_multiplier = 0.30
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var leather_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leather_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	leather_mat.roughness = 0.85
+	leather_mat.metallic = 0.10
+	# ---- Long blue scholar robe ----
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(0.95, 1.75, 0.55)
+	robe.mesh = rmesh
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.90, 0)
+	npc.add_child(robe)
+	# Brass collar trim
+	var collar: MeshInstance3D = MeshInstance3D.new()
+	var colm: BoxMesh = BoxMesh.new()
+	colm.size = Vector3(0.95, 0.10, 0.55)
+	collar.mesh = colm
+	collar.material_override = brass_mat
+	collar.position = Vector3(0, 1.80, 0)
+	npc.add_child(collar)
+	# Vertical brass robe trim
+	var seam: MeshInstance3D = MeshInstance3D.new()
+	var seamesh: BoxMesh = BoxMesh.new()
+	seamesh.size = Vector3(0.16, 1.65, 0.06)
+	seam.mesh = seamesh
+	seam.material_override = brass_mat
+	seam.position = Vector3(0, 0.95, -0.30)
+	npc.add_child(seam)
+	# ---- Brass quill pinned at the shoulder ----
+	var quill_post: MeshInstance3D = MeshInstance3D.new()
+	var qpm: SphereMesh = SphereMesh.new()
+	qpm.radius = 0.08
+	qpm.height = 0.16
+	quill_post.mesh = qpm
+	quill_post.material_override = brass_mat
+	quill_post.position = Vector3(-0.40, 1.65, -0.20)
+	npc.add_child(quill_post)
+	var quill_feather: MeshInstance3D = MeshInstance3D.new()
+	var qfm: PrismMesh = PrismMesh.new()
+	qfm.size = Vector3(0.10, 0.40, 0.06)
+	quill_feather.mesh = qfm
+	quill_feather.material_override = data_mat
+	quill_feather.position = Vector3(-0.40, 1.95, -0.30)
+	quill_feather.rotation.z = -0.40
+	npc.add_child(quill_feather)
+	# ---- Brass monocle eyepiece on the right side of the head ----
+	var monocle_frame: MeshInstance3D = MeshInstance3D.new()
+	var mfm: TorusMesh = TorusMesh.new()
+	mfm.inner_radius = 0.10
+	mfm.outer_radius = 0.14
+	monocle_frame.mesh = mfm
+	monocle_frame.material_override = brass_mat
+	monocle_frame.position = Vector3(0.18, 1.92, -0.30)
+	monocle_frame.rotation.y = PI / 2.0
+	npc.add_child(monocle_frame)
+	# Glowing monocle lens
+	var lens: MeshInstance3D = MeshInstance3D.new()
+	var lm: SphereMesh = SphereMesh.new()
+	lm.radius = 0.09
+	lm.height = 0.10
+	lens.mesh = lm
+	lens.material_override = data_mat
+	lens.position = Vector3(0.18, 1.92, -0.30)
+	lens.scale = Vector3(1.0, 1.0, 0.30)
+	npc.add_child(lens)
+	# Monocle chain to the collar
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var chm: CylinderMesh = CylinderMesh.new()
+	chm.top_radius = 0.012
+	chm.bottom_radius = 0.012
+	chm.height = 0.55
+	chain.mesh = chm
+	chain.material_override = brass_mat
+	chain.position = Vector3(0.30, 1.65, -0.30)
+	chain.rotation.z = -0.40
+	npc.add_child(chain)
+	# ---- Open book held in both hands at chest height ----
+	# Book base (closed leather cover behind the open pages)
+	var book_back: MeshInstance3D = MeshInstance3D.new()
+	var bbm: BoxMesh = BoxMesh.new()
+	bbm.size = Vector3(0.65, 0.45, 0.08)
+	book_back.mesh = bbm
+	book_back.material_override = leather_mat
+	book_back.position = Vector3(0, 1.20, -0.45)
+	book_back.rotation.x = 0.30
+	npc.add_child(book_back)
+	# Open page (glowing cyan rectangle on top of the cover)
+	var page: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(0.55, 0.40, 0.04)
+	page.mesh = pmm
+	page.material_override = data_mat
+	page.position = Vector3(0, 1.27, -0.50)
+	page.rotation.x = 0.30
+	npc.add_child(page)
+	# Page center seam (where the book opens)
+	var page_seam: MeshInstance3D = MeshInstance3D.new()
+	var psm: BoxMesh = BoxMesh.new()
+	psm.size = Vector3(0.04, 0.40, 0.06)
+	page_seam.mesh = psm
+	page_seam.material_override = brass_mat
+	page_seam.position = Vector3(0, 1.27, -0.51)
+	page_seam.rotation.x = 0.30
+	npc.add_child(page_seam)
+	# Floating data motes rising from the open page
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 1.40, -0.55)
+	motes.amount = 12
+	motes.lifetime = 1.8
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 14.0
+	pmat.initial_velocity_min = 0.4
+	pmat.initial_velocity_max = 0.8
+	pmat.gravity = Vector3(0, 0.10, 0)
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.08
+	pmat.color = Color(0.45, 0.85, 1.0, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.04
+	psmesh.height = 0.08
+	motes.draw_pass_1 = psmesh
+	npc.add_child(motes)
+	# ---- Subtle warm cyan OmniLight ----
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.55, -0.30)
+	lt.light_color = Color(0.65, 0.85, 1.0)
+	lt.light_energy = 1.6
+	lt.omni_range = 4.5
+	npc.add_child(lt)
+	# ---- Slow head bob (reading the book) tween ----
+	var read: Tween = npc.create_tween().set_loops()
+	read.tween_property(npc, "rotation:x", 0.18, 1.8).set_ease(Tween.EASE_IN_OUT)
+	read.tween_property(npc, "rotation:x", 0.05, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Pages + monocle pulse
+	var dpulse: Tween = npc.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
