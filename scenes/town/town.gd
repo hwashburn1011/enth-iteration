@@ -17200,6 +17200,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_smuggler_boss_npc()
 	# Epic-6 T50: NEON SOVEREIGN mini-boss landmark
 	_build_d6_neon_sovereign(geom)
+	# Epic-6 T51: subway entrance stairs
+	_build_d6_subway_entrance(geom)
+	# Epic-6 T52: subway map kiosk
+	_build_d6_subway_map(geom)
+	# Epic-6 T53: street preacher NPC
+	_build_d6_street_preacher_npc()
+	# Epic-6 T54: flying pigeons
+	_build_d6_pigeons(geom)
+	# Epic-6 T55: ramen customer NPC
+	_build_d6_ramen_customer_npc()
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -21377,6 +21387,395 @@ func _build_d6_neon_sovereign(geom: Node) -> void:
 	pcs.shape = pcb
 	psb.add_child(pcs)
 	sov.add_child(psb)
+
+
+func _build_d6_subway_entrance(geom: Node) -> void:
+	## Epic-6 T51: subway entrance — recessed staircase descending into a
+	## dark hole with a metal railing and "SUBWAY" sign overhead.
+	var sub: Node3D = Node3D.new()
+	sub.name = "SubwayEntrance"
+	sub.position = Vector3(D6_CENTER.x + 6.0, 0.0, 18.0)
+	geom.add_child(sub)
+	var concrete_mat: StandardMaterial3D = StandardMaterial3D.new()
+	concrete_mat.albedo_color = Color(0.40, 0.42, 0.45)
+	concrete_mat.roughness = 0.92
+	# Recessed pit (dark interior)
+	var pit: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(2.85, 0.20, 2.20)
+	pit.mesh = pm
+	var pit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pit_mat.albedo_color = Color(0.05, 0.04, 0.10)
+	pit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	pit.material_override = pit_mat
+	pit.position = Vector3(0, -0.10, 0)
+	sub.add_child(pit)
+	# 4 stair steps descending
+	for i in 4:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(2.85, 0.18, 0.40)
+		step.mesh = sm
+		step.material_override = concrete_mat
+		step.position = Vector3(0, 0.10 - i * 0.20, 0.85 - i * 0.40)
+		sub.add_child(step)
+	# 2 metal railings flanking the entrance
+	var rail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rail_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	rail_mat.metallic = 0.85
+	rail_mat.roughness = 0.30
+	for sx in [-1.40, 1.40]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: CylinderMesh = CylinderMesh.new()
+		rm.top_radius = 0.04
+		rm.bottom_radius = 0.05
+		rm.height = 1.85
+		rail.mesh = rm
+		rail.material_override = rail_mat
+		rail.position = Vector3(sx, 0.92, 0.85)
+		sub.add_child(rail)
+		# Rail collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 0.92, 0.85)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.10
+		cap.height = 1.85
+		cs.shape = cap
+		sb.add_child(cs)
+		sub.add_child(sb)
+	# Subway sign overhead
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(2.85, 0.55, 0.10)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.30, 0.65, 0.95)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.30, 0.95, 1.0)
+	sign_mat.emission_energy_multiplier = 2.5
+	sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 2.85, 1.20)
+	sub.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "SUBWAY"
+	label.modulate = Color(0.10, 0.05, 0.10)
+	label.outline_modulate = Color(0.95, 0.95, 1.0)
+	label.outline_size = 6
+	label.font_size = 80
+	label.pixel_size = 0.011
+	label.position = Vector3(0, 2.85, 1.26)
+	sub.add_child(label)
+	# Light from sign
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.5
+	light.position = Vector3(0, 2.85, 1.85)
+	sub.add_child(light)
+
+
+func _build_d6_subway_map(geom: Node) -> void:
+	## Epic-6 T52: subway map kiosk — vertical illuminated box panel with
+	## a colorful map of dots and lines.
+	var map: Node3D = Node3D.new()
+	map.name = "SubwayMapKiosk"
+	map.position = Vector3(D6_CENTER.x + 9.0, 0.0, 18.0)
+	geom.add_child(map)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Frame
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(1.40, 2.40, 0.18)
+	frame.mesh = fm
+	frame.material_override = metal_mat
+	frame.position = Vector3(0, 1.20, 0)
+	map.add_child(frame)
+	# Map screen (cyan glow)
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(1.20, 2.0, 0.06)
+	screen.mesh = sm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.10, 0.20, 0.30)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.20, 0.55, 0.85)
+	screen_mat.emission_energy_multiplier = 1.4
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 1.30, 0.10)
+	map.add_child(screen)
+	# 6 colored station dots
+	var dot_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.95, 0.65, 0.20),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+		Color(0.55, 0.30, 0.95),
+	]
+	var dot_positions: Array = [
+		Vector3(-0.40,  0.70, 0.13),
+		Vector3(-0.20,  1.20, 0.13),
+		Vector3( 0.10,  1.55, 0.13),
+		Vector3( 0.30,  1.0, 0.13),
+		Vector3( 0.40,  1.85, 0.13),
+		Vector3(-0.30,  1.85, 0.13),
+	]
+	for i in 6:
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: SphereMesh = SphereMesh.new()
+		dm.radius = 0.08
+		dm.height = 0.16
+		dot.mesh = dm
+		var dot_mat: StandardMaterial3D = StandardMaterial3D.new()
+		dot_mat.albedo_color = dot_colors[i]
+		dot_mat.emission_enabled = true
+		dot_mat.emission = dot_colors[i]
+		dot_mat.emission_energy_multiplier = 3.0
+		dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		dot.material_override = dot_mat
+		dot.position = dot_positions[i]
+		map.add_child(dot)
+	# 4 connecting lines (thin emissive boxes between dots)
+	var line_mat: StandardMaterial3D = StandardMaterial3D.new()
+	line_mat.albedo_color = Color(0.85, 0.95, 1.0)
+	line_mat.emission_enabled = true
+	line_mat.emission = Color(0.85, 0.95, 1.0)
+	line_mat.emission_energy_multiplier = 1.4
+	line_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for line_data in [
+		{"size": Vector3(0.40, 0.04, 0.03), "pos": Vector3(-0.20, 0.95, 0.14), "rot": -45.0},
+		{"size": Vector3(0.40, 0.04, 0.03), "pos": Vector3(-0.05, 1.40, 0.14), "rot": -45.0},
+		{"size": Vector3(0.40, 0.04, 0.03), "pos": Vector3(0.20, 1.30, 0.14), "rot": 30.0},
+		{"size": Vector3(0.85, 0.04, 0.03), "pos": Vector3(0.05, 1.85, 0.14), "rot": 0.0},
+	]:
+		var line: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = line_data["size"]
+		line.mesh = lm
+		line.material_override = line_mat
+		line.position = line_data["pos"]
+		line.rotation_degrees = Vector3(0, 0, line_data["rot"])
+		map.add_child(line)
+	# Map title label
+	var label: Label3D = Label3D.new()
+	label.text = "TRANSIT MAP"
+	label.modulate = Color(0.95, 0.95, 1.0)
+	label.outline_modulate = Color(0.05, 0.20, 0.40)
+	label.outline_size = 4
+	label.font_size = 32
+	label.pixel_size = 0.005
+	label.position = Vector3(0, 2.20, 0.16)
+	map.add_child(label)
+	# Frame collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.40, 2.40, 0.18)
+	cs.shape = cb
+	sb.add_child(cs)
+	map.add_child(sb)
+
+
+func _build_d6_street_preacher_npc() -> void:
+	## Epic-6 T53: street preacher NPC with a small megaphone, raised hand,
+	## standing on a small wooden crate.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "StreetPreacherSlot"
+	slot.position = Vector3(D6_CENTER.x + 8.0, 0.0, 0.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "StreetPreacher"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Echo")
+	if "npc_id" in npc:
+		npc.set("npc_id", "preacher_d6")
+	slot.add_child(npc)
+	# Wooden crate stand under feet
+	var crate: MeshInstance3D = MeshInstance3D.new()
+	var crm: BoxMesh = BoxMesh.new()
+	crm.size = Vector3(0.85, 0.30, 0.85)
+	crate.mesh = crm
+	var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crate_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	crate.material_override = crate_mat
+	crate.position = Vector3(0, 0.15, 0)
+	npc.add_child(crate)
+	# Brown trench coat (offset upward by crate height)
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	coat_mat.metallic = 0.20
+	coat_mat.roughness = 0.65
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.90, 0)
+	npc.add_child(coat)
+	# Megaphone (small cone-shaped prism)
+	var mega: MeshInstance3D = MeshInstance3D.new()
+	var mm: PrismMesh = PrismMesh.new()
+	mm.size = Vector3(0.20, 0.30, 0.30)
+	mega.mesh = mm
+	var mega_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mega_mat.albedo_color = Color(0.95, 0.30, 0.30)
+	mega_mat.emission_enabled = true
+	mega_mat.emission = Color(0.95, 0.30, 0.30)
+	mega_mat.emission_energy_multiplier = 0.85
+	mega.material_override = mega_mat
+	mega.position = Vector3(0.40, 1.20, 0.30)
+	mega.rotation_degrees = Vector3(0, 0, -90)
+	npc.add_child(mega)
+
+
+func _build_d6_pigeons(geom: Node) -> void:
+	## Epic-6 T54: 4 pigeons flying in lazy circles overhead — small grey
+	## bird bodies + 2 wings + slow rotation pivot.
+	var flock: Node3D = Node3D.new()
+	flock.name = "Pigeons"
+	flock.position = Vector3(D6_CENTER.x, 5.5, 0.0)
+	geom.add_child(flock)
+	var grey_mat: StandardMaterial3D = StandardMaterial3D.new()
+	grey_mat.albedo_color = Color(0.55, 0.55, 0.60)
+	grey_mat.roughness = 0.65
+	for i in 4:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, i * 0.40, 0)
+		pivot.rotation_degrees = Vector3(0, i * 90.0, 0)
+		flock.add_child(pivot)
+		var bird: Node3D = Node3D.new()
+		bird.position = Vector3(8.0 + i * 0.55, 0, 0)
+		pivot.add_child(bird)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.16
+		bm.height = 0.28
+		body.mesh = bm
+		body.material_override = grey_mat
+		body.scale = Vector3(0.85, 0.85, 1.40)
+		bird.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.10
+		hm.height = 0.18
+		head.mesh = hm
+		head.material_override = grey_mat
+		head.position = Vector3(0, 0.06, 0.18)
+		bird.add_child(head)
+		# 2 wings
+		for sx in [-0.15, 0.15]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wm: BoxMesh = BoxMesh.new()
+			wm.size = Vector3(0.18, 0.04, 0.20)
+			wing.mesh = wm
+			wing.material_override = grey_mat
+			wing.position = Vector3(sx, 0.04, 0)
+			bird.add_child(wing)
+			# Wing flap tween
+			var twf: Tween = wing.create_tween().set_loops()
+			twf.tween_property(wing, "rotation_degrees:z", 30.0 if sx < 0 else -30.0, 0.18)
+			twf.tween_property(wing, "rotation_degrees:z", 0.0, 0.18)
+		# Pivot rotation tween
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0 + 360.0, 8.0 + i * 0.6)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
+
+
+func _build_d6_ramen_customer_npc() -> void:
+	## Epic-6 T55: ramen customer NPC seated at a small bowl bench eating ramen.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "RamenCustomerSlot"
+	slot.position = Vector3(D6_CENTER.x + 14.0, 0.0, 12.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "RamenCustomer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Slurpy")
+	if "npc_id" in npc:
+		npc.set("npc_id", "ramen_customer_d6")
+	slot.add_child(npc)
+	# Salaryman business suit
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 1.05, 0.40)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.20, 0.22, 0.30)
+	suit_mat.metallic = 0.20
+	suit_mat.roughness = 0.55
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.55, 0)
+	npc.add_child(suit)
+	# Red tie
+	var tie: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.08, 0.55, 0.04)
+	tie.mesh = tm
+	var tie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tie_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	tie.material_override = tie_mat
+	tie.position = Vector3(0, 0.85, 0.22)
+	npc.add_child(tie)
+	# Ramen bowl held in front
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.18
+	bm.bottom_radius = 0.14
+	bm.height = 0.14
+	bowl.mesh = bm
+	var bowl_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bowl_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	bowl.material_override = bowl_mat
+	bowl.position = Vector3(0.30, 0.85, 0.30)
+	npc.add_child(bowl)
+	# Steam from bowl
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 12
+	steam.lifetime = 1.4
+	steam.preprocess = 0.5
+	steam.position = Vector3(0.30, 0.92, 0.30)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 18.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.08
+	pm.scale_max = 0.16
+	pm.color = Color(0.95, 0.92, 0.85, 0.55)
+	steam.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.10
+	sm_mesh.height = 0.20
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	npc.add_child(steam)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
