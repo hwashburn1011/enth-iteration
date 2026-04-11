@@ -47,6 +47,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_forge_brazier_monument(geom)
 	_build_th_observatory_dome(geom)
 	_build_th_sky_lanterns(geom)
+	_build_th_west_entry_arch(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -5445,3 +5446,204 @@ func _build_th_sky_lanterns(geom: Node) -> void:
 		var bpulse: Tween = lgroup.create_tween().set_loops()
 		bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 9.5, bulb_period).set_ease(Tween.EASE_IN_OUT)
 		bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 5.5, bulb_period).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_west_entry_arch(geom: Node) -> void:
+	## Epic-10 T31: secondary entry arch over the W radial path, mirroring
+	## the E welcome arch but smaller and warmer-toned. 2 basalt pillars
+	## flanking the path with brass top caps, brass crossbar arch, central
+	## hanging brass plate with 8 glowing amber letters, 2 hanging chains
+	## with brass coin pendants, and 2 corner torches at pillar mid-height.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_WestEntryArch"
+	# W radial path, just outside the outer plaza rim
+	pivot.position = TOWN_CENTER + Vector3(-15.50, 0, 0)
+	# Rotate to match the path orientation (perpendicular to the radial)
+	pivot.rotation.y = PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.5
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	# ---- 2 basalt pillars at +/- offset along the arch axis ----
+	for px in [-4.50, 4.50]:
+		var pgroup: Node3D = Node3D.new()
+		pgroup.name = "WestArchPillar_" + str(int(px))
+		pgroup.position = Vector3(px, 0, 0)
+		pivot.add_child(pgroup)
+		# Stepped base
+		var base1: MeshInstance3D = MeshInstance3D.new()
+		var b1m: BoxMesh = BoxMesh.new()
+		b1m.size = Vector3(1.55, 0.45, 1.55)
+		base1.mesh = b1m
+		base1.material_override = stone_mat
+		base1.position = Vector3(0, 0.22, 0)
+		pgroup.add_child(base1)
+		var base2: MeshInstance3D = MeshInstance3D.new()
+		var b2m: BoxMesh = BoxMesh.new()
+		b2m.size = Vector3(1.30, 0.35, 1.30)
+		base2.mesh = b2m
+		base2.material_override = stone_mat
+		base2.position = Vector3(0, 0.62, 0)
+		pgroup.add_child(base2)
+		# Pillar shaft (6m, smaller than the east arch's 7.5m)
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.00, 6.00, 1.00)
+		shaft.mesh = sm
+		shaft.material_override = stone_mat
+		shaft.position = Vector3(0, 3.80, 0)
+		pgroup.add_child(shaft)
+		# Combined collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 3.65, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(1.55, 7.30, 1.55)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pgroup.add_child(sb)
+		# Brass mid band
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(1.10, 0.18, 1.10)
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, 4.00, 0)
+		pgroup.add_child(band)
+		# Brass top cap
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var capm: BoxMesh = BoxMesh.new()
+		capm.size = Vector3(1.30, 0.25, 1.30)
+		cap.mesh = capm
+		cap.material_override = brass_mat
+		cap.position = Vector3(0, 6.95, 0)
+		pgroup.add_child(cap)
+		# ---- Pillar mid-height torch (bracket + flame + light) ----
+		var bracket: MeshInstance3D = MeshInstance3D.new()
+		var bktm: BoxMesh = BoxMesh.new()
+		bktm.size = Vector3(0.18, 0.20, 0.45)
+		bracket.mesh = bktm
+		bracket.material_override = brass_mat
+		# Inner-facing torch
+		var inner_z: float = -0.62
+		bracket.position = Vector3(0, 4.55, inner_z)
+		pgroup.add_child(bracket)
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.18
+		flm.height = 0.36
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(0, 4.80, inner_z - 0.25)
+		pgroup.add_child(flame)
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 4.80, inner_z - 0.25)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 2.6
+		lt.omni_range = 7.0
+		pgroup.add_child(lt)
+	# ---- Brass crossbar arch overhead ----
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cbm: BoxMesh = BoxMesh.new()
+	cbm.size = Vector3(10.50, 0.40, 1.00)
+	crossbar.mesh = cbm
+	crossbar.material_override = brass_mat
+	crossbar.position = Vector3(0, 7.10, 0)
+	pivot.add_child(crossbar)
+	# Crossbar bottom trim lip
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var trm: BoxMesh = BoxMesh.new()
+	trm.size = Vector3(10.20, 0.14, 1.10)
+	trim.mesh = trm
+	trim.material_override = brass_mat
+	trim.position = Vector3(0, 6.85, 0)
+	pivot.add_child(trim)
+	# ---- Central hanging brass plate with 8 glowing amber letters ----
+	var plate: MeshInstance3D = MeshInstance3D.new()
+	var plm: BoxMesh = BoxMesh.new()
+	plm.size = Vector3(4.20, 1.10, 0.16)
+	plate.mesh = plm
+	plate.material_override = brass_mat
+	plate.position = Vector3(0, 5.50, 0)
+	pivot.add_child(plate)
+	# 8 glowing amber letters across the plate
+	for i in 8:
+		var lx: float = -1.65 + float(i) * 0.47
+		var letter: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.26, 0.50, 0.06)
+		letter.mesh = lm
+		letter.material_override = amber_mat
+		letter.position = Vector3(lx, 5.50, -0.12)
+		pivot.add_child(letter)
+	# 2 brass support chains from the crossbar to the plate
+	for cx in [-1.80, 1.80]:
+		var chain: MeshInstance3D = MeshInstance3D.new()
+		var chmm: CylinderMesh = CylinderMesh.new()
+		chmm.top_radius = 0.04
+		chmm.bottom_radius = 0.04
+		chmm.height = 1.10
+		chain.mesh = chmm
+		chain.material_override = iron_mat
+		chain.position = Vector3(cx, 6.30, 0)
+		pivot.add_child(chain)
+	# ---- 2 hanging coin pendants from the crossbar (decorative) ----
+	for cnx in [-3.50, 3.50]:
+		# Pendant chain
+		var pendant_chain: MeshInstance3D = MeshInstance3D.new()
+		var pcm: CylinderMesh = CylinderMesh.new()
+		pcm.top_radius = 0.025
+		pcm.bottom_radius = 0.025
+		pcm.height = 0.55
+		pendant_chain.mesh = pcm
+		pendant_chain.material_override = iron_mat
+		pendant_chain.position = Vector3(cnx, 6.55, 0)
+		pivot.add_child(pendant_chain)
+		# Brass coin disc
+		var coin: MeshInstance3D = MeshInstance3D.new()
+		var cnm: CylinderMesh = CylinderMesh.new()
+		cnm.top_radius = 0.16
+		cnm.bottom_radius = 0.16
+		cnm.height = 0.05
+		coin.mesh = cnm
+		coin.material_override = brass_mat
+		coin.position = Vector3(cnx, 6.20, 0)
+		coin.rotation.x = PI / 2.0
+		pivot.add_child(coin)
+	# ---- Pulses ----
+	# Letters amber pulse
+	var lpulse2: Tween = pivot.create_tween().set_loops()
+	lpulse2.tween_property(amber_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	lpulse2.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Torch flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.0, 0.5).set_ease(Tween.EASE_IN_OUT)
