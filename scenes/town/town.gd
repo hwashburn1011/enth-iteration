@@ -25587,6 +25587,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_outlook_telescope(geom)
 	# Epic-7 T85: stargazer NPC
 	_build_d7_d7_stargazer_npc()
+	# Epic-7 T86: prayer wheels row
+	_build_d7_prayer_wheels(geom)
+	# Epic-7 T87: bell shrine
+	_build_d7_bell_shrine(geom)
+	# Epic-7 T88: sweeper monk NPC
+	_build_d7_sweeper_monk_npc()
+	# Epic-7 T89: water mill
+	_build_d7_water_mill(geom)
+	# Epic-7 T90: cloud mist particles
+	_build_d7_cloud_mist(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -31503,6 +31513,343 @@ func _build_d7_d7_stargazer_npc() -> void:
 		var ang: float = (TAU / 4.0) * i
 		star.position = Vector3(cos(ang) * 0.10, 1.55 + i * 0.18, sin(ang) * 0.10)
 		npc.add_child(star)
+
+
+func _build_d7_prayer_wheels(geom: Node) -> void:
+	## Epic-7 T86: row of 6 spinning prayer wheels — bronze drums on
+	## wooden axles, each rotating slowly around its vertical axis.
+	var wheels: Node3D = Node3D.new()
+	wheels.name = "PrayerWheels"
+	wheels.position = Vector3(D7_CENTER.x - 14.0, 0.0, 8.0)
+	geom.add_child(wheels)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	bronze_mat.emission_enabled = true
+	bronze_mat.emission = Color(0.95, 0.55, 0.10)
+	bronze_mat.emission_energy_multiplier = 0.65
+	bronze_mat.metallic = 0.85
+	bronze_mat.roughness = 0.30
+	for i in 6:
+		var wheel: Node3D = Node3D.new()
+		wheel.position = Vector3(i * 1.30, 0, 0)
+		wheels.add_child(wheel)
+		# Wood axle base
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.18, 0.40, 0.30)
+		base.mesh = bm
+		base.material_override = wood_mat
+		base.position = Vector3(0, 0.20, 0)
+		wheel.add_child(base)
+		# Top wood pillar
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.18, 0.40, 0.30)
+		top.mesh = tm
+		top.material_override = wood_mat
+		top.position = Vector3(0, 1.65, 0)
+		wheel.add_child(top)
+		# Bronze drum (spinning)
+		var drum: MeshInstance3D = MeshInstance3D.new()
+		var dmm: CylinderMesh = CylinderMesh.new()
+		dmm.top_radius = 0.30
+		dmm.bottom_radius = 0.30
+		dmm.height = 1.0
+		drum.mesh = dmm
+		drum.material_override = bronze_mat
+		drum.position = Vector3(0, 0.95, 0)
+		wheel.add_child(drum)
+		# Spin tween
+		var tw: Tween = drum.create_tween().set_loops()
+		tw.tween_property(drum, "rotation_degrees:y", 360.0, 4.0 + i * 0.3)
+		tw.tween_property(drum, "rotation_degrees:y", 0.0, 0.0)
+		# Wheel collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.95, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.30
+		cap.height = 1.85
+		cs.shape = cap
+		sb.add_child(cs)
+		wheel.add_child(sb)
+
+
+func _build_d7_bell_shrine(geom: Node) -> void:
+	## Epic-7 T87: small bell shrine — wooden frame with 3 hanging brass
+	## bells of varying sizes that sway slowly.
+	var shrine: Node3D = Node3D.new()
+	shrine.name = "BellShrine"
+	shrine.position = Vector3(D7_CENTER.x - 6.0, 0.0, 8.0)
+	geom.add_child(shrine)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.95, 0.75, 0.20)
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(0.95, 0.65, 0.10)
+	brass_mat.emission_energy_multiplier = 0.65
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.10
+	# 2 vertical wood pillars
+	for sx in [-1.40, 1.40]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.10
+		pm.bottom_radius = 0.14
+		pm.height = 2.85
+		pillar.mesh = pm
+		pillar.material_override = wood_mat
+		pillar.position = Vector3(sx, 1.42, 0)
+		shrine.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.18
+		cap.height = 2.85
+		cs.shape = cap
+		sb.add_child(cs)
+		shrine.add_child(sb)
+	# Top crossbar
+	var cross: MeshInstance3D = MeshInstance3D.new()
+	var crm: CylinderMesh = CylinderMesh.new()
+	crm.top_radius = 0.06
+	crm.bottom_radius = 0.06
+	crm.height = 2.85
+	cross.mesh = crm
+	cross.material_override = wood_mat
+	cross.position = Vector3(0, 2.85, 0)
+	cross.rotation_degrees = Vector3(0, 0, 90)
+	shrine.add_child(cross)
+	# 3 hanging bells of varying sizes
+	var sizes: Array = [0.30, 0.40, 0.30]
+	for i in 3:
+		var bell_pivot: Node3D = Node3D.new()
+		bell_pivot.position = Vector3(-1.0 + i * 1.0, 2.85, 0)
+		shrine.add_child(bell_pivot)
+		var bell: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = sizes[i]
+		bm.height = sizes[i] * 1.6
+		bell.mesh = bm
+		bell.material_override = brass_mat
+		bell.position = Vector3(0, -0.55, 0)
+		bell_pivot.add_child(bell)
+		# Sway tween (offset per bell)
+		var tw: Tween = bell_pivot.create_tween().set_loops()
+		tw.tween_interval(i * 0.30)
+		tw.tween_property(bell_pivot, "rotation_degrees:x", 6.0, 1.4 + i * 0.2)
+		tw.tween_property(bell_pivot, "rotation_degrees:x", -6.0, 1.4 + i * 0.2)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 1.85
+	light.omni_range = 5.0
+	light.position = Vector3(0, 2.40, 0)
+	shrine.add_child(light)
+
+
+func _build_d7_sweeper_monk_npc() -> void:
+	## Epic-7 T88: sweeper monk NPC — orange robe + held broom + sweeping
+	## arm motion tween.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SweeperMonkSlot"
+	slot.position = Vector3(D7_CENTER.x - 6.0, 0.0, 18.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "SweeperMonk"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Dustquiet")
+	if "npc_id" in npc:
+		npc.set("npc_id", "sweeper_d7")
+	slot.add_child(npc)
+	# Orange robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.45, 0.15)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Bald head
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 0.20
+	dm.height = 0.36
+	dome.mesh = dm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	dome.material_override = skin_mat
+	dome.position = Vector3(0, 1.50, 0)
+	npc.add_child(dome)
+	# Broom (handle + bristle bundle)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.04
+	hmm.bottom_radius = 0.04
+	hmm.height = 1.40
+	handle.mesh = hmm
+	handle.material_override = wood_mat
+	handle.position = Vector3(0.45, 0.85, 0.20)
+	handle.rotation_degrees = Vector3(0, 0, 25)
+	npc.add_child(handle)
+	# Bristle bundle (wide thin box)
+	var bristles: MeshInstance3D = MeshInstance3D.new()
+	var bsm: BoxMesh = BoxMesh.new()
+	bsm.size = Vector3(0.30, 0.20, 0.40)
+	bristles.mesh = bsm
+	var br_mat: StandardMaterial3D = StandardMaterial3D.new()
+	br_mat.albedo_color = Color(0.85, 0.65, 0.30)
+	br_mat.roughness = 0.95
+	bristles.material_override = br_mat
+	bristles.position = Vector3(0.95, 0.20, 0.20)
+	npc.add_child(bristles)
+	# Sweeping motion
+	var tw: Tween = handle.create_tween().set_loops()
+	tw.tween_property(handle, "rotation_degrees:z", 35.0, 0.55)
+	tw.tween_property(handle, "rotation_degrees:z", 15.0, 0.55)
+
+
+func _build_d7_water_mill(geom: Node) -> void:
+	## Epic-7 T89: small water mill — wooden building + large rotating
+	## water wheel on the side + small water trough at the base.
+	var mill: Node3D = Node3D.new()
+	mill.name = "WaterMill"
+	mill.position = Vector3(D7_CENTER.x + 0.0, 0.0, 18.0)
+	geom.add_child(mill)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.25, 0.15, 0.08)
+	dark_wood.roughness = 0.85
+	# Mill building
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.85, 3.40, 2.85)
+	body.mesh = bm
+	body.material_override = wood_mat
+	body.position = Vector3(0, 1.70, 0)
+	mill.add_child(body)
+	# Sloped roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(3.20, 1.10, 3.20)
+	roof.mesh = rm
+	roof.material_override = dark_wood
+	roof.position = Vector3(0, 3.95, 0)
+	mill.add_child(roof)
+	# Large water wheel on the side (vertical disc + spokes)
+	var wheel_pivot: Node3D = Node3D.new()
+	wheel_pivot.position = Vector3(2.40, 1.40, 0)
+	mill.add_child(wheel_pivot)
+	var wheel_disc: MeshInstance3D = MeshInstance3D.new()
+	var wdm: CylinderMesh = CylinderMesh.new()
+	wdm.top_radius = 1.40
+	wdm.bottom_radius = 1.40
+	wdm.height = 0.18
+	wheel_disc.mesh = wdm
+	wheel_disc.material_override = dark_wood
+	wheel_disc.rotation_degrees = Vector3(0, 0, 90)
+	wheel_pivot.add_child(wheel_disc)
+	# 8 spoke paddles around the wheel
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var paddle: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.30, 0.85, 0.04)
+		paddle.mesh = pm
+		paddle.material_override = wood_mat
+		paddle.position = Vector3(0, sin(ang) * 1.20, cos(ang) * 1.20)
+		paddle.rotation = Vector3(ang, 0, 0)
+		wheel_pivot.add_child(paddle)
+	# Spin tween for the wheel
+	var tw: Tween = wheel_pivot.create_tween().set_loops()
+	tw.tween_property(wheel_pivot, "rotation_degrees:x", 360.0, 8.0)
+	tw.tween_property(wheel_pivot, "rotation_degrees:x", 0.0, 0.0)
+	# Small water trough below (translucent)
+	var trough: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.40, 0.20, 0.85)
+	trough.mesh = tm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.65)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.85, 1.0)
+	water_mat.emission_energy_multiplier = 0.85
+	trough.material_override = water_mat
+	trough.position = Vector3(2.85, 0.10, 0)
+	mill.add_child(trough)
+	# Mill collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 3.40, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	mill.add_child(sb)
+
+
+func _build_d7_cloud_mist(geom: Node) -> void:
+	## Epic-7 T90: high-altitude cloud mist — large pale GPU particles
+	## drifting around at upper height giving the area a cloudy feel.
+	var mist: GPUParticles3D = GPUParticles3D.new()
+	mist.name = "CloudMist"
+	mist.position = Vector3(D7_CENTER.x, 8.0, 0.0)
+	mist.amount = 60
+	mist.lifetime = 16.0
+	mist.preprocess = 8.0
+	mist.explosiveness = 0.0
+	mist.randomness = 0.85
+	mist.visibility_aabb = AABB(Vector3(-40, -8, -25), Vector3(80, 24, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(35, 4, 22)
+	pm.direction = Vector3(0.30, 0.10, 0.10)
+	pm.spread = 75.0
+	pm.gravity = Vector3(0.05, 0.04, 0.02)
+	pm.initial_velocity_min = 0.10
+	pm.initial_velocity_max = 0.30
+	pm.scale_min = 1.10
+	pm.scale_max = 2.20
+	pm.color = Color(0.95, 0.95, 1.0, 0.30)
+	mist.process_material = pm
+	# Cloud mesh — large soft sphere
+	var cloud_mesh: SphereMesh = SphereMesh.new()
+	cloud_mesh.radius = 0.85
+	cloud_mesh.height = 1.40
+	mist.draw_pass_1 = cloud_mesh
+	var cloud_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloud_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.18)
+	cloud_mat.emission_enabled = true
+	cloud_mat.emission = Color(0.92, 0.92, 1.0)
+	cloud_mat.emission_energy_multiplier = 0.40
+	cloud_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	cloud_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	cloud_mesh.material = cloud_mat
+	geom.add_child(mist)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
