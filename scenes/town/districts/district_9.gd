@@ -100,6 +100,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_collapsed_skyforge_ruin(geom)
 	_build_d9_salvager_rax_npc(town)
 	_build_d9_lava_brook(geom)
+	_build_d9_lava_brook_bridge(geom)
 	print("[D9Builder] done")
 
 
@@ -8879,4 +8880,170 @@ func _build_d9_lava_brook(geom: Node) -> void:
 	var pulse: Tween = pivot.create_tween().set_loops()
 	pulse.tween_property(lava_mat, "emission_energy_multiplier", 8.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 	pulse.tween_property(lava_mat, "emission_energy_multiplier", 4.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_lava_brook_bridge(geom: Node) -> void:
+	## Epic-9 T80: arched iron bridge spanning the lava brook midway. Two
+	## stone abutments + iron deck arch + 4 brass-capped iron rail posts
+	## with 2 horizontal rails per side, 2 hanging amber lanterns, and a
+	## guild-crest centerpiece on each side. Lets the player cross safely
+	## between the geyser pocket and cascade pool zones.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_LavaBrookBridge"
+	# Brook anchor was at +55, -2 with seg index 3-4 around (1,-1)→(-0.5,1)
+	# So the brook midpoint world is roughly +55+0.25, +0.05, -2+0
+	pivot.position = D9_CENTER + Vector3(55, 0.05, -1)
+	# Rotate the bridge so its long axis is perpendicular to the brook flow
+	# (brook runs roughly along the +X / -Z diagonal)
+	pivot.rotation.y = PI / 4.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	stone_mat.metallic = 0.20
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.55, 0.18, 0.05)
+	stone_mat.emission_energy_multiplier = 0.18
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.16, 0.13)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.85, 0.25, 0.05)
+	iron_mat.emission_energy_multiplier = 0.35
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 6.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Two stone abutments at the bridge ends ----
+	for ax in [-2.20, 2.20]:
+		var ab: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(1.10, 0.65, 1.20)
+		ab.mesh = am
+		ab.material_override = stone_mat
+		ab.position = Vector3(ax, 0.30, 0)
+		pivot.add_child(ab)
+		# Abutment collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(ax, 0.30, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var bsh: BoxShape3D = BoxShape3D.new()
+		bsh.size = Vector3(1.10, 0.65, 1.20)
+		cs.shape = bsh
+		sb.add_child(cs)
+		pivot.add_child(sb)
+	# ---- Iron deck (arched slightly via 3 stacked thin slabs) ----
+	# Main flat deck slab
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(4.40, 0.18, 1.20)
+	deck.mesh = dm
+	deck.material_override = iron_mat
+	deck.position = Vector3(0, 0.72, 0)
+	pivot.add_child(deck)
+	# Deck collision so player can walk on it
+	var dsb: StaticBody3D = StaticBody3D.new()
+	dsb.position = Vector3(0, 0.72, 0)
+	var dcs: CollisionShape3D = CollisionShape3D.new()
+	var dbsh: BoxShape3D = BoxShape3D.new()
+	dbsh.size = Vector3(4.40, 0.18, 1.20)
+	dcs.shape = dbsh
+	dsb.add_child(dcs)
+	pivot.add_child(dsb)
+	# Brass deck trim (front + back)
+	for tz in [-0.62, 0.62]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(4.40, 0.10, 0.06)
+		trim.mesh = tm
+		trim.material_override = brass_mat
+		trim.position = Vector3(0, 0.78, tz)
+		pivot.add_child(trim)
+	# ---- 4 iron rail posts (2 per side) with brass caps ----
+	var post_xs: Array = [-1.60, 1.60]
+	var post_zs: Array = [-0.55, 0.55]
+	for px in post_xs:
+		for pz in post_zs:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: CylinderMesh = CylinderMesh.new()
+			pm.top_radius = 0.06
+			pm.bottom_radius = 0.08
+			pm.height = 1.00
+			post.mesh = pm
+			post.material_override = iron_mat
+			post.position = Vector3(px, 1.30, pz)
+			pivot.add_child(post)
+			# Brass cap
+			var cap: MeshInstance3D = MeshInstance3D.new()
+			var capm: SphereMesh = SphereMesh.new()
+			capm.radius = 0.08
+			capm.height = 0.16
+			cap.mesh = capm
+			cap.material_override = brass_mat
+			cap.position = Vector3(px, 1.85, pz)
+			pivot.add_child(cap)
+	# ---- 2 horizontal rails per side (top + mid) ----
+	for rz in [-0.55, 0.55]:
+		for ry in [1.30, 1.65]:
+			var rail: MeshInstance3D = MeshInstance3D.new()
+			var rmesh: BoxMesh = BoxMesh.new()
+			rmesh.size = Vector3(3.40, 0.06, 0.06)
+			rail.mesh = rmesh
+			rail.material_override = iron_mat
+			rail.position = Vector3(0, ry, rz)
+			pivot.add_child(rail)
+	# ---- 2 hanging amber lanterns at the rail mid-points (inboard, above the deck) ----
+	for lz in [-0.40, 0.40]:
+		# Lantern cord
+		var cord: MeshInstance3D = MeshInstance3D.new()
+		var crm: CylinderMesh = CylinderMesh.new()
+		crm.top_radius = 0.02
+		crm.bottom_radius = 0.02
+		crm.height = 0.30
+		cord.mesh = crm
+		cord.material_override = brass_mat
+		cord.position = Vector3(0, 1.50, lz)
+		pivot.add_child(cord)
+		# Lantern bulb
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.13
+		bm.height = 0.26
+		bulb.mesh = bm
+		bulb.material_override = amber_mat
+		bulb.position = Vector3(0, 1.20, lz)
+		pivot.add_child(bulb)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 1.20, lz)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.8
+		lt.omni_range = 4.5
+		pivot.add_child(lt)
+	# ---- Guild crest medallion on each side rail (small unshaded torus) ----
+	for cz in [-0.62, 0.62]:
+		var crest: MeshInstance3D = MeshInstance3D.new()
+		var ctm: TorusMesh = TorusMesh.new()
+		ctm.inner_radius = 0.10
+		ctm.outer_radius = 0.18
+		crest.mesh = ctm
+		crest.material_override = amber_mat
+		crest.position = Vector3(0, 1.55, cz)
+		crest.rotation.x = PI / 2.0
+		pivot.add_child(crest)
+	# Lantern + crest pulse — same material so synced
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(amber_mat, "emission_energy_multiplier", 8.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(amber_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
