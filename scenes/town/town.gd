@@ -1413,6 +1413,16 @@ func _build_east_plaza() -> void:
 	_build_data_spa(geom)
 	# Epic-1 T95: ambient fireworks emitter over the plaza center
 	_build_plaza_fireworks(geom)
+	# Epic-1 T96: welcome arch banner spanning the west plaza entrance
+	_build_welcome_arch_banner(geom)
+	# Epic-1 T97: 4 colored spotlights illuminating the central AI statue
+	_build_statue_spotlights(geom)
+	# Epic-1 T98: ambient lighting + fill light tweak for the entire plaza
+	_build_plaza_ambient_lighting(geom)
+	# Epic-1 T99: Epic 1 completion plaque hidden near the east gate
+	_build_epic1_plaque(geom)
+	# Epic-1 T100: FINALE — massive central holographic Globbler landmark
+	_build_central_globbler_landmark(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -7355,4 +7365,306 @@ func _build_plaza_fireworks(geom: Node) -> void:
 	geom.add_child(fw)
 
 
+func _build_welcome_arch_banner(geom: Node) -> void:
+	## Epic-1 T96: a wide cyan banner stretched between the existing plaza
+	## arch pillars at the west entrance reading "WELCOME TO EAST PLAZA".
+	## The banner has waving emissive trim and a slow alpha pulse.
+	var banner_root: Node3D = Node3D.new()
+	banner_root.name = "EastPlazaWelcomeBanner"
+	banner_root.position = Vector3(22, 0, 0)
+	geom.add_child(banner_root)
+	# Banner cloth — long horizontal box stretched between the existing
+	# plaza arch pillars (which sit roughly at z=-3 and z=3 at x=22)
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(0.10, 0.95, 6.5)
+	cloth.mesh = cmesh
+	cloth.position = Vector3(0, 4.4, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.10, 0.20, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(0.30, 0.85, 1.0)
+	cmat.emission_energy_multiplier = 1.0
+	cmat.metallic = 0.10
+	cmat.roughness = 0.55
+	cloth.material_override = cmat
+	banner_root.add_child(cloth)
+	# Top + bottom emissive trim
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 2.0
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ty: float in [4.85, 3.95]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(0.12, 0.08, 6.5)
+		trim.mesh = tmesh
+		trim.position = Vector3(0, ty, 0)
+		trim.material_override = trim_mat
+		banner_root.add_child(trim)
+	# Welcome text — duplicate on each side so it reads from both directions
+	for fx: float in [-0.10, 0.10]:
+		var label: Label3D = Label3D.new()
+		label.text = "WELCOME TO\nEAST PLAZA"
+		label.position = Vector3(fx, 4.40, 0)
+		label.rotation = Vector3(0, deg_to_rad(-90 if fx < 0 else 90), 0)
+		label.modulate = Color(0.55, 0.95, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 24
+		label.no_depth_test = true
+		banner_root.add_child(label)
+	# Slow alpha pulse to feel "alive"
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(cmat, "emission_energy_multiplier", 1.6, 2.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(cmat, "emission_energy_multiplier", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_statue_spotlights(geom: Node) -> void:
+	## Epic-1 T97: 4 ground-mounted SpotLight3Ds aimed up at the central AI
+	## statue at (32, 0, -12). Each spotlight is a different color from the
+	## ancestor bust palette (cyan, violet, green, amber) plus a tiny visible
+	## floor housing so the lights look intentional.
+	var center := Vector3(32, 0, -12)
+	var light_specs: Array = [
+		[Vector3(-2.0, 0, -2.0), Color(0.30, 0.85, 1.0)],
+		[Vector3(2.0, 0, -2.0), Color(0.85, 0.40, 1.0)],
+		[Vector3(-2.0, 0, 2.0), Color(0.45, 0.95, 0.65)],
+		[Vector3(2.0, 0, 2.0), Color(0.95, 0.65, 0.20)],
+	]
+	for i in light_specs.size():
+		var spot_root: Node3D = Node3D.new()
+		spot_root.name = "EastPlazaStatueSpot_%d" % i
+		spot_root.position = center + light_specs[i][0]
+		geom.add_child(spot_root)
+		# Floor housing — small dark disc
+		var housing: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: CylinderMesh = CylinderMesh.new()
+		hmesh.top_radius = 0.30
+		hmesh.bottom_radius = 0.32
+		hmesh.height = 0.20
+		housing.mesh = hmesh
+		housing.position = Vector3(0, 0.10, 0)
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		hmat.albedo_color = Color(0.10, 0.13, 0.16)
+		hmat.metallic = 0.85
+		hmat.roughness = 0.30
+		hmat.emission_enabled = true
+		hmat.emission = light_specs[i][1]
+		hmat.emission_energy_multiplier = 1.0
+		housing.material_override = hmat
+		spot_root.add_child(housing)
+		# Pointing toward the statue center (+y aim component)
+		var spot: SpotLight3D = SpotLight3D.new()
+		spot.position = Vector3(0, 0.25, 0)
+		# Aim at statue body (~2m up at center)
+		var to_statue: Vector3 = (center + Vector3(0, 2.0, 0)) - spot_root.position
+		var aim_dir: Vector3 = to_statue.normalized()
+		# look_at would set rotation; build manually instead
+		var spot_yaw: float = atan2(aim_dir.x, aim_dir.z)
+		var spot_pitch: float = -asin(aim_dir.y)
+		spot.rotation = Vector3(spot_pitch, spot_yaw, 0)
+		spot.light_color = light_specs[i][1]
+		spot.light_energy = 3.0
+		spot.spot_range = 8.0
+		spot.spot_angle = 22.0
+		spot.spot_attenuation = 1.4
+		spot_root.add_child(spot)
+
+
+func _build_plaza_ambient_lighting(geom: Node) -> void:
+	## Epic-1 T98: 3 high omni fill lights spaced along the plaza length
+	## bringing the overall light level up so all the new geometry reads
+	## nicely. Soft cyan-tinted to reinforce the digital theme.
+	var positions: Array[Vector3] = [
+		Vector3(28, 8, 0),
+		Vector3(36, 8, 0),
+		Vector3(44, 8, 0),
+	]
+	for i in positions.size():
+		var fill: OmniLight3D = OmniLight3D.new()
+		fill.name = "EastPlazaFillLight_%d" % i
+		fill.position = positions[i]
+		fill.light_color = Color(0.75, 0.90, 1.0)
+		fill.light_energy = 1.4
+		fill.omni_range = 18.0
+		fill.omni_attenuation = 1.6
+		geom.add_child(fill)
+
+
+func _build_epic1_plaque(geom: Node) -> void:
+	## Epic-1 T99: a small commemorative plaque near the east gate marking
+	## the completion of Epic 1. Stone tablet on a tiny pedestal with text.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "EastPlazaEpic1Plaque"
+	plaque.position = Vector3(47, 0, 6)
+	geom.add_child(plaque)
+	# Tiny pedestal
+	var ped_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ped_mat.albedo_color = Color(0.18, 0.22, 0.28)
+	ped_mat.metallic = 0.55
+	ped_mat.roughness = 0.45
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(0.85, 0.50, 0.40)
+	ped.mesh = pmesh
+	ped.position = Vector3(0, 0.25, 0)
+	ped.material_override = ped_mat
+	plaque.add_child(ped)
+	# Tilted stone tablet on top
+	var tablet: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.85, 0.65, 0.06)
+	tablet.mesh = tmesh
+	tablet.position = Vector3(0, 0.85, 0)
+	tablet.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.30, 0.34, 0.40)
+	tmat.metallic = 0.65
+	tmat.roughness = 0.30
+	tmat.emission_enabled = true
+	tmat.emission = Color(0.55, 0.95, 1.0)
+	tmat.emission_energy_multiplier = 0.40
+	tablet.material_override = tmat
+	plaque.add_child(tablet)
+	# Engraved text on tablet
+	var label: Label3D = Label3D.new()
+	label.text = "EPIC 01\nEAST PLAZA\nCOMPLETE"
+	label.position = Vector3(0, 0.95, 0.18)
+	label.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 16
+	label.no_depth_test = true
+	plaque.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 0.60, 0.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.30, 0)
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_central_globbler_landmark(geom: Node) -> void:
+	## Epic-1 T100 (FINALE): a massive central holographic Globbler
+	## landmark hovering 10m above the plaza market core, slowly rotating.
+	## Visible from anywhere in the district. Marks the East Plaza as
+	## the player's home base in the most unmissable way possible.
+	var landmark: Node3D = Node3D.new()
+	landmark.name = "EastPlazaCentralLandmark"
+	landmark.position = Vector3(32, 10, 0)
+	geom.add_child(landmark)
+	# Inner pivot for rotation
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "RotationPivot"
+	landmark.add_child(pivot)
+	# Translucent holographic Globbler — large sphere body
+	var holo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	holo_mat.albedo_color = Color(0.55, 0.85, 1.0, 0.50)
+	holo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	holo_mat.emission_enabled = true
+	holo_mat.emission = Color(0.55, 0.95, 1.0)
+	holo_mat.emission_energy_multiplier = 2.0
+	holo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: SphereMesh = SphereMesh.new()
+	bmesh.radius = 1.40
+	bmesh.height = 2.80
+	body.mesh = bmesh
+	body.position = Vector3(0, 0, 0)
+	body.material_override = holo_mat
+	pivot.add_child(body)
+	# 2 large eyes (white emissive)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1, 0.9)
+	eye_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 3.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.45, 0.45]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var emesh: SphereMesh = SphereMesh.new()
+		emesh.radius = 0.28
+		emesh.height = 0.56
+		eye.mesh = emesh
+		eye.position = Vector3(ex, 0.30, 1.20)
+		eye.material_override = eye_mat
+		pivot.add_child(eye)
+		# Pupil dot (cyan)
+		var pupil: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: SphereMesh = SphereMesh.new()
+		pmesh.radius = 0.12
+		pmesh.height = 0.24
+		pupil.mesh = pmesh
+		pupil.position = Vector3(ex, 0.30, 1.40)
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.30, 0.85, 1.0)
+		pmat.emission_enabled = true
+		pmat.emission = Color(0.55, 0.95, 1.0)
+		pmat.emission_energy_multiplier = 3.5
+		pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pupil.material_override = pmat
+		pivot.add_child(pupil)
+	# 4 orbital rings around the body at different tilts
+	for i in 4:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 1.85 + i * 0.10
+		rmesh.outer_radius = 1.95 + i * 0.10
+		ring.mesh = rmesh
+		ring.rotation = Vector3(deg_to_rad(15 + i * 35), deg_to_rad(i * 20), deg_to_rad(i * 25))
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(0.55, 0.95, 1.0)
+		rmat.emission_enabled = true
+		rmat.emission = Color(0.55, 0.95, 1.0)
+		rmat.emission_energy_multiplier = 2.4
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override = rmat
+		pivot.add_child(ring)
+		# Counter-rotate each ring
+		var ring_spin: Tween = create_tween().set_loops()
+		var spin_dir: float = 1.0 if i % 2 == 0 else -1.0
+		ring_spin.tween_property(ring, "rotation:z", deg_to_rad(i * 25) + TAU * spin_dir, 8.0 + i * 1.5)
+	# Slow main rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 18.0)
+	# Bobbing in place
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(landmark, "position:y", 11.0, 3.0).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(landmark, "position:y", 10.0, 3.0).set_ease(Tween.EASE_IN_OUT)
+	# Ground halo beneath the landmark
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: TorusMesh = TorusMesh.new()
+	hmesh.inner_radius = 3.5
+	hmesh.outer_radius = 4.0
+	halo.mesh = hmesh
+	halo.position = Vector3(32, 0.05, 0)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(0.55, 0.95, 1.0)
+	hmat.emission_enabled = true
+	hmat.emission = Color(0.55, 0.95, 1.0)
+	hmat.emission_energy_multiplier = 2.4
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = hmat
+	geom.add_child(halo)
+	# Pulse the ground halo
+	var halo_pulse: Tween = create_tween().set_loops()
+	halo_pulse.tween_property(halo, "scale", Vector3(1.20, 1.0, 1.20), 2.0).set_ease(Tween.EASE_IN_OUT)
+	halo_pulse.tween_property(halo, "scale", Vector3(1.0, 1.0, 1.0), 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Real OmniLight at the landmark casting cyan light over the plaza
+	var landmark_light: OmniLight3D = OmniLight3D.new()
+	landmark_light.position = Vector3(0, 0, 0)
+	landmark_light.light_color = Color(0.55, 0.95, 1.0)
+	landmark_light.light_energy = 3.5
+	landmark_light.omni_range = 25.0
+	landmark_light.omni_attenuation = 1.4
+	pivot.add_child(landmark_light)
 
