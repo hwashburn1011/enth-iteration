@@ -32774,6 +32774,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_buoy_field(geom)
 	# Epic-8 T70: floating fishing boat
 	_build_d8_tied_fishing_boat(geom)
+	# Epic-8 T71: sailing yacht
+	_build_d8_sailing_yacht(geom)
+	# Epic-8 T72: sea shanty singer NPC
+	_build_d8_shanty_singer_npc()
+	# Epic-8 T73: crow's nest watchtower
+	_build_d8_crows_nest(geom)
+	# Epic-8 T74: drifting message bottles
+	_build_d8_message_bottles(geom)
+	# Epic-8 T75: tide depth markers
+	_build_d8_tide_markers(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -37553,6 +37563,428 @@ func _build_d8_tied_fishing_boat(geom: Node) -> void:
 	cs.shape = bs
 	sb.add_child(cs)
 	boat.add_child(sb)
+
+
+func _build_d8_sailing_yacht(geom: Node) -> void:
+	## Epic-8 T71: elegant white sailing yacht — sleek hull, tall mast, big
+	## triangular mainsail and small jib, gently bobbing offshore.
+	var yacht: Node3D = Node3D.new()
+	yacht.name = "D8SailingYacht"
+	yacht.position = Vector3(D8_CENTER.x + 10, 0.4, -18)
+	geom.add_child(yacht)
+	# Hull: long flattened white sphere
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	hull_mat.metallic = 0.2
+	hull_mat.roughness = 0.35
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hb: SphereMesh = SphereMesh.new()
+	hb.radius = 1.0
+	hb.height = 1.0
+	hull.mesh = hb
+	hull.material_override = hull_mat
+	hull.scale = Vector3(1.0, 0.6, 3.5)
+	hull.position = Vector3(0, 0.5, 0)
+	yacht.add_child(hull)
+	# Deck: flat box on top
+	var deck_mat: StandardMaterial3D = StandardMaterial3D.new()
+	deck_mat.albedo_color = Color(0.78, 0.62, 0.42)
+	deck_mat.roughness = 0.7
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var db: BoxMesh = BoxMesh.new()
+	db.size = Vector3(1.5, 0.12, 5.6)
+	deck.mesh = db
+	deck.material_override = deck_mat
+	deck.position = Vector3(0, 0.95, 0)
+	yacht.add_child(deck)
+	# Mast
+	var mast_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mast_mat.albedo_color = Color(0.85, 0.85, 0.88)
+	mast_mat.metallic = 0.7
+	mast_mat.roughness = 0.3
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var mm: CylinderMesh = CylinderMesh.new()
+	mm.top_radius = 0.05
+	mm.bottom_radius = 0.07
+	mm.height = 5.5
+	mast.mesh = mm
+	mast.material_override = mast_mat
+	mast.position = Vector3(0, 3.7, -0.4)
+	yacht.add_child(mast)
+	# Boom (horizontal pole at base of mainsail)
+	var boom: MeshInstance3D = MeshInstance3D.new()
+	var boom_mesh: CylinderMesh = CylinderMesh.new()
+	boom_mesh.top_radius = 0.05
+	boom_mesh.bottom_radius = 0.05
+	boom_mesh.height = 2.5
+	boom.mesh = boom_mesh
+	boom.material_override = mast_mat
+	boom.position = Vector3(0, 1.6, 0.85)
+	boom.rotation_degrees = Vector3(90, 0, 0)
+	yacht.add_child(boom)
+	# Mainsail: white triangular prism (we use a thin scaled box rotated)
+	var sail_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sail_mat.albedo_color = Color(0.98, 0.98, 0.95)
+	sail_mat.roughness = 0.85
+	sail_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var mainsail: MeshInstance3D = MeshInstance3D.new()
+	var sail_mesh: PrismMesh = PrismMesh.new()
+	sail_mesh.size = Vector3(2.4, 4.5, 0.04)
+	sail_mesh.left_to_right = 0.0
+	mainsail.mesh = sail_mesh
+	mainsail.material_override = sail_mat
+	mainsail.position = Vector3(0, 3.6, 0.4)
+	mainsail.rotation_degrees = Vector3(0, 90, 0)
+	yacht.add_child(mainsail)
+	# Jib (small front sail)
+	var jib: MeshInstance3D = MeshInstance3D.new()
+	var jib_mesh: PrismMesh = PrismMesh.new()
+	jib_mesh.size = Vector3(1.6, 3.0, 0.04)
+	jib.mesh = jib_mesh
+	jib.material_override = sail_mat
+	jib.position = Vector3(0, 2.8, -1.7)
+	jib.rotation_degrees = Vector3(0, 90, 0)
+	yacht.add_child(jib)
+	# Bob + sway tween
+	var tw: Tween = yacht.create_tween().set_loops()
+	tw.tween_property(yacht, "position:y", 0.65, 2.5).from(0.35)
+	tw.tween_property(yacht, "position:y", 0.35, 2.5)
+	var sway: Tween = yacht.create_tween().set_loops()
+	sway.tween_property(yacht, "rotation_degrees:z", 3.0, 2.0)
+	sway.tween_property(yacht, "rotation_degrees:z", -3.0, 2.0)
+	# Hull collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.7, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(2.0, 1.4, 7.0)
+	cs.shape = bs
+	sb.add_child(cs)
+	yacht.add_child(sb)
+
+
+func _build_d8_shanty_singer_npc() -> void:
+	## Epic-8 T72: sea shanty singer NPC — old sailor with concertina box,
+	## striped shirt, and a big floppy hat. Sways while singing.
+	var slots: Node3D = get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D8ShantySingerSlot"
+	slot.position = Vector3(D8_CENTER.x + 8, 0, 8)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D8ShantySinger"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Old Salt Murphy")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d8_shanty_singer")
+	slot.add_child(npc)
+	# Striped shirt: 4 horizontal bands red/white
+	for i in range(4):
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bb: BoxMesh = BoxMesh.new()
+		bb.size = Vector3(0.78, 0.18, 0.50)
+		band.mesh = bb
+		var bm: StandardMaterial3D = StandardMaterial3D.new()
+		bm.albedo_color = Color(0.92, 0.92, 0.88) if (i % 2 == 0) else Color(0.78, 0.18, 0.18)
+		bm.roughness = 0.7
+		band.material_override = bm
+		band.position = Vector3(0, 1.40 - i * 0.20, 0)
+		npc.add_child(band)
+	# Floppy hat (wide brim)
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.45, 0.32, 0.18)
+	hat_mat.roughness = 0.85
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brim_mesh: CylinderMesh = CylinderMesh.new()
+	brim_mesh.top_radius = 0.55
+	brim_mesh.bottom_radius = 0.55
+	brim_mesh.height = 0.05
+	brim.mesh = brim_mesh
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 1.85, 0)
+	npc.add_child(brim)
+	var crown: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.30
+	cm.bottom_radius = 0.32
+	cm.height = 0.30
+	crown.mesh = cm
+	crown.material_override = hat_mat
+	crown.position = Vector3(0, 2.0, 0)
+	npc.add_child(crown)
+	# Concertina (small box held in front)
+	var box_mat: StandardMaterial3D = StandardMaterial3D.new()
+	box_mat.albedo_color = Color(0.20, 0.10, 0.08)
+	box_mat.roughness = 0.5
+	box_mat.metallic = 0.3
+	var concertina: MeshInstance3D = MeshInstance3D.new()
+	var cb: BoxMesh = BoxMesh.new()
+	cb.size = Vector3(0.50, 0.32, 0.32)
+	concertina.mesh = cb
+	concertina.material_override = box_mat
+	concertina.position = Vector3(0, 1.05, 0.45)
+	npc.add_child(concertina)
+	# Brass corners on concertina
+	for sx in [-0.20, 0.20]:
+		for sy in [-0.12, 0.12]:
+			var stud: MeshInstance3D = MeshInstance3D.new()
+			var sm2: SphereMesh = SphereMesh.new()
+			sm2.radius = 0.04
+			sm2.height = 0.08
+			stud.mesh = sm2
+			var smat: StandardMaterial3D = StandardMaterial3D.new()
+			smat.albedo_color = Color(0.85, 0.65, 0.20)
+			smat.metallic = 0.95
+			smat.roughness = 0.20
+			stud.material_override = smat
+			stud.position = Vector3(sx, 1.05 + sy, 0.62)
+			npc.add_child(stud)
+	# Sway tween (whole body)
+	var tw: Tween = npc.create_tween().set_loops()
+	tw.tween_property(npc, "rotation_degrees:z", 4.0, 0.9)
+	tw.tween_property(npc, "rotation_degrees:z", -4.0, 0.9)
+
+
+func _build_d8_crows_nest(geom: Node) -> void:
+	## Epic-8 T73: tall wooden lookout post with a circular crow's nest at top
+	## containing a small lookout figure peering through a brass spyglass.
+	var nest: Node3D = Node3D.new()
+	nest.name = "D8CrowsNest"
+	nest.position = Vector3(D8_CENTER.x + 30, 0, 18)
+	geom.add_child(nest)
+	# Tall post
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	post_mat.roughness = 0.85
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.18
+	pm.bottom_radius = 0.32
+	pm.height = 8.5
+	post.mesh = pm
+	post.material_override = post_mat
+	post.position = Vector3(0, 4.25, 0)
+	nest.add_child(post)
+	# Cross-braces (4 X-shaped)
+	for ang in [0.0, 90.0]:
+		var brace: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.10, 1.6, 0.10)
+		brace.mesh = bm
+		brace.material_override = post_mat
+		brace.position = Vector3(0, 1.8, 0)
+		brace.rotation_degrees = Vector3(0, ang, 35)
+		nest.add_child(brace)
+	# Crow's nest barrel: cylinder open top
+	var nest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	nest_mat.albedo_color = Color(0.55, 0.40, 0.22)
+	nest_mat.roughness = 0.8
+	var barrel: MeshInstance3D = MeshInstance3D.new()
+	var bm2: CylinderMesh = CylinderMesh.new()
+	bm2.top_radius = 0.95
+	bm2.bottom_radius = 0.85
+	bm2.height = 1.0
+	barrel.mesh = bm2
+	barrel.material_override = nest_mat
+	barrel.position = Vector3(0, 8.7, 0)
+	nest.add_child(barrel)
+	# Lookout figure (small head + body inside the nest)
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.88, 0.72, 0.58)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.18
+	hm.height = 0.36
+	head.mesh = hm
+	head.material_override = skin_mat
+	head.position = Vector3(0, 9.40, 0)
+	nest.add_child(head)
+	# Spyglass (small brass cylinder in front of head)
+	var brass: StandardMaterial3D = StandardMaterial3D.new()
+	brass.albedo_color = Color(0.85, 0.65, 0.20)
+	brass.metallic = 0.95
+	brass.roughness = 0.2
+	var glass: MeshInstance3D = MeshInstance3D.new()
+	var gm: CylinderMesh = CylinderMesh.new()
+	gm.top_radius = 0.06
+	gm.bottom_radius = 0.04
+	gm.height = 0.36
+	glass.mesh = gm
+	glass.material_override = brass
+	glass.position = Vector3(0.0, 9.40, 0.30)
+	glass.rotation_degrees = Vector3(90, 0, 0)
+	nest.add_child(glass)
+	# Pennant flag at very top
+	var pole_top: MeshInstance3D = MeshInstance3D.new()
+	var pmh: CylinderMesh = CylinderMesh.new()
+	pmh.top_radius = 0.04
+	pmh.bottom_radius = 0.04
+	pmh.height = 1.0
+	pole_top.mesh = pmh
+	pole_top.material_override = post_mat
+	pole_top.position = Vector3(0, 9.7, 0)
+	nest.add_child(pole_top)
+	var flag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flag_mat.albedo_color = Color(0.92, 0.18, 0.18)
+	flag_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var flag: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(0.04, 0.40, 0.65)
+	flag.mesh = fm
+	flag.material_override = flag_mat
+	flag.position = Vector3(0.35, 9.95, 0)
+	nest.add_child(flag)
+	var fwave: Tween = flag.create_tween().set_loops()
+	fwave.tween_property(flag, "rotation_degrees:y", 12.0, 0.7)
+	fwave.tween_property(flag, "rotation_degrees:y", -12.0, 0.7)
+	# Post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.25, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.35
+	cap.height = 8.5
+	cs.shape = cap
+	sb.add_child(cs)
+	nest.add_child(sb)
+
+
+func _build_d8_message_bottles(geom: Node) -> void:
+	## Epic-8 T74: 6 drifting glass message bottles bobbing in the harbor —
+	## clear amber bottles with rolled paper scrolls visible inside.
+	var bottles: Node3D = Node3D.new()
+	bottles.name = "D8MessageBottles"
+	bottles.position = Vector3(D8_CENTER.x + 25, 0.25, -8)
+	geom.add_child(bottles)
+	var spots: Array[Vector2] = [
+		Vector2(0, 0),
+		Vector2(2.5, 1.8),
+		Vector2(-1.8, 2.4),
+		Vector2(3.6, -1.2),
+		Vector2(-2.6, -0.8),
+		Vector2(1.4, -2.6),
+	]
+	for i in range(spots.size()):
+		var p: Vector2 = spots[i]
+		var bottle: Node3D = Node3D.new()
+		bottle.position = Vector3(p.x, 0, p.y)
+		bottles.add_child(bottle)
+		# Glass body (translucent amber)
+		var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+		glass_mat.albedo_color = Color(0.85, 0.65, 0.30, 0.55)
+		glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		glass_mat.metallic = 0.2
+		glass_mat.roughness = 0.10
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.10
+		bm.bottom_radius = 0.13
+		bm.height = 0.42
+		body.mesh = bm
+		body.material_override = glass_mat
+		body.position = Vector3(0, 0.21, 0)
+		body.rotation_degrees = Vector3(90, 0, 0)
+		bottle.add_child(body)
+		# Bottle neck
+		var neck: MeshInstance3D = MeshInstance3D.new()
+		var nm: CylinderMesh = CylinderMesh.new()
+		nm.top_radius = 0.05
+		nm.bottom_radius = 0.07
+		nm.height = 0.12
+		neck.mesh = nm
+		neck.material_override = glass_mat
+		neck.position = Vector3(0.27, 0.21, 0)
+		neck.rotation_degrees = Vector3(0, 0, 90)
+		bottle.add_child(neck)
+		# Cork stopper
+		var cork_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cork_mat.albedo_color = Color(0.55, 0.38, 0.20)
+		cork_mat.roughness = 0.85
+		var cork: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.05
+		cm.bottom_radius = 0.05
+		cm.height = 0.06
+		cork.mesh = cm
+		cork.material_override = cork_mat
+		cork.position = Vector3(0.36, 0.21, 0)
+		cork.rotation_degrees = Vector3(0, 0, 90)
+		bottle.add_child(cork)
+		# Scroll inside (small cream cylinder)
+		var paper: StandardMaterial3D = StandardMaterial3D.new()
+		paper.albedo_color = Color(0.92, 0.86, 0.65)
+		var scroll: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.04
+		sm.bottom_radius = 0.04
+		sm.height = 0.28
+		scroll.mesh = sm
+		scroll.material_override = paper
+		scroll.position = Vector3(-0.05, 0.21, 0)
+		scroll.rotation_degrees = Vector3(0, 0, 90)
+		bottle.add_child(scroll)
+		# Bob + spin tween
+		var tw: Tween = bottle.create_tween().set_loops()
+		var phase: float = float(i) * 0.4
+		tw.tween_property(bottle, "position:y", 0.10, 1.0 + phase * 0.3).from(-0.05)
+		tw.tween_property(bottle, "position:y", -0.05, 1.0 + phase * 0.3)
+		var spin: Tween = bottle.create_tween().set_loops()
+		spin.tween_property(bottle, "rotation_degrees:y", 360.0, 8.0 + phase).from(0.0)
+
+
+func _build_d8_tide_markers(geom: Node) -> void:
+	## Epic-8 T75: 4 striped wooden tide-depth markers — tall poles with
+	## red/white bands and a small numeric placard at top.
+	var posts: Node3D = Node3D.new()
+	posts.name = "D8TideMarkers"
+	posts.position = Vector3(D8_CENTER.x + 5, 0, -10)
+	geom.add_child(posts)
+	for i in range(4):
+		var post: Node3D = Node3D.new()
+		post.position = Vector3(i * 3.5, 0, 0)
+		posts.add_child(post)
+		# 5 striped bands red/white alternating
+		for b in range(5):
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var bm: CylinderMesh = CylinderMesh.new()
+			bm.top_radius = 0.15
+			bm.bottom_radius = 0.15
+			bm.height = 0.50
+			band.mesh = bm
+			var bmat: StandardMaterial3D = StandardMaterial3D.new()
+			bmat.albedo_color = Color(0.78, 0.18, 0.18) if (b % 2 == 0) else Color(0.95, 0.95, 0.92)
+			bmat.roughness = 0.7
+			band.material_override = bmat
+			band.position = Vector3(0, 0.25 + b * 0.50, 0)
+			post.add_child(band)
+		# Top placard (small white box)
+		var placard_mat: StandardMaterial3D = StandardMaterial3D.new()
+		placard_mat.albedo_color = Color(0.95, 0.95, 0.92)
+		placard_mat.emission_enabled = true
+		placard_mat.emission = Color(0.85, 0.92, 1.0)
+		placard_mat.emission_energy_multiplier = 0.4
+		var placard: MeshInstance3D = MeshInstance3D.new()
+		var pb: BoxMesh = BoxMesh.new()
+		pb.size = Vector3(0.55, 0.40, 0.05)
+		placard.mesh = pb
+		placard.material_override = placard_mat
+		placard.position = Vector3(0, 3.0, 0.18)
+		post.add_child(placard)
+		# Per-post collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.4, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.18
+		cap.height = 2.6
+		cs.shape = cap
+		sb.add_child(cs)
+		post.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
