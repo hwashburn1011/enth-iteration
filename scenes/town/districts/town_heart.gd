@@ -22,6 +22,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_district_nameplates(geom)
 	_build_th_bench_ring(geom)
 	_build_th_caretaker_npc(town)
+	_build_th_perimeter_lampposts(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -818,3 +819,188 @@ func _build_th_caretaker_npc(town: Node) -> void:
 	var dpulse: Tween = npc.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 9.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_perimeter_lampposts(geom: Node) -> void:
+	## Epic-10 T6: 8 tall brass lampposts at the plaza's outer edge,
+	## offset between the radial paths so they don't block the corridors.
+	## Each lamppost: stepped basalt base, 4.5m brass shaft with 2 wrap
+	## bands, brass arched top, large unshaded amber lantern bulb in a
+	## brass cage, strong OmniLight, and 2 small data motes drifting
+	## around the bulb.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_PerimeterLampposts"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+	bulb_mat.emission_enabled = true
+	bulb_mat.emission = Color(1.0, 0.65, 0.20)
+	bulb_mat.emission_energy_multiplier = 9.0
+	bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Place 8 lampposts between the radial paths at radius 13 (just inside outer rim)
+	for i in 8:
+		var ang: float = (float(i) + 0.5) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		var lp: Vector3 = Vector3(dx * 13.20, 0, dz * 13.20)
+		var lgroup: Node3D = Node3D.new()
+		lgroup.name = "Lamppost_" + str(i)
+		lgroup.position = lp
+		# Face inward
+		lgroup.rotation.y = atan2(-dz, -dx) - PI / 2.0
+		pivot.add_child(lgroup)
+		# ---- Stepped basalt base ----
+		var base1: MeshInstance3D = MeshInstance3D.new()
+		var b1m: BoxMesh = BoxMesh.new()
+		b1m.size = Vector3(0.85, 0.30, 0.85)
+		base1.mesh = b1m
+		base1.material_override = stone_mat
+		base1.position = Vector3(0, 0.15, 0)
+		lgroup.add_child(base1)
+		var base2: MeshInstance3D = MeshInstance3D.new()
+		var b2m: BoxMesh = BoxMesh.new()
+		b2m.size = Vector3(0.65, 0.20, 0.65)
+		base2.mesh = b2m
+		base2.material_override = stone_mat
+		base2.position = Vector3(0, 0.40, 0)
+		lgroup.add_child(base2)
+		# Base collision
+		var base_sb: StaticBody3D = StaticBody3D.new()
+		base_sb.position = Vector3(0, 0.25, 0)
+		var base_cs: CollisionShape3D = CollisionShape3D.new()
+		var base_bsh: BoxShape3D = BoxShape3D.new()
+		base_bsh.size = Vector3(0.85, 0.50, 0.85)
+		base_cs.shape = base_bsh
+		base_sb.add_child(base_cs)
+		lgroup.add_child(base_sb)
+		# ---- Brass shaft (4.5m tall, slight taper) ----
+		var shaft: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.10
+		sm.bottom_radius = 0.14
+		sm.height = 4.50
+		shaft.mesh = sm
+		shaft.material_override = brass_mat
+		shaft.position = Vector3(0, 2.75, 0)
+		lgroup.add_child(shaft)
+		# Shaft collision
+		var shaft_sb: StaticBody3D = StaticBody3D.new()
+		shaft_sb.position = Vector3(0, 2.75, 0)
+		var shaft_cs: CollisionShape3D = CollisionShape3D.new()
+		var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
+		shaft_cyl.top_radius = 0.10
+		shaft_cyl.bottom_radius = 0.14
+		shaft_cyl.height = 4.50
+		shaft_cs.shape = shaft_cyl
+		shaft_sb.add_child(shaft_cs)
+		lgroup.add_child(shaft_sb)
+		# ---- 2 brass wrap bands on the shaft ----
+		for by in [1.50, 3.80]:
+			var band: MeshInstance3D = MeshInstance3D.new()
+			var bdm: TorusMesh = TorusMesh.new()
+			bdm.inner_radius = 0.13
+			bdm.outer_radius = 0.20
+			band.mesh = bdm
+			band.material_override = brass_mat
+			band.position = Vector3(0, by, 0)
+			lgroup.add_child(band)
+		# ---- Arched top crossbar (extending inward over the path) ----
+		var arch: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.10, 0.12, 0.85)
+		arch.mesh = am
+		arch.material_override = brass_mat
+		arch.position = Vector3(0, 5.05, -0.40)
+		lgroup.add_child(arch)
+		# Top finial decorative ball
+		var finial: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.12
+		fm.height = 0.24
+		finial.mesh = fm
+		finial.material_override = brass_mat
+		finial.position = Vector3(0, 5.18, 0)
+		lgroup.add_child(finial)
+		# ---- Lantern cage (4 thin brass pillars + top + bottom rings) ----
+		var cage_top: MeshInstance3D = MeshInstance3D.new()
+		var ctm: TorusMesh = TorusMesh.new()
+		ctm.inner_radius = 0.22
+		ctm.outer_radius = 0.30
+		cage_top.mesh = ctm
+		cage_top.material_override = brass_mat
+		cage_top.position = Vector3(0, 4.95, -0.80)
+		lgroup.add_child(cage_top)
+		var cage_bot: MeshInstance3D = MeshInstance3D.new()
+		cage_bot.mesh = ctm
+		cage_bot.material_override = brass_mat
+		cage_bot.position = Vector3(0, 4.40, -0.80)
+		lgroup.add_child(cage_bot)
+		for cpx in [-0.22, 0.22]:
+			for cpz in [-1.02, -0.58]:
+				var cpost: MeshInstance3D = MeshInstance3D.new()
+				var cpm: CylinderMesh = CylinderMesh.new()
+				cpm.top_radius = 0.025
+				cpm.bottom_radius = 0.025
+				cpm.height = 0.55
+				cpost.mesh = cpm
+				cpost.material_override = brass_mat
+				cpost.position = Vector3(cpx, 4.67, cpz)
+				lgroup.add_child(cpost)
+		# ---- Large unshaded amber lantern bulb ----
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.30
+		bm.height = 0.60
+		bulb.mesh = bm
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(0, 4.67, -0.80)
+		lgroup.add_child(bulb)
+		# ---- Strong OmniLight from the bulb ----
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(0, 4.67, -0.80)
+		lt.light_color = Color(1.0, 0.65, 0.20)
+		lt.light_energy = 4.5
+		lt.omni_range = 14.0
+		lgroup.add_child(lt)
+		# ---- 2 small drifting data motes around the bulb ----
+		var motes: GPUParticles3D = GPUParticles3D.new()
+		motes.position = Vector3(0, 4.67, -0.80)
+		motes.amount = 8
+		motes.lifetime = 2.4
+		var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+		pmat.emission_sphere_radius = 0.40
+		pmat.direction = Vector3(0, 1, 0)
+		pmat.spread = 180.0
+		pmat.initial_velocity_min = 0.2
+		pmat.initial_velocity_max = 0.5
+		pmat.gravity = Vector3(0, 0.0, 0)
+		pmat.scale_min = 0.04
+		pmat.scale_max = 0.08
+		pmat.color = Color(1.0, 0.65, 0.20, 1.0)
+		motes.process_material = pmat
+		var psmesh: SphereMesh = SphereMesh.new()
+		psmesh.radius = 0.04
+		psmesh.height = 0.08
+		motes.draw_pass_1 = psmesh
+		lgroup.add_child(motes)
+	# Shared bulb pulse for all 8 lampposts
+	var bpulse: Tween = pivot.create_tween().set_loops()
+	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 11.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	bpulse.tween_property(bulb_mat, "emission_energy_multiplier", 7.5, 1.6).set_ease(Tween.EASE_IN_OUT)
