@@ -25447,6 +25447,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_bellringer_npc()
 	# Epic-7 T15: rocky cliff face wall
 	_build_d7_cliff_face(geom)
+	# Epic-7 T16: meditation pavilion
+	_build_d7_meditation_pavilion(geom)
+	# Epic-7 T17: meditating monk NPC
+	_build_d7_meditating_monk_npc()
+	# Epic-7 T18: zen rock garden
+	_build_d7_zen_garden(geom)
+	# Epic-7 T19: small waterfall
+	_build_d7_waterfall(geom)
+	# Epic-7 T20: scroll library shelves
+	_build_d7_scroll_shelves(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -26448,6 +26458,356 @@ func _build_d7_cliff_face(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	cliff.add_child(sb)
+
+
+func _build_d7_meditation_pavilion(geom: Node) -> void:
+	## Epic-7 T16: open-air wooden meditation pavilion — square stone
+	## platform + 4 corner pillars + curved upturned prism roof.
+	var pav: Node3D = Node3D.new()
+	pav.name = "MeditationPavilion"
+	pav.position = Vector3(D7_CENTER.x - 18.0, 0.0, -2.0)
+	geom.add_child(pav)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.55, 0.20, 0.15)
+	roof_mat.roughness = 0.85
+	# Stone platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(3.85, 0.30, 3.85)
+	platform.mesh = pmm
+	platform.material_override = stone_mat
+	platform.position = Vector3(0, 0.15, 0)
+	pav.add_child(platform)
+	# 4 corner wooden pillars
+	for sx in [-1.65, 1.65]:
+		for sz in [-1.65, 1.65]:
+			var pillar: MeshInstance3D = MeshInstance3D.new()
+			var pm: CylinderMesh = CylinderMesh.new()
+			pm.top_radius = 0.10
+			pm.bottom_radius = 0.14
+			pm.height = 2.85
+			pillar.mesh = pm
+			pillar.material_override = wood_mat
+			pillar.position = Vector3(sx, 1.72, sz)
+			pav.add_child(pillar)
+			# Pillar collision
+			var sb: StaticBody3D = StaticBody3D.new()
+			sb.position = Vector3(sx, 1.72, sz)
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.18
+			cap.height = 2.85
+			cs.shape = cap
+			sb.add_child(cs)
+			pav.add_child(sb)
+	# Curved upturned prism roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(4.85, 1.40, 4.85)
+	roof.mesh = rm
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 3.85, 0)
+	pav.add_child(roof)
+	# Subtle warm light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.55)
+	light.light_energy = 1.6
+	light.omni_range = 5.0
+	light.position = Vector3(0, 2.50, 0)
+	pav.add_child(light)
+	# Platform collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.15, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.85, 0.30, 3.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	pav.add_child(sb)
+
+
+func _build_d7_meditating_monk_npc() -> void:
+	## Epic-7 T17: meditating monk NPC inside the pavilion — sitting in
+	## lotus position, body lower than usual.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MeditatingMonkSlot"
+	slot.position = Vector3(D7_CENTER.x - 18.0, 0.0, -2.0)
+	npc_slots.add_child(slot)
+	# Build a custom seated body (no VillagerR3 prefab — needs to look seated)
+	var monk: Node3D = Node3D.new()
+	monk.name = "MeditatingMonk"
+	slot.add_child(monk)
+	# Lower torso (squat sphere on the ground level)
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.95, 0.55, 0.20)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.95, 0.45, 0.10)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.85
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: SphereMesh = SphereMesh.new()
+	tm.radius = 0.40
+	tm.height = 0.55
+	torso.mesh = tm
+	torso.material_override = robe_mat
+	torso.position = Vector3(0, 0.55, 0)
+	torso.scale = Vector3(1.20, 0.85, 1.20)
+	monk.add_child(torso)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.20
+	hm.height = 0.36
+	head.mesh = hm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.65)
+	skin_mat.roughness = 0.65
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.10, 0)
+	monk.add_child(head)
+	# Folded knees (2 small spheres at sides)
+	for sx in [-0.40, 0.40]:
+		var knee: MeshInstance3D = MeshInstance3D.new()
+		var km: SphereMesh = SphereMesh.new()
+		km.radius = 0.18
+		km.height = 0.32
+		knee.mesh = km
+		knee.material_override = robe_mat
+		knee.position = Vector3(sx, 0.30, 0)
+		knee.scale = Vector3(1.0, 0.65, 1.0)
+		monk.add_child(knee)
+	# Floating meditation halo (small torus above head)
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hlm: TorusMesh = TorusMesh.new()
+	hlm.inner_radius = 0.22
+	hlm.outer_radius = 0.28
+	halo.mesh = hlm
+	var halo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	halo_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	halo_mat.emission_enabled = true
+	halo_mat.emission = Color(1.0, 0.85, 0.30)
+	halo_mat.emission_energy_multiplier = 3.0
+	halo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = halo_mat
+	halo.position = Vector3(0, 1.55, 0)
+	halo.rotation_degrees = Vector3(90, 0, 0)
+	monk.add_child(halo)
+	# Slow halo rotation
+	var tw: Tween = halo.create_tween().set_loops()
+	tw.tween_property(halo, "rotation_degrees:y", 360.0, 6.0)
+	tw.tween_property(halo, "rotation_degrees:y", 0.0, 0.0)
+	# Subtle body bob (breathing)
+	var tb: Tween = monk.create_tween().set_loops()
+	tb.tween_property(monk, "position:y", 0.06, 1.85)
+	tb.tween_property(monk, "position:y", 0.0, 1.85)
+
+
+func _build_d7_zen_garden(geom: Node) -> void:
+	## Epic-7 T18: zen rock garden — flat sand patch with 3 large stones
+	## arranged in a triangle and concentric ripple "waves" around them.
+	var garden: Node3D = Node3D.new()
+	garden.name = "ZenGarden"
+	garden.position = Vector3(D7_CENTER.x - 6.0, 0.0, -14.0)
+	geom.add_child(garden)
+	var sand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sand_mat.albedo_color = Color(0.92, 0.85, 0.65)
+	sand_mat.emission_enabled = true
+	sand_mat.emission = Color(0.85, 0.75, 0.45)
+	sand_mat.emission_energy_multiplier = 0.18
+	sand_mat.roughness = 0.92
+	# Sand patch (low cylinder)
+	var patch: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 3.40
+	pm.bottom_radius = 3.40
+	pm.height = 0.10
+	patch.mesh = pm
+	patch.material_override = sand_mat
+	patch.position = Vector3(0, 0.05, 0)
+	garden.add_child(patch)
+	# 3 large stones in a triangle
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.25, 0.20)
+	stone_mat.roughness = 0.92
+	var stone_positions: Array = [
+		{"pos": Vector3( 0.0, 0,  0.0), "scale": Vector3(0.85, 0.85, 0.85)},
+		{"pos": Vector3( 1.40, 0, -0.85), "scale": Vector3(0.55, 0.55, 0.55)},
+		{"pos": Vector3(-1.0, 0,  1.20), "scale": Vector3(0.65, 0.65, 0.65)},
+	]
+	for sd in stone_positions:
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.55
+		sm.height = 0.85
+		stone.mesh = sm
+		stone.material_override = stone_mat
+		stone.position = sd["pos"] + Vector3(0, 0.20, 0)
+		stone.scale = sd["scale"]
+		garden.add_child(stone)
+		# Stone collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = sd["pos"] + Vector3(0, 0.20, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: SphereShape3D = SphereShape3D.new()
+		cap.radius = 0.55 * sd["scale"].x
+		cs.shape = cap
+		sb.add_child(cs)
+		garden.add_child(sb)
+	# 4 concentric ripple rings (thin tori on the sand)
+	var ripple_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ripple_mat.albedo_color = Color(0.85, 0.75, 0.55)
+	ripple_mat.emission_enabled = true
+	ripple_mat.emission = Color(0.85, 0.75, 0.55)
+	ripple_mat.emission_energy_multiplier = 0.45
+	ripple_mat.roughness = 0.85
+	for i in 4:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rm: TorusMesh = TorusMesh.new()
+		rm.inner_radius = 1.0 + i * 0.55
+		rm.outer_radius = 1.05 + i * 0.55
+		ring.mesh = rm
+		ring.material_override = ripple_mat
+		ring.position = Vector3(0, 0.12, 0)
+		garden.add_child(ring)
+
+
+func _build_d7_waterfall(geom: Node) -> void:
+	## Epic-7 T19: small flowing waterfall — cliff slab with 2 vertical
+	## blue water columns + a small pool at the bottom.
+	var fall: Node3D = Node3D.new()
+	fall.name = "Waterfall"
+	fall.position = Vector3(D7_CENTER.x + 22.0, 0.0, -14.0)
+	geom.add_child(fall)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.40, 0.30, 0.18)
+	rock_mat.roughness = 0.92
+	# Cliff backdrop
+	var cliff: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(3.40, 4.20, 1.10)
+	cliff.mesh = cm
+	cliff.material_override = rock_mat
+	cliff.position = Vector3(0, 2.10, -0.85)
+	fall.add_child(cliff)
+	# Water material
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.85)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.85, 1.0)
+	water_mat.emission_energy_multiplier = 1.4
+	water_mat.metallic = 0.55
+	water_mat.roughness = 0.10
+	# 2 vertical water columns flowing down
+	for sx in [-0.55, 0.55]:
+		var col: MeshInstance3D = MeshInstance3D.new()
+		var clm: CylinderMesh = CylinderMesh.new()
+		clm.top_radius = 0.18
+		clm.bottom_radius = 0.30
+		clm.height = 4.0
+		col.mesh = clm
+		col.material_override = water_mat
+		col.position = Vector3(sx, 2.0, 0)
+		fall.add_child(col)
+	# Pool at the base
+	var pool: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 1.40
+	pmm.bottom_radius = 1.40
+	pmm.height = 0.06
+	pool.mesh = pmm
+	pool.material_override = water_mat
+	pool.position = Vector3(0, 0.10, 0.40)
+	fall.add_child(pool)
+	# Bob the pool
+	var tw: Tween = pool.create_tween().set_loops()
+	tw.tween_property(pool, "position:y", 0.14, 1.4)
+	tw.tween_property(pool, "position:y", 0.10, 1.4)
+	# Pool light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.85, 1.0)
+	light.light_energy = 1.85
+	light.omni_range = 5.0
+	light.position = Vector3(0, 0.55, 0.40)
+	fall.add_child(light)
+	# Cliff collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.10, -0.85)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 4.20, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	fall.add_child(sb)
+
+
+func _build_d7_scroll_shelves(geom: Node) -> void:
+	## Epic-7 T20: 3 wooden shelves of rolled scrolls — slim wooden frames
+	## with horizontal racks of small scroll cylinders.
+	var shelves: Node3D = Node3D.new()
+	shelves.name = "ScrollShelves"
+	shelves.position = Vector3(D7_CENTER.x - 24.0, 0.0, -2.0)
+	geom.add_child(shelves)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var scroll_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scroll_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	scroll_mat.emission_enabled = true
+	scroll_mat.emission = Color(0.95, 0.75, 0.30)
+	scroll_mat.emission_energy_multiplier = 0.45
+	scroll_mat.roughness = 0.85
+	for s in 3:
+		var shelf: Node3D = Node3D.new()
+		shelf.position = Vector3(s * 2.20, 0, 0)
+		shelves.add_child(shelf)
+		# Frame
+		var frame: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(1.85, 3.20, 0.55)
+		frame.mesh = fm
+		frame.material_override = wood_mat
+		frame.position = Vector3(0, 1.60, 0)
+		shelf.add_child(frame)
+		# 4 horizontal shelves with scrolls
+		for r in 4:
+			var plank: MeshInstance3D = MeshInstance3D.new()
+			var pmm: BoxMesh = BoxMesh.new()
+			pmm.size = Vector3(1.65, 0.06, 0.40)
+			plank.mesh = pmm
+			plank.material_override = wood_mat
+			plank.position = Vector3(0, 0.45 + r * 0.75, 0)
+			shelf.add_child(plank)
+			# 6 scrolls per shelf (small horizontal cylinders)
+			for c in 6:
+				var scroll: MeshInstance3D = MeshInstance3D.new()
+				var scmm: CylinderMesh = CylinderMesh.new()
+				scmm.top_radius = 0.06
+				scmm.bottom_radius = 0.06
+				scmm.height = 0.30
+				scroll.mesh = scmm
+				scroll.material_override = scroll_mat
+				scroll.position = Vector3(-0.65 + c * 0.22, 0.55 + r * 0.75, 0)
+				scroll.rotation_degrees = Vector3(0, 0, 90)
+				shelf.add_child(scroll)
+		# Shelf collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.60, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.85, 3.20, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		shelf.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
