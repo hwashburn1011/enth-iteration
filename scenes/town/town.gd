@@ -1965,6 +1965,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_harvest_crates(geom)
 	# Epic-4 T60: berry bushes lining a path
 	_build_d4_berry_bushes(geom)
+	# Epic-4 T61: vegetable garden rows with sprouts
+	_build_d4_veg_garden_rows(geom)
+	# Epic-4 T62: water trough for animals
+	_build_d4_water_trough(geom)
+	# Epic-4 T63: shepherd NPC with crook
+	_build_d4_shepherd_npc()
+	# Epic-4 T64: sheep flock grazing
+	_build_d4_sheep_flock(geom)
+	# Epic-4 T65: sheepdog herding the flock
+	_build_d4_sheepdog(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -5660,6 +5670,327 @@ func _build_d4_berry_bushes(geom: Node) -> void:
 		cs.shape = cb
 		sb.add_child(cs)
 		bush.add_child(sb)
+
+
+func _build_d4_veg_garden_rows(geom: Node) -> void:
+	## Epic-4 T61: 4 long raised garden rows with green sprouts.
+	var rows: Node3D = Node3D.new()
+	rows.name = "VegGardenRows"
+	rows.position = Vector3(D4_CENTER.x + 12.0, 0.0, -10.0)
+	geom.add_child(rows)
+	var dirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dirt_mat.albedo_color = Color(0.32, 0.20, 0.10)
+	dirt_mat.roughness = 0.95
+	var sprout_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sprout_mat.albedo_color = Color(0.30, 0.65, 0.25)
+	sprout_mat.emission_enabled = true
+	sprout_mat.emission = Color(0.20, 0.55, 0.15)
+	sprout_mat.emission_energy_multiplier = 0.18
+	sprout_mat.roughness = 0.70
+	for r in 4:
+		var row: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(6.0, 0.18, 0.6)
+		row.mesh = rm
+		row.material_override = dirt_mat
+		row.position = Vector3(0, 0.09, r * 1.0)
+		rows.add_child(row)
+		# Sprouts spaced along the row
+		for s in 8:
+			var sprout: MeshInstance3D = MeshInstance3D.new()
+			var sm: PrismMesh = PrismMesh.new()
+			sm.size = Vector3(0.10, 0.30, 0.10)
+			sprout.mesh = sm
+			sprout.material_override = sprout_mat
+			sprout.position = Vector3(-2.6 + s * 0.74, 0.30, r * 1.0)
+			rows.add_child(sprout)
+
+
+func _build_d4_water_trough(geom: Node) -> void:
+	## Epic-4 T62: long wooden water trough with shimmering water surface.
+	var trough: Node3D = Node3D.new()
+	trough.name = "WaterTrough"
+	trough.position = Vector3(D4_CENTER.x + 4.0, 0.0, 8.0)
+	geom.add_child(trough)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.48, 0.30, 0.15)
+	wood_mat.roughness = 0.90
+	# Outer hollow box (made from 4 walls + base)
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.4, 0.10, 0.8)
+	base.mesh = bm
+	base.material_override = wood_mat
+	base.position = Vector3(0, 0.05, 0)
+	trough.add_child(base)
+	var walls: Array = [
+		{"size": Vector3(2.4, 0.40, 0.10), "pos": Vector3(0, 0.30,  0.40)},
+		{"size": Vector3(2.4, 0.40, 0.10), "pos": Vector3(0, 0.30, -0.40)},
+		{"size": Vector3(0.10, 0.40, 0.80), "pos": Vector3( 1.20, 0.30, 0)},
+		{"size": Vector3(0.10, 0.40, 0.80), "pos": Vector3(-1.20, 0.30, 0)},
+	]
+	for w in walls:
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = w["size"]
+		wall.mesh = wm
+		wall.material_override = wood_mat
+		wall.position = w["pos"]
+		trough.add_child(wall)
+	# Water surface (translucent cyan)
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var waterm: BoxMesh = BoxMesh.new()
+	waterm.size = Vector3(2.30, 0.05, 0.70)
+	water.mesh = waterm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.30, 0.65, 0.85, 0.75)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.20, 0.50, 0.85)
+	water_mat.emission_energy_multiplier = 0.40
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.10
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.45, 0)
+	trough.add_child(water)
+	# Subtle bob
+	var tw: Tween = water.create_tween().set_loops()
+	tw.tween_property(water, "position:y", 0.47, 1.5)
+	tw.tween_property(water, "position:y", 0.45, 1.5)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.4, 0.5, 0.8)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.25, 0)
+	sb.add_child(cs)
+	trough.add_child(sb)
+
+
+func _build_d4_shepherd_npc() -> void:
+	## Epic-4 T63: shepherd NPC with brown robe + tall crook.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ShepherdSlot"
+	slot.position = Vector3(D4_CENTER.x + 6.0, 0.0, 10.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Shepherd"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Pasture Keeper")
+	if "npc_id" in npc:
+		npc.set("npc_id", "shepherd_d4")
+	slot.add_child(npc)
+	# Tall wooden crook
+	var crook: Node3D = Node3D.new()
+	crook.position = Vector3(0.40, 0, 0)
+	npc.add_child(crook)
+	var staff: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.04
+	stm.bottom_radius = 0.05
+	stm.height = 1.85
+	staff.mesh = stm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	staff.material_override = wood_mat
+	staff.position = Vector3(0, 0.92, 0)
+	crook.add_child(staff)
+	# Crook curl (torus)
+	var curl: MeshInstance3D = MeshInstance3D.new()
+	var tm: TorusMesh = TorusMesh.new()
+	tm.inner_radius = 0.13
+	tm.outer_radius = 0.20
+	curl.mesh = tm
+	curl.material_override = wood_mat
+	curl.position = Vector3(0, 1.85, 0)
+	curl.rotation_degrees = Vector3(90, 0, 0)
+	crook.add_child(curl)
+	# Brown robe block (overlay color hint)
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.55, 0.85, 0.35)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.45, 0.30, 0.18)
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.55, 0)
+	npc.add_child(robe)
+
+
+func _build_d4_sheep_flock(geom: Node) -> void:
+	## Epic-4 T64: 5 fluffy sheep grazing in a loose group with idle bobbing.
+	var flock: Node3D = Node3D.new()
+	flock.name = "SheepFlock"
+	flock.position = Vector3(D4_CENTER.x + 8.0, 0.0, 4.0)
+	geom.add_child(flock)
+	var wool_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wool_mat.albedo_color = Color(0.92, 0.92, 0.88)
+	wool_mat.roughness = 0.95
+	var face_mat: StandardMaterial3D = StandardMaterial3D.new()
+	face_mat.albedo_color = Color(0.20, 0.18, 0.15)
+	face_mat.roughness = 0.85
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.25, 0.22, 0.18)
+	leg_mat.roughness = 0.85
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 1.8, 0,  0.6),
+		Vector3(-1.5, 0,  1.2),
+		Vector3( 2.4, 0, -1.3),
+		Vector3(-0.8, 0, -1.6),
+	]
+	for p in positions:
+		var sheep: Node3D = Node3D.new()
+		sheep.position = p
+		flock.add_child(sheep)
+		# Wool body (3 overlapping spheres)
+		for i in 3:
+			var wool: MeshInstance3D = MeshInstance3D.new()
+			var wm: SphereMesh = SphereMesh.new()
+			wm.radius = 0.30
+			wm.height = 0.55
+			wool.mesh = wm
+			wool.material_override = wool_mat
+			wool.position = Vector3((i - 1) * 0.20, 0.55, 0)
+			wool.scale = Vector3(1.0, 0.95, 1.10)
+			sheep.add_child(wool)
+		# Head (dark sphere with face)
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.16
+		hm.height = 0.28
+		head.mesh = hm
+		head.material_override = face_mat
+		head.position = Vector3(0.40, 0.55, 0)
+		sheep.add_child(head)
+		# 4 legs
+		var leg_positions: Array = [
+			Vector3( 0.18, 0.18,  0.15),
+			Vector3( 0.18, 0.18, -0.15),
+			Vector3(-0.18, 0.18,  0.15),
+			Vector3(-0.18, 0.18, -0.15),
+		]
+		for lp in leg_positions:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.05
+			lm.bottom_radius = 0.05
+			lm.height = 0.36
+			leg.mesh = lm
+			leg.material_override = leg_mat
+			leg.position = lp
+			sheep.add_child(leg)
+		# Grazing tween: head bob
+		var tw: Tween = sheep.create_tween().set_loops()
+		tw.tween_property(head, "position:y", 0.40, 0.8 + randf() * 0.4)
+		tw.tween_property(head, "position:y", 0.55, 0.8 + randf() * 0.4)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 0.75, 0.55)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.50, 0)
+		sb.add_child(cs)
+		sheep.add_child(sb)
+
+
+func _build_d4_sheepdog(geom: Node) -> void:
+	## Epic-4 T65: black-and-white sheepdog patrolling around the flock.
+	var dog: Node3D = Node3D.new()
+	dog.name = "Sheepdog"
+	dog.position = Vector3(D4_CENTER.x + 10.0, 0.0, 5.5)
+	geom.add_child(dog)
+	# Body — white with black patches
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.95, 0.94, 0.92)
+	white_mat.roughness = 0.85
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.08, 0.08)
+	black_mat.roughness = 0.85
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 0.22
+	bm.height = 0.36
+	body.mesh = bm
+	body.material_override = white_mat
+	body.position = Vector3(0, 0.32, 0)
+	body.scale = Vector3(1.0, 0.85, 1.55)
+	dog.add_child(body)
+	# Black patch on back
+	var patch: MeshInstance3D = MeshInstance3D.new()
+	var pm: SphereMesh = SphereMesh.new()
+	pm.radius = 0.18
+	pm.height = 0.30
+	patch.mesh = pm
+	patch.material_override = black_mat
+	patch.position = Vector3(0, 0.42, -0.05)
+	patch.scale = Vector3(0.85, 0.40, 1.20)
+	dog.add_child(patch)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.14
+	hm.height = 0.24
+	head.mesh = hm
+	head.material_override = black_mat
+	head.position = Vector3(0, 0.42, 0.32)
+	dog.add_child(head)
+	# Snout (white)
+	var snout: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.10, 0.08, 0.16)
+	snout.mesh = sm
+	snout.material_override = white_mat
+	snout.position = Vector3(0, 0.36, 0.46)
+	dog.add_child(snout)
+	# 4 legs
+	var leg_positions: Array = [
+		Vector3( 0.13, 0.10,  0.20),
+		Vector3( 0.13, 0.10, -0.20),
+		Vector3(-0.13, 0.10,  0.20),
+		Vector3(-0.13, 0.10, -0.20),
+	]
+	for lp in leg_positions:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.04
+		lm.bottom_radius = 0.04
+		lm.height = 0.20
+		leg.mesh = lm
+		leg.material_override = black_mat
+		leg.position = lp
+		dog.add_child(leg)
+	# Tail
+	var tail: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 0.03
+	tm.bottom_radius = 0.05
+	tm.height = 0.22
+	tail.mesh = tm
+	tail.material_override = white_mat
+	tail.position = Vector3(0, 0.40, -0.36)
+	tail.rotation_degrees = Vector3(70, 0, 0)
+	dog.add_child(tail)
+	# Patrol tween — circles the flock area
+	var tw: Tween = dog.create_tween().set_loops()
+	tw.tween_property(dog, "position", Vector3(D4_CENTER.x + 6.0, 0.0, 7.5), 4.0)
+	tw.tween_property(dog, "position", Vector3(D4_CENTER.x + 4.0, 0.0, 4.0), 4.0)
+	tw.tween_property(dog, "position", Vector3(D4_CENTER.x + 8.0, 0.0, 2.5), 4.0)
+	tw.tween_property(dog, "position", Vector3(D4_CENTER.x + 10.0, 0.0, 5.5), 4.0)
+	# Tail wag
+	var twag: Tween = tail.create_tween().set_loops()
+	twag.tween_property(tail, "rotation_degrees:y", 25.0, 0.25)
+	twag.tween_property(tail, "rotation_degrees:y", -25.0, 0.25)
 
 
 
