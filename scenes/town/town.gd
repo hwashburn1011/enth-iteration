@@ -32744,6 +32744,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_fishmonger_npc()
 	# Epic-8 T55: hanging fish dryer
 	_build_d8_fish_dryer(geom)
+	# Epic-8 T56: sea turtles
+	_build_d8_sea_turtles(geom)
+	# Epic-8 T57: marine biologist NPC
+	_build_d8_marine_biologist_npc()
+	# Epic-8 T58: aquarium tank
+	_build_d8_aquarium_tank(geom)
+	# Epic-8 T59: specimen jars
+	_build_d8_specimen_jars(geom)
+	# Epic-8 T60: diving rig
+	_build_d8_diving_rig(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -36434,6 +36444,371 @@ func _build_d8_fish_dryer(geom: Node) -> void:
 		tw.tween_interval(i * 0.10)
 		tw.tween_property(fish, "rotation_degrees:z", 4.0, 1.4)
 		tw.tween_property(fish, "rotation_degrees:z", -4.0, 1.4)
+
+
+func _build_d8_sea_turtles(geom: Node) -> void:
+	## Epic-8 T56: 3 sea turtles slowly swimming — round green shell + 4
+	## flippers + slow drift tween.
+	var turtles: Node3D = Node3D.new()
+	turtles.name = "SeaTurtles"
+	turtles.position = Vector3(D8_CENTER.x + 0.0, 0.30, 18.0)
+	geom.add_child(turtles)
+	var shell_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shell_mat.albedo_color = Color(0.20, 0.55, 0.30)
+	shell_mat.emission_enabled = true
+	shell_mat.emission = Color(0.20, 0.65, 0.30)
+	shell_mat.emission_energy_multiplier = 0.45
+	shell_mat.metallic = 0.30
+	shell_mat.roughness = 0.45
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.30, 0.45, 0.30)
+	skin_mat.roughness = 0.65
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 2.85, 0,  1.40),
+		Vector3(-2.40, 0,  0.85),
+	]
+	for p in positions:
+		var turtle: Node3D = Node3D.new()
+		turtle.position = p
+		turtles.add_child(turtle)
+		# Round shell (flat sphere)
+		var shell: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.55
+		sm.height = 0.40
+		shell.mesh = sm
+		shell.material_override = shell_mat
+		shell.position = Vector3(0, 0.20, 0)
+		shell.scale = Vector3(1.0, 0.45, 1.30)
+		turtle.add_child(shell)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		head.material_override = skin_mat
+		head.position = Vector3(0, 0.20, 0.55)
+		turtle.add_child(head)
+		# 4 flippers
+		for sx in [-0.40, 0.40]:
+			for sz in [-0.30, 0.30]:
+				var flipper: MeshInstance3D = MeshInstance3D.new()
+				var flm: BoxMesh = BoxMesh.new()
+				flm.size = Vector3(0.30, 0.06, 0.18)
+				flipper.mesh = flm
+				flipper.material_override = skin_mat
+				flipper.position = Vector3(sx, 0.20, sz)
+				turtle.add_child(flipper)
+				# Slow flap tween
+				var twf: Tween = flipper.create_tween().set_loops()
+				twf.tween_property(flipper, "rotation_degrees:z", 8.0 if sx > 0 else -8.0, 1.4)
+				twf.tween_property(flipper, "rotation_degrees:z", -8.0 if sx > 0 else 8.0, 1.4)
+		# Slow drift tween
+		var tw: Tween = turtle.create_tween().set_loops()
+		var p2: Vector3 = p
+		tw.tween_property(turtle, "position", p2 + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5)), 4.0)
+		tw.tween_property(turtle, "rotation_degrees:y", 180.0, 0.5)
+		tw.tween_property(turtle, "position", p2, 4.0)
+		tw.tween_property(turtle, "rotation_degrees:y", 0.0, 0.5)
+
+
+func _build_d8_marine_biologist_npc() -> void:
+	## Epic-8 T57: marine biologist NPC — white lab coat + held magnifier +
+	## small clipboard.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MarineBiologistSlot"
+	slot.position = Vector3(D8_CENTER.x + 4.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "MarineBiologist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Plankton")
+	if "npc_id" in npc:
+		npc.set("npc_id", "marine_bio_d8")
+	slot.add_child(npc)
+	# Lab coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Clipboard
+	var clip: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.30, 0.40, 0.04)
+	clip.mesh = clm
+	var clip_mat: StandardMaterial3D = StandardMaterial3D.new()
+	clip_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	clip.material_override = clip_mat
+	clip.position = Vector3(0.40, 0.85, 0.20)
+	clip.rotation_degrees = Vector3(-25, 0, 0)
+	npc.add_child(clip)
+	# Paper
+	var paper: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.27, 0.36, 0.02)
+	paper.mesh = pm
+	var paper_mat: StandardMaterial3D = StandardMaterial3D.new()
+	paper_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	paper.material_override = paper_mat
+	paper.position = Vector3(0.40, 0.85, 0.23)
+	paper.rotation_degrees = Vector3(-25, 0, 0)
+	npc.add_child(paper)
+
+
+func _build_d8_aquarium_tank(geom: Node) -> void:
+	## Epic-8 T58: aquarium tank — translucent glass cube with cyan water
+	## inside + 4 small fish swimming + bubble particles.
+	var tank: Node3D = Node3D.new()
+	tank.name = "AquariumTank"
+	tank.position = Vector3(D8_CENTER.x + 8.0, 0.0, 22.0)
+	geom.add_child(tank)
+	var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stand_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	stand_mat.metallic = 0.55
+	stand_mat.roughness = 0.45
+	# Stand
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(2.0, 0.85, 1.10)
+	stand.mesh = sm
+	stand.material_override = stand_mat
+	stand.position = Vector3(0, 0.42, 0)
+	tank.add_child(stand)
+	# Glass tank
+	var glass: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(1.85, 1.40, 0.95)
+	glass.mesh = gm
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.45)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.30, 0.95, 1.0)
+	glass_mat.emission_energy_multiplier = 1.4
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.05
+	glass.material_override = glass_mat
+	glass.position = Vector3(0, 1.55, 0)
+	tank.add_child(glass)
+	# 4 small fish swimming inside
+	var fish_colors: Array = [
+		Color(0.95, 0.55, 0.20),
+		Color(0.85, 0.20, 0.30),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 4:
+		var pivot: Node3D = Node3D.new()
+		pivot.position = Vector3(0, 1.55, 0)
+		pivot.rotation_degrees = Vector3(0, i * 90.0, 0)
+		tank.add_child(pivot)
+		var fish: MeshInstance3D = MeshInstance3D.new()
+		var fmm: PrismMesh = PrismMesh.new()
+		fmm.size = Vector3(0.12, 0.06, 0.20)
+		fish.mesh = fmm
+		var fish_mat: StandardMaterial3D = StandardMaterial3D.new()
+		fish_mat.albedo_color = fish_colors[i]
+		fish_mat.emission_enabled = true
+		fish_mat.emission = fish_colors[i]
+		fish_mat.emission_energy_multiplier = 1.4
+		fish.material_override = fish_mat
+		fish.position = Vector3(0.55, 0, 0)
+		pivot.add_child(fish)
+		# Pivot rotation tween
+		var trot: Tween = pivot.create_tween().set_loops()
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0 + 360.0, 5.0 + i * 0.4)
+		trot.tween_property(pivot, "rotation_degrees:y", i * 90.0, 0.0)
+	# Cyan light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.85
+	light.omni_range = 4.5
+	light.position = Vector3(0, 1.55, 0)
+	tank.add_child(light)
+	# Stand collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.0, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.0, 2.40, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	tank.add_child(sb)
+
+
+func _build_d8_specimen_jars(geom: Node) -> void:
+	## Epic-8 T59: row of 5 glass specimen jars on a wooden shelf — each
+	## containing a different colored marine specimen.
+	var jars: Node3D = Node3D.new()
+	jars.name = "SpecimenJars"
+	jars.position = Vector3(D8_CENTER.x + 12.0, 0.0, 22.0)
+	geom.add_child(jars)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.85, 0.95, 1.0, 0.45)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.85, 0.95, 1.0)
+	glass_mat.emission_energy_multiplier = 0.85
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.05
+	var specimen_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.20, 0.65, 0.95),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+		Color(0.85, 0.30, 0.85),
+	]
+	# Wooden shelf
+	var shelf: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(3.40, 0.18, 0.55)
+	shelf.mesh = sm
+	shelf.material_override = wood_mat
+	shelf.position = Vector3(0, 1.10, 0)
+	jars.add_child(shelf)
+	# 2 shelf brackets
+	for sx in [-1.40, 1.40]:
+		var bracket: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.10, 1.10, 0.10)
+		bracket.mesh = bm
+		bracket.material_override = wood_mat
+		bracket.position = Vector3(sx, 0.55, 0)
+		jars.add_child(bracket)
+	# 5 jars
+	for i in 5:
+		var jar: MeshInstance3D = MeshInstance3D.new()
+		var jm: CylinderMesh = CylinderMesh.new()
+		jm.top_radius = 0.18
+		jm.bottom_radius = 0.18
+		jm.height = 0.55
+		jar.mesh = jm
+		jar.material_override = glass_mat
+		jar.position = Vector3(-1.20 + i * 0.60, 1.45, 0)
+		jars.add_child(jar)
+		# Specimen inside (small bright sphere)
+		var spec: MeshInstance3D = MeshInstance3D.new()
+		var spmm: SphereMesh = SphereMesh.new()
+		spmm.radius = 0.12
+		spmm.height = 0.20
+		spec.mesh = spmm
+		var spec_mat: StandardMaterial3D = StandardMaterial3D.new()
+		spec_mat.albedo_color = specimen_colors[i]
+		spec_mat.emission_enabled = true
+		spec_mat.emission = specimen_colors[i]
+		spec_mat.emission_energy_multiplier = 1.85
+		spec.material_override = spec_mat
+		spec.position = Vector3(-1.20 + i * 0.60, 1.42, 0)
+		jars.add_child(spec)
+	# Shelf collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 0.85, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	jars.add_child(sb)
+
+
+func _build_d8_diving_rig(geom: Node) -> void:
+	## Epic-8 T60: diving rig — old-style brass diving helmet on a stand
+	## with hose connection.
+	var rig: Node3D = Node3D.new()
+	rig.name = "DivingRig"
+	rig.position = Vector3(D8_CENTER.x + 18.0, 0.0, 22.0)
+	geom.add_child(rig)
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.65, 0.20)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.20
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.85)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.30, 0.95, 1.0)
+	glass_mat.emission_energy_multiplier = 2.5
+	# Wooden stand
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.85, 0.85, 0.85)
+	stand.mesh = sm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	stand.material_override = wood_mat
+	stand.position = Vector3(0, 0.42, 0)
+	rig.add_child(stand)
+	# Brass diving helmet (round dome)
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.40
+	hm.height = 0.65
+	helmet.mesh = hm
+	helmet.material_override = brass_mat
+	helmet.position = Vector3(0, 1.20, 0)
+	rig.add_child(helmet)
+	# Round front porthole window
+	var port: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 0.18
+	pmm.bottom_radius = 0.18
+	pmm.height = 0.06
+	port.mesh = pmm
+	port.material_override = glass_mat
+	port.position = Vector3(0, 1.20, 0.40)
+	port.rotation_degrees = Vector3(90, 0, 0)
+	rig.add_child(port)
+	# 3 small bolts around the porthole
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var bolt: MeshInstance3D = MeshInstance3D.new()
+		var btm: SphereMesh = SphereMesh.new()
+		btm.radius = 0.04
+		btm.height = 0.08
+		bolt.mesh = btm
+		bolt.material_override = brass_mat
+		bolt.position = Vector3(cos(ang) * 0.25, 1.20 + sin(ang) * 0.25, 0.42)
+		rig.add_child(bolt)
+	# Hose connection (curved cylinder going down)
+	var hose: MeshInstance3D = MeshInstance3D.new()
+	var hmm2: CylinderMesh = CylinderMesh.new()
+	hmm2.top_radius = 0.06
+	hmm2.bottom_radius = 0.08
+	hmm2.height = 0.55
+	hose.mesh = hmm2
+	var hose_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hose_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	hose_mat.roughness = 0.85
+	hose.material_override = hose_mat
+	hose.position = Vector3(0, 1.65, -0.18)
+	rig.add_child(hose)
+	# Stand collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.85, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	rig.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
