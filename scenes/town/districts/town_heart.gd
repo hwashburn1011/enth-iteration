@@ -91,6 +91,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_champion_trophy_hall(geom)
 	_build_th_champion_herald_npc(town)
 	_build_th_sky_ceremonial_banners(geom)
+	_build_th_sky_aurora_ribbon(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -13894,3 +13895,98 @@ func _build_th_sky_ceremonial_banners(geom: Node) -> void:
 		lt.light_energy = 1.05
 		lt.omni_range = 4.5
 		banner_pivot.add_child(lt)
+
+
+func _build_th_sky_aurora_ribbon(geom: Node) -> void:
+	## Epic-10 T75 (75/100 milestone): Sky Aurora Ribbon — long translucent
+	## aurora ribbon high above the plaza, spanning E-W ~16m wide. Shifting
+	## cyan-violet-amber emission like a northern lights effect, with gentle
+	## undulation. Adds a "data sky" atmosphere above the central plaza.
+	## Composed of 6 segment ribbons stitched together for a curving effect.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_SkyAuroraRibbon"
+	pivot.position = TOWN_CENTER + Vector3(0, 12.0, 0)
+	geom.add_child(pivot)
+	# 3 layered aurora colors (3 separate ribbons, slightly offset altitudes)
+	var aurora_layers: Array = [
+		{
+			"y_offset": 0.0,
+			"y_amp": 0.30,
+			"color": Color(0.40, 0.85, 1.0),
+			"emission_min": 1.20,
+			"emission_max": 2.40,
+			"period": 5.5,
+			"width": 1.40,
+		},
+		{
+			"y_offset": 1.20,
+			"y_amp": 0.45,
+			"color": Color(0.65, 0.40, 0.95),
+			"emission_min": 0.95,
+			"emission_max": 2.10,
+			"period": 6.5,
+			"width": 1.05,
+		},
+		{
+			"y_offset": -0.85,
+			"y_amp": 0.55,
+			"color": Color(1.0, 0.60, 0.20),
+			"emission_min": 0.85,
+			"emission_max": 1.95,
+			"period": 7.5,
+			"width": 0.85,
+		},
+	]
+	# Build each layer
+	for layer_index in range(aurora_layers.size()):
+		var L: Dictionary = aurora_layers[layer_index]
+		var layer_pivot: Node3D = Node3D.new()
+		layer_pivot.position = Vector3(0, L["y_offset"], 0)
+		pivot.add_child(layer_pivot)
+		# Aurora material per layer
+		var aurora_mat: StandardMaterial3D = StandardMaterial3D.new()
+		aurora_mat.albedo_color = Color(L["color"].r, L["color"].g, L["color"].b, 0.32)
+		aurora_mat.metallic = 0.0
+		aurora_mat.roughness = 1.0
+		aurora_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		aurora_mat.emission_enabled = true
+		aurora_mat.emission = L["color"]
+		aurora_mat.emission_energy_multiplier = L["emission_min"]
+		aurora_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		# Build 8 ribbon segments forming an undulating wave across the plaza
+		var seg_count: int = 8
+		var span: float = 18.0
+		var seg_w: float = span / float(seg_count)
+		for s in range(seg_count):
+			var sx: float = -span * 0.5 + (float(s) + 0.5) * seg_w
+			var phase: float = float(s + layer_index * 3) * 0.6
+			var sy_base: float = sin(phase) * L["y_amp"]
+			var seg: MeshInstance3D = MeshInstance3D.new()
+			var smm: BoxMesh = BoxMesh.new()
+			smm.size = Vector3(seg_w + 0.10, L["width"], 0.04)
+			seg.mesh = smm
+			seg.material_override = aurora_mat
+			seg.position = Vector3(sx, sy_base, 0)
+			# Slight per-segment Z rotation for wave look
+			seg.rotation.z = sin(phase) * 0.18
+			layer_pivot.add_child(seg)
+			# Per-segment vertical bob (offset phases)
+			var sb: Tween = seg.create_tween().set_loops()
+			sb.tween_interval(float(s) * 0.30)
+			sb.tween_property(seg, "position:y", sy_base + 0.25, L["period"] * 0.5).set_ease(Tween.EASE_IN_OUT)
+			sb.tween_property(seg, "position:y", sy_base - 0.25, L["period"] * 0.5).set_ease(Tween.EASE_IN_OUT)
+		# Layer-wide emission breathing
+		var em_pulse: Tween = layer_pivot.create_tween().set_loops()
+		em_pulse.tween_property(aurora_mat, "emission_energy_multiplier", L["emission_max"], L["period"] * 0.5).set_ease(Tween.EASE_IN_OUT)
+		em_pulse.tween_property(aurora_mat, "emission_energy_multiplier", L["emission_min"], L["period"] * 0.5).set_ease(Tween.EASE_IN_OUT)
+		# Layer slow drift along X
+		var drift: Tween = layer_pivot.create_tween().set_loops()
+		drift.tween_property(layer_pivot, "position:x", 0.85, L["period"]).set_ease(Tween.EASE_IN_OUT)
+		drift.tween_property(layer_pivot, "position:x", -0.85, L["period"]).set_ease(Tween.EASE_IN_OUT)
+	# Subtle wide DirectionalLight-like aura (use OmniLight)
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 0, 0)
+	lt.light_color = Color(0.55, 0.85, 1.0)
+	lt.light_energy = 1.40
+	lt.omni_range = 12.0
+	pivot.add_child(lt)
