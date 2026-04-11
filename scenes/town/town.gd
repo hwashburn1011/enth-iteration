@@ -1343,6 +1343,16 @@ func _build_east_plaza() -> void:
 	_build_courier_drones(geom)
 	# Epic-1 T60: scattered ambient glow nodes pulsing on the ground
 	_build_glow_nodes(geom)
+	# Epic-1 T61: holographic minimap kiosk near plaza arch entrance
+	_build_minimap_kiosk(geom)
+	# Epic-1 T62: data ATM deposit terminal — currency exchange post
+	_build_data_atm(geom)
+	# Epic-1 T63: bug-catcher cage prop — captured glitchbug specimen
+	_build_bug_cage(geom)
+	# Epic-1 T64: 4 plaza speaker towers broadcasting ambient announcements
+	_build_announcement_speakers(geom)
+	# Epic-1 T65: small statue garden — 4 mini ancestor busts around AI statue
+	_build_statue_garden(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -4719,3 +4729,458 @@ func _build_glow_nodes(geom: Node) -> void:
 		pulse.tween_property(node, "scale", Vector3(1.4, 1.0, 1.4), pulse_speed).set_ease(Tween.EASE_IN_OUT)
 		pulse.tween_property(node, "scale", Vector3(1.0, 1.0, 1.0), pulse_speed).set_ease(Tween.EASE_IN_OUT)
 
+
+func _build_minimap_kiosk(geom: Node) -> void:
+	## Epic-1 T61: holographic minimap kiosk by the plaza arch — angled
+	## display screen on a base showing a green wireframe of the plaza layout
+	## (mocked with crisscrossing emissive bars). Helps players orient.
+	var kiosk: Node3D = Node3D.new()
+	kiosk.name = "EastPlazaMinimapKiosk"
+	kiosk.position = Vector3(23, 0, 3)
+	geom.add_child(kiosk)
+	# Base column
+	var base_mat: StandardMaterial3D = StandardMaterial3D.new()
+	base_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	base_mat.metallic = 0.85
+	base_mat.roughness = 0.30
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.85, 1.10, 0.85)
+	base.mesh = bmesh
+	base.position = Vector3(0, 0.55, 0)
+	base.material_override = base_mat
+	kiosk.add_child(base)
+	# Angled display panel
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(1.20, 0.85, 0.06)
+	screen.mesh = smesh
+	screen.position = Vector3(0, 1.40, 0)
+	screen.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.04, 0.10, 0.06)
+	smat.emission_enabled = true
+	smat.emission = Color(0.20, 0.95, 0.40)
+	smat.emission_energy_multiplier = 0.85
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = smat
+	kiosk.add_child(screen)
+	# Wireframe gridlines on display (4 thin emissive bars to suggest map)
+	var wire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wire_mat.albedo_color = Color(0.40, 1.0, 0.50)
+	wire_mat.emission_enabled = true
+	wire_mat.emission = Color(0.40, 1.0, 0.50)
+	wire_mat.emission_energy_multiplier = 2.5
+	wire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var wire_specs: Array = [
+		[Vector3(-0.25, 0.0, 0.04), Vector3(0.04, 0.65, 0.02)],
+		[Vector3(0.25, 0.0, 0.04), Vector3(0.04, 0.65, 0.02)],
+		[Vector3(0.0, 0.20, 0.04), Vector3(0.95, 0.04, 0.02)],
+		[Vector3(0.0, -0.20, 0.04), Vector3(0.95, 0.04, 0.02)],
+	]
+	for spec in wire_specs:
+		var wire: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		wmesh.size = spec[1]
+		wire.mesh = wmesh
+		wire.position = spec[0]
+		wire.material_override = wire_mat
+		screen.add_child(wire)
+	# "YOU ARE HERE" pulsing dot
+	var here: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.05
+	hmesh.height = 0.10
+	here.mesh = hmesh
+	here.position = Vector3(-0.10, -0.05, 0.06)
+	var hmat: StandardMaterial3D = StandardMaterial3D.new()
+	hmat.albedo_color = Color(1.0, 0.30, 0.30)
+	hmat.emission_enabled = true
+	hmat.emission = Color(1.0, 0.40, 0.40)
+	hmat.emission_energy_multiplier = 3.0
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	here.material_override = hmat
+	screen.add_child(here)
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(here, "scale", Vector3(1.6, 1.6, 1.6), 0.7).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(here, "scale", Vector3(1.0, 1.0, 1.0), 0.7).set_ease(Tween.EASE_IN_OUT)
+	# Top label
+	var label: Label3D = Label3D.new()
+	label.text = "MAP"
+	label.position = Vector3(0, 2.0, 0)
+	label.modulate = Color(0.40, 1.0, 0.50)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	kiosk.add_child(label)
+	# Collision around base
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.80, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.90, 0)
+	sb.add_child(cs)
+	kiosk.add_child(sb)
+
+
+func _build_data_atm(geom: Node) -> void:
+	## Epic-1 T62: data ATM terminal — narrow upright kiosk with a small
+	## screen and 6 button keys. Mock currency exchange post for the
+	## future "data shards → upgrades" loop.
+	var atm: Node3D = Node3D.new()
+	atm.name = "EastPlazaDataATM"
+	atm.position = Vector3(45, 0, 4)
+	geom.add_child(atm)
+	# Body cabinet
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.16, 0.20, 0.26)
+	body_mat.metallic = 0.85
+	body_mat.roughness = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.95, 2.0, 0.55)
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.0, 0)
+	body.material_override = body_mat
+	atm.add_child(body)
+	# Top emissive header strip
+	var header_mat: StandardMaterial3D = StandardMaterial3D.new()
+	header_mat.albedo_color = Color(0.95, 0.65, 0.20)
+	header_mat.emission_enabled = true
+	header_mat.emission = Color(1.0, 0.75, 0.25)
+	header_mat.emission_energy_multiplier = 1.6
+	header_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var header: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: BoxMesh = BoxMesh.new()
+	hmesh.size = Vector3(0.95, 0.18, 0.06)
+	header.mesh = hmesh
+	header.position = Vector3(0, 1.85, 0.30)
+	header.material_override = header_mat
+	atm.add_child(header)
+	# Small screen
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.65, 0.45, 0.04)
+	screen.mesh = smesh
+	screen.position = Vector3(0, 1.45, 0.30)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.05, 0.10, 0.15)
+	smat.emission_enabled = true
+	smat.emission = Color(0.30, 0.85, 1.0)
+	smat.emission_energy_multiplier = 1.0
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = smat
+	atm.add_child(screen)
+	# Screen text
+	var screen_label: Label3D = Label3D.new()
+	screen_label.text = "BALANCE\n0000"
+	screen_label.position = Vector3(0, 1.45, 0.34)
+	screen_label.modulate = Color(0.55, 0.95, 1.0)
+	screen_label.outline_size = 0
+	screen_label.font_size = 18
+	screen_label.no_depth_test = true
+	atm.add_child(screen_label)
+	# 6 keypad buttons (2x3)
+	var btn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	btn_mat.albedo_color = Color(0.30, 0.35, 0.42)
+	btn_mat.emission_enabled = true
+	btn_mat.emission = Color(0.55, 0.95, 1.0)
+	btn_mat.emission_energy_multiplier = 0.6
+	btn_mat.metallic = 0.50
+	for r in 2:
+		for c in 3:
+			var btn: MeshInstance3D = MeshInstance3D.new()
+			var btnmesh: BoxMesh = BoxMesh.new()
+			btnmesh.size = Vector3(0.16, 0.10, 0.03)
+			btn.mesh = btnmesh
+			btn.position = Vector3(-0.20 + c * 0.20, 1.0 - r * 0.15, 0.30)
+			btn.material_override = btn_mat
+			atm.add_child(btn)
+	# Top label
+	var label: Label3D = Label3D.new()
+	label.text = "DATA ATM"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(1.0, 0.75, 0.25)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	atm.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.95, 2.0, 0.55)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.0, 0)
+	sb.add_child(cs)
+	atm.add_child(sb)
+
+
+func _build_bug_cage(geom: Node) -> void:
+	## Epic-1 T63: scientific specimen cage holding a captured glitchbug.
+	## Cube of glowing cyan bars + a small spinning "bug" inside (sphere).
+	## Hints at "people study these creatures" lore.
+	var cage: Node3D = Node3D.new()
+	cage.name = "EastPlazaBugCage"
+	cage.position = Vector3(46, 0, -4)
+	geom.add_child(cage)
+	# Base table
+	var table_mat: StandardMaterial3D = StandardMaterial3D.new()
+	table_mat.albedo_color = Color(0.18, 0.22, 0.28)
+	table_mat.metallic = 0.65
+	table_mat.roughness = 0.40
+	var table: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.90, 0.85, 0.90)
+	table.mesh = tmesh
+	table.position = Vector3(0, 0.42, 0)
+	table.material_override = table_mat
+	cage.add_child(table)
+	# 12 cage edge bars forming a wireframe cube above the table
+	var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bar_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	bar_mat.emission_enabled = true
+	bar_mat.emission = Color(0.55, 0.95, 1.0)
+	bar_mat.emission_energy_multiplier = 1.6
+	bar_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cage_y: float = 1.10
+	var cage_size: float = 0.50
+	var top_y: float = cage_y + cage_size
+	# 4 vertical bars
+	for x_off: float in [-cage_size, cage_size]:
+		for z_off: float in [-cage_size, cage_size]:
+			var bar: MeshInstance3D = MeshInstance3D.new()
+			var bmesh: CylinderMesh = CylinderMesh.new()
+			bmesh.top_radius = 0.025
+			bmesh.bottom_radius = 0.025
+			bmesh.height = cage_size * 2
+			bar.mesh = bmesh
+			bar.position = Vector3(x_off, cage_y + cage_size, z_off)
+			bar.material_override = bar_mat
+			cage.add_child(bar)
+	# 8 horizontal bars (top + bottom rectangles)
+	var horizontals: Array = [
+		[Vector3(0, cage_y, -cage_size), Vector3(cage_size * 2, 0.05, 0.05)],
+		[Vector3(0, cage_y, cage_size), Vector3(cage_size * 2, 0.05, 0.05)],
+		[Vector3(-cage_size, cage_y, 0), Vector3(0.05, 0.05, cage_size * 2)],
+		[Vector3(cage_size, cage_y, 0), Vector3(0.05, 0.05, cage_size * 2)],
+		[Vector3(0, top_y, -cage_size), Vector3(cage_size * 2, 0.05, 0.05)],
+		[Vector3(0, top_y, cage_size), Vector3(cage_size * 2, 0.05, 0.05)],
+		[Vector3(-cage_size, top_y, 0), Vector3(0.05, 0.05, cage_size * 2)],
+		[Vector3(cage_size, top_y, 0), Vector3(0.05, 0.05, cage_size * 2)],
+	]
+	for spec in horizontals:
+		var hbar: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: BoxMesh = BoxMesh.new()
+		hmesh.size = spec[1]
+		hbar.mesh = hmesh
+		hbar.position = spec[0]
+		hbar.material_override = bar_mat
+		cage.add_child(hbar)
+	# The captive bug — small magenta sphere with bobbing
+	var bug: MeshInstance3D = MeshInstance3D.new()
+	var bug_mesh: SphereMesh = SphereMesh.new()
+	bug_mesh.radius = 0.20
+	bug_mesh.height = 0.40
+	bug.mesh = bug_mesh
+	bug.position = Vector3(0, cage_y + cage_size * 0.5, 0)
+	var bug_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bug_mat.albedo_color = Color(1.0, 0.30, 0.55)
+	bug_mat.emission_enabled = true
+	bug_mat.emission = Color(1.0, 0.40, 0.65)
+	bug_mat.emission_energy_multiplier = 1.6
+	bug_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	bug.material_override = bug_mat
+	cage.add_child(bug)
+	# Bug bounces inside the cage
+	var bounce: Tween = create_tween().set_loops()
+	bounce.tween_property(bug, "position", Vector3(0.20, cage_y + 0.30, 0), 0.4).set_ease(Tween.EASE_IN_OUT)
+	bounce.tween_property(bug, "position", Vector3(-0.20, cage_y + 0.45, 0), 0.4).set_ease(Tween.EASE_IN_OUT)
+	bounce.tween_property(bug, "position", Vector3(0, cage_y + 0.65, 0.20), 0.4).set_ease(Tween.EASE_IN_OUT)
+	bounce.tween_property(bug, "position", Vector3(0, cage_y + 0.30, -0.20), 0.4).set_ease(Tween.EASE_IN_OUT)
+	# Plaque
+	var label: Label3D = Label3D.new()
+	label.text = "SPECIMEN-7\nGLITCHBUG"
+	label.position = Vector3(0, 0.50, 0.50)
+	label.modulate = Color(1.0, 0.40, 0.65)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 14
+	label.no_depth_test = true
+	cage.add_child(label)
+	# Collision around table
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.90, 1.85, 0.90)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	cage.add_child(sb)
+
+
+func _build_announcement_speakers(geom: Node) -> void:
+	## Epic-1 T64: 4 tall speaker towers at plaza corners. Each is a thin
+	## column topped with a horn cone, with concentric rings pulsing outward
+	## suggesting broadcast waves.
+	var positions: Array[Vector3] = [
+		Vector3(24, 0, -16),
+		Vector3(44, 0, -16),
+		Vector3(24, 0, 18),
+		Vector3(44, 0, 18),
+	]
+	var pole_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pole_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	pole_mat.metallic = 0.85
+	pole_mat.roughness = 0.30
+	var horn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	horn_mat.albedo_color = Color(0.18, 0.22, 0.30)
+	horn_mat.emission_enabled = true
+	horn_mat.emission = Color(0.30, 0.85, 1.0)
+	horn_mat.emission_energy_multiplier = 1.0
+	horn_mat.metallic = 0.65
+	horn_mat.roughness = 0.30
+	for i in positions.size():
+		var spkr: Node3D = Node3D.new()
+		spkr.name = "EastPlazaSpeaker_%d" % i
+		spkr.position = positions[i]
+		geom.add_child(spkr)
+		# Pole
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.07
+		pmesh.bottom_radius = 0.10
+		pmesh.height = 4.0
+		pole.mesh = pmesh
+		pole.position = Vector3(0, 2.0, 0)
+		pole.material_override = pole_mat
+		spkr.add_child(pole)
+		# Horn cone (cylinder with different radii)
+		var horn: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: CylinderMesh = CylinderMesh.new()
+		hmesh.top_radius = 0.45
+		hmesh.bottom_radius = 0.10
+		hmesh.height = 0.50
+		horn.mesh = hmesh
+		horn.position = Vector3(0, 4.20, 0.15)
+		horn.rotation = Vector3(deg_to_rad(90), 0, 0)
+		horn.material_override = horn_mat
+		spkr.add_child(horn)
+		# Pulsing torus rings emanating from the horn
+		for r in 3:
+			var ring: MeshInstance3D = MeshInstance3D.new()
+			var rmesh: TorusMesh = TorusMesh.new()
+			rmesh.inner_radius = 0.55 + r * 0.05
+			rmesh.outer_radius = 0.65 + r * 0.05
+			ring.mesh = rmesh
+			ring.position = Vector3(0, 4.20, 0.45 + r * 0.30)
+			ring.rotation = Vector3(deg_to_rad(90), 0, 0)
+			var rmat: StandardMaterial3D = StandardMaterial3D.new()
+			rmat.albedo_color = Color(0.55, 0.95, 1.0, 0.5)
+			rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			rmat.emission_enabled = true
+			rmat.emission = Color(0.55, 0.95, 1.0)
+			rmat.emission_energy_multiplier = 1.2
+			rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			ring.material_override = rmat
+			spkr.add_child(ring)
+			# Pulse the ring outward
+			var pulse: Tween = create_tween().set_loops()
+			var origin_z: float = 0.45 + r * 0.30
+			pulse.tween_property(ring, "position:z", origin_z + 0.65, 1.2 + r * 0.2).set_ease(Tween.EASE_OUT)
+			pulse.tween_property(ring, "position:z", origin_z, 0.05)
+		# Collision on pole
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.20
+		cap.height = 4.0
+		cs.shape = cap
+		cs.position = Vector3(0, 2.0, 0)
+		sb.add_child(cs)
+		spkr.add_child(sb)
+
+
+func _build_statue_garden(geom: Node) -> void:
+	## Epic-1 T65: 4 mini ancestor busts arranged around the AI statue at
+	## (32, 0, -12). Each is a small pedestal + glowing head sphere with a
+	## different color tint, suggesting a pantheon of past AI agents.
+	var center := Vector3(32, 0, -12)
+	var bust_specs: Array = [
+		[Vector3(-3, 0, -1), Color(0.30, 0.85, 1.0), "ALPHA"],
+		[Vector3(3, 0, -1), Color(0.85, 0.40, 1.0), "BETA"],
+		[Vector3(-3, 0, 2.5), Color(0.45, 0.95, 0.65), "GAMMA"],
+		[Vector3(3, 0, 2.5), Color(0.95, 0.65, 0.20), "DELTA"],
+	]
+	for spec in bust_specs:
+		var bust: Node3D = Node3D.new()
+		bust.name = "EastPlazaBust_%s" % spec[2]
+		bust.position = center + spec[0]
+		geom.add_child(bust)
+		# Pedestal
+		var pmat: StandardMaterial3D = StandardMaterial3D.new()
+		pmat.albedo_color = Color(0.18, 0.22, 0.28)
+		pmat.metallic = 0.55
+		pmat.roughness = 0.45
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.55, 0.85, 0.55)
+		ped.mesh = pmesh
+		ped.position = Vector3(0, 0.42, 0)
+		ped.material_override = pmat
+		bust.add_child(ped)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: SphereMesh = SphereMesh.new()
+		hmesh.radius = 0.28
+		hmesh.height = 0.56
+		head.mesh = hmesh
+		head.position = Vector3(0, 1.10, 0)
+		var hmat: StandardMaterial3D = StandardMaterial3D.new()
+		var color: Color = spec[1]
+		hmat.albedo_color = Color(color.r * 0.40, color.g * 0.40, color.b * 0.40)
+		hmat.emission_enabled = true
+		hmat.emission = color
+		hmat.emission_energy_multiplier = 0.95
+		hmat.metallic = 0.55
+		hmat.roughness = 0.30
+		head.material_override = hmat
+		bust.add_child(head)
+		# 2 small eye spots
+		var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+		eye_mat.albedo_color = Color(1, 1, 1)
+		eye_mat.emission_enabled = true
+		eye_mat.emission = Color(1, 1, 1)
+		eye_mat.emission_energy_multiplier = 2.5
+		eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for ex: float in [-0.08, 0.08]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emesh: SphereMesh = SphereMesh.new()
+			emesh.radius = 0.04
+			emesh.height = 0.08
+			eye.mesh = emesh
+			eye.position = Vector3(ex, 1.15, 0.24)
+			eye.material_override = eye_mat
+			bust.add_child(eye)
+		# Plaque label
+		var label: Label3D = Label3D.new()
+		label.text = spec[2]
+		label.position = Vector3(0, 0.50, 0.30)
+		label.modulate = color
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 14
+		label.no_depth_test = true
+		bust.add_child(label)
+		# Collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 1.40, 0.55)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.70, 0)
+		sb.add_child(cs)
+		bust.add_child(sb)
