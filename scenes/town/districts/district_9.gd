@@ -81,6 +81,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_slag_golem_patroller(geom)
 	_build_d9_forge_cart_caravan(geom)
 	_build_d9_ore_vein_cliff(geom)
+	_build_d9_mine_foreman_npc(town)
 	print("[D9Builder] done")
 
 
@@ -5612,5 +5613,131 @@ func _build_d9_ore_vein_cliff(geom: Node) -> void:
 	cs.shape = bs
 	stb.add_child(cs)
 	pivot.add_child(stb)
+
+
+func _build_d9_mine_foreman_npc(town: Node) -> void:
+	## Epic-9 T61: Mine Foreman Vex — heavy-set NPC standing at the
+	## ore vein cliff entrance with a pickaxe propped at his side and
+	## a hard hat with a glowing front lamp. Boss of the mining op.
+	var slots: Node3D = town.get_node_or_null("NPCSlots") as Node3D
+	if slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D9MineForemanSlot"
+	slot.position = Vector3(D9_CENTER.x + 56, 0, 24)
+	slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D9MineForeman"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Mine Foreman Vex")
+	if "npc_id" in npc:
+		npc.set("npc_id", "d9_mine_foreman")
+	slot.add_child(npc)
+	# Heavy work overalls — wide chest box
+	var overall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	overall_mat.albedo_color = Color(0.18, 0.13, 0.10)
+	overall_mat.roughness = 0.85
+	overall_mat.metallic = 0.20
+	var overalls: MeshInstance3D = MeshInstance3D.new()
+	var ob: BoxMesh = BoxMesh.new()
+	ob.size = Vector3(1.05, 1.20, 0.65)
+	overalls.mesh = ob
+	overalls.material_override = overall_mat
+	overalls.position = Vector3(0, 1.10, 0)
+	npc.add_child(overalls)
+	# Reflective safety stripe across chest
+	var stripe: MeshInstance3D = MeshInstance3D.new()
+	var stm: BoxMesh = BoxMesh.new()
+	stm.size = Vector3(1.10, 0.10, 0.04)
+	stripe.mesh = stm
+	var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stripe_mat.albedo_color = Color(1.0, 0.85, 0.20)
+	stripe_mat.emission_enabled = true
+	stripe_mat.emission = Color(1.0, 0.85, 0.20)
+	stripe_mat.emission_energy_multiplier = 2.5
+	stripe_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	stripe.material_override = stripe_mat
+	stripe.position = Vector3(0, 1.30, -0.34)
+	npc.add_child(stripe)
+	# Hard hat — wide flat dome on the head
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.32
+	hm.height = 0.55
+	hat.mesh = hm
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.95, 0.50, 0.10)
+	hat_mat.metallic = 0.20
+	hat_mat.roughness = 0.55
+	hat.material_override = hat_mat
+	hat.position = Vector3(0, 2.00, 0)
+	hat.scale = Vector3(1.0, 0.55, 1.0)
+	npc.add_child(hat)
+	# Hard hat brim — flat torus
+	var brim: MeshInstance3D = MeshInstance3D.new()
+	var brm: TorusMesh = TorusMesh.new()
+	brm.inner_radius = 0.30
+	brm.outer_radius = 0.42
+	brim.mesh = brm
+	brim.material_override = hat_mat
+	brim.position = Vector3(0, 1.93, 0)
+	brim.rotation.x = PI / 2.0
+	npc.add_child(brim)
+	# Glowing front headlamp on the hat
+	var lamp: MeshInstance3D = MeshInstance3D.new()
+	var lmm: SphereMesh = SphereMesh.new()
+	lmm.radius = 0.08
+	lmm.height = 0.16
+	lamp.mesh = lmm
+	var lamp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lamp_mat.albedo_color = Color(1.0, 0.95, 0.55)
+	lamp_mat.emission_enabled = true
+	lamp_mat.emission = Color(1.0, 0.95, 0.60)
+	lamp_mat.emission_energy_multiplier = 8.0
+	lamp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	lamp.material_override = lamp_mat
+	lamp.position = Vector3(0, 2.05, -0.32)
+	npc.add_child(lamp)
+	# Pickaxe propped at his side — shaft + head
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.14, 0.11)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.80
+	var pick_shaft: MeshInstance3D = MeshInstance3D.new()
+	var psm: CylinderMesh = CylinderMesh.new()
+	psm.top_radius = 0.05
+	psm.bottom_radius = 0.06
+	psm.height = 1.45
+	pick_shaft.mesh = psm
+	pick_shaft.material_override = wood_mat
+	pick_shaft.position = Vector3(0.55, 1.00, 0.05)
+	pick_shaft.rotation.z = -0.20
+	npc.add_child(pick_shaft)
+	# Pickaxe head — angled prism
+	var pick_head: MeshInstance3D = MeshInstance3D.new()
+	var phm: PrismMesh = PrismMesh.new()
+	phm.size = Vector3(0.20, 0.65, 0.18)
+	pick_head.mesh = phm
+	pick_head.material_override = iron_mat
+	pick_head.position = Vector3(0.40, 1.78, 0.05)
+	pick_head.rotation.z = PI / 2.0 + 0.20
+	npc.add_child(pick_head)
+	# Foreman OmniLight (subtle warm wash from the lamp)
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 2.05, -0.40)
+	lt.light_color = Color(1.0, 0.85, 0.45)
+	lt.light_energy = 2.4
+	lt.omni_range = 5.5
+	npc.add_child(lt)
+	# Lamp pulse — subtle blink as if scanning
+	var blink: Tween = npc.create_tween().set_loops()
+	blink.tween_property(lamp_mat, "emission_energy_multiplier", 10.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	blink.tween_property(lamp_mat, "emission_energy_multiplier", 6.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 
 
