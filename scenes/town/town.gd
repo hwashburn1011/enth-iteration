@@ -8845,6 +8845,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_holo_charts(geom)
 	# Epic-5 T40: frozen lab hut
 	_build_d5_lab_hut(geom)
+	# Epic-5 T41: ice rink
+	_build_d5_ice_rink(geom)
+	# Epic-5 T42: skater NPC
+	_build_d5_skater_npc(geom)
+	# Epic-5 T43: warming campfire
+	_build_d5_warming_campfire(geom)
+	# Epic-5 T44: hot cocoa vendor stand
+	_build_d5_cocoa_stand(geom)
+	# Epic-5 T45: cocoa vendor NPC
+	_build_d5_cocoa_vendor_npc()
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -11766,6 +11776,472 @@ func _build_d5_lab_hut(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	hut.add_child(sb)
+
+
+func _build_d5_ice_rink(geom: Node) -> void:
+	## Epic-5 T41: large rectangular ice rink with low wooden barriers
+	## around the perimeter, marked center circle, and 2 face-off dots.
+	var rink: Node3D = Node3D.new()
+	rink.name = "IceRink"
+	rink.position = Vector3(D5_CENTER.x - 14.0, 0.0, -14.0)
+	geom.add_child(rink)
+	# Main rink surface — large flat ice cylinder
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.78, 0.92, 1.0)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 1.0)
+	ice_mat.emission_energy_multiplier = 0.45
+	ice_mat.metallic = 0.40
+	ice_mat.roughness = 0.10
+	var surface: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(8.50, 0.10, 5.50)
+	surface.mesh = sm
+	surface.material_override = ice_mat
+	surface.position = Vector3(0, 0.05, 0)
+	rink.add_child(surface)
+	# 4 wooden barrier walls
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	wood_mat.roughness = 0.85
+	var walls: Array = [
+		{"size": Vector3(8.85, 0.55, 0.18), "pos": Vector3(0, 0.30,  2.85)},
+		{"size": Vector3(8.85, 0.55, 0.18), "pos": Vector3(0, 0.30, -2.85)},
+		{"size": Vector3(0.18, 0.55, 5.85), "pos": Vector3( 4.40, 0.30, 0)},
+		{"size": Vector3(0.18, 0.55, 5.85), "pos": Vector3(-4.40, 0.30, 0)},
+	]
+	for w in walls:
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = w["size"]
+		wall.mesh = wm
+		wall.material_override = wood_mat
+		wall.position = w["pos"]
+		rink.add_child(wall)
+		# Wall collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = w["pos"]
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = w["size"]
+		cs.shape = cb
+		sb.add_child(cs)
+		rink.add_child(sb)
+	# Center circle (red painted ring)
+	var paint_mat: StandardMaterial3D = StandardMaterial3D.new()
+	paint_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	paint_mat.emission_enabled = true
+	paint_mat.emission = Color(0.85, 0.20, 0.20)
+	paint_mat.emission_energy_multiplier = 0.45
+	paint_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 0.95
+	rm.outer_radius = 1.10
+	ring.mesh = rm
+	ring.material_override = paint_mat
+	ring.position = Vector3(0, 0.12, 0)
+	rink.add_child(ring)
+	# 2 face-off dots
+	for sx in [-2.85, 2.85]:
+		var dot: MeshInstance3D = MeshInstance3D.new()
+		var dm: CylinderMesh = CylinderMesh.new()
+		dm.top_radius = 0.30
+		dm.bottom_radius = 0.30
+		dm.height = 0.04
+		dot.mesh = dm
+		dot.material_override = paint_mat
+		dot.position = Vector3(sx, 0.13, 0)
+		rink.add_child(dot)
+
+
+func _build_d5_skater_npc(geom: Node) -> void:
+	## Epic-5 T42: skater character circling the rink center continuously.
+	## Uses a self-built body (not the VillagerR3 prefab) so we can move it
+	## freely inside the rink without an NPCSlot binding.
+	var skater: Node3D = Node3D.new()
+	skater.name = "IceSkater"
+	skater.position = Vector3(D5_CENTER.x - 14.0, 0.0, -14.0)
+	geom.add_child(skater)
+	# Pivot for circling
+	var pivot: Node3D = Node3D.new()
+	skater.add_child(pivot)
+	var body_root: Node3D = Node3D.new()
+	body_root.position = Vector3(2.20, 0, 0)
+	pivot.add_child(body_root)
+	# Body — purple skating outfit
+	var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+	body_mat.albedo_color = Color(0.55, 0.30, 0.85)
+	body_mat.emission_enabled = true
+	body_mat.emission = Color(0.45, 0.20, 0.85)
+	body_mat.emission_energy_multiplier = 0.30
+	body_mat.roughness = 0.55
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.55, 1.05, 0.35)
+	body.mesh = bm
+	body.material_override = body_mat
+	body.position = Vector3(0, 0.85, 0)
+	body_root.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.18
+	hm.height = 0.32
+	head.mesh = hm
+	var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+	skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+	skin_mat.roughness = 0.65
+	head.material_override = skin_mat
+	head.position = Vector3(0, 1.55, 0)
+	body_root.add_child(head)
+	# Skates (white blades)
+	for sx in [-0.10, 0.10]:
+		var skate: MeshInstance3D = MeshInstance3D.new()
+		var skm: BoxMesh = BoxMesh.new()
+		skm.size = Vector3(0.10, 0.06, 0.30)
+		skate.mesh = skm
+		var skate_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skate_mat.albedo_color = Color(0.95, 0.95, 0.92)
+		skate_mat.metallic = 0.65
+		skate_mat.roughness = 0.20
+		skate.material_override = skate_mat
+		skate.position = Vector3(sx, 0.22, 0)
+		body_root.add_child(skate)
+	# Trailing ice spray particles (small effect behind skater)
+	var spray: GPUParticles3D = GPUParticles3D.new()
+	spray.amount = 30
+	spray.lifetime = 0.85
+	spray.preprocess = 0.5
+	spray.position = Vector3(0, 0.10, -0.30)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm.direction = Vector3(0, 0.5, -1.0)
+	pm.spread = 35.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 1.0
+	pm.initial_velocity_max = 2.5
+	pm.scale_min = 0.05
+	pm.scale_max = 0.10
+	pm.color = Color(0.95, 0.95, 1.0, 0.85)
+	spray.process_material = pm
+	var spray_mesh: SphereMesh = SphereMesh.new()
+	spray_mesh.radius = 0.04
+	spray_mesh.height = 0.08
+	spray.draw_pass_1 = spray_mesh
+	var sp_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sp_mat.albedo_color = Color(0.95, 0.95, 1.0)
+	sp_mat.emission_enabled = true
+	sp_mat.emission = Color(0.85, 0.95, 1.0)
+	sp_mat.emission_energy_multiplier = 1.4
+	sp_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spray_mesh.material = sp_mat
+	body_root.add_child(spray)
+	# Pivot circling tween
+	var trot: Tween = pivot.create_tween().set_loops()
+	trot.tween_property(pivot, "rotation_degrees:y", 360.0, 6.0)
+	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Subtle body lean during turns (sway)
+	var tlean: Tween = body_root.create_tween().set_loops()
+	tlean.tween_property(body_root, "rotation_degrees:z", -8.0, 1.5)
+	tlean.tween_property(body_root, "rotation_degrees:z", 8.0, 1.5)
+
+
+func _build_d5_warming_campfire(geom: Node) -> void:
+	## Epic-5 T43: small warming campfire — stone ring + crossed logs +
+	## flickering orange fire core + warm OmniLight.
+	var fire: Node3D = Node3D.new()
+	fire.name = "WarmingCampfire"
+	fire.position = Vector3(D5_CENTER.x - 4.0, 0.0, 16.0)
+	geom.add_child(fire)
+	# Stone ring (8 small stones)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.40, 0.42, 0.45)
+	stone_mat.roughness = 0.92
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var stone: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.20
+		sm.height = 0.30
+		stone.mesh = sm
+		stone.material_override = stone_mat
+		stone.position = Vector3(cos(ang) * 0.85, 0.10, sin(ang) * 0.85)
+		stone.scale = Vector3(1.0, 0.65, 1.0)
+		fire.add_child(stone)
+	# Crossed logs
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.roughness = 0.95
+	for i in 3:
+		var log_n: MeshInstance3D = MeshInstance3D.new()
+		var lm: CylinderMesh = CylinderMesh.new()
+		lm.top_radius = 0.10
+		lm.bottom_radius = 0.10
+		lm.height = 1.20
+		log_n.mesh = lm
+		log_n.material_override = wood_mat
+		log_n.position = Vector3(0, 0.20, 0)
+		log_n.rotation = Vector3(deg_to_rad(85), deg_to_rad(60 * i), 0)
+		fire.add_child(log_n)
+	# Fire core (glowing flame sphere stack)
+	var fire_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fire_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	fire_mat.emission_enabled = true
+	fire_mat.emission = Color(1.0, 0.55, 0.10)
+	fire_mat.emission_energy_multiplier = 3.5
+	fire_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.18 - i * 0.04
+		fm.height = 0.30 - i * 0.05
+		flame.mesh = fm
+		flame.material_override = fire_mat
+		flame.position = Vector3(0, 0.45 + i * 0.20, 0)
+		fire.add_child(flame)
+		# Flicker
+		var tw: Tween = flame.create_tween().set_loops()
+		tw.tween_interval(i * 0.10)
+		tw.tween_property(flame, "scale", Vector3(1.20, 1.30, 1.20), 0.20)
+		tw.tween_property(flame, "scale", Vector3(0.85, 0.85, 0.85), 0.20)
+	# Warm OmniLight
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.65, 0.30)
+	light.light_energy = 2.6
+	light.omni_range = 6.0
+	light.position = Vector3(0, 0.65, 0)
+	fire.add_child(light)
+	# Light pulse (fire flicker)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 3.2, 0.30)
+	twl.tween_property(light, "light_energy", 2.4, 0.30)
+
+
+func _build_d5_cocoa_stand(geom: Node) -> void:
+	## Epic-5 T44: hot cocoa vendor stand — wooden booth with a steaming
+	## kettle, mugs, and a 'HOT COCOA' sign.
+	var stand: Node3D = Node3D.new()
+	stand.name = "CocoaStand"
+	stand.position = Vector3(D5_CENTER.x - 2.0, 0.0, 16.0)
+	geom.add_child(stand)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	wood_mat.roughness = 0.85
+	# Counter
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.20, 0.10, 0.85)
+	counter.mesh = cm
+	counter.material_override = wood_mat
+	counter.position = Vector3(0, 1.10, 0)
+	stand.add_child(counter)
+	# Counter legs
+	for sx in [-1.0, 1.0]:
+		for sz in [-0.35, 0.35]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: BoxMesh = BoxMesh.new()
+			lm.size = Vector3(0.10, 1.10, 0.10)
+			leg.mesh = lm
+			leg.material_override = wood_mat
+			leg.position = Vector3(sx, 0.55, sz)
+			stand.add_child(leg)
+	# Roof shade
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(2.40, 0.10, 1.0)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	roof_mat.roughness = 0.85
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 2.20, -0.10)
+	roof.rotation_degrees = Vector3(-12, 0, 0)
+	stand.add_child(roof)
+	# Roof support posts
+	for sx in [-1.10, 1.10]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.05
+		pmm.bottom_radius = 0.05
+		pmm.height = 1.10
+		post.mesh = pmm
+		post.material_override = wood_mat
+		post.position = Vector3(sx, 1.65, -0.30)
+		stand.add_child(post)
+	# Steaming kettle (large cylinder + handle arc + steam particles)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var kettle: MeshInstance3D = MeshInstance3D.new()
+	var km: CylinderMesh = CylinderMesh.new()
+	km.top_radius = 0.20
+	km.bottom_radius = 0.25
+	km.height = 0.40
+	kettle.mesh = km
+	kettle.material_override = metal_mat
+	kettle.position = Vector3(-0.55, 1.35, 0)
+	stand.add_child(kettle)
+	var spout: MeshInstance3D = MeshInstance3D.new()
+	var spm: CylinderMesh = CylinderMesh.new()
+	spm.top_radius = 0.03
+	spm.bottom_radius = 0.05
+	spm.height = 0.30
+	spout.mesh = spm
+	spout.material_override = metal_mat
+	spout.position = Vector3(-0.30, 1.42, 0)
+	spout.rotation_degrees = Vector3(0, 0, -55)
+	stand.add_child(spout)
+	# Steam particles
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 25
+	steam.lifetime = 1.8
+	steam.preprocess = 1.0
+	steam.position = Vector3(-0.55, 1.65, 0)
+	var pm_steam: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm_steam.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_POINT
+	pm_steam.direction = Vector3(0, 1, 0)
+	pm_steam.spread = 18.0
+	pm_steam.gravity = Vector3(0.05, 0.45, 0)
+	pm_steam.initial_velocity_min = 0.20
+	pm_steam.initial_velocity_max = 0.55
+	pm_steam.scale_min = 0.18
+	pm_steam.scale_max = 0.40
+	pm_steam.color = Color(0.95, 0.95, 1.0, 0.55)
+	steam.process_material = pm_steam
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.18
+	sm_mesh.height = 0.36
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.emission_enabled = true
+	sm_mat.emission = Color(0.85, 0.92, 1.0)
+	sm_mat.emission_energy_multiplier = 0.65
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	stand.add_child(steam)
+	# 4 mugs lined up on the counter
+	var mug_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mug_mat.albedo_color = Color(0.85, 0.85, 0.80)
+	mug_mat.roughness = 0.65
+	for i in 4:
+		var mug: MeshInstance3D = MeshInstance3D.new()
+		var mm: CylinderMesh = CylinderMesh.new()
+		mm.top_radius = 0.08
+		mm.bottom_radius = 0.08
+		mm.height = 0.16
+		mug.mesh = mm
+		mug.material_override = mug_mat
+		mug.position = Vector3(0.10 + i * 0.22, 1.23, 0)
+		stand.add_child(mug)
+		# Cocoa surface (small dark brown disc)
+		var cocoa: MeshInstance3D = MeshInstance3D.new()
+		var cmm2: CylinderMesh = CylinderMesh.new()
+		cmm2.top_radius = 0.07
+		cmm2.bottom_radius = 0.07
+		cmm2.height = 0.02
+		cocoa.mesh = cmm2
+		var cocoa_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cocoa_mat.albedo_color = Color(0.30, 0.18, 0.10)
+		cocoa_mat.roughness = 0.55
+		cocoa.material_override = cocoa_mat
+		cocoa.position = Vector3(0.10 + i * 0.22, 1.32, 0)
+		stand.add_child(cocoa)
+	# 'HOT COCOA' sign hanging from the roof
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(1.20, 0.40, 0.06)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	sign_mat.roughness = 0.85
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 1.85, -0.20)
+	stand.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "HOT COCOA"
+	label.modulate = Color(0.30, 0.18, 0.10)
+	label.outline_modulate = Color(0.95, 0.85, 0.55)
+	label.outline_size = 4
+	label.font_size = 64
+	label.pixel_size = 0.005
+	label.position = Vector3(0, 1.88, -0.16)
+	stand.add_child(label)
+	# Counter collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 1.30, 0.85)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.65, 0)
+	sb.add_child(cs)
+	stand.add_child(sb)
+
+
+func _build_d5_cocoa_vendor_npc() -> void:
+	## Epic-5 T45: cocoa vendor NPC at the cocoa stand — apron + chef hat.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CocoaVendorSlot"
+	slot.position = Vector3(D5_CENTER.x - 2.0, 0.0, 15.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CocoaVendor"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Mocha")
+	if "npc_id" in npc:
+		npc.set("npc_id", "cocoa_vendor_d5")
+	slot.add_child(npc)
+	# Apron (white/cream rectangle on chest)
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	apron_mat.roughness = 0.85
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Chef hat (white tall cylinder + sphere top)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: CylinderMesh = CylinderMesh.new()
+	hm.top_radius = 0.22
+	hm.bottom_radius = 0.20
+	hm.height = 0.30
+	hat.mesh = hm
+	hat.material_override = apron_mat
+	hat.position = Vector3(0, 1.55, 0)
+	npc.add_child(hat)
+	var puff: MeshInstance3D = MeshInstance3D.new()
+	var pmm: SphereMesh = SphereMesh.new()
+	pmm.radius = 0.28
+	pmm.height = 0.40
+	puff.mesh = pmm
+	puff.material_override = apron_mat
+	puff.position = Vector3(0, 1.85, 0)
+	puff.scale = Vector3(1.0, 0.65, 1.0)
+	npc.add_child(puff)
+	# Mug in hand (small cylinder)
+	var mug: MeshInstance3D = MeshInstance3D.new()
+	var mm: CylinderMesh = CylinderMesh.new()
+	mm.top_radius = 0.08
+	mm.bottom_radius = 0.08
+	mm.height = 0.16
+	mug.mesh = mm
+	var mug_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mug_mat.albedo_color = Color(0.85, 0.85, 0.80)
+	mug.material_override = mug_mat
+	mug.position = Vector3(0.40, 0.85, 0.18)
+	npc.add_child(mug)
 
 
 
