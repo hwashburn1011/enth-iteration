@@ -1610,6 +1610,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_scratch_decals(geom)
 	# Epic-2 T90: ammo crate stash
 	_build_d2_ammo_stash(geom)
+	# Epic-2 T91: cargo lift platform with vertical bob tween
+	_build_d2_cargo_lift(geom)
+	# Epic-2 T92: ambient ember particle drift across district
+	_build_d2_ember_drift(geom)
+	# Epic-2 T93: tomb of the unknown agent
+	_build_d2_unknown_tomb(geom)
+	# Epic-2 T94: stalker enemy patrolling slowly
+	_build_d2_stalker_enemy(geom)
+	# Epic-2 T95: fortification barriers around boss arena teaser
+	_build_d2_boss_fortifications(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -15208,4 +15218,324 @@ func _build_d2_ammo_stash(geom: Node) -> void:
 	stash.add_child(sb)
 
 
+func _build_d2_cargo_lift(geom: Node) -> void:
+	## Epic-2 T91: a cargo lift platform with 4 corner posts and a center
+	## platform that bobs vertically. The "moving" cargo is a stack of
+	## 2 large crates fastened to the lift.
+	var lift: Node3D = Node3D.new()
+	lift.name = "D2CargoLift"
+	lift.position = D2_CENTER + Vector3(20, 0, 4)
+	geom.add_child(lift)
+	# 4 corner posts (fixed)
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.13, 0.16)
+	post_mat.metallic = 0.85
+	post_mat.roughness = 0.30
+	for ox: float in [-1.40, 1.40]:
+		for oz: float in [-1.40, 1.40]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.10
+			pmesh.bottom_radius = 0.14
+			pmesh.height = 4.0
+			post.mesh = pmesh
+			post.position = Vector3(ox, 2.0, oz)
+			post.material_override = post_mat
+			lift.add_child(post)
+			# Collision per post
+			var sb: StaticBody3D = StaticBody3D.new()
+			var cs: CollisionShape3D = CollisionShape3D.new()
+			var cap: CapsuleShape3D = CapsuleShape3D.new()
+			cap.radius = 0.20
+			cap.height = 4.0
+			cs.shape = cap
+			cs.position = Vector3(ox, 2.0, oz)
+			sb.add_child(cs)
+			lift.add_child(sb)
+	# Lift platform that bobs (parent for the platform + crates)
+	var lift_pivot: Node3D = Node3D.new()
+	lift_pivot.position = Vector3(0, 0.30, 0)
+	lift.add_child(lift_pivot)
+	# Platform base — wide flat box
+	var plat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	plat_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	plat_mat.metallic = 0.65
+	plat_mat.roughness = 0.40
+	plat_mat.emission_enabled = true
+	plat_mat.emission = Color(0.55, 0.95, 1.0)
+	plat_mat.emission_energy_multiplier = 0.55
+	var plat: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(2.60, 0.20, 2.60)
+	plat.mesh = pmesh
+	plat.material_override = plat_mat
+	lift_pivot.add_child(plat)
+	# 2 crates on the platform
+	var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crate_mat.albedo_color = Color(0.30, 0.18, 0.08)
+	crate_mat.metallic = 0.10
+	crate_mat.roughness = 0.65
+	for spec in [
+		[Vector3(-0.40, 0.65, 0), Vector3(0.85, 0.85, 0.85)],
+		[Vector3(0.55, 0.65, 0.20), Vector3(0.85, 0.85, 0.85)],
+	]:
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = spec[1]
+		crate.mesh = cm
+		crate.position = spec[0]
+		crate.rotation = Vector3(0, deg_to_rad(randf_range(-15, 15)), 0)
+		crate.material_override = crate_mat
+		lift_pivot.add_child(crate)
+	# Bob the lift up and down
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(lift_pivot, "position:y", 3.0, 4.0).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_interval(0.85)
+	bob.tween_property(lift_pivot, "position:y", 0.30, 4.0).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_interval(0.85)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "CARGO LIFT"
+	label.position = Vector3(0, 4.40, 0)
+	label.modulate = Color(0.55, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lift.add_child(label)
+
+
+func _build_d2_ember_drift(geom: Node) -> void:
+	## Epic-2 T92: ambient orange ember particles drifting upward across
+	## the district — 100 small embers floating up like burning paper.
+	var embers: GPUParticles3D = GPUParticles3D.new()
+	embers.name = "D2EmberDrift"
+	embers.position = D2_CENTER + Vector3(0, 1, 0)
+	embers.amount = 100
+	embers.lifetime = 6.5
+	embers.preprocess = 3.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(22, 0.5, 18)
+	pmat.direction = Vector3(0.2, 1, 0)
+	pmat.spread = 18.0
+	pmat.initial_velocity_min = 0.55
+	pmat.initial_velocity_max = 1.0
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.04
+	pmat.scale_max = 0.10
+	pmat.color = Color(1.0, 0.55, 0.20, 1.0)
+	embers.process_material = pmat
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.05
+	em.height = 0.10
+	var em_mat: StandardMaterial3D = StandardMaterial3D.new()
+	em_mat.albedo_color = Color(1.0, 0.55, 0.20)
+	em_mat.emission_enabled = true
+	em_mat.emission = Color(1.0, 0.65, 0.20)
+	em_mat.emission_energy_multiplier = 2.6
+	em_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	em.material = em_mat
+	embers.draw_pass_1 = em
+	geom.add_child(embers)
+
+
+func _build_d2_unknown_tomb(geom: Node) -> void:
+	## Epic-2 T93: a stone tomb engraved "TOMB OF THE UNKNOWN AGENT".
+	## Long sarcophagus shape with a glowing central rune on top.
+	var tomb: Node3D = Node3D.new()
+	tomb.name = "D2UnknownTomb"
+	tomb.position = D2_CENTER + Vector3(-15, 0, 18)
+	geom.add_child(tomb)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.30, 0.34)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.55
+	# Stepped base
+	for i in 2:
+		var step: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(3.0 - i * 0.30, 0.20, 1.40 - i * 0.20)
+		step.mesh = sm
+		step.position = Vector3(0, 0.10 + i * 0.20, 0)
+		step.material_override = stone_mat
+		tomb.add_child(step)
+	# Sarcophagus body
+	var sarc: MeshInstance3D = MeshInstance3D.new()
+	var sm2: BoxMesh = BoxMesh.new()
+	sm2.size = Vector3(2.40, 0.85, 0.85)
+	sarc.mesh = sm2
+	sarc.position = Vector3(0, 0.85, 0)
+	sarc.material_override = stone_mat
+	tomb.add_child(sarc)
+	# Glowing rune on top — small emissive star (4-prism arrangement)
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.85, 0.85, 0.95)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.95, 0.95, 1.0)
+	rune_mat.emission_energy_multiplier = 2.4
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var spike: MeshInstance3D = MeshInstance3D.new()
+		var prm: PrismMesh = PrismMesh.new()
+		prm.size = Vector3(0.10, 0.30, 0.10)
+		spike.mesh = prm
+		var angle: float = (float(i) / 4.0) * TAU
+		spike.position = Vector3(cos(angle) * 0.15, 1.40, sin(angle) * 0.15)
+		spike.rotation = Vector3(0, -angle, 0)
+		spike.material_override = rune_mat
+		tomb.add_child(spike)
+	# Engraved text on the side of the sarcophagus
+	var label: Label3D = Label3D.new()
+	label.text = "TOMB OF THE\nUNKNOWN AGENT"
+	label.position = Vector3(0, 0.85, 0.45)
+	label.modulate = Color(0.85, 0.85, 0.95)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 14
+	label.no_depth_test = true
+	tomb.add_child(label)
+	# Collision around the sarcophagus
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.40, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	tomb.add_child(sb)
+
+
+func _build_d2_stalker_enemy(geom: Node) -> void:
+	## Epic-2 T94: a stalker enemy slinking around the district. Tall thin
+	## body with 3 spider-like leg sticks and 1 single white-hot eye.
+	var stalker: Node3D = Node3D.new()
+	stalker.name = "D2Stalker"
+	stalker.position = D2_CENTER + Vector3(-3, 0, 12)
+	geom.add_child(stalker)
+	# Tall thin body — vertical capsule
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.04, 0.04, 0.06)
+	bmat.metallic = 0.30
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.20, 0.10, 0.30)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.20
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.30, 0)
+	body.material_override = bmat
+	stalker.add_child(body)
+	# Single white-hot eye on top
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.12
+	em.height = 0.24
+	eye.mesh = em
+	eye.position = Vector3(0, 1.85, 0.18)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(1, 1, 1)
+	emat.emission_enabled = true
+	emat.emission = Color(1, 1, 1)
+	emat.emission_energy_multiplier = 3.4
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	eye.material_override = emat
+	stalker.add_child(eye)
+	# 3 thin spider legs splaying outward from the bottom
+	var leg_mat: StandardMaterial3D = StandardMaterial3D.new()
+	leg_mat.albedo_color = Color(0.04, 0.04, 0.06)
+	leg_mat.metallic = 0.30
+	for i in 3:
+		var angle: float = (float(i) / 3.0) * TAU
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: CylinderMesh = CylinderMesh.new()
+		lmesh.top_radius = 0.04
+		lmesh.bottom_radius = 0.04
+		lmesh.height = 1.20
+		leg.mesh = lmesh
+		leg.position = Vector3(cos(angle) * 0.30, 0.55, sin(angle) * 0.30)
+		leg.rotation = Vector3(sin(angle) * deg_to_rad(20), 0, -cos(angle) * deg_to_rad(20))
+		leg.material_override = leg_mat
+		stalker.add_child(leg)
+	# Patrol path
+	var origin: Vector3 = D2_CENTER + Vector3(-3, 0, 12)
+	var patrol: Tween = create_tween().set_loops()
+	patrol.tween_property(stalker, "position", origin + Vector3(6, 0, -6), 8.0)
+	patrol.tween_property(stalker, "position", origin + Vector3(-3, 0, -6), 8.0)
+	patrol.tween_property(stalker, "position", origin, 8.0)
+	# Eye flicker
+	var flicker: Tween = create_tween().set_loops()
+	flicker.tween_property(emat, "emission_energy_multiplier", 4.5, 0.6).set_ease(Tween.EASE_IN_OUT)
+	flicker.tween_property(emat, "emission_energy_multiplier", 1.6, 0.6).set_ease(Tween.EASE_IN_OUT)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "STALKER"
+	label.position = Vector3(0, 2.40, 0)
+	label.modulate = Color(0.85, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	stalker.add_child(label)
+
+
+func _build_d2_boss_fortifications(geom: Node) -> void:
+	## Epic-2 T95: 6 stone barricade walls forming a partial outer ring
+	## around the boss arena teaser, suggesting "the gangs tried to keep
+	## the boss contained but failed".
+	var fort: Node3D = Node3D.new()
+	fort.name = "D2BossFortifications"
+	fort.position = D2_CENTER + Vector3(28, 0, 0)
+	geom.add_child(fort)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.13, 0.10)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(1.0, 0.40, 0.20)
+	stone_mat.emission_energy_multiplier = 0.20
+	# 6 walls at 60-degree increments around the arena
+	for i in 6:
+		var angle: float = (float(i) / 6.0) * TAU + deg_to_rad(30)
+		var wall_root: Node3D = Node3D.new()
+		wall_root.position = Vector3(cos(angle) * 8.5, 0, sin(angle) * 8.5)
+		wall_root.rotation = Vector3(0, -angle, 0)
+		fort.add_child(wall_root)
+		# Wall slab — wide flat box
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		wmesh.size = Vector3(0.40, 1.85, 2.40)
+		wall.mesh = wmesh
+		wall.position = Vector3(0, 0.92, 0)
+		wall.rotation = Vector3(deg_to_rad(randf_range(-5, 5)), 0, deg_to_rad(randf_range(-8, 8)))
+		wall.material_override = stone_mat
+		wall_root.add_child(wall)
+		# Crack stripe down the middle (broken through)
+		if i % 2 == 0:
+			var crack: MeshInstance3D = MeshInstance3D.new()
+			var cmesh: BoxMesh = BoxMesh.new()
+			cmesh.size = Vector3(0.06, 1.20, 0.30)
+			crack.mesh = cmesh
+			crack.position = Vector3(0.21, 0.92, 0)
+			crack.rotation = Vector3(0, 0, deg_to_rad(8))
+			var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+			crack_mat.albedo_color = Color(1.0, 0.40, 0.20)
+			crack_mat.emission_enabled = true
+			crack_mat.emission = Color(1.0, 0.55, 0.20)
+			crack_mat.emission_energy_multiplier = 1.8
+			crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			crack.material_override = crack_mat
+			wall_root.add_child(crack)
+		# Collision per wall
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.40, 1.85, 2.40)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.92, 0)
+		sb.add_child(cs)
+		wall_root.add_child(sb)
 
