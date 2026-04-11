@@ -79,6 +79,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_bellringer_npc(town)
 	_build_th_fountain_cherub_sprites(geom)
 	_build_th_iterations_memorial_wall(geom)
+	_build_th_memorial_mourner_npc(town)
 	print("[TownHeartBuilder] done")
 
 
@@ -11066,3 +11067,169 @@ func _build_th_iterations_memorial_wall(geom: Node) -> void:
 	emb.lifetime = 2.4
 	emb.position = Vector3(0, 1.20, 0)
 	bowl_pivot.add_child(emb)
+
+
+func _build_th_memorial_mourner_npc(town: Node) -> void:
+	## Epic-10 T63: Memorial Mourner Keeper Solem — hooded NPC standing
+	## before the offering bowl of the Iterations Memorial Wall, head bowed
+	## in mourning. Slow breathing sway. Anchors the memorial wall with
+	## a quiet, contemplative narrative presence.
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node = npc_scene.instantiate()
+	npc.name = "Mourner_Solem"
+	# Position: just in front of the offering bowl (which sits 1.40 in front
+	# of the wall pivot at SSE, ang -PI/3 r=12). Place at SSE, slightly
+	# closer in toward the plaza so the player approaches from behind.
+	var ang_pos: float = -PI / 3.0
+	var rad_pos: float = 9.85
+	var px: float = cos(ang_pos) * rad_pos
+	var pz: float = sin(ang_pos) * rad_pos
+	if npc is Node3D:
+		(npc as Node3D).position = TOWN_CENTER + Vector3(px, 0, pz)
+		# Face the wall (away from town center)
+		(npc as Node3D).rotation.y = atan2(px, pz)
+	# Set NPC name and ID via property if available
+	if "npc_name" in npc:
+		npc.set("npc_name", "Keeper Solem")
+	if "npc_id" in npc:
+		npc.set("npc_id", "th_memorial_mourner")
+	town.add_child(npc)
+	# ---- Add a hood + dark mourning robe overlay (cosmetic Node3D child) ----
+	var ovl: Node3D = Node3D.new()
+	ovl.name = "MournerOverlay"
+	ovl.position = Vector3(0, 0, 0)
+	if npc is Node3D:
+		(npc as Node3D).add_child(ovl)
+	# Materials
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.10, 0.11, 0.16)
+	robe_mat.metallic = 0.05
+	robe_mat.roughness = 0.92
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.20, 0.30, 0.55)
+	robe_mat.emission_energy_multiplier = 0.10
+	var hood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hood_mat.albedo_color = Color(0.08, 0.09, 0.13)
+	hood_mat.metallic = 0.05
+	hood_mat.roughness = 0.95
+	hood_mat.emission_enabled = true
+	hood_mat.emission = Color(0.25, 0.35, 0.55)
+	hood_mat.emission_energy_multiplier = 0.12
+	var sash_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sash_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	sash_mat.metallic = 0.85
+	sash_mat.roughness = 0.35
+	sash_mat.emission_enabled = true
+	sash_mat.emission = Color(1.0, 0.55, 0.12)
+	sash_mat.emission_energy_multiplier = 0.55
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.50, 0.85, 1.0)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.55, 0.90, 1.0)
+	glow_mat.emission_energy_multiplier = 4.5
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Long mourning robe (covers body)
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rmm: BoxMesh = BoxMesh.new()
+	rmm.size = Vector3(0.95, 1.95, 0.55)
+	robe.mesh = rmm
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 1.00, 0)
+	ovl.add_child(robe)
+	# Robe lower flare (wider hem)
+	var hem: MeshInstance3D = MeshInstance3D.new()
+	var hmm: CylinderMesh = CylinderMesh.new()
+	hmm.top_radius = 0.45
+	hmm.bottom_radius = 0.65
+	hmm.height = 0.55
+	hem.mesh = hmm
+	hem.material_override = robe_mat
+	hem.position = Vector3(0, 0.30, 0)
+	ovl.add_child(hem)
+	# Hood (dome over head, head bowed forward — tilt slightly)
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hdmm: SphereMesh = SphereMesh.new()
+	hdmm.radius = 0.32
+	hdmm.height = 0.55
+	hood.mesh = hdmm
+	hood.material_override = hood_mat
+	hood.position = Vector3(0, 1.92, 0.05)
+	hood.rotation.x = 0.25  # bowed forward
+	ovl.add_child(hood)
+	# Hood inner shadow (dark disc inside hood opening)
+	var shadow: MeshInstance3D = MeshInstance3D.new()
+	var smm: SphereMesh = SphereMesh.new()
+	smm.radius = 0.20
+	smm.height = 0.40
+	shadow.mesh = smm
+	var shadow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shadow_mat.albedo_color = Color(0.02, 0.02, 0.04)
+	shadow_mat.metallic = 0.0
+	shadow_mat.roughness = 1.0
+	shadow.material_override = shadow_mat
+	shadow.position = Vector3(0, 1.85, 0.18)
+	ovl.add_child(shadow)
+	# Dim cyan ember "eye" inside the shadow
+	var eye: MeshInstance3D = MeshInstance3D.new()
+	var emm: SphereMesh = SphereMesh.new()
+	emm.radius = 0.04
+	emm.height = 0.08
+	eye.mesh = emm
+	eye.material_override = glow_mat
+	eye.position = Vector3(0, 1.82, 0.30)
+	ovl.add_child(eye)
+	# Brass mourning sash across chest
+	var sash: MeshInstance3D = MeshInstance3D.new()
+	var ssm: BoxMesh = BoxMesh.new()
+	ssm.size = Vector3(1.05, 0.10, 0.06)
+	sash.mesh = ssm
+	sash.material_override = sash_mat
+	sash.position = Vector3(0, 1.30, -0.30)
+	sash.rotation.z = -0.12
+	ovl.add_child(sash)
+	# Hands clasped at the front (two small spheres at waist height)
+	for s in [-1.0, 1.0]:
+		var hand: MeshInstance3D = MeshInstance3D.new()
+		var hndmm: SphereMesh = SphereMesh.new()
+		hndmm.radius = 0.08
+		hndmm.height = 0.16
+		hand.mesh = hndmm
+		hand.material_override = hood_mat
+		hand.position = Vector3(0.06 * s, 0.95, -0.30)
+		ovl.add_child(hand)
+	# Brass memorial pendant hanging from neck
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var chmm: CylinderMesh = CylinderMesh.new()
+	chmm.top_radius = 0.01
+	chmm.bottom_radius = 0.01
+	chmm.height = 0.30
+	chain.mesh = chmm
+	chain.material_override = sash_mat
+	chain.position = Vector3(0, 1.50, -0.32)
+	ovl.add_child(chain)
+	var pendant: MeshInstance3D = MeshInstance3D.new()
+	var pmm: TorusMesh = TorusMesh.new()
+	pmm.inner_radius = 0.05
+	pmm.outer_radius = 0.08
+	pendant.mesh = pmm
+	pendant.material_override = sash_mat
+	pendant.position = Vector3(0, 1.34, -0.34)
+	pendant.rotation.x = PI / 2.0
+	ovl.add_child(pendant)
+	# Subtle warm aura light
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 1.45, -0.20)
+	lt.light_color = Color(1.0, 0.65, 0.30)
+	lt.light_energy = 0.95
+	lt.omni_range = 3.5
+	ovl.add_child(lt)
+	# ---- Slow mourning breath sway (gentle 4s cycle) ----
+	var sway: Tween = ovl.create_tween().set_loops()
+	sway.tween_property(ovl, "scale:y", 1.018, 2.0).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(ovl, "scale:y", 0.992, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Eye ember slow pulse
+	var epulse: Tween = ovl.create_tween().set_loops()
+	epulse.tween_property(glow_mat, "emission_energy_multiplier", 6.5, 2.2).set_ease(Tween.EASE_IN_OUT)
+	epulse.tween_property(glow_mat, "emission_energy_multiplier", 3.0, 2.2).set_ease(Tween.EASE_IN_OUT)
