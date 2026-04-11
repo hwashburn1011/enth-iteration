@@ -17220,6 +17220,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_street_fighter_npc()
 	# Epic-6 T60: hover taxi vehicle
 	_build_d6_hover_taxi(geom)
+	# Epic-6 T61: cyber bath house
+	_build_d6_bath_house(geom)
+	# Epic-6 T62: bath attendant NPC
+	_build_d6_d6_bath_attendant_npc()
+	# Epic-6 T63: bicycle rack
+	_build_d6_bike_rack(geom)
+	# Epic-6 T64: neon mural artist NPC
+	_build_d6_mural_artist_npc()
+	# Epic-6 T65: holo dance billboard
+	_build_d6_dance_billboard(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -22196,6 +22206,419 @@ func _build_d6_hover_taxi(geom: Node) -> void:
 	cs.position = Vector3(0, 0.45, 0)
 	sb.add_child(cs)
 	taxi.add_child(sb)
+
+
+func _build_d6_bath_house(geom: Node) -> void:
+	## Epic-6 T61: cyber bath house — Japanese-style facade with curved
+	## prism roof + 2 lit doorway lanterns + steaming pool visible inside.
+	var bh: Node3D = Node3D.new()
+	bh.name = "BathHouse"
+	bh.position = Vector3(D6_CENTER.x - 4.0, 0.0, -22.0)
+	geom.add_child(bh)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	wood_mat.roughness = 0.85
+	# Main building (large box)
+	var main: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(5.50, 3.40, 4.20)
+	main.mesh = bm
+	main.material_override = wood_mat
+	main.position = Vector3(0, 1.70, 0)
+	bh.add_child(main)
+	# Curved upturned roof (large prism)
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(6.50, 1.85, 4.85)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.55, 0.20, 0.15)
+	roof_mat.roughness = 0.85
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 4.10, 0)
+	bh.add_child(roof)
+	# Doorway opening (dark interior box)
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(1.85, 2.40, 0.10)
+	door.mesh = dm
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.55, 0.85, 0.95, 0.55)
+	dark_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	dark_mat.emission_enabled = true
+	dark_mat.emission = Color(0.55, 0.85, 0.95)
+	dark_mat.emission_energy_multiplier = 1.6
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	door.material_override = dark_mat
+	door.position = Vector3(0, 1.20, 2.15)
+	bh.add_child(door)
+	# 2 hanging red lanterns flanking the door
+	for sx in [-1.40, 1.40]:
+		var lantern: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.30
+		lm.height = 0.55
+		lantern.mesh = lm
+		var lantern_mat: StandardMaterial3D = StandardMaterial3D.new()
+		lantern_mat.albedo_color = Color(0.95, 0.30, 0.30)
+		lantern_mat.emission_enabled = true
+		lantern_mat.emission = Color(0.95, 0.30, 0.30)
+		lantern_mat.emission_energy_multiplier = 2.5
+		lantern_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		lantern.material_override = lantern_mat
+		lantern.position = Vector3(sx, 2.55, 2.20)
+		lantern.scale = Vector3(1.0, 1.30, 1.0)
+		bh.add_child(lantern)
+		# Small light per lantern
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(1.0, 0.45, 0.30)
+		light.light_energy = 1.6
+		light.omni_range = 4.0
+		light.position = Vector3(sx, 2.55, 2.20)
+		bh.add_child(light)
+	# Small pool tile visible at the entrance (translucent cyan)
+	var pool: MeshInstance3D = MeshInstance3D.new()
+	var pmm: CylinderMesh = CylinderMesh.new()
+	pmm.top_radius = 0.85
+	pmm.bottom_radius = 0.85
+	pmm.height = 0.06
+	pool.mesh = pmm
+	var pool_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pool_mat.albedo_color = Color(0.40, 0.85, 1.0, 0.65)
+	pool_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	pool_mat.emission_enabled = true
+	pool_mat.emission = Color(0.30, 0.95, 1.0)
+	pool_mat.emission_energy_multiplier = 1.4
+	pool_mat.metallic = 0.30
+	pool_mat.roughness = 0.05
+	pool.material_override = pool_mat
+	pool.position = Vector3(0, 0.05, 2.85)
+	bh.add_child(pool)
+	# Steam particles from the pool
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 30
+	steam.lifetime = 2.5
+	steam.preprocess = 1.0
+	steam.position = Vector3(0, 0.20, 2.85)
+	var ppm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	ppm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	ppm.emission_box_extents = Vector3(0.85, 0.05, 0.85)
+	ppm.direction = Vector3(0.10, 1, 0.10)
+	ppm.spread = 22.0
+	ppm.gravity = Vector3(0, 0.55, 0)
+	ppm.initial_velocity_min = 0.30
+	ppm.initial_velocity_max = 0.65
+	ppm.scale_min = 0.30
+	ppm.scale_max = 0.55
+	ppm.color = Color(0.95, 0.92, 0.95, 0.55)
+	steam.process_material = ppm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.25
+	sm_mesh.height = 0.50
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	bh.add_child(steam)
+	# Building collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 3.40, 4.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	bh.add_child(sb)
+
+
+func _build_d6_d6_bath_attendant_npc() -> void:
+	## Epic-6 T62: D6 bath attendant — yukata robe + small towel.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "D6BathAttendantSlot"
+	slot.position = Vector3(D6_CENTER.x - 4.0, 0.0, -19.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "D6BathAttendant"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Sento")
+	if "npc_id" in npc:
+		npc.set("npc_id", "bath_d6")
+	slot.add_child(npc)
+	# Blue yukata robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.20, 0.40, 0.85)
+	robe_mat.emission_enabled = true
+	robe_mat.emission = Color(0.20, 0.45, 0.95)
+	robe_mat.emission_energy_multiplier = 0.30
+	robe_mat.roughness = 0.65
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Small white towel folded in arms
+	var towel: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.40, 0.10, 0.30)
+	towel.mesh = tm
+	var towel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	towel_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	towel_mat.roughness = 0.85
+	towel.material_override = towel_mat
+	towel.position = Vector3(0.30, 0.85, 0.20)
+	npc.add_child(towel)
+
+
+func _build_d6_bike_rack(geom: Node) -> void:
+	## Epic-6 T63: bicycle rack — 4 cyber bikes parked at angled stands
+	## with neon trim glow and slim wheels.
+	var rack: Node3D = Node3D.new()
+	rack.name = "BikeRack"
+	rack.position = Vector3(D6_CENTER.x - 18.0, 0.0, -16.0)
+	geom.add_child(rack)
+	var rack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rack_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	rack_mat.metallic = 0.85
+	rack_mat.roughness = 0.30
+	# Rack base bar
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(4.20, 0.18, 0.18)
+	base.mesh = bm
+	base.material_override = rack_mat
+	base.position = Vector3(0, 0.10, 0)
+	rack.add_child(base)
+	# 5 vertical wave bars
+	for i in 5:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var brm: BoxMesh = BoxMesh.new()
+		brm.size = Vector3(0.10, 0.85, 0.10)
+		bar.mesh = brm
+		bar.material_override = rack_mat
+		bar.position = Vector3(-1.85 + i * 0.85, 0.55, 0)
+		rack.add_child(bar)
+	# 4 bikes
+	var bike_colors: Array = [
+		Color(0.30, 0.95, 1.0),
+		Color(0.95, 0.30, 0.85),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 4:
+		var bike: Node3D = Node3D.new()
+		bike.position = Vector3(-1.40 + i * 0.85, 0, 0.30)
+		rack.add_child(bike)
+		# Frame (thin angled box)
+		var frame: MeshInstance3D = MeshInstance3D.new()
+		var fm: BoxMesh = BoxMesh.new()
+		fm.size = Vector3(0.85, 0.06, 0.06)
+		frame.mesh = fm
+		var frame_mat: StandardMaterial3D = StandardMaterial3D.new()
+		frame_mat.albedo_color = bike_colors[i]
+		frame_mat.emission_enabled = true
+		frame_mat.emission = bike_colors[i]
+		frame_mat.emission_energy_multiplier = 1.4
+		frame.material_override = frame_mat
+		frame.position = Vector3(0, 0.55, 0)
+		bike.add_child(frame)
+		# Seat
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.18, 0.06, 0.10)
+		seat.mesh = sm
+		seat.material_override = rack_mat
+		seat.position = Vector3(-0.30, 0.65, 0)
+		bike.add_child(seat)
+		# 2 wheels (thin rings)
+		var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+		wheel_mat.albedo_color = Color(0.10, 0.08, 0.10)
+		wheel_mat.roughness = 0.85
+		for wx in [0.40, -0.40]:
+			var wheel: MeshInstance3D = MeshInstance3D.new()
+			var wmm: TorusMesh = TorusMesh.new()
+			wmm.inner_radius = 0.15
+			wmm.outer_radius = 0.20
+			wheel.mesh = wmm
+			wheel.material_override = wheel_mat
+			wheel.position = Vector3(wx, 0.20, 0)
+			wheel.rotation_degrees = Vector3(90, 0, 0)
+			bike.add_child(wheel)
+	# Rack collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 0.85, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	rack.add_child(sb)
+
+
+func _build_d6_mural_artist_npc() -> void:
+	## Epic-6 T64: neon mural artist NPC — paint mask, spray can in hand,
+	## standing in front of a wall with a colorful splash.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "MuralArtistSlot"
+	slot.position = Vector3(D6_CENTER.x + 28.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "MuralArtist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tagger")
+	if "npc_id" in npc:
+		npc.set("npc_id", "mural_d6")
+	slot.add_child(npc)
+	# Paint-splattered hoodie
+	var hoodie: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.65, 1.05, 0.45)
+	hoodie.mesh = hm
+	var hoodie_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hoodie_mat.albedo_color = Color(0.20, 0.18, 0.25)
+	hoodie_mat.roughness = 0.85
+	hoodie.material_override = hoodie_mat
+	hoodie.position = Vector3(0, 0.55, 0)
+	npc.add_child(hoodie)
+	# Paint splatter on chest (small bright box)
+	var splatter: MeshInstance3D = MeshInstance3D.new()
+	var sm: SphereMesh = SphereMesh.new()
+	sm.radius = 0.10
+	sm.height = 0.18
+	splatter.mesh = sm
+	var splat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	splat_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	splat_mat.emission_enabled = true
+	splat_mat.emission = Color(0.30, 1.0, 0.55)
+	splat_mat.emission_energy_multiplier = 1.4
+	splatter.material_override = splat_mat
+	splatter.position = Vector3(-0.10, 0.65, 0.22)
+	splatter.scale = Vector3(1.40, 0.85, 0.10)
+	npc.add_child(splatter)
+	# Paint mask on face (white box)
+	var mask: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.30, 0.18, 0.06)
+	mask.mesh = mm
+	var mask_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mask_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	mask.material_override = mask_mat
+	mask.position = Vector3(0, 1.30, 0.21)
+	npc.add_child(mask)
+	# Spray can in hand (small red cylinder)
+	var can: MeshInstance3D = MeshInstance3D.new()
+	var cmm: CylinderMesh = CylinderMesh.new()
+	cmm.top_radius = 0.06
+	cmm.bottom_radius = 0.06
+	cmm.height = 0.20
+	can.mesh = cmm
+	var can_mat: StandardMaterial3D = StandardMaterial3D.new()
+	can_mat.albedo_color = Color(0.95, 0.20, 0.30)
+	can_mat.metallic = 0.55
+	can_mat.roughness = 0.30
+	can.material_override = can_mat
+	can.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(can)
+
+
+func _build_d6_dance_billboard(geom: Node) -> void:
+	## Epic-6 T65: holographic dance billboard — large translucent panel
+	## with 3 silhouettes dancing (alternating left-right rotation tweens).
+	var bb: Node3D = Node3D.new()
+	bb.name = "DanceBillboard"
+	bb.position = Vector3(D6_CENTER.x - 8.0, 0.0, -22.0)
+	geom.add_child(bb)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.30, 0.40)
+	metal_mat.metallic = 0.85
+	# Tall support post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.30, 5.85, 0.30)
+	post.mesh = pm
+	post.material_override = metal_mat
+	post.position = Vector3(0, 2.92, 0)
+	bb.add_child(post)
+	# Hovering panel
+	var panel: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(4.20, 2.85, 0.06)
+	panel.mesh = pmm
+	var panel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	panel_mat.albedo_color = Color(0.20, 0.10, 0.30, 0.65)
+	panel_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	panel_mat.emission_enabled = true
+	panel_mat.emission = Color(0.55, 0.30, 0.85)
+	panel_mat.emission_energy_multiplier = 1.4
+	panel_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	panel.material_override = panel_mat
+	panel.position = Vector3(0, 5.85, 0)
+	bb.add_child(panel)
+	# 3 dancer silhouettes (white boxes) inside the panel
+	var dancer_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dancer_mat.albedo_color = Color(0.95, 0.95, 1.0)
+	dancer_mat.emission_enabled = true
+	dancer_mat.emission = Color(0.95, 0.95, 1.0)
+	dancer_mat.emission_energy_multiplier = 2.5
+	dancer_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var dancer: Node3D = Node3D.new()
+		dancer.position = Vector3(-1.20 + i * 1.20, 5.85, 0.06)
+		bb.add_child(dancer)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.30, 1.10, 0.04)
+		body.mesh = bm
+		body.material_override = dancer_mat
+		body.position = Vector3(0, 0, 0)
+		dancer.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmm: SphereMesh = SphereMesh.new()
+		hmm.radius = 0.15
+		hmm.height = 0.30
+		head.mesh = hmm
+		head.material_override = dancer_mat
+		head.position = Vector3(0, 0.75, 0)
+		head.scale = Vector3(1.0, 1.0, 0.10)
+		dancer.add_child(head)
+		# Sway tween (alternating direction per dancer)
+		var tw: Tween = dancer.create_tween().set_loops()
+		tw.tween_property(dancer, "rotation_degrees:z", 25.0 if i % 2 == 0 else -25.0, 0.30)
+		tw.tween_property(dancer, "rotation_degrees:z", -25.0 if i % 2 == 0 else 25.0, 0.30)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.85, 0.30, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 7.0
+	light.position = Vector3(0, 5.85, 1.20)
+	bb.add_child(light)
+	# Post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.92, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.30
+	cap.height = 5.85
+	cs.shape = cap
+	sb.add_child(cs)
+	bb.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
