@@ -24,6 +24,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_caretaker_npc(town)
 	_build_th_perimeter_lampposts(geom)
 	_build_th_save_shrine(geom)
+	_build_th_quest_board(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -1220,3 +1221,203 @@ func _build_th_save_shrine(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_quest_board(geom: Node) -> void:
+	## Epic-10 T8: outdoor quest board on the SE radial path. Stepped
+	## basalt base, brass frame, large central glowing data screen, 3
+	## hanging quest poster panels along the bottom, brass top crest
+	## with the town heart emblem, and 2 small pin-up lanterns above.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_QuestBoard"
+	# SE radial path (angle = pi/4 from +X), at radius 6.5
+	pivot.position = TOWN_CENTER + Vector3(cos(PI / 4.0) * 6.5, 0, sin(PI / 4.0) * 6.5)
+	# Face the beacon center (pointing inward)
+	pivot.rotation.y = -PI / 4.0 - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.45, 0.85, 1.0)
+	screen_mat.emission_energy_multiplier = 6.5
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var poster_mat: StandardMaterial3D = StandardMaterial3D.new()
+	poster_mat.albedo_color = Color(0.95, 0.85, 0.55)
+	poster_mat.roughness = 0.85
+	poster_mat.emission_enabled = true
+	poster_mat.emission = Color(1.0, 0.65, 0.20)
+	poster_mat.emission_energy_multiplier = 0.45
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 7.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt base ----
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.40, 0.40, 1.20)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.20, 0)
+	pivot.add_child(base)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bsh: BoxShape3D = BoxShape3D.new()
+	bsh.size = Vector3(2.40, 0.40, 1.20)
+	cs.shape = bsh
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# ---- 2 brass support posts ----
+	for px in [-1.05, 1.05]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.07
+		pm.bottom_radius = 0.09
+		pm.height = 3.20
+		post.mesh = pm
+		post.material_override = brass_mat
+		post.position = Vector3(px, 1.95, 0)
+		pivot.add_child(post)
+		# Post collision
+		var post_sb: StaticBody3D = StaticBody3D.new()
+		post_sb.position = Vector3(px, 1.95, 0)
+		var post_cs: CollisionShape3D = CollisionShape3D.new()
+		var post_cyl: CylinderShape3D = CylinderShape3D.new()
+		post_cyl.top_radius = 0.10
+		post_cyl.bottom_radius = 0.10
+		post_cyl.height = 3.20
+		post_cs.shape = post_cyl
+		post_sb.add_child(post_cs)
+		pivot.add_child(post_sb)
+	# ---- Brass frame around the central data screen ----
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fm: BoxMesh = BoxMesh.new()
+	fm.size = Vector3(2.30, 1.55, 0.10)
+	frame.mesh = fm
+	frame.material_override = brass_mat
+	frame.position = Vector3(0, 2.50, -0.20)
+	pivot.add_child(frame)
+	# ---- Large central glowing data screen ----
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var smm: BoxMesh = BoxMesh.new()
+	smm.size = Vector3(2.05, 1.30, 0.05)
+	screen.mesh = smm
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 2.50, -0.27)
+	pivot.add_child(screen)
+	# ---- 4 horizontal data text rows on the screen (small dim stripe boxes) ----
+	for row in 4:
+		var ry: float = 2.95 - float(row) * 0.30
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(1.65, 0.10, 0.04)
+		stripe.mesh = stm
+		stripe.material_override = brass_mat
+		stripe.position = Vector3(0, ry, -0.30)
+		pivot.add_child(stripe)
+	# ---- Brass top crest with town heart emblem ----
+	var top_crest: MeshInstance3D = MeshInstance3D.new()
+	var tcm: BoxMesh = BoxMesh.new()
+	tcm.size = Vector3(2.40, 0.30, 0.20)
+	top_crest.mesh = tcm
+	top_crest.material_override = brass_mat
+	top_crest.position = Vector3(0, 3.45, -0.20)
+	pivot.add_child(top_crest)
+	# Crest center torus emblem (cyan unshaded)
+	var emblem: MeshInstance3D = MeshInstance3D.new()
+	var emm: TorusMesh = TorusMesh.new()
+	emm.inner_radius = 0.12
+	emm.outer_radius = 0.20
+	emblem.mesh = emm
+	emblem.material_override = screen_mat
+	emblem.position = Vector3(0, 3.45, -0.32)
+	emblem.rotation.x = PI / 2.0
+	pivot.add_child(emblem)
+	# Emblem center bar
+	var ebar: MeshInstance3D = MeshInstance3D.new()
+	var ebm: BoxMesh = BoxMesh.new()
+	ebm.size = Vector3(0.06, 0.40, 0.04)
+	ebar.mesh = ebm
+	ebar.material_override = screen_mat
+	ebar.position = Vector3(0, 3.45, -0.34)
+	pivot.add_child(ebar)
+	# ---- 3 hanging quest poster panels along the base of the frame ----
+	for i in 3:
+		var px: float = -0.65 + float(i) * 0.65
+		# Poster body (papyrus rectangle)
+		var poster: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(0.50, 0.65, 0.04)
+		poster.mesh = pmm
+		poster.material_override = poster_mat
+		poster.position = Vector3(px, 1.20, -0.18)
+		pivot.add_child(poster)
+		# Brass nail at the top
+		var nail: MeshInstance3D = MeshInstance3D.new()
+		var nm: SphereMesh = SphereMesh.new()
+		nm.radius = 0.04
+		nm.height = 0.08
+		nail.mesh = nm
+		nail.material_override = brass_mat
+		nail.position = Vector3(px, 1.50, -0.22)
+		pivot.add_child(nail)
+	# ---- 2 small pin-up brass lanterns above the frame ----
+	for lx in [-0.85, 0.85]:
+		# Lantern bracket
+		var bracket: MeshInstance3D = MeshInstance3D.new()
+		var bktm: BoxMesh = BoxMesh.new()
+		bktm.size = Vector3(0.10, 0.20, 0.30)
+		bracket.mesh = bktm
+		bracket.material_override = brass_mat
+		bracket.position = Vector3(lx, 3.15, -0.28)
+		pivot.add_child(bracket)
+		# Lantern flame
+		var flame: MeshInstance3D = MeshInstance3D.new()
+		var flm: SphereMesh = SphereMesh.new()
+		flm.radius = 0.13
+		flm.height = 0.26
+		flame.mesh = flm
+		flame.material_override = flame_mat
+		flame.position = Vector3(lx, 3.30, -0.40)
+		pivot.add_child(flame)
+		# Lantern OmniLight
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(lx, 3.30, -0.40)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.8
+		lt.omni_range = 5.0
+		pivot.add_child(lt)
+	# ---- Strong screen OmniLight (cyan wash on the brass) ----
+	var screen_lt: OmniLight3D = OmniLight3D.new()
+	screen_lt.position = Vector3(0, 2.50, -0.40)
+	screen_lt.light_color = Color(0.45, 0.85, 1.0)
+	screen_lt.light_energy = 2.4
+	screen_lt.omni_range = 7.0
+	pivot.add_child(screen_lt)
+	# ---- Pulses ----
+	# Screen + emblem cyan pulse
+	var spulse: Tween = pivot.create_tween().set_loops()
+	spulse.tween_property(screen_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	spulse.tween_property(screen_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Lantern flame flicker
+	var fpulse2: Tween = pivot.create_tween().set_loops()
+	fpulse2.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.45).set_ease(Tween.EASE_IN_OUT)
+	fpulse2.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.45).set_ease(Tween.EASE_IN_OUT)
