@@ -32694,6 +32694,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_buoys(geom)
 	# Epic-8 T30: jellyfish glow particles
 	_build_d8_jellyfish_glow(geom)
+	# Epic-8 T31: shipyard scaffolding
+	_build_d8_shipyard_scaffold(geom)
+	# Epic-8 T32: shipwright NPC
+	_build_d8_shipwright_npc()
+	# Epic-8 T33: cargo crane
+	_build_d8_cargo_crane(geom)
+	# Epic-8 T34: dock workers
+	_build_d8_dock_workers(geom)
+	# Epic-8 T35: tide gauge
+	_build_d8_tide_gauge(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -34604,6 +34614,299 @@ func _build_d8_jellyfish_glow(geom: Node) -> void:
 	jelly_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	jelly_mesh.material = jelly_mat
 	geom.add_child(jellies)
+
+
+func _build_d8_shipyard_scaffold(geom: Node) -> void:
+	## Epic-8 T31: shipyard scaffolding — wooden frame structure
+	## supporting an under-construction boat hull.
+	var yard: Node3D = Node3D.new()
+	yard.name = "ShipyardScaffold"
+	yard.position = Vector3(D8_CENTER.x - 18.0, 0.0, -22.0)
+	geom.add_child(yard)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# 4 corner scaffolding posts
+	for sx in [-2.0, 2.0]:
+		for sz in [-1.40, 1.40]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.18, 3.40, 0.18)
+			post.mesh = pm
+			post.material_override = wood_mat
+			post.position = Vector3(sx, 1.70, sz)
+			yard.add_child(post)
+	# 4 horizontal cross beams
+	for h in [1.0, 2.40]:
+		for axis in 2:
+			var beam: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(4.20, 0.10, 0.10) if axis == 0 else Vector3(0.10, 0.10, 3.0)
+			beam.mesh = bm
+			beam.material_override = wood_mat
+			beam.position = Vector3(0, h, 0)
+			yard.add_child(beam)
+	# Under-construction boat hull (tapered prism)
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(3.40, 1.40, 1.85)
+	hull.mesh = hm
+	var hull_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hull_mat.albedo_color = Color(0.55, 0.35, 0.18)
+	hull_mat.roughness = 0.85
+	hull.material_override = hull_mat
+	hull.position = Vector3(0, 0.85, 0)
+	hull.rotation_degrees = Vector3(0, 0, -90)
+	yard.add_child(hull)
+	# Yard collision (single box around the scaffold)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 3.40, 3.0)
+	cs.shape = cb
+	sb.add_child(cs)
+	yard.add_child(sb)
+
+
+func _build_d8_shipwright_npc() -> void:
+	## Epic-8 T32: shipwright NPC — leather apron + held wood plane.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "ShipwrightSlot"
+	slot.position = Vector3(D8_CENTER.x - 14.0, 0.0, -22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Shipwright"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Carven")
+	if "npc_id" in npc:
+		npc.set("npc_id", "shipwright_d8")
+	slot.add_child(npc)
+	# Leather apron
+	var apron: MeshInstance3D = MeshInstance3D.new()
+	var am: BoxMesh = BoxMesh.new()
+	am.size = Vector3(0.55, 0.85, 0.06)
+	apron.mesh = am
+	var apron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	apron_mat.albedo_color = Color(0.40, 0.25, 0.12)
+	apron_mat.metallic = 0.30
+	apron_mat.roughness = 0.65
+	apron.material_override = apron_mat
+	apron.position = Vector3(0, 0.55, 0.22)
+	npc.add_child(apron)
+	# Wood plane (small wooden block + handle)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	var plane: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.30, 0.18, 0.10)
+	plane.mesh = pm
+	plane.material_override = wood_mat
+	plane.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(plane)
+
+
+func _build_d8_cargo_crane(geom: Node) -> void:
+	## Epic-8 T33: dockside cargo crane — tall metal frame + horizontal arm
+	## with a hanging hook + crate dangling.
+	var crane: Node3D = Node3D.new()
+	crane.name = "CargoCrane"
+	crane.position = Vector3(D8_CENTER.x - 6.0, 0.0, -22.0)
+	geom.add_child(crane)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var dark_metal: StandardMaterial3D = StandardMaterial3D.new()
+	dark_metal.albedo_color = Color(0.20, 0.18, 0.20)
+	dark_metal.metallic = 0.85
+	# Tall vertical column
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 7.40, 0.85)
+	col.mesh = cm
+	col.material_override = metal_mat
+	col.position = Vector3(0, 3.70, 0)
+	crane.add_child(col)
+	# Horizontal arm (extending outward)
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var arm_m: BoxMesh = BoxMesh.new()
+	arm_m.size = Vector3(4.20, 0.40, 0.40)
+	arm.mesh = arm_m
+	arm.material_override = metal_mat
+	arm.position = Vector3(2.10, 6.85, 0)
+	crane.add_child(arm)
+	# Counterweight (small box on opposite side)
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var cwm: BoxMesh = BoxMesh.new()
+	cwm.size = Vector3(0.85, 0.85, 0.85)
+	counter.mesh = cwm
+	counter.material_override = dark_metal
+	counter.position = Vector3(-0.85, 6.85, 0)
+	crane.add_child(counter)
+	# Hanging cable
+	var cable: MeshInstance3D = MeshInstance3D.new()
+	var ccm: CylinderMesh = CylinderMesh.new()
+	ccm.top_radius = 0.025
+	ccm.bottom_radius = 0.025
+	ccm.height = 3.20
+	cable.mesh = ccm
+	cable.material_override = dark_metal
+	cable.position = Vector3(3.85, 5.0, 0)
+	crane.add_child(cable)
+	# Hanging crate
+	var crate: MeshInstance3D = MeshInstance3D.new()
+	var crt_m: BoxMesh = BoxMesh.new()
+	crt_m.size = Vector3(0.85, 0.85, 0.85)
+	crate.mesh = crt_m
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.92
+	crate.material_override = wood_mat
+	crate.position = Vector3(3.85, 2.85, 0)
+	crane.add_child(crate)
+	# Crate sway tween
+	var tw: Tween = crate.create_tween().set_loops()
+	tw.tween_property(crate, "position:x", 4.20, 1.4)
+	tw.tween_property(crate, "position:x", 3.50, 1.4)
+	# Column collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 3.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 7.40, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	crane.add_child(sb)
+
+
+func _build_d8_dock_workers(geom: Node) -> void:
+	## Epic-8 T34: 3 dock worker NPCs carrying crates — small worker
+	## figures with carry-poses around the harbor.
+	var workers: Node3D = Node3D.new()
+	workers.name = "DockWorkers"
+	workers.position = Vector3(D8_CENTER.x + 4.0, 0.0, -8.0)
+	geom.add_child(workers)
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 2.85, 0,  1.40),
+		Vector3(-2.40, 0,  0.85),
+	]
+	var shirt_colors: Array = [
+		Color(0.85, 0.20, 0.30),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 3:
+		var worker: Node3D = Node3D.new()
+		worker.position = positions[i]
+		workers.add_child(worker)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.95, 0.30)
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = shirt_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = shirt_colors[i]
+		body_mat.emission_energy_multiplier = 0.30
+		body.material_override = body_mat
+		body.position = Vector3(0, 0.55, 0)
+		worker.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+		head.material_override = skin_mat
+		head.position = Vector3(0, 1.20, 0)
+		worker.add_child(head)
+		# Carried crate above head
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(0.55, 0.30, 0.55)
+		crate.mesh = cm
+		var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+		crate_mat.albedo_color = Color(0.45, 0.28, 0.12)
+		crate.material_override = crate_mat
+		crate.position = Vector3(0, 1.65, 0)
+		worker.add_child(crate)
+		# Walk bob
+		var tw: Tween = worker.create_tween().set_loops()
+		tw.tween_property(worker, "position:y", 0.10, 0.30)
+		tw.tween_property(worker, "position:y", 0.0, 0.30)
+
+
+func _build_d8_tide_gauge(geom: Node) -> void:
+	## Epic-8 T35: tide gauge measuring stick — vertical wooden pole with
+	## colored measurement bands.
+	var gauge: Node3D = Node3D.new()
+	gauge.name = "TideGauge"
+	gauge.position = Vector3(D8_CENTER.x + 22.0, 0.0, 18.0)
+	geom.add_child(gauge)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# Pole
+	var pole: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.18, 3.40, 0.18)
+	pole.mesh = pm
+	pole.material_override = wood_mat
+	pole.position = Vector3(0, 1.70, 0)
+	gauge.add_child(pole)
+	# Measurement bands (alternating red and white)
+	var red_mat: StandardMaterial3D = StandardMaterial3D.new()
+	red_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	red_mat.emission_enabled = true
+	red_mat.emission = Color(0.85, 0.20, 0.20)
+	red_mat.emission_energy_multiplier = 0.45
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	for i in 8:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.20, 0.30, 0.20)
+		band.mesh = bm
+		band.material_override = red_mat if i % 2 == 0 else white_mat
+		band.position = Vector3(0, 0.30 + i * 0.40, 0)
+		gauge.add_child(band)
+	# Top arrow indicator
+	var arrow: MeshInstance3D = MeshInstance3D.new()
+	var am: PrismMesh = PrismMesh.new()
+	am.size = Vector3(0.30, 0.18, 0.10)
+	arrow.mesh = am
+	var arrow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	arrow_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	arrow_mat.emission_enabled = true
+	arrow_mat.emission = Color(0.30, 0.95, 1.0)
+	arrow_mat.emission_energy_multiplier = 1.4
+	arrow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	arrow.material_override = arrow_mat
+	arrow.position = Vector3(0.30, 3.40, 0)
+	arrow.rotation_degrees = Vector3(0, 0, 90)
+	gauge.add_child(arrow)
+	# Pole collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.18
+	cap.height = 3.40
+	cs.shape = cap
+	sb.add_child(cs)
+	gauge.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
