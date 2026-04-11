@@ -92,6 +92,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_guildhall_training_yard(geom)
 	_build_d9_apprentice_brun_npc(town)
 	_build_d9_molten_geyser(geom)
+	_build_d9_lava_bomb_scatter(geom)
 	print("[D9Builder] done")
 
 
@@ -7438,4 +7439,118 @@ func _build_d9_molten_geyser(geom: Node) -> void:
 	var rpulse: Tween = pivot.create_tween().set_loops()
 	rpulse.tween_property(lava_mat, "emission_energy_multiplier", 11.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 	rpulse.tween_property(lava_mat, "emission_energy_multiplier", 6.0, 1.4).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_lava_bomb_scatter(geom: Node) -> void:
+	## Epic-9 T72: scattered cooled lava-bomb boulders fallen around the
+	## molten geyser from past eruptions. 9 dark basalt spheres of varying
+	## size with collision, three of them cracked open showing glowing
+	## magma cores with rising ember motes. Establishes geyser history
+	## and gives the splash zone visual weight.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_LavaBombScatter"
+	pivot.position = D9_CENTER + Vector3(60, 0, -10)
+	geom.add_child(pivot)
+	# Shared materials
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.10, 0.08, 0.07)
+	rock_mat.metallic = 0.20
+	rock_mat.roughness = 0.90
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(0.45, 0.15, 0.04)
+	rock_mat.emission_energy_multiplier = 0.18
+	var crack_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crack_mat.albedo_color = Color(1.0, 0.45, 0.05)
+	crack_mat.emission_enabled = true
+	crack_mat.emission = Color(1.0, 0.45, 0.05)
+	crack_mat.emission_energy_multiplier = 7.0
+	crack_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Boulder placements: position relative to geyser, size, and "is_cracked"
+	# (cracked ones get an embedded glow + ember motes)
+	var bombs: Array = [
+		{"pos": Vector3(4.5, 0, 1.2), "r": 0.95, "cracked": true},
+		{"pos": Vector3(-3.8, 0, 2.4), "r": 0.75, "cracked": false},
+		{"pos": Vector3(-5.2, 0, -1.8), "r": 0.85, "cracked": true},
+		{"pos": Vector3(2.8, 0, -4.5), "r": 0.65, "cracked": false},
+		{"pos": Vector3(5.6, 0, -2.4), "r": 0.55, "cracked": false},
+		{"pos": Vector3(-2.4, 0, -4.8), "r": 0.70, "cracked": true},
+		{"pos": Vector3(6.8, 0, 3.2), "r": 0.45, "cracked": false},
+		{"pos": Vector3(-6.2, 0, 0.8), "r": 0.60, "cracked": false},
+		{"pos": Vector3(3.4, 0, 5.4), "r": 0.50, "cracked": false},
+	]
+	for b in bombs:
+		var bp: Vector3 = b["pos"]
+		var r: float = b["r"]
+		var cracked: bool = b["cracked"]
+		# Boulder body
+		var rock: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: SphereMesh = SphereMesh.new()
+		rmesh.radius = r
+		rmesh.height = r * 1.85
+		rock.mesh = rmesh
+		rock.material_override = rock_mat
+		rock.position = bp + Vector3(0, r * 0.85, 0)
+		# Slight random tilt for variety
+		rock.rotation = Vector3(randf() * 0.4, randf() * TAU, randf() * 0.4)
+		pivot.add_child(rock)
+		# Boulder collision (sphere)
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = bp + Vector3(0, r * 0.85, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var ssh: SphereShape3D = SphereShape3D.new()
+		ssh.radius = r * 0.95
+		cs.shape = ssh
+		sb.add_child(cs)
+		pivot.add_child(sb)
+		# If cracked, add a glowing magma core nub poking out + ember motes
+		if cracked:
+			# Crack core — smaller bright sphere offset to one side
+			var core: MeshInstance3D = MeshInstance3D.new()
+			var cm: SphereMesh = SphereMesh.new()
+			cm.radius = r * 0.40
+			cm.height = r * 0.80
+			core.mesh = cm
+			core.material_override = crack_mat
+			core.position = bp + Vector3(r * 0.55, r * 1.10, 0)
+			pivot.add_child(core)
+			# Crack stripe — thin glowing box across the boulder top
+			var stripe: MeshInstance3D = MeshInstance3D.new()
+			var smm: BoxMesh = BoxMesh.new()
+			smm.size = Vector3(r * 1.40, 0.06, 0.10)
+			stripe.mesh = smm
+			stripe.material_override = crack_mat
+			stripe.position = bp + Vector3(0, r * 1.55, 0)
+			stripe.rotation.y = randf() * TAU
+			pivot.add_child(stripe)
+			# Small OmniLight for the crack glow
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = bp + Vector3(0, r * 1.30, 0)
+			lt.light_color = Color(1.0, 0.55, 0.15)
+			lt.light_energy = 1.6
+			lt.omni_range = 4.0
+			pivot.add_child(lt)
+			# Rising ember motes from the crack
+			var motes: GPUParticles3D = GPUParticles3D.new()
+			motes.position = bp + Vector3(r * 0.55, r * 1.40, 0)
+			motes.amount = 10
+			motes.lifetime = 1.8
+			var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+			pmat.direction = Vector3(0, 1, 0)
+			pmat.spread = 14.0
+			pmat.initial_velocity_min = 0.4
+			pmat.initial_velocity_max = 0.9
+			pmat.gravity = Vector3(0, 0.3, 0)
+			pmat.scale_min = 0.04
+			pmat.scale_max = 0.08
+			pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+			motes.process_material = pmat
+			var psmesh: SphereMesh = SphereMesh.new()
+			psmesh.radius = 0.03
+			psmesh.height = 0.06
+			motes.draw_pass_1 = psmesh
+			pivot.add_child(motes)
+	# Crack pulse — slowly breathe magma color across all cracked cores
+	var cpulse: Tween = pivot.create_tween().set_loops()
+	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	cpulse.tween_property(crack_mat, "emission_energy_multiplier", 5.0, 1.6).set_ease(Tween.EASE_IN_OUT)
 
