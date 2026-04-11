@@ -32754,6 +32754,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_specimen_jars(geom)
 	# Epic-8 T60: diving rig
 	_build_d8_diving_rig(geom)
+	# Epic-8 T61: pearl diver NPC
+	_build_d8_pearl_diver_npc()
+	# Epic-8 T62: open oysters
+	_build_d8_oysters(geom)
+	# Epic-8 T63: small crabs
+	_build_d8_crabs(geom)
+	# Epic-8 T64: dock bridge
+	_build_d8_dock_bridge(geom)
+	# Epic-8 T65: sea anemones
+	_build_d8_anemones(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -36809,6 +36819,320 @@ func _build_d8_diving_rig(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	rig.add_child(sb)
+
+
+func _build_d8_pearl_diver_npc() -> void:
+	## Epic-8 T61: pearl diver NPC — wetsuit + breathing mask + held pearl.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "PearlDiverSlot"
+	slot.position = Vector3(D8_CENTER.x + 16.0, 0.0, 22.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "PearlDiver"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Nautilus")
+	if "npc_id" in npc:
+		npc.set("npc_id", "pearl_diver_d8")
+	slot.add_child(npc)
+	# Black wetsuit
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 1.10, 0.40)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	suit_mat.metallic = 0.30
+	suit_mat.roughness = 0.45
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.55, 0)
+	npc.add_child(suit)
+	# Breathing mask
+	var mask: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.40, 0.20, 0.06)
+	mask.mesh = mm
+	var mask_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mask_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.85)
+	mask_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mask_mat.emission_enabled = true
+	mask_mat.emission = Color(0.30, 0.95, 1.0)
+	mask_mat.emission_energy_multiplier = 1.4
+	mask_mat.metallic = 0.55
+	mask_mat.roughness = 0.10
+	mask.material_override = mask_mat
+	mask.position = Vector3(0, 1.30, 0.21)
+	npc.add_child(mask)
+	# Held pearl (small white sphere)
+	var pearl: MeshInstance3D = MeshInstance3D.new()
+	var pmm: SphereMesh = SphereMesh.new()
+	pmm.radius = 0.08
+	pmm.height = 0.16
+	pearl.mesh = pmm
+	var pearl_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pearl_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	pearl_mat.emission_enabled = true
+	pearl_mat.emission = Color(0.95, 0.95, 0.92)
+	pearl_mat.emission_energy_multiplier = 2.5
+	pearl_mat.metallic = 0.65
+	pearl_mat.roughness = 0.05
+	pearl.material_override = pearl_mat
+	pearl.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(pearl)
+
+
+func _build_d8_oysters(geom: Node) -> void:
+	## Epic-8 T62: 5 open oysters scattered on a stone slab — half-shell
+	## sphere + glowing pearl visible inside each.
+	var oysters: Node3D = Node3D.new()
+	oysters.name = "Oysters"
+	oysters.position = Vector3(D8_CENTER.x + 22.0, 0.0, 8.0)
+	geom.add_child(oysters)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.40, 0.35)
+	stone_mat.roughness = 0.92
+	# Stone slab base
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(2.85, 0.20, 1.85)
+	slab.mesh = sm
+	slab.material_override = stone_mat
+	slab.position = Vector3(0, 0.10, 0)
+	oysters.add_child(slab)
+	# Oyster colors
+	var shell_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shell_mat.albedo_color = Color(0.65, 0.55, 0.40)
+	shell_mat.roughness = 0.85
+	var pearl_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pearl_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	pearl_mat.emission_enabled = true
+	pearl_mat.emission = Color(0.95, 0.95, 0.92)
+	pearl_mat.emission_energy_multiplier = 2.5
+	pearl_mat.metallic = 0.65
+	pearl_mat.roughness = 0.05
+	for i in 5:
+		var oyster: Node3D = Node3D.new()
+		oyster.position = Vector3(
+			randf_range(-1.0, 1.0),
+			0.18,
+			randf_range(-0.65, 0.65)
+		)
+		oysters.add_child(oyster)
+		# Bottom half-shell
+		var bot: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.18
+		bm.height = 0.10
+		bot.mesh = bm
+		bot.material_override = shell_mat
+		bot.position = Vector3(0, 0.05, 0)
+		bot.scale = Vector3(1.0, 0.40, 1.0)
+		oyster.add_child(bot)
+		# Top half-shell (lifted)
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.18
+		tm.height = 0.10
+		top.mesh = tm
+		top.material_override = shell_mat
+		top.position = Vector3(0, 0.18, 0)
+		top.scale = Vector3(1.0, 0.40, 1.0)
+		top.rotation_degrees = Vector3(15, 0, 0)
+		oyster.add_child(top)
+		# Pearl inside
+		var pearl: MeshInstance3D = MeshInstance3D.new()
+		var pmm: SphereMesh = SphereMesh.new()
+		pmm.radius = 0.06
+		pmm.height = 0.12
+		pearl.mesh = pmm
+		pearl.material_override = pearl_mat
+		pearl.position = Vector3(0, 0.10, 0)
+		oyster.add_child(pearl)
+
+
+func _build_d8_crabs(geom: Node) -> void:
+	## Epic-8 T63: 4 small crabs scattered around the dock — round body +
+	## 2 claws + 6 legs + side-step shuffle.
+	var crabs: Node3D = Node3D.new()
+	crabs.name = "Crabs"
+	crabs.position = Vector3(D8_CENTER.x + 4.0, 0.0, -2.0)
+	geom.add_child(crabs)
+	var crab_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crab_mat.albedo_color = Color(0.85, 0.30, 0.20)
+	crab_mat.emission_enabled = true
+	crab_mat.emission = Color(0.85, 0.20, 0.10)
+	crab_mat.emission_energy_multiplier = 0.45
+	crab_mat.roughness = 0.65
+	for i in 4:
+		var crab: Node3D = Node3D.new()
+		crab.position = Vector3(
+			randf_range(-3.5, 3.5),
+			0,
+			randf_range(-2.5, 2.5)
+		)
+		crabs.add_child(crab)
+		# Body (flat sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.18
+		bm.height = 0.18
+		body.mesh = bm
+		body.material_override = crab_mat
+		body.position = Vector3(0, 0.10, 0)
+		body.scale = Vector3(1.0, 0.55, 1.20)
+		crab.add_child(body)
+		# 2 claws (small spheres)
+		for sx in [-0.18, 0.18]:
+			var claw: MeshInstance3D = MeshInstance3D.new()
+			var cm: SphereMesh = SphereMesh.new()
+			cm.radius = 0.08
+			cm.height = 0.10
+			claw.mesh = cm
+			claw.material_override = crab_mat
+			claw.position = Vector3(sx, 0.10, 0.18)
+			crab.add_child(claw)
+		# 6 small legs
+		for sx in [-0.18, 0.18]:
+			for sz in [-0.12, 0, 0.12]:
+				var leg: MeshInstance3D = MeshInstance3D.new()
+				var lm: CylinderMesh = CylinderMesh.new()
+				lm.top_radius = 0.018
+				lm.bottom_radius = 0.018
+				lm.height = 0.18
+				leg.mesh = lm
+				leg.material_override = crab_mat
+				leg.position = Vector3(sx, 0.06, sz)
+				leg.rotation_degrees = Vector3(0, 0, 60.0 if sx > 0 else -60.0)
+				crab.add_child(leg)
+		# Side-step shuffle tween
+		var tw: Tween = crab.create_tween().set_loops()
+		tw.tween_property(crab, "position:x", crab.position.x + 1.0, 1.4)
+		tw.tween_property(crab, "position:x", crab.position.x - 1.0, 1.4)
+
+
+func _build_d8_dock_bridge(geom: Node) -> void:
+	## Epic-8 T64: small wooden plank bridge connecting two dock sections
+	## across a small water gap.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "D8DockBridge"
+	bridge.position = Vector3(D8_CENTER.x + 8.0, 0.0, 4.0)
+	geom.add_child(bridge)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	# 5 wooden plank steps
+	for i in 5:
+		var plank: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(1.85, 0.10, 0.40)
+		plank.mesh = pm
+		plank.material_override = wood_mat
+		plank.position = Vector3(0, 0.30, -0.85 + i * 0.42)
+		bridge.add_child(plank)
+	# 2 side rope rails
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope_mat.roughness = 0.85
+	for sx in [-0.85, 0.85]:
+		var rope: MeshInstance3D = MeshInstance3D.new()
+		var rmm: CylinderMesh = CylinderMesh.new()
+		rmm.top_radius = 0.025
+		rmm.bottom_radius = 0.025
+		rmm.height = 1.85
+		rope.mesh = rmm
+		rope.material_override = rope_mat
+		rope.position = Vector3(sx, 0.85, 0)
+		rope.rotation_degrees = Vector3(90, 0, 0)
+		bridge.add_child(rope)
+	# 4 vertical post supports
+	for sx in [-0.85, 0.85]:
+		for sz in [-0.85, 0.85]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmm: CylinderMesh = CylinderMesh.new()
+			pmm.top_radius = 0.06
+			pmm.bottom_radius = 0.06
+			pmm.height = 0.85
+			post.mesh = pmm
+			post.material_override = wood_mat
+			post.position = Vector3(sx, 0.42, sz)
+			bridge.add_child(post)
+	# Bridge collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 1.10, 1.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	bridge.add_child(sb)
+
+
+func _build_d8_anemones(geom: Node) -> void:
+	## Epic-8 T65: 5 sea anemones — colorful column bases with tentacle
+	## clusters waving from the top.
+	var anemones: Node3D = Node3D.new()
+	anemones.name = "SeaAnemones"
+	anemones.position = Vector3(D8_CENTER.x - 4.0, 0.0, -22.0)
+	geom.add_child(anemones)
+	var colors: Array = [
+		Color(0.85, 0.30, 0.85),
+		Color(0.95, 0.55, 0.20),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.65, 0.95),
+	]
+	for i in 5:
+		var anem: Node3D = Node3D.new()
+		anem.position = Vector3(i * 1.85, 0, 0)
+		anemones.add_child(anem)
+		var col: Color = colors[i]
+		var col_mat: StandardMaterial3D = StandardMaterial3D.new()
+		col_mat.albedo_color = col
+		col_mat.emission_enabled = true
+		col_mat.emission = col
+		col_mat.emission_energy_multiplier = 1.4
+		col_mat.roughness = 0.65
+		# Cylinder column body
+		var col_body: MeshInstance3D = MeshInstance3D.new()
+		var cm: CylinderMesh = CylinderMesh.new()
+		cm.top_radius = 0.30
+		cm.bottom_radius = 0.40
+		cm.height = 0.85
+		col_body.mesh = cm
+		col_body.material_override = col_mat
+		col_body.position = Vector3(0, 0.42, 0)
+		anem.add_child(col_body)
+		# 8 tentacle prisms waving from the top
+		for j in 8:
+			var ang: float = (TAU / 8.0) * j
+			var tent: MeshInstance3D = MeshInstance3D.new()
+			var tm: PrismMesh = PrismMesh.new()
+			tm.size = Vector3(0.06, 0.55, 0.06)
+			tent.mesh = tm
+			tent.material_override = col_mat
+			tent.position = Vector3(cos(ang) * 0.25, 1.10, sin(ang) * 0.25)
+			tent.rotation_degrees = Vector3(0, randf_range(-15, 15), 0)
+			anem.add_child(tent)
+			# Sway tween
+			var tw: Tween = tent.create_tween().set_loops()
+			tw.tween_interval(j * 0.10)
+			tw.tween_property(tent, "rotation_degrees:z", 8.0, 1.0)
+			tw.tween_property(tent, "rotation_degrees:z", -8.0, 1.0)
+		# Anemone collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 0.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cap: CapsuleShape3D = CapsuleShape3D.new()
+		cap.radius = 0.40
+		cap.height = 0.85
+		cs.shape = cap
+		sb.add_child(cs)
+		anem.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
