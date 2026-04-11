@@ -1818,6 +1818,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_elder_mage_npc()
 	# Epic-3 T90: 6 perimeter violet flame braziers
 	_build_d3_perimeter_braziers(geom)
+	# Epic-3 T91: astrolabe device on a stand
+	_build_d3_astrolabe(geom)
+	# Epic-3 T92: spell ingredient shelves
+	_build_d3_ingredient_shelves(geom)
+	# Epic-3 T93: floating planet model
+	_build_d3_planet_model(geom)
+	# Epic-3 T94: Time Keeper NPC
+	_build_d3_time_keeper_npc()
+	# Epic-3 T95: seeker trial puzzle pad
+	_build_d3_seeker_trial(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -8135,6 +8145,366 @@ func _build_d3_perimeter_braziers(geom: Node) -> void:
 		cs.position = Vector3(0, 1.20, 0)
 		sb.add_child(cs)
 		brazier.add_child(sb)
+
+
+func _build_d3_astrolabe(geom: Node) -> void:
+	## Epic-3 T91: an astrolabe device — stone stand with 3 nested rotating
+	## torus rings (rotating around different axes) representing celestial
+	## tracking.
+	var astro: Node3D = Node3D.new()
+	astro.name = "D3Astrolabe"
+	astro.position = D3_CENTER + Vector3(8, 0, 14)
+	geom.add_child(astro)
+	# Stone stand
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.55, 1.40, 0.55)
+	stand.mesh = sm
+	stand.position = Vector3(0, 0.70, 0)
+	stand.material_override = stone_mat
+	astro.add_child(stand)
+	# Pivot for rotating rings
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 1.85, 0)
+	astro.add_child(pivot)
+	# 3 nested torus rings rotating on different axes
+	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ring_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	ring_mat.emission_enabled = true
+	ring_mat.emission = Color(1.0, 0.65, 0.20)
+	ring_mat.emission_energy_multiplier = 1.4
+	ring_mat.metallic = 0.85
+	ring_mat.roughness = 0.20
+	for i in 3:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rm: TorusMesh = TorusMesh.new()
+		rm.inner_radius = 0.65 - i * 0.10
+		rm.outer_radius = 0.75 - i * 0.10
+		ring.mesh = rm
+		# Rotate each ring on a different axis
+		if i == 0:
+			ring.rotation = Vector3(0, 0, 0)
+		elif i == 1:
+			ring.rotation = Vector3(deg_to_rad(45), 0, 0)
+		else:
+			ring.rotation = Vector3(0, 0, deg_to_rad(45))
+		ring.material_override = ring_mat
+		pivot.add_child(ring)
+		# Rotation tween
+		var spin: Tween = create_tween().set_loops()
+		var axis: String = ["rotation:y", "rotation:x", "rotation:z"][i]
+		spin.tween_property(ring, axis, ring.get(axis) + TAU, 6.0 + i * 2)
+	# Center sphere
+	var center: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.18
+	cm.height = 0.36
+	center.mesh = cm
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.85, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.95, 0.30)
+	cmat.emission_energy_multiplier = 3.0
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	center.material_override = cmat
+	pivot.add_child(center)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "ASTROLABE"
+	label.position = Vector3(0, 3.0, 0)
+	label.modulate = Color(1.0, 0.65, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	astro.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.55, 1.40, 0.55)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.70, 0)
+	sb.add_child(cs)
+	astro.add_child(sb)
+
+
+func _build_d3_ingredient_shelves(geom: Node) -> void:
+	## Epic-3 T92: 2 ingredient shelves stacked with colored vials in
+	## small grid arrangements.
+	var shelves: Node3D = Node3D.new()
+	shelves.name = "D3IngredientShelves"
+	shelves.position = D3_CENTER + Vector3(-15, 0, -3)
+	geom.add_child(shelves)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	wood_mat.metallic = 0.10
+	wood_mat.roughness = 0.65
+	# 2 horizontal shelf boards
+	for sy: float in [0.85, 1.55]:
+		var shelf: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(2.40, 0.10, 0.40)
+		shelf.mesh = smesh
+		shelf.position = Vector3(0, sy, 0)
+		shelf.material_override = wood_mat
+		shelves.add_child(shelf)
+		# 6 colored vials per shelf
+		for c in 6:
+			var vial: MeshInstance3D = MeshInstance3D.new()
+			var vm: CylinderMesh = CylinderMesh.new()
+			vm.top_radius = 0.06
+			vm.bottom_radius = 0.10
+			vm.height = 0.30
+			vial.mesh = vm
+			vial.position = Vector3(-1.0 + c * 0.40, sy + 0.20, 0)
+			var color: Color = Color.from_hsv(c / 6.0, 0.65, 1.0)
+			var vmat: StandardMaterial3D = StandardMaterial3D.new()
+			vmat.albedo_color = color
+			vmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			vmat.albedo_color.a = 0.85
+			vmat.emission_enabled = true
+			vmat.emission = color
+			vmat.emission_energy_multiplier = 1.6
+			vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			vial.material_override = vmat
+			shelves.add_child(vial)
+	# 2 side support posts
+	for sx: float in [-1.20, 1.20]:
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.10, 1.85, 0.40)
+		post.mesh = pm
+		post.position = Vector3(sx, 0.92, 0)
+		post.material_override = wood_mat
+		shelves.add_child(post)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.85, 0.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.92, 0)
+	sb.add_child(cs)
+	shelves.add_child(sb)
+
+
+func _build_d3_planet_model(geom: Node) -> void:
+	## Epic-3 T93: a floating planet model — large sphere with a torus
+	## ring around it like a saturnian planet, suspended above a stand.
+	var plan: Node3D = Node3D.new()
+	plan.name = "D3PlanetModel"
+	plan.position = D3_CENTER + Vector3(15, 0, 8)
+	geom.add_child(plan)
+	# Stone stand
+	var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stand_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	stand_mat.metallic = 0.55
+	stand_mat.roughness = 0.45
+	var stand: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.30
+	sm.bottom_radius = 0.40
+	sm.height = 0.85
+	stand.mesh = sm
+	stand.position = Vector3(0, 0.42, 0)
+	stand.material_override = stand_mat
+	plan.add_child(stand)
+	# Pivot for the planet
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 2.20, 0)
+	plan.add_child(pivot)
+	# Planet sphere
+	var planet: MeshInstance3D = MeshInstance3D.new()
+	var pm: SphereMesh = SphereMesh.new()
+	pm.radius = 0.65
+	pm.height = 1.30
+	planet.mesh = pm
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.30, 0.55, 1.0)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.55, 0.85, 1.0)
+	pmat.emission_energy_multiplier = 1.4
+	pmat.metallic = 0.40
+	pmat.roughness = 0.30
+	pmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	planet.material_override = pmat
+	pivot.add_child(planet)
+	# Saturn-like ring
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: TorusMesh = TorusMesh.new()
+	rmesh.inner_radius = 0.95
+	rmesh.outer_radius = 1.20
+	ring.mesh = rmesh
+	ring.rotation = Vector3(deg_to_rad(20), 0, 0)
+	var rmat: StandardMaterial3D = StandardMaterial3D.new()
+	rmat.albedo_color = Color(0.85, 0.65, 0.30, 0.65)
+	rmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	rmat.emission_enabled = true
+	rmat.emission = Color(1.0, 0.75, 0.30)
+	rmat.emission_energy_multiplier = 1.8
+	rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = rmat
+	pivot.add_child(ring)
+	# Slow rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 12.0)
+	# Collision around stand
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.45
+	cap.height = 0.85
+	cs.shape = cap
+	cs.position = Vector3(0, 0.42, 0)
+	sb.add_child(cs)
+	plan.add_child(sb)
+
+
+func _build_d3_time_keeper_npc() -> void:
+	## Epic-3 T94: Time Keeper NPC standing by the sundial — robed figure
+	## with an hourglass at the belt and a slow pendulum cane.
+	var slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if slots == null:
+		return
+	var keeper: Node3D = Node3D.new()
+	keeper.name = "D3TimeKeeper"
+	keeper.position = D3_CENTER + Vector3(-13, 0, 6)
+	slots.add_child(keeper)
+	# Robed body
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.30, 0.40)
+	bmat.metallic = 0.20
+	bmat.roughness = 0.65
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.40, 0.55, 0.85)
+	bmat.emission_energy_multiplier = 0.30
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.45
+	bmesh.height = 1.40
+	body.mesh = bmesh
+	body.position = Vector3(0, 0.70, 0)
+	body.material_override = bmat
+	keeper.add_child(body)
+	# Hood
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.45
+	hmesh.height = 0.55
+	hood.mesh = hmesh
+	hood.position = Vector3(0, 1.55, 0)
+	hood.material_override = bmat
+	keeper.add_child(hood)
+	# 2 cyan eyes
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.55, 0.95, 1.0)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex: float in [-0.10, 0.10]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.06
+		em.height = 0.12
+		eye.mesh = em
+		eye.position = Vector3(ex, 1.40, 0.34)
+		eye.material_override = eye_mat
+		keeper.add_child(eye)
+	# Hourglass at the belt — small box with bright sand inside
+	var hourglass: MeshInstance3D = MeshInstance3D.new()
+	var hgm: BoxMesh = BoxMesh.new()
+	hgm.size = Vector3(0.18, 0.40, 0.18)
+	hourglass.mesh = hgm
+	hourglass.position = Vector3(0.36, 0.70, 0.30)
+	var hgmat: StandardMaterial3D = StandardMaterial3D.new()
+	hgmat.albedo_color = Color(1.0, 0.95, 0.30, 0.85)
+	hgmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	hgmat.emission_enabled = true
+	hgmat.emission = Color(1.0, 0.95, 0.30)
+	hgmat.emission_energy_multiplier = 1.4
+	hgmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	hourglass.material_override = hgmat
+	keeper.add_child(hourglass)
+	# Pendulum cane held in front
+	var cane_pivot: Node3D = Node3D.new()
+	cane_pivot.position = Vector3(-0.40, 1.20, 0)
+	keeper.add_child(cane_pivot)
+	var cane: MeshInstance3D = MeshInstance3D.new()
+	var cnm: CylinderMesh = CylinderMesh.new()
+	cnm.top_radius = 0.04
+	cnm.bottom_radius = 0.06
+	cnm.height = 1.40
+	cane.mesh = cnm
+	cane.position = Vector3(0, -0.70, 0)
+	var cnmat: StandardMaterial3D = StandardMaterial3D.new()
+	cnmat.albedo_color = Color(0.30, 0.18, 0.10)
+	cnmat.metallic = 0.30
+	cane.material_override = cnmat
+	cane_pivot.add_child(cane)
+	# Pendulum sway
+	var swing: Tween = create_tween().set_loops()
+	swing.tween_property(cane_pivot, "rotation:z", deg_to_rad(8), 1.6).set_ease(Tween.EASE_IN_OUT)
+	swing.tween_property(cane_pivot, "rotation:z", deg_to_rad(-8), 1.6).set_ease(Tween.EASE_IN_OUT)
+	# Name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "Time Keeper"
+	label.position = Vector3(0, 2.20, 0)
+	label.modulate = Color(0.55, 0.85, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	keeper.add_child(label)
+
+
+func _build_d3_seeker_trial(geom: Node) -> void:
+	## Epic-3 T95: seeker trial — 9 small floor pads in a 3x3 grid that
+	## glow in sequence (chase pattern), suggesting a "step on these in
+	## the right order" puzzle.
+	var trial: Node3D = Node3D.new()
+	trial.name = "D3SeekerTrial"
+	trial.position = D3_CENTER + Vector3(0, 0.06, 16)
+	geom.add_child(trial)
+	for r in 3:
+		for c in 3:
+			var i: int = r * 3 + c
+			var pad: MeshInstance3D = MeshInstance3D.new()
+			pad.name = "TrialPad_%d" % i
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.85, 0.10, 0.85)
+			pad.mesh = pm
+			pad.position = Vector3(-1.20 + c * 1.20, 0, -1.20 + r * 1.20)
+			var pmat: StandardMaterial3D = StandardMaterial3D.new()
+			pmat.albedo_color = Color(0.16, 0.10, 0.20)
+			pmat.metallic = 0.55
+			pmat.roughness = 0.45
+			pmat.emission_enabled = true
+			pmat.emission = Color(0.85, 0.40, 1.0)
+			pmat.emission_energy_multiplier = 0.45
+			pad.material_override = pmat
+			trial.add_child(pad)
+			# Chase emission pulse
+			var pulse: Tween = create_tween().set_loops()
+			pulse.tween_interval(i * 0.20)
+			pulse.tween_property(pmat, "emission_energy_multiplier", 3.0, 0.30).set_ease(Tween.EASE_OUT)
+			pulse.tween_property(pmat, "emission_energy_multiplier", 0.45, 0.30).set_ease(Tween.EASE_IN)
+			pulse.tween_interval(2.0 - i * 0.20 * 0.5)
+	# Sign overhead
+	var label: Label3D = Label3D.new()
+	label.text = "SEEKER TRIAL"
+	label.position = Vector3(0, 1.85, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	trial.add_child(label)
 
 
 
