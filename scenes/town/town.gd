@@ -8835,6 +8835,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_snow_fort(geom)
 	# Epic-5 T35: aurora curtain in the sky
 	_build_d5_aurora_curtain(geom)
+	# Epic-5 T36: ice harvest pit
+	_build_d5_ice_harvest_pit(geom)
+	# Epic-5 T37: stacked harvested ice blocks
+	_build_d5_ice_block_stacks(geom)
+	# Epic-5 T38: data analyst NPC
+	_build_d5_data_analyst_npc()
+	# Epic-5 T39: floating holographic data charts
+	_build_d5_holo_charts(geom)
+	# Epic-5 T40: frozen lab hut
+	_build_d5_lab_hut(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -11381,6 +11391,381 @@ func _build_d5_aurora_curtain(geom: Node) -> void:
 		var tw: Tween = sheet.create_tween().set_loops()
 		tw.tween_property(sheet, "rotation_degrees:z", 12.0 + i, 6.0 + i * 0.4)
 		tw.tween_property(sheet, "rotation_degrees:z", -12.0 - i, 6.0 + i * 0.4)
+
+
+func _build_d5_ice_harvest_pit(geom: Node) -> void:
+	## Epic-5 T36: rectangular ice harvesting pit dug into the snow with
+	## chiseled walls and a row of ice saws/picks resting at one edge.
+	var pit: Node3D = Node3D.new()
+	pit.name = "IceHarvestPit"
+	pit.position = Vector3(D5_CENTER.x + 14.0, 0.0, -16.0)
+	geom.add_child(pit)
+	# Dark recessed pit floor
+	var floor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	floor_mat.albedo_color = Color(0.10, 0.20, 0.32)
+	floor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var floor_plane: MeshInstance3D = MeshInstance3D.new()
+	var fpm: BoxMesh = BoxMesh.new()
+	fpm.size = Vector3(4.50, 0.10, 3.20)
+	floor_plane.mesh = fpm
+	floor_plane.material_override = floor_mat
+	floor_plane.position = Vector3(0, -0.20, 0)
+	pit.add_child(floor_plane)
+	# 4 chiseled wall slabs around the pit
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	var walls: Array = [
+		{"size": Vector3(4.85, 0.55, 0.30), "pos": Vector3(0, 0.18,  1.65)},
+		{"size": Vector3(4.85, 0.55, 0.30), "pos": Vector3(0, 0.18, -1.65)},
+		{"size": Vector3(0.30, 0.55, 3.50), "pos": Vector3( 2.30, 0.18, 0)},
+		{"size": Vector3(0.30, 0.55, 3.50), "pos": Vector3(-2.30, 0.18, 0)},
+	]
+	for w in walls:
+		var wall: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = w["size"]
+		wall.mesh = wm
+		wall.material_override = ice_mat
+		wall.position = w["pos"]
+		pit.add_child(wall)
+	# Row of 3 ice saws/picks resting at the edge
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.50, 0.55, 0.60)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	for i in 3:
+		var handle: MeshInstance3D = MeshInstance3D.new()
+		var hm: CylinderMesh = CylinderMesh.new()
+		hm.top_radius = 0.05
+		hm.bottom_radius = 0.06
+		hm.height = 1.20
+		handle.mesh = hm
+		handle.material_override = wood_mat
+		handle.position = Vector3(-1.85 + i * 1.80, 0.45, 1.85)
+		handle.rotation_degrees = Vector3(70, 0, 0)
+		pit.add_child(handle)
+		var blade: MeshInstance3D = MeshInstance3D.new()
+		var blm: BoxMesh = BoxMesh.new()
+		blm.size = Vector3(0.30, 0.45, 0.06)
+		blade.mesh = blm
+		blade.material_override = metal_mat
+		blade.position = Vector3(-1.85 + i * 1.80, 0.30, 1.20)
+		blade.rotation_degrees = Vector3(20, 0, 0)
+		pit.add_child(blade)
+
+
+func _build_d5_ice_block_stacks(geom: Node) -> void:
+	## Epic-5 T37: 3 stacks of harvested ice blocks ready for transport.
+	var stacks: Node3D = Node3D.new()
+	stacks.name = "IceBlockStacks"
+	stacks.position = Vector3(D5_CENTER.x + 8.0, 0.0, -16.0)
+	geom.add_child(stacks)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.70, 0.88, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.45, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.15
+	# 3 stacks of 4 blocks each (2x2 base + 2 top)
+	for s in 3:
+		var sx: float = s * 2.40
+		# 4 base blocks (2×2)
+		for i in 2:
+			for j in 2:
+				var block: MeshInstance3D = MeshInstance3D.new()
+				var bm: BoxMesh = BoxMesh.new()
+				bm.size = Vector3(0.85, 0.65, 0.85)
+				block.mesh = bm
+				block.material_override = ice_mat
+				block.position = Vector3(sx + i * 0.90, 0.32, j * 0.90)
+				stacks.add_child(block)
+				# Block collision
+				var sb: StaticBody3D = StaticBody3D.new()
+				sb.position = block.position
+				var cs: CollisionShape3D = CollisionShape3D.new()
+				var cb: BoxShape3D = BoxShape3D.new()
+				cb.size = bm.size
+				cs.shape = cb
+				sb.add_child(cs)
+				stacks.add_child(sb)
+		# 1 top block centered
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.85, 0.65, 0.85)
+		top.mesh = tm
+		top.material_override = ice_mat
+		top.position = Vector3(sx + 0.45, 0.97, 0.45)
+		stacks.add_child(top)
+
+
+func _build_d5_data_analyst_npc() -> void:
+	## Epic-5 T38: data analyst NPC — slim grey suit (no parka, indoor type),
+	## holding a glowing tablet, surrounded by tiny floating data cubes.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "DataAnalystSlot"
+	slot.position = Vector3(D5_CENTER.x - 12.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "DataAnalyst"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Indexa")
+	if "npc_id" in npc:
+		npc.set("npc_id", "analyst_d5")
+	slot.add_child(npc)
+	# Slim grey suit
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.55, 1.05, 0.35)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.40, 0.45, 0.50)
+	suit_mat.metallic = 0.20
+	suit_mat.roughness = 0.55
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.55, 0)
+	npc.add_child(suit)
+	# Tablet held in front
+	var tablet: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.30, 0.40, 0.04)
+	tablet.mesh = tm
+	var tablet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tablet_mat.albedo_color = Color(0.20, 0.25, 0.30)
+	tablet_mat.metallic = 0.65
+	tablet_mat.roughness = 0.20
+	tablet.material_override = tablet_mat
+	tablet.position = Vector3(0, 0.85, 0.35)
+	tablet.rotation_degrees = Vector3(-30, 0, 0)
+	npc.add_child(tablet)
+	# Glowing screen
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var scm: BoxMesh = BoxMesh.new()
+	scm.size = Vector3(0.27, 0.36, 0.02)
+	screen.mesh = scm
+	var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+	screen_mat.albedo_color = Color(0.40, 0.95, 1.0)
+	screen_mat.emission_enabled = true
+	screen_mat.emission = Color(0.30, 1.0, 1.0)
+	screen_mat.emission_energy_multiplier = 2.5
+	screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = screen_mat
+	screen.position = Vector3(0, 0.85, 0.40)
+	screen.rotation_degrees = Vector3(-30, 0, 0)
+	npc.add_child(screen)
+	# 4 floating tiny data cubes orbiting
+	var cube_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cube_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	cube_mat.emission_enabled = true
+	cube_mat.emission = Color(0.30, 0.95, 1.0)
+	cube_mat.emission_energy_multiplier = 2.5
+	cube_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 1.30, 0)
+	npc.add_child(pivot)
+	for i in 4:
+		var cube: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.10, 0.10, 0.10)
+		cube.mesh = cmm
+		cube.material_override = cube_mat
+		var ang: float = (TAU / 4.0) * i
+		cube.position = Vector3(cos(ang) * 0.55, sin(i) * 0.10, sin(ang) * 0.55)
+		pivot.add_child(cube)
+	var trot: Tween = pivot.create_tween().set_loops()
+	trot.tween_property(pivot, "rotation_degrees:y", 360.0, 5.0)
+	trot.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+
+
+func _build_d5_holo_charts(geom: Node) -> void:
+	## Epic-5 T39: 3 large floating holographic chart panels showing
+	## bar-graph data spikes, hovering above a small projector base.
+	var charts: Node3D = Node3D.new()
+	charts.name = "HoloCharts"
+	charts.position = Vector3(D5_CENTER.x - 10.0, 0.0, 8.0)
+	geom.add_child(charts)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Projector base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.85
+	bm.bottom_radius = 0.95
+	bm.height = 0.30
+	base.mesh = bm
+	base.material_override = metal_mat
+	base.position = Vector3(0, 0.15, 0)
+	charts.add_child(base)
+	# 3 chart panels around the base
+	var panel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	panel_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.55)
+	panel_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	panel_mat.emission_enabled = true
+	panel_mat.emission = Color(0.30, 0.95, 1.0)
+	panel_mat.emission_energy_multiplier = 1.4
+	panel_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var bar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bar_mat.albedo_color = Color(0.40, 1.0, 0.85)
+	bar_mat.emission_enabled = true
+	bar_mat.emission = Color(0.30, 1.0, 0.85)
+	bar_mat.emission_energy_multiplier = 2.5
+	bar_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var ang: float = (TAU / 3.0) * i
+		var panel: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(1.20, 1.40, 0.06)
+		panel.mesh = pm
+		panel.material_override = panel_mat
+		panel.position = Vector3(cos(ang) * 0.85, 1.30, sin(ang) * 0.85)
+		panel.rotation = Vector3(0, -ang + PI * 0.5, 0)
+		charts.add_child(panel)
+		# 6 vertical bars on the panel (random heights)
+		for b in 6:
+			var bar: MeshInstance3D = MeshInstance3D.new()
+			var bbm: BoxMesh = BoxMesh.new()
+			var height: float = 0.20 + randf() * 0.85
+			bbm.size = Vector3(0.10, height, 0.04)
+			bar.mesh = bbm
+			bar.material_override = bar_mat
+			var local_x: float = -0.50 + b * 0.18
+			bar.position = Vector3(
+				cos(ang) * 0.85 + cos(ang + PI * 0.5) * local_x,
+				1.30 - 0.55 + height * 0.5,
+				sin(ang) * 0.85 + sin(ang + PI * 0.5) * local_x
+			)
+			bar.rotation = Vector3(0, -ang + PI * 0.5, 0)
+			charts.add_child(bar)
+			# Animate bar height
+			var tw: Tween = bar.create_tween().set_loops()
+			tw.tween_interval((i * 6 + b) * 0.10)
+			tw.tween_property(bar, "scale:y", randf_range(0.40, 1.30), 0.85)
+			tw.tween_property(bar, "scale:y", randf_range(0.40, 1.30), 0.85)
+	# Light from projector
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 1.4
+	light.omni_range = 4.0
+	light.position = Vector3(0, 0.50, 0)
+	charts.add_child(light)
+	# Base collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.15, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 0.95
+	cap.height = 0.30
+	cs.shape = cap
+	sb.add_child(cs)
+	charts.add_child(sb)
+
+
+func _build_d5_lab_hut(geom: Node) -> void:
+	## Epic-5 T40: small frozen research lab hut — a low ice-block building
+	## with a steel door and 2 glowing porthole windows.
+	var hut: Node3D = Node3D.new()
+	hut.name = "LabHut"
+	hut.position = Vector3(D5_CENTER.x - 18.0, 0.0, 14.0)
+	geom.add_child(hut)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.78, 0.90, 0.96)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.55, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.30
+	ice_mat.roughness = 0.45
+	# Main building (large box)
+	var main: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(3.20, 2.40, 2.85)
+	main.mesh = mm
+	main.material_override = ice_mat
+	main.position = Vector3(0, 1.20, 0)
+	hut.add_child(main)
+	# Sloped roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(3.40, 0.85, 3.05)
+	roof.mesh = rm
+	roof.material_override = ice_mat
+	roof.position = Vector3(0, 2.85, 0)
+	hut.add_child(roof)
+	# Steel door
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.30, 0.35, 0.40)
+	door_mat.metallic = 0.75
+	door_mat.roughness = 0.35
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(0.85, 1.65, 0.10)
+	door.mesh = dm
+	door.material_override = door_mat
+	door.position = Vector3(0, 0.85, 1.45)
+	hut.add_child(door)
+	# Door handle
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.05
+	hm.height = 0.10
+	handle.mesh = hm
+	var handle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	handle_mat.albedo_color = Color(0.85, 0.85, 0.20)
+	handle_mat.metallic = 0.85
+	handle_mat.roughness = 0.20
+	handle.material_override = handle_mat
+	handle.position = Vector3(0.30, 0.85, 1.51)
+	hut.add_child(handle)
+	# 2 porthole windows on the side
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.85)
+	window_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(0.40, 1.0, 1.0)
+	window_mat.emission_energy_multiplier = 2.5
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-1.0, 1.0]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm: SphereMesh = SphereMesh.new()
+		wm.radius = 0.30
+		wm.height = 0.55
+		win.mesh = wm
+		win.material_override = window_mat
+		win.position = Vector3(sx * 1.65, 1.40, 0)
+		win.scale = Vector3(0.18, 1.0, 1.0)
+		hut.add_child(win)
+		# Light from window
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(0.40, 0.95, 1.0)
+		light.light_energy = 1.4
+		light.omni_range = 3.0
+		light.position = Vector3(sx * 1.85, 1.40, 0)
+		hut.add_child(light)
+	# Building collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.20, 2.40, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	hut.add_child(sb)
 
 
 
