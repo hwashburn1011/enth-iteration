@@ -17190,6 +17190,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_trash_piles(geom)
 	# Epic-6 T45: floating ad balloons
 	_build_d6_ad_balloons(geom)
+	# Epic-6 T46: gambling den
+	_build_d6_gambling_den(geom)
+	# Epic-6 T47: card dealer NPC
+	_build_d6_card_dealer_npc()
+	# Epic-6 T48: data smuggler crates
+	_build_d6_smuggler_crates(geom)
+	# Epic-6 T49: smuggler boss NPC
+	_build_d6_smuggler_boss_npc()
+	# Epic-6 T50: NEON SOVEREIGN mini-boss landmark
+	_build_d6_neon_sovereign(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -20837,6 +20847,536 @@ func _build_d6_ad_balloons(geom: Node) -> void:
 		var tw: Tween = ball.create_tween().set_loops()
 		tw.tween_property(ball, "position:y", bd["y"] + 0.45, 2.0 + randf())
 		tw.tween_property(ball, "position:y", bd["y"], 2.0 + randf())
+
+
+func _build_d6_gambling_den(geom: Node) -> void:
+	## Epic-6 T46: gambling den — round velvet card table + chairs +
+	## floating cards and chips, with low warm OmniLight overhead.
+	var den: Node3D = Node3D.new()
+	den.name = "GamblingDen"
+	den.position = Vector3(D6_CENTER.x + 14.0, 0.0, -16.0)
+	geom.add_child(den)
+	# Round velvet table top (cylinder)
+	var velvet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	velvet_mat.albedo_color = Color(0.20, 0.55, 0.20)
+	velvet_mat.emission_enabled = true
+	velvet_mat.emission = Color(0.20, 0.55, 0.20)
+	velvet_mat.emission_energy_multiplier = 0.30
+	velvet_mat.roughness = 0.85
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: CylinderMesh = CylinderMesh.new()
+	tm.top_radius = 1.85
+	tm.bottom_radius = 1.85
+	tm.height = 0.10
+	top.mesh = tm
+	top.material_override = velvet_mat
+	top.position = Vector3(0, 0.85, 0)
+	den.add_child(top)
+	# Table column
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.85
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.30
+	cm.bottom_radius = 0.45
+	cm.height = 0.85
+	col.mesh = cm
+	col.material_override = wood_mat
+	col.position = Vector3(0, 0.42, 0)
+	den.add_child(col)
+	# 4 chairs around the table
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i
+		var chair: MeshInstance3D = MeshInstance3D.new()
+		var chm: BoxMesh = BoxMesh.new()
+		chm.size = Vector3(0.55, 0.85, 0.55)
+		chair.mesh = chm
+		chair.material_override = wood_mat
+		chair.position = Vector3(cos(ang) * 2.40, 0.42, sin(ang) * 2.40)
+		den.add_child(chair)
+		# Chair backrest
+		var back: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.85, 0.10)
+		back.mesh = bm
+		back.material_override = wood_mat
+		back.position = Vector3(cos(ang) * 2.65, 1.0, sin(ang) * 2.65)
+		back.rotation.y = -ang + PI * 0.5
+		den.add_child(back)
+	# 4 stacks of chips on the table
+	var chip_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.65, 0.95),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+	]
+	for i in 4:
+		var ang: float = (TAU / 4.0) * i + PI / 4.0
+		for j in 4:
+			var chip: MeshInstance3D = MeshInstance3D.new()
+			var cmm: CylinderMesh = CylinderMesh.new()
+			cmm.top_radius = 0.10
+			cmm.bottom_radius = 0.10
+			cmm.height = 0.04
+			chip.mesh = cmm
+			var chip_mat: StandardMaterial3D = StandardMaterial3D.new()
+			chip_mat.albedo_color = chip_colors[i]
+			chip_mat.emission_enabled = true
+			chip_mat.emission = chip_colors[i]
+			chip_mat.emission_energy_multiplier = 0.65
+			chip.material_override = chip_mat
+			chip.position = Vector3(cos(ang) * 0.85, 0.95 + j * 0.05, sin(ang) * 0.85)
+			den.add_child(chip)
+	# 5 floating playing cards above the table
+	var card_mat: StandardMaterial3D = StandardMaterial3D.new()
+	card_mat.albedo_color = Color(0.95, 0.92, 0.85)
+	card_mat.emission_enabled = true
+	card_mat.emission = Color(0.95, 0.92, 0.85)
+	card_mat.emission_energy_multiplier = 0.65
+	for i in 5:
+		var card: MeshInstance3D = MeshInstance3D.new()
+		var cdm: BoxMesh = BoxMesh.new()
+		cdm.size = Vector3(0.18, 0.30, 0.02)
+		card.mesh = cdm
+		card.material_override = card_mat
+		var ang: float = (TAU / 5.0) * i
+		card.position = Vector3(cos(ang) * 0.55, 1.85, sin(ang) * 0.55)
+		card.rotation_degrees = Vector3(0, ang * 60.0, 0)
+		den.add_child(card)
+		# Slow rotation
+		var tw: Tween = card.create_tween().set_loops()
+		tw.tween_property(card, "rotation_degrees:y", 360.0, 4.0 + i * 0.4)
+		tw.tween_property(card, "rotation_degrees:y", 0.0, 0.0)
+	# Warm overhead light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.55)
+	light.light_energy = 2.0
+	light.omni_range = 5.5
+	light.position = Vector3(0, 2.85, 0)
+	den.add_child(light)
+	# Table collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 1.85
+	cap.height = 0.95
+	cs.shape = cap
+	sb.add_child(cs)
+	den.add_child(sb)
+
+
+func _build_d6_card_dealer_npc() -> void:
+	## Epic-6 T47: card dealer NPC at the gambling den — vest + bow tie +
+	## holding a fanned hand of cards.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CardDealerSlot"
+	slot.position = Vector3(D6_CENTER.x + 14.0, 0.0, -13.5)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CardDealer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Hex")
+	if "npc_id" in npc:
+		npc.set("npc_id", "dealer_d6")
+	slot.add_child(npc)
+	# Black vest
+	var vest: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.65, 0.85, 0.40)
+	vest.mesh = vm
+	var vest_mat: StandardMaterial3D = StandardMaterial3D.new()
+	vest_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	vest_mat.metallic = 0.30
+	vest_mat.roughness = 0.45
+	vest.material_override = vest_mat
+	vest.position = Vector3(0, 0.65, 0)
+	npc.add_child(vest)
+	# Red bow tie
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(0.18, 0.06, 0.06)
+	bow.mesh = bm
+	var bow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bow_mat.albedo_color = Color(0.95, 0.20, 0.30)
+	bow_mat.emission_enabled = true
+	bow_mat.emission = Color(0.95, 0.20, 0.30)
+	bow_mat.emission_energy_multiplier = 0.45
+	bow.material_override = bow_mat
+	bow.position = Vector3(0, 1.10, 0.20)
+	npc.add_child(bow)
+	# Fanned cards in hand (3 cards splayed)
+	for i in 3:
+		var card: MeshInstance3D = MeshInstance3D.new()
+		var cmm: BoxMesh = BoxMesh.new()
+		cmm.size = Vector3(0.14, 0.22, 0.02)
+		card.mesh = cmm
+		var card_mat: StandardMaterial3D = StandardMaterial3D.new()
+		card_mat.albedo_color = Color(0.95, 0.92, 0.85)
+		card.material_override = card_mat
+		card.position = Vector3(0.40, 0.85, 0.20)
+		card.rotation_degrees = Vector3(-30, 0, -15.0 + i * 15.0)
+		npc.add_child(card)
+
+
+func _build_d6_smuggler_crates(geom: Node) -> void:
+	## Epic-6 T48: stack of 6 smuggler data crates with biohazard markings.
+	var crates: Node3D = Node3D.new()
+	crates.name = "SmugglerCrates"
+	crates.position = Vector3(D6_CENTER.x + 18.0, 0.0, -16.0)
+	geom.add_child(crates)
+	var crate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crate_mat.albedo_color = Color(0.20, 0.18, 0.25)
+	crate_mat.metallic = 0.55
+	crate_mat.roughness = 0.45
+	var biohazard_mat: StandardMaterial3D = StandardMaterial3D.new()
+	biohazard_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	biohazard_mat.emission_enabled = true
+	biohazard_mat.emission = Color(0.95, 0.85, 0.20)
+	biohazard_mat.emission_energy_multiplier = 1.4
+	biohazard_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 6 crates: 4 base + 2 top
+	var positions: Array = [
+		Vector3(-0.55, 0.45, -0.55),
+		Vector3( 0.55, 0.45, -0.55),
+		Vector3(-0.55, 0.45,  0.55),
+		Vector3( 0.55, 0.45,  0.55),
+		Vector3( 0.0,  1.35, -0.30),
+		Vector3( 0.0,  1.35,  0.30),
+	]
+	for p in positions:
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(0.95, 0.85, 0.95)
+		crate.mesh = cm
+		crate.material_override = crate_mat
+		crate.position = p
+		crates.add_child(crate)
+		# Biohazard sticker (small yellow circle on the crate front)
+		var sticker: MeshInstance3D = MeshInstance3D.new()
+		var sm: CylinderMesh = CylinderMesh.new()
+		sm.top_radius = 0.20
+		sm.bottom_radius = 0.20
+		sm.height = 0.04
+		sticker.mesh = sm
+		sticker.material_override = biohazard_mat
+		sticker.position = Vector3(p.x, p.y, p.z + 0.50)
+		sticker.rotation_degrees = Vector3(90, 0, 0)
+		crates.add_child(sticker)
+	# Group collision (simpler one box around all)
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.20, 1.85, 2.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	crates.add_child(sb)
+
+
+func _build_d6_smuggler_boss_npc() -> void:
+	## Epic-6 T49: smuggler boss NPC standing by the crates — fur-trimmed
+	## coat, big rings, scar over one eye.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SmugglerBossSlot"
+	slot.position = Vector3(D6_CENTER.x + 16.0, 0.0, -16.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "SmugglerBoss"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Crow")
+	if "npc_id" in npc:
+		npc.set("npc_id", "smuggler_boss_d6")
+	npc.scale = Vector3(1.10, 1.10, 1.10)
+	slot.add_child(npc)
+	# Long fur-trimmed coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 1.30, 0.55)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.10, 0.05, 0.10)
+	coat_mat.metallic = 0.30
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.65, 0)
+	npc.add_child(coat)
+	# Fur collar (white sphere around shoulders)
+	var fur: MeshInstance3D = MeshInstance3D.new()
+	var fm: CylinderMesh = CylinderMesh.new()
+	fm.top_radius = 0.40
+	fm.bottom_radius = 0.40
+	fm.height = 0.18
+	fur.mesh = fm
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.92, 0.92, 0.85)
+	fur_mat.roughness = 0.95
+	fur.material_override = fur_mat
+	fur.position = Vector3(0, 1.20, 0)
+	npc.add_child(fur)
+	# Red scar over the eye (small red box)
+	var scar: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.04, 0.18, 0.02)
+	scar.mesh = sm
+	var scar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scar_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	scar_mat.emission_enabled = true
+	scar_mat.emission = Color(0.85, 0.20, 0.20)
+	scar_mat.emission_energy_multiplier = 0.85
+	scar.material_override = scar_mat
+	scar.position = Vector3(-0.10, 1.40, 0.21)
+	scar.rotation_degrees = Vector3(0, 0, 15)
+	npc.add_child(scar)
+	# Big gold rings on hand (small torus)
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rmm: TorusMesh = TorusMesh.new()
+	rmm.inner_radius = 0.05
+	rmm.outer_radius = 0.08
+	ring.mesh = rmm
+	var gold_mat: StandardMaterial3D = StandardMaterial3D.new()
+	gold_mat.albedo_color = Color(1.0, 0.85, 0.30)
+	gold_mat.emission_enabled = true
+	gold_mat.emission = Color(1.0, 0.75, 0.20)
+	gold_mat.emission_energy_multiplier = 0.85
+	gold_mat.metallic = 0.95
+	gold_mat.roughness = 0.10
+	ring.material_override = gold_mat
+	ring.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(ring)
+
+
+func _build_d6_neon_sovereign(geom: Node) -> void:
+	## Epic-6 T50: NEON SOVEREIGN — D6 mid-boss landmark. Towering cyber
+	## gangster figure with magenta-cyan lit body, mirror-shade visor,
+	## glowing katana, and floating neon glyphs.
+	var sov: Node3D = Node3D.new()
+	sov.name = "NeonSovereign"
+	sov.position = Vector3(D6_CENTER.x + 4.0, 0.0, -22.0)
+	geom.add_child(sov)
+	var black_mat: StandardMaterial3D = StandardMaterial3D.new()
+	black_mat.albedo_color = Color(0.10, 0.05, 0.15)
+	black_mat.metallic = 0.85
+	black_mat.roughness = 0.30
+	var magenta_mat: StandardMaterial3D = StandardMaterial3D.new()
+	magenta_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_enabled = true
+	magenta_mat.emission = Color(0.95, 0.20, 0.85)
+	magenta_mat.emission_energy_multiplier = 4.0
+	magenta_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var cyan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cyan_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	cyan_mat.emission_enabled = true
+	cyan_mat.emission = Color(0.30, 1.0, 1.0)
+	cyan_mat.emission_energy_multiplier = 4.0
+	cyan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Stone pedestal
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.30, 0.18, 0.30)
+	stone_mat.metallic = 0.65
+	stone_mat.roughness = 0.45
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(3.20, 0.55, 3.20)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.27, 0)
+	sov.add_child(ped)
+	# Body torso (large box)
+	var torso: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(1.85, 2.85, 1.10)
+	torso.mesh = tm
+	torso.material_override = black_mat
+	torso.position = Vector3(0, 2.20, 0)
+	sov.add_child(torso)
+	# Magenta neon strip down the torso center
+	var center_strip: MeshInstance3D = MeshInstance3D.new()
+	var csm: BoxMesh = BoxMesh.new()
+	csm.size = Vector3(0.12, 2.85, 0.06)
+	center_strip.mesh = csm
+	center_strip.material_override = magenta_mat
+	center_strip.position = Vector3(0, 2.20, 0.55)
+	sov.add_child(center_strip)
+	# Cyan strips on the sides
+	for sx in [-0.85, 0.85]:
+		var strip: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(0.06, 2.85, 0.10)
+		strip.mesh = sm
+		strip.material_override = cyan_mat
+		strip.position = Vector3(sx, 2.20, 0.55)
+		sov.add_child(strip)
+	# Head — armored helmet with mirror visor
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(1.10, 0.95, 0.95)
+	helmet.mesh = hm
+	helmet.material_override = black_mat
+	helmet.position = Vector3(0, 4.10, 0)
+	sov.add_child(helmet)
+	# Mirror visor strip (large cyan band across the face)
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(1.10, 0.18, 0.06)
+	visor.mesh = vm
+	visor.material_override = cyan_mat
+	visor.position = Vector3(0, 4.20, 0.50)
+	sov.add_child(visor)
+	# 2 antenna spikes on the helmet
+	for sx in [-0.30, 0.30]:
+		var ant: MeshInstance3D = MeshInstance3D.new()
+		var am: PrismMesh = PrismMesh.new()
+		am.size = Vector3(0.10, 0.55, 0.10)
+		ant.mesh = am
+		ant.material_override = magenta_mat
+		ant.position = Vector3(sx, 4.85, 0)
+		sov.add_child(ant)
+	# Shoulder pauldrons
+	for sx in [-1.30, 1.30]:
+		var paul: MeshInstance3D = MeshInstance3D.new()
+		var prm: SphereMesh = SphereMesh.new()
+		prm.radius = 0.55
+		prm.height = 0.85
+		paul.mesh = prm
+		paul.material_override = black_mat
+		paul.position = Vector3(sx, 3.20, 0)
+		paul.scale = Vector3(0.85, 0.65, 0.85)
+		sov.add_child(paul)
+	# Right arm (long box) holding the katana
+	var right_arm: MeshInstance3D = MeshInstance3D.new()
+	var ram: BoxMesh = BoxMesh.new()
+	ram.size = Vector3(0.55, 1.85, 0.55)
+	right_arm.mesh = ram
+	right_arm.material_override = black_mat
+	right_arm.position = Vector3(1.40, 2.20, 0)
+	sov.add_child(right_arm)
+	# Left arm
+	var left_arm: MeshInstance3D = MeshInstance3D.new()
+	var lam: BoxMesh = BoxMesh.new()
+	lam.size = Vector3(0.55, 1.85, 0.55)
+	left_arm.mesh = lam
+	left_arm.material_override = black_mat
+	left_arm.position = Vector3(-1.40, 2.20, 0)
+	sov.add_child(left_arm)
+	# Legs
+	for sx in [-0.55, 0.55]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.65, 1.0, 0.65)
+		leg.mesh = lm
+		leg.material_override = black_mat
+		leg.position = Vector3(sx, 1.10, 0)
+		sov.add_child(leg)
+	# Glowing magenta katana (held outward, blade angled)
+	var sword_root: Node3D = Node3D.new()
+	sword_root.position = Vector3(2.0, 3.20, 0)
+	sword_root.rotation_degrees = Vector3(0, 0, -25)
+	sov.add_child(sword_root)
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	var blm: PrismMesh = PrismMesh.new()
+	blm.size = Vector3(0.18, 2.85, 0.06)
+	blade.mesh = blm
+	blade.material_override = magenta_mat
+	blade.position = Vector3(0, 1.40, 0)
+	sword_root.add_child(blade)
+	# Crossguard
+	var guard: MeshInstance3D = MeshInstance3D.new()
+	var gm: BoxMesh = BoxMesh.new()
+	gm.size = Vector3(0.55, 0.10, 0.10)
+	guard.mesh = gm
+	guard.material_override = black_mat
+	guard.position = Vector3(0, 0, 0)
+	sword_root.add_child(guard)
+	# Handle
+	var handle: MeshInstance3D = MeshInstance3D.new()
+	var hndm: CylinderMesh = CylinderMesh.new()
+	hndm.top_radius = 0.06
+	hndm.bottom_radius = 0.06
+	hndm.height = 0.40
+	handle.mesh = hndm
+	handle.material_override = black_mat
+	handle.position = Vector3(0, -0.30, 0)
+	sword_root.add_child(handle)
+	# 8 floating neon glyphs orbiting at chest level
+	var halo: Node3D = Node3D.new()
+	halo.position = Vector3(0, 2.85, 0)
+	sov.add_child(halo)
+	for i in 8:
+		var ang: float = (TAU / 8.0) * i
+		var glyph: MeshInstance3D = MeshInstance3D.new()
+		var gmm: BoxMesh = BoxMesh.new()
+		gmm.size = Vector3(0.18, 0.30, 0.04)
+		glyph.mesh = gmm
+		glyph.material_override = cyan_mat if i % 2 == 0 else magenta_mat
+		glyph.position = Vector3(cos(ang) * 2.40, 0, sin(ang) * 2.40)
+		glyph.rotation = Vector3(0, ang + PI * 0.5, 0)
+		halo.add_child(glyph)
+	var trot: Tween = halo.create_tween().set_loops()
+	trot.tween_property(halo, "rotation_degrees:y", 360.0, 12.0)
+	trot.tween_property(halo, "rotation_degrees:y", 0.0, 0.0)
+	# Massive light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 5.5
+	light.omni_range = 18.0
+	light.position = Vector3(0, 3.40, 0)
+	sov.add_child(light)
+	var twl: Tween = light.create_tween().set_loops()
+	twl.tween_property(light, "light_energy", 7.0, 1.4)
+	twl.tween_property(light, "light_energy", 5.0, 1.4)
+	# Title labels
+	var title: Label3D = Label3D.new()
+	title.text = "THE NEON SOVEREIGN"
+	title.modulate = Color(0.95, 0.30, 0.85)
+	title.outline_modulate = Color(0.10, 0.05, 0.20)
+	title.outline_size = 12
+	title.font_size = 80
+	title.pixel_size = 0.013
+	title.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	title.position = Vector3(0, 6.85, 0)
+	sov.add_child(title)
+	var subtitle: Label3D = Label3D.new()
+	subtitle.text = "Lord of the all-night market"
+	subtitle.modulate = Color(0.85, 0.95, 1.0)
+	subtitle.outline_modulate = Color(0.20, 0.10, 0.30)
+	subtitle.outline_size = 8
+	subtitle.font_size = 42
+	subtitle.pixel_size = 0.011
+	subtitle.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	subtitle.position = Vector3(0, 6.20, 0)
+	sov.add_child(subtitle)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.85, 4.40, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	sov.add_child(sb)
+	# Pedestal collision
+	var psb: StaticBody3D = StaticBody3D.new()
+	psb.position = Vector3(0, 0.27, 0)
+	var pcs: CollisionShape3D = CollisionShape3D.new()
+	var pcb: BoxShape3D = BoxShape3D.new()
+	pcb.size = Vector3(3.20, 0.55, 3.20)
+	pcs.shape = pcb
+	psb.add_child(pcs)
+	sov.add_child(psb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
