@@ -71,6 +71,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_scorched_bone_pile(geom)
 	_build_d9_smelter_trap_pillars(geom)
 	_build_d9_molten_behemoth_midboss(geom)
+	_build_d9_sky_lava_lantern(geom)
 	print("[D9Builder] done")
 
 
@@ -4406,5 +4407,93 @@ func _build_d9_molten_behemoth_midboss(geom: Node) -> void:
 	cs.shape = caps
 	stb.add_child(cs)
 	pivot.add_child(stb)
+
+
+func _build_d9_sky_lava_lantern(geom: Node) -> void:
+	## Epic-9 T51: a massive drifting molten lantern hovering above the
+	## D9 mid-boss arena. Caged iron frame with a glowing orange core
+	## inside. Slow vertical bob + slow yaw rotation.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_SkyLavaLantern"
+	pivot.position = D9_CENTER + Vector3(38, 11.0, 4)
+	geom.add_child(pivot)
+	# Iron cage frame — top ring + bottom ring + 6 vertical bars
+	var frame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	frame_mat.albedo_color = Color(0.18, 0.13, 0.10)
+	frame_mat.metallic = 0.75
+	frame_mat.roughness = 0.40
+	frame_mat.emission_enabled = true
+	frame_mat.emission = Color(1.0, 0.42, 0.10)
+	frame_mat.emission_energy_multiplier = 0.45
+	# Top ring
+	var top_ring: MeshInstance3D = MeshInstance3D.new()
+	var trm: TorusMesh = TorusMesh.new()
+	trm.inner_radius = 0.85
+	trm.outer_radius = 0.95
+	top_ring.mesh = trm
+	top_ring.material_override = frame_mat
+	top_ring.position = Vector3(0, 1.10, 0)
+	pivot.add_child(top_ring)
+	# Bottom ring
+	var bot_ring: MeshInstance3D = MeshInstance3D.new()
+	bot_ring.mesh = trm
+	bot_ring.material_override = frame_mat
+	bot_ring.position = Vector3(0, -1.10, 0)
+	pivot.add_child(bot_ring)
+	# 6 vertical bars
+	for i in 6:
+		var ang: float = (TAU / 6.0) * float(i)
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.045
+		bm.bottom_radius = 0.045
+		bm.height = 2.20
+		bar.mesh = bm
+		bar.material_override = frame_mat
+		bar.position = Vector3(cos(ang) * 0.90, 0, sin(ang) * 0.90)
+		pivot.add_child(bar)
+	# Glowing molten core inside the cage
+	var core: MeshInstance3D = MeshInstance3D.new()
+	var cm: SphereMesh = SphereMesh.new()
+	cm.radius = 0.65
+	cm.height = 1.30
+	core.mesh = cm
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(1.0, 0.55, 0.10)
+	cmat.emission_enabled = true
+	cmat.emission = Color(1.0, 0.55, 0.10)
+	cmat.emission_energy_multiplier = 7.0
+	cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	core.material_override = cmat
+	pivot.add_child(core)
+	# Hanging chain from above
+	var chain: MeshInstance3D = MeshInstance3D.new()
+	var chm: CylinderMesh = CylinderMesh.new()
+	chm.top_radius = 0.04
+	chm.bottom_radius = 0.04
+	chm.height = 4.5
+	chain.mesh = chm
+	chain.material_override = frame_mat
+	chain.position = Vector3(0, 3.35, 0)
+	pivot.add_child(chain)
+	# OmniLight at the core
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 0, 0)
+	lt.light_color = Color(1.0, 0.50, 0.12)
+	lt.light_energy = 3.6
+	lt.omni_range = 14.0
+	lt.omni_attenuation = 1.5
+	pivot.add_child(lt)
+	# Slow vertical bob
+	var bob: Tween = pivot.create_tween().set_loops()
+	bob.tween_property(pivot, "position:y", 12.0, 3.5).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(pivot, "position:y", 10.4, 3.5).set_ease(Tween.EASE_IN_OUT)
+	# Slow yaw rotation
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 18.0)
+	# Core pulse
+	var pulse: Tween = pivot.create_tween().set_loops()
+	pulse.tween_property(cmat, "emission_energy_multiplier", 9.0, 1.2).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(cmat, "emission_energy_multiplier", 5.5, 1.2).set_ease(Tween.EASE_IN_OUT)
 
 
