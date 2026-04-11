@@ -25437,6 +25437,16 @@ func _build_district_7(geom: Node) -> void:
 	_build_d7_incense_burner(geom)
 	# Epic-7 T10: brass gong
 	_build_d7_brass_gong(geom)
+	# Epic-7 T11: stone bridge over a chasm
+	_build_d7_stone_bridge(geom)
+	# Epic-7 T12: spring fountain
+	_build_d7_spring_fountain(geom)
+	# Epic-7 T13: bell tower
+	_build_d7_bell_tower(geom)
+	# Epic-7 T14: bellringer NPC
+	_build_d7_bellringer_npc()
+	# Epic-7 T15: rocky cliff face wall
+	_build_d7_cliff_face(geom)
 
 
 func _extend_boundary_for_d7(geom: Node) -> void:
@@ -26077,6 +26087,367 @@ func _build_d7_brass_gong(geom: Node) -> void:
 	light.omni_range = 4.0
 	light.position = Vector3(0, 1.85, 0.40)
 	gong.add_child(light)
+
+
+func _build_d7_stone_bridge(geom: Node) -> void:
+	## Epic-7 T11: long stone bridge across a small chasm — flat deck
+	## with rounded ends + 2 stone railings + dark recessed chasm.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "D7StoneBridge"
+	bridge.position = Vector3(D7_CENTER.x - 14.0, 0.0, -8.0)
+	geom.add_child(bridge)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Chasm (recessed dark cylinder)
+	var chasm: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(7.0, 0.40, 4.20)
+	chasm.mesh = cm
+	var chasm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chasm_mat.albedo_color = Color(0.10, 0.05, 0.05)
+	chasm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	chasm.material_override = chasm_mat
+	chasm.position = Vector3(0, -0.18, 0)
+	bridge.add_child(chasm)
+	# Bridge deck (long slab)
+	var deck: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(8.50, 0.30, 2.40)
+	deck.mesh = dm
+	deck.material_override = stone_mat
+	deck.position = Vector3(0, 0.55, 0)
+	bridge.add_child(deck)
+	# 2 stone railings (lower)
+	for sz in [-1.10, 1.10]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(8.50, 0.65, 0.20)
+		rail.mesh = rm
+		rail.material_override = stone_mat
+		rail.position = Vector3(0, 1.0, sz)
+		bridge.add_child(rail)
+	# 6 small balusters along each rail
+	for sz in [-1.10, 1.10]:
+		for i in 6:
+			var bal: MeshInstance3D = MeshInstance3D.new()
+			var bm: BoxMesh = BoxMesh.new()
+			bm.size = Vector3(0.18, 0.65, 0.18)
+			bal.mesh = bm
+			bal.material_override = stone_mat
+			bal.position = Vector3(-3.50 + i * 1.40, 1.0, sz)
+			bridge.add_child(bal)
+	# Deck collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(8.50, 0.40, 2.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	bridge.add_child(sb)
+	# Rail collisions
+	for sz in [-1.10, 1.10]:
+		var rsb: StaticBody3D = StaticBody3D.new()
+		rsb.position = Vector3(0, 1.0, sz)
+		var rcs: CollisionShape3D = CollisionShape3D.new()
+		var rcb: BoxShape3D = BoxShape3D.new()
+		rcb.size = Vector3(8.50, 0.65, 0.20)
+		rcs.shape = rcb
+		rsb.add_child(rcs)
+		bridge.add_child(rsb)
+
+
+func _build_d7_spring_fountain(geom: Node) -> void:
+	## Epic-7 T12: small mountain spring fountain — round stone basin +
+	## central column + cyan water disc + rising steam.
+	var fountain: Node3D = Node3D.new()
+	fountain.name = "SpringFountain"
+	fountain.position = Vector3(D7_CENTER.x - 4.0, 0.0, -2.0)
+	geom.add_child(fountain)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Outer basin
+	var basin: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 1.40
+	bm.bottom_radius = 1.55
+	bm.height = 0.55
+	basin.mesh = bm
+	basin.material_override = stone_mat
+	basin.position = Vector3(0, 0.27, 0)
+	fountain.add_child(basin)
+	# Water surface (translucent cyan)
+	var water: MeshInstance3D = MeshInstance3D.new()
+	var wm: CylinderMesh = CylinderMesh.new()
+	wm.top_radius = 1.20
+	wm.bottom_radius = 1.20
+	wm.height = 0.06
+	water.mesh = wm
+	var water_mat: StandardMaterial3D = StandardMaterial3D.new()
+	water_mat.albedo_color = Color(0.40, 0.85, 0.95, 0.65)
+	water_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	water_mat.emission_enabled = true
+	water_mat.emission = Color(0.30, 0.95, 1.0)
+	water_mat.emission_energy_multiplier = 0.85
+	water_mat.metallic = 0.30
+	water_mat.roughness = 0.05
+	water.material_override = water_mat
+	water.position = Vector3(0, 0.50, 0)
+	fountain.add_child(water)
+	# Bob the water
+	var tw: Tween = water.create_tween().set_loops()
+	tw.tween_property(water, "position:y", 0.55, 1.4)
+	tw.tween_property(water, "position:y", 0.50, 1.4)
+	# Central column (small stone post)
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var clm: CylinderMesh = CylinderMesh.new()
+	clm.top_radius = 0.18
+	clm.bottom_radius = 0.22
+	clm.height = 0.85
+	col.mesh = clm
+	col.material_override = stone_mat
+	col.position = Vector3(0, 0.85, 0)
+	fountain.add_child(col)
+	# Top spout (small bowl on column)
+	var spout: MeshInstance3D = MeshInstance3D.new()
+	var spm: CylinderMesh = CylinderMesh.new()
+	spm.top_radius = 0.30
+	spm.bottom_radius = 0.20
+	spm.height = 0.18
+	spout.mesh = spm
+	spout.material_override = stone_mat
+	spout.position = Vector3(0, 1.30, 0)
+	fountain.add_child(spout)
+	# Steam particles rising
+	var steam: GPUParticles3D = GPUParticles3D.new()
+	steam.amount = 25
+	steam.lifetime = 2.5
+	steam.preprocess = 1.0
+	steam.position = Vector3(0, 0.75, 0)
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(0.85, 0.05, 0.85)
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 22.0
+	pm.gravity = Vector3(0, 0.45, 0)
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.18
+	pm.scale_max = 0.40
+	pm.color = Color(0.95, 0.92, 0.95, 0.55)
+	steam.process_material = pm
+	var sm_mesh: SphereMesh = SphereMesh.new()
+	sm_mesh.radius = 0.18
+	sm_mesh.height = 0.36
+	steam.draw_pass_1 = sm_mesh
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 1.0, 0.45)
+	sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	sm_mesh.material = sm_mat
+	fountain.add_child(steam)
+	# Soft warm light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.85, 0.95, 1.0)
+	light.light_energy = 1.6
+	light.omni_range = 4.0
+	light.position = Vector3(0, 0.85, 0)
+	fountain.add_child(light)
+	# Basin collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.27, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CylinderShape3D = CylinderShape3D.new()
+	cap.radius = 1.55
+	cap.height = 0.55
+	cs.shape = cap
+	sb.add_child(cs)
+	fountain.add_child(sb)
+
+
+func _build_d7_bell_tower(geom: Node) -> void:
+	## Epic-7 T13: tall stone bell tower — square stone base column +
+	## sloped roof + large brass bell hanging in the open top room.
+	var tower: Node3D = Node3D.new()
+	tower.name = "BellTower"
+	tower.position = Vector3(D7_CENTER.x + 4.0, 0.0, -8.0)
+	geom.add_child(tower)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.45, 0.30)
+	stone_mat.roughness = 0.92
+	# Tall stone tower body
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.40, 5.50, 2.40)
+	body.mesh = bm
+	body.material_override = stone_mat
+	body.position = Vector3(0, 2.75, 0)
+	tower.add_child(body)
+	# Bell room (smaller block on top)
+	var bell_room: MeshInstance3D = MeshInstance3D.new()
+	var brm: BoxMesh = BoxMesh.new()
+	brm.size = Vector3(2.0, 1.40, 2.0)
+	bell_room.mesh = brm
+	bell_room.material_override = stone_mat
+	bell_room.position = Vector3(0, 6.20, 0)
+	tower.add_child(bell_room)
+	# Open arches on bell room (4 dark cutouts)
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.08, 0.10)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for d in [Vector3(0, 6.20, 1.0), Vector3(0, 6.20, -1.0), Vector3(1.0, 6.20, 0), Vector3(-1.0, 6.20, 0)]:
+		var arch: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.85, 0.85, 0.10)
+		arch.mesh = am
+		arch.material_override = dark_mat
+		arch.position = d
+		if d.z == 0:
+			arch.rotation_degrees = Vector3(0, 90, 0)
+		tower.add_child(arch)
+	# Sloped roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: PrismMesh = PrismMesh.new()
+	rm.size = Vector3(2.40, 0.85, 2.40)
+	roof.mesh = rm
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.40, 0.20, 0.15)
+	roof.material_override = roof_mat
+	roof.position = Vector3(0, 7.30, 0)
+	tower.add_child(roof)
+	# Brass bell hanging in the room
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.95, 0.75, 0.20)
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(0.95, 0.65, 0.10)
+	brass_mat.emission_energy_multiplier = 0.65
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.10
+	# Bell pivot for sway tween
+	var bell_pivot: Node3D = Node3D.new()
+	bell_pivot.position = Vector3(0, 6.85, 0)
+	tower.add_child(bell_pivot)
+	var bell: MeshInstance3D = MeshInstance3D.new()
+	var bm2: SphereMesh = SphereMesh.new()
+	bm2.radius = 0.45
+	bm2.height = 0.85
+	bell.mesh = bm2
+	bell.material_override = brass_mat
+	bell.position = Vector3(0, -0.55, 0)
+	bell.scale = Vector3(1.0, 0.85, 1.0)
+	bell_pivot.add_child(bell)
+	# Slow bell sway tween
+	var tw: Tween = bell_pivot.create_tween().set_loops()
+	tw.tween_property(bell_pivot, "rotation_degrees:x", 8.0, 1.4)
+	tw.tween_property(bell_pivot, "rotation_degrees:x", -8.0, 1.4)
+	# Warm light from bell room
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.85, 0.30)
+	light.light_energy = 2.5
+	light.omni_range = 6.0
+	light.position = Vector3(0, 6.20, 0)
+	tower.add_child(light)
+	# Tower body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.75, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 5.50, 2.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	tower.add_child(sb)
+
+
+func _build_d7_bellringer_npc() -> void:
+	## Epic-7 T14: bellringer NPC at the base of the bell tower —
+	## brown robe + holding a long rope.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "BellringerSlot"
+	slot.position = Vector3(D7_CENTER.x + 5.0, 0.0, -7.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Bellringer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Tolling")
+	if "npc_id" in npc:
+		npc.set("npc_id", "bellringer_d7")
+	slot.add_child(npc)
+	# Brown robe
+	var robe: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(0.65, 1.20, 0.45)
+	robe.mesh = rm
+	var robe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	robe_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	robe_mat.roughness = 0.85
+	robe.material_override = robe_mat
+	robe.position = Vector3(0, 0.60, 0)
+	npc.add_child(robe)
+	# Long thin rope going up (representing the bell pull)
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rmm: CylinderMesh = CylinderMesh.new()
+	rmm.top_radius = 0.025
+	rmm.bottom_radius = 0.025
+	rmm.height = 4.85
+	rope.mesh = rmm
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope_mat.roughness = 0.85
+	rope.material_override = rope_mat
+	rope.position = Vector3(0.40, 3.10, 0)
+	npc.add_child(rope)
+
+
+func _build_d7_cliff_face(geom: Node) -> void:
+	## Epic-7 T15: tall sandstone cliff face wall — large vertical rock
+	## slab with a few horizontal stratification bands.
+	var cliff: Node3D = Node3D.new()
+	cliff.name = "CliffFace"
+	cliff.position = Vector3(D7_CENTER.x + 14.0, 0.0, -16.0)
+	geom.add_child(cliff)
+	var rock_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rock_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	rock_mat.emission_enabled = true
+	rock_mat.emission = Color(0.55, 0.35, 0.15)
+	rock_mat.emission_energy_multiplier = 0.18
+	rock_mat.roughness = 0.92
+	var darker_rock: StandardMaterial3D = StandardMaterial3D.new()
+	darker_rock.albedo_color = Color(0.45, 0.30, 0.15)
+	darker_rock.roughness = 0.92
+	# Main cliff slab
+	var slab: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(14.0, 8.50, 1.40)
+	slab.mesh = sm
+	slab.material_override = rock_mat
+	slab.position = Vector3(0, 4.25, 0)
+	cliff.add_child(slab)
+	# 5 horizontal stratification bands (darker thin slabs)
+	for i in 5:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(14.20, 0.18, 1.50)
+		band.mesh = bm
+		band.material_override = darker_rock
+		band.position = Vector3(0, 1.40 + i * 1.40, 0)
+		cliff.add_child(band)
+	# Cliff collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 4.25, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(14.0, 8.50, 1.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	cliff.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
