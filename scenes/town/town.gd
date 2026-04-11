@@ -1233,6 +1233,16 @@ func _build_east_plaza() -> void:
 	_attach_kiosk_interactables(geom)
 	# Epic-1 T5: ambient market chatter trigger zone (sets a meta on enter)
 	_build_market_chatter_zone(geom)
+	# Epic-1 T6: procedural vendor stall (separate from kiosks — open-air booth)
+	_build_vendor_stall(geom)
+	# Epic-1 T7: 5 ambient pedestrian orbs drifting through the plaza
+	_build_plaza_pedestrians(geom)
+	# Epic-1 T8: loading dock sub-area at far east edge
+	_build_loading_dock(geom)
+	# Epic-1 T9: hanging banner flags between kiosks
+	_build_banner_flags(geom)
+	# Epic-1 T10: cyan OPEN floor decals
+	_build_open_decals(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -1676,3 +1686,216 @@ func _build_market_chatter_zone(geom: Node) -> void:
 			GameManager.set_meta(&"in_east_plaza", false)
 	)
 	geom.add_child(area)
+
+
+func _build_vendor_stall(geom: Node) -> void:
+	## Epic-1 T6: open-air vendor stall at (29, 0, -8) — counter + canopy + 2 stools
+	var stall: Node3D = Node3D.new()
+	stall.name = "EastPlazaVendorStall"
+	stall.position = Vector3(29, 0, -8)
+	geom.add_child(stall)
+	# Counter
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var c_mesh: BoxMesh = BoxMesh.new()
+	c_mesh.size = Vector3(2.5, 1.0, 0.7)
+	counter.mesh = c_mesh
+	counter.position = Vector3(0, 0.5, 0)
+	var counter_mat: StandardMaterial3D = StandardMaterial3D.new()
+	counter_mat.albedo_color = Color(0.18, 0.10, 0.04)
+	counter_mat.emission_enabled = true
+	counter_mat.emission = Color(0.85, 0.45, 0.10)
+	counter_mat.emission_energy_multiplier = 0.5
+	counter_mat.metallic = 0.4
+	counter.material_override = counter_mat
+	stall.add_child(counter)
+	# Canopy supports (4 thin posts)
+	for x: float in [-1.1, 1.1]:
+		for z: float in [-0.3, 0.3]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmesh: CylinderMesh = CylinderMesh.new()
+			pmesh.top_radius = 0.04
+			pmesh.bottom_radius = 0.05
+			pmesh.height = 2.5
+			post.mesh = pmesh
+			post.position = Vector3(x, 1.25, z)
+			var pmat: StandardMaterial3D = StandardMaterial3D.new()
+			pmat.albedo_color = Color(0.12, 0.18, 0.26)
+			pmat.emission_enabled = true
+			pmat.emission = Color(0.20, 0.55, 0.75)
+			pmat.emission_energy_multiplier = 0.5
+			pmat.metallic = 0.7
+			post.material_override = pmat
+			stall.add_child(post)
+	# Canopy slab
+	var canopy: MeshInstance3D = MeshInstance3D.new()
+	var canopy_mesh: BoxMesh = BoxMesh.new()
+	canopy_mesh.size = Vector3(2.7, 0.1, 1.0)
+	canopy.mesh = canopy_mesh
+	canopy.position = Vector3(0, 2.6, 0)
+	var canopy_mat: StandardMaterial3D = StandardMaterial3D.new()
+	canopy_mat.albedo_color = Color(0.30, 0.15, 0.05)
+	canopy_mat.emission_enabled = true
+	canopy_mat.emission = Color(0.95, 0.50, 0.15)
+	canopy_mat.emission_energy_multiplier = 0.6
+	canopy.material_override = canopy_mat
+	stall.add_child(canopy)
+	# Collision (counter blocks the player)
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var col: BoxShape3D = BoxShape3D.new()
+	col.size = Vector3(2.5, 1.0, 0.7)
+	shape.shape = col
+	shape.position = Vector3(0, 0.5, 0)
+	body.add_child(shape)
+	stall.add_child(body)
+
+
+func _build_plaza_pedestrians(geom: Node) -> void:
+	## Epic-1 T7: 5 ambient pedestrian orbs drifting on a procedural patrol
+	var pedestrian_colors: Array[Color] = [
+		Color(0.35, 0.65, 0.85),  # cyan
+		Color(0.85, 0.55, 0.30),  # orange
+		Color(0.55, 0.35, 0.75),  # violet
+		Color(0.65, 0.85, 0.45),  # lime
+		Color(0.85, 0.35, 0.45),  # coral
+	]
+	var spawn_positions: Array[Vector3] = [
+		Vector3(28, 0.5, 7), Vector3(35, 0.5, 6),
+		Vector3(38, 0.5, -2), Vector3(30, 0.5, -7),
+		Vector3(33, 0.5, 8),
+	]
+	for i: int in pedestrian_colors.size():
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		ped.name = "EastPlazaPedestrian_%d" % i
+		var sphere: SphereMesh = SphereMesh.new()
+		sphere.radius = 0.3
+		sphere.height = 0.6
+		ped.mesh = sphere
+		ped.position = spawn_positions[i]
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = pedestrian_colors[i]
+		mat.emission_enabled = true
+		mat.emission = pedestrian_colors[i] * 1.3
+		mat.emission_energy_multiplier = 0.5
+		mat.metallic = 0.3
+		ped.material_override = mat
+		geom.add_child(ped)
+		# Drift: bob + slow patrol along a small loop
+		var tween: Tween = create_tween().set_loops()
+		var orig_pos: Vector3 = ped.position
+		var step1: Vector3 = orig_pos + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
+		var step2: Vector3 = orig_pos + Vector3(randf_range(-2, 2), 0, randf_range(-2, 2))
+		tween.tween_property(ped, "position", step1, randf_range(4, 7)).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(ped, "position", step2, randf_range(4, 7)).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(ped, "position", orig_pos, randf_range(4, 7)).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_loading_dock(geom: Node) -> void:
+	## Epic-1 T8: loading dock sub-area at the far east edge — raised platform +
+	## crates + warning stripes painted on the ground
+	var dock: Node3D = Node3D.new()
+	dock.name = "EastPlazaLoadingDock"
+	dock.position = Vector3(42, 0, 0)
+	geom.add_child(dock)
+	# Raised platform
+	var platform: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(3.5, 0.3, 6)
+	platform.mesh = pmesh
+	platform.position = Vector3(0, 0.15, 0)
+	var pmat: StandardMaterial3D = StandardMaterial3D.new()
+	pmat.albedo_color = Color(0.12, 0.18, 0.26)
+	pmat.emission_enabled = true
+	pmat.emission = Color(0.20, 0.55, 0.75)
+	pmat.emission_energy_multiplier = 0.4
+	pmat.metallic = 0.65
+	platform.material_override = pmat
+	dock.add_child(platform)
+	# Warning stripes (alternating yellow/black emissive)
+	for i: int in 5:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(3.5, 0.01, 0.4)
+		stripe.mesh = smesh
+		stripe.position = Vector3(0, 0.32, -2.5 + i * 1.2)
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		var stripe_color := Color(1.0, 0.85, 0.15) if i % 2 == 0 else Color(0.05, 0.05, 0.05)
+		smat.albedo_color = stripe_color
+		smat.emission_enabled = i % 2 == 0
+		smat.emission = stripe_color
+		smat.emission_energy_multiplier = 0.6
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		stripe.material_override = smat
+		dock.add_child(stripe)
+	# Stacked crates (3 boxes)
+	for i: int in 3:
+		var crate: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		cmesh.size = Vector3(0.6, 0.6, 0.6)
+		crate.mesh = cmesh
+		crate.position = Vector3(-1.0, 0.6 + i * 0.6, -1.5)
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(0.30, 0.18, 0.08)
+		cmat.emission_enabled = true
+		cmat.emission = Color(0.85, 0.50, 0.15)
+		cmat.emission_energy_multiplier = 0.4
+		cmat.metallic = 0.3
+		crate.material_override = cmat
+		dock.add_child(crate)
+	# Collision for the platform
+	var body: StaticBody3D = StaticBody3D.new()
+	var shape: CollisionShape3D = CollisionShape3D.new()
+	var col: BoxShape3D = BoxShape3D.new()
+	col.size = Vector3(3.5, 0.3, 6)
+	shape.shape = col
+	shape.position = Vector3(0, 0.15, 0)
+	body.add_child(shape)
+	dock.add_child(body)
+
+
+func _build_banner_flags(geom: Node) -> void:
+	## Epic-1 T9: hanging banner flags between kiosk pairs
+	var banner_pairs: Array = [
+		[Vector3(28, 1.6, -4), Vector3(36, 1.6, -4)],
+		[Vector3(28, 1.6, 4), Vector3(36, 1.6, 4)],
+	]
+	for pair in banner_pairs:
+		var banner: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: BoxMesh = BoxMesh.new()
+		var span: float = (pair[1] as Vector3).distance_to(pair[0] as Vector3)
+		bmesh.size = Vector3(span, 0.5, 0.05)
+		banner.mesh = bmesh
+		banner.position = ((pair[0] as Vector3) + (pair[1] as Vector3)) * 0.5
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.85, 0.30, 0.10, 0.85)
+		bmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		bmat.emission_enabled = true
+		bmat.emission = Color(1.0, 0.45, 0.15)
+		bmat.emission_energy_multiplier = 0.9
+		bmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		banner.material_override = bmat
+		geom.add_child(banner)
+		# Slow sway animation
+		var tween: Tween = create_tween().set_loops()
+		tween.tween_property(banner, "rotation:z", 0.05, 2.5).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(banner, "rotation:z", -0.05, 2.5).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_open_decals(geom: Node) -> void:
+	## Epic-1 T10: cyan "OPEN" floor decals near each kiosk
+	var positions: Array[Vector3] = [
+		Vector3(28, 0.02, -2.6), Vector3(36, 0.02, -2.6),
+		Vector3(28, 0.02, 2.6), Vector3(36, 0.02, 2.6),
+	]
+	for pos in positions:
+		var decal: Label3D = Label3D.new()
+		decal.text = "OPEN"
+		decal.position = pos
+		decal.rotation_degrees = Vector3(-90, 0, 0)
+		decal.modulate = Color(0.30, 0.95, 1.0)
+		decal.outline_modulate = Color(0, 0.05, 0.10, 0.95)
+		decal.outline_size = 5
+		decal.font_size = 22
+		decal.no_depth_test = true
+		decal.fixed_size = false
+		geom.add_child(decal)
