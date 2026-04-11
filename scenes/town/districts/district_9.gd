@@ -84,6 +84,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d9_mine_foreman_npc(town)
 	_build_d9_hammer_target_dummy(geom)
 	_build_d9_lava_ferry_boat(geom)
+	_build_d9_obsidian_merchant_stall(geom)
 	print("[D9Builder] done")
 
 
@@ -5988,5 +5989,176 @@ func _build_d9_lava_ferry_boat(geom: Node) -> void:
 	var lpulse: Tween = pivot.create_tween().set_loops()
 	lpulse.tween_property(lamp_mat, "emission_energy_multiplier", 9.0, 1.1).set_ease(Tween.EASE_IN_OUT)
 	lpulse.tween_property(lamp_mat, "emission_energy_multiplier", 5.0, 1.1).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d9_obsidian_merchant_stall(geom: Node) -> void:
+	## Epic-9 T64: obsidian merchant stall — a vendor booth on the cascade
+	## pool's near bank with polished obsidian counter, brass canopy poles,
+	## hanging amber lanterns, and three glowing wares laid out for sale.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "D9_ObsidianMerchantStall"
+	pivot.position = D9_CENTER + Vector3(46, 0.0, -8)
+	geom.add_child(pivot)
+	# Polished obsidian counter
+	var obs_mat: StandardMaterial3D = StandardMaterial3D.new()
+	obs_mat.albedo_color = Color(0.06, 0.05, 0.08)
+	obs_mat.metallic = 0.55
+	obs_mat.roughness = 0.18
+	obs_mat.emission_enabled = true
+	obs_mat.emission = Color(0.40, 0.18, 0.55)
+	obs_mat.emission_energy_multiplier = 0.30
+	var counter: MeshInstance3D = MeshInstance3D.new()
+	var ctm: BoxMesh = BoxMesh.new()
+	ctm.size = Vector3(3.20, 1.00, 1.10)
+	counter.mesh = ctm
+	counter.material_override = obs_mat
+	counter.position = Vector3(0, 0.50, 0)
+	pivot.add_child(counter)
+	# Counter collision so player can lean on it
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.50, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var bs: BoxShape3D = BoxShape3D.new()
+	bs.size = Vector3(3.20, 1.00, 1.10)
+	cs.shape = bs
+	sb.add_child(cs)
+	pivot.add_child(sb)
+	# Counter lip — slightly brighter slab on the customer side
+	var lip: MeshInstance3D = MeshInstance3D.new()
+	var lm: BoxMesh = BoxMesh.new()
+	lm.size = Vector3(3.30, 0.10, 0.20)
+	lip.mesh = lm
+	lip.material_override = obs_mat
+	lip.position = Vector3(0, 1.05, -0.55)
+	pivot.add_child(lip)
+	# Brass support poles (4 corners)
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.45
+	var pole_positions: Array = [
+		Vector3(-1.55, 1.50, -0.50),
+		Vector3(1.55, 1.50, -0.50),
+		Vector3(-1.55, 1.50, 0.50),
+		Vector3(1.55, 1.50, 0.50),
+	]
+	for pp in pole_positions:
+		var pole: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.05
+		pm.bottom_radius = 0.06
+		pm.height = 1.80
+		pole.mesh = pm
+		pole.material_override = brass_mat
+		pole.position = pp
+		pivot.add_child(pole)
+	# Brass canopy beam (front)
+	var beam_front: MeshInstance3D = MeshInstance3D.new()
+	var bfm: BoxMesh = BoxMesh.new()
+	bfm.size = Vector3(3.40, 0.12, 0.10)
+	beam_front.mesh = bfm
+	beam_front.material_override = brass_mat
+	beam_front.position = Vector3(0, 2.40, -0.50)
+	pivot.add_child(beam_front)
+	# Canopy back beam
+	var beam_back: MeshInstance3D = MeshInstance3D.new()
+	beam_back.mesh = bfm
+	beam_back.material_override = brass_mat
+	beam_back.position = Vector3(0, 2.40, 0.50)
+	pivot.add_child(beam_back)
+	# Canopy cloth (red drape)
+	var drape_mat: StandardMaterial3D = StandardMaterial3D.new()
+	drape_mat.albedo_color = Color(0.55, 0.10, 0.08)
+	drape_mat.roughness = 0.85
+	drape_mat.emission_enabled = true
+	drape_mat.emission = Color(0.65, 0.15, 0.05)
+	drape_mat.emission_energy_multiplier = 0.30
+	var drape: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(3.40, 0.06, 1.20)
+	drape.mesh = dm
+	drape.material_override = drape_mat
+	drape.position = Vector3(0, 2.46, 0)
+	pivot.add_child(drape)
+	# 3 hanging amber lanterns under the canopy
+	var lan_mat: StandardMaterial3D = StandardMaterial3D.new()
+	lan_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	lan_mat.emission_enabled = true
+	lan_mat.emission = Color(1.0, 0.55, 0.10)
+	lan_mat.emission_energy_multiplier = 6.0
+	lan_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for lx in [-1.10, 0.0, 1.10]:
+		# Cord
+		var cord: MeshInstance3D = MeshInstance3D.new()
+		var crm: CylinderMesh = CylinderMesh.new()
+		crm.top_radius = 0.012
+		crm.bottom_radius = 0.012
+		crm.height = 0.40
+		cord.mesh = crm
+		cord.material_override = brass_mat
+		cord.position = Vector3(lx, 2.20, 0)
+		pivot.add_child(cord)
+		# Lantern bulb
+		var lan: MeshInstance3D = MeshInstance3D.new()
+		var lansm: SphereMesh = SphereMesh.new()
+		lansm.radius = 0.13
+		lansm.height = 0.26
+		lan.mesh = lansm
+		lan.material_override = lan_mat
+		lan.position = Vector3(lx, 1.95, 0)
+		pivot.add_child(lan)
+		# Light source per lantern
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(lx, 1.95, 0)
+		lt.light_color = Color(1.0, 0.55, 0.15)
+		lt.light_energy = 1.6
+		lt.omni_range = 4.5
+		pivot.add_child(lt)
+	# 3 wares displayed on the counter — small unshaded forge trinkets
+	var ware_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ware_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	ware_mat.emission_enabled = true
+	ware_mat.emission = Color(1.0, 0.50, 0.10)
+	ware_mat.emission_energy_multiplier = 5.0
+	ware_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Ware 1 — small dagger (box)
+	var w1: MeshInstance3D = MeshInstance3D.new()
+	var w1m: BoxMesh = BoxMesh.new()
+	w1m.size = Vector3(0.08, 0.08, 0.55)
+	w1.mesh = w1m
+	w1.material_override = ware_mat
+	w1.position = Vector3(-1.05, 1.06, 0)
+	pivot.add_child(w1)
+	# Ware 2 — gem cluster (sphere)
+	var w2: MeshInstance3D = MeshInstance3D.new()
+	var w2m: SphereMesh = SphereMesh.new()
+	w2m.radius = 0.14
+	w2m.height = 0.28
+	w2.mesh = w2m
+	w2.material_override = ware_mat
+	w2.position = Vector3(0, 1.18, 0)
+	pivot.add_child(w2)
+	# Ware 3 — torus ring
+	var w3: MeshInstance3D = MeshInstance3D.new()
+	var w3m: TorusMesh = TorusMesh.new()
+	w3m.inner_radius = 0.10
+	w3m.outer_radius = 0.18
+	w3.mesh = w3m
+	w3.material_override = ware_mat
+	w3.position = Vector3(1.05, 1.06, 0)
+	w3.rotation.x = PI / 2.0
+	pivot.add_child(w3)
+	# Spinning wares — slow rotation on the gem cluster and ring
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(w2, "rotation:y", TAU, 6.0)
+	var spin2: Tween = pivot.create_tween().set_loops()
+	spin2.tween_property(w3, "rotation:z", TAU, 4.5)
+	# Lantern pulse for ambience
+	var lpulse: Tween = pivot.create_tween().set_loops()
+	lpulse.tween_property(lan_mat, "emission_energy_multiplier", 7.5, 1.4).set_ease(Tween.EASE_IN_OUT)
+	lpulse.tween_property(lan_mat, "emission_energy_multiplier", 5.0, 1.4).set_ease(Tween.EASE_IN_OUT)
 
 
