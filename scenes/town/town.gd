@@ -1828,6 +1828,16 @@ func _build_district_3(geom: Node) -> void:
 	_build_d3_time_keeper_npc()
 	# Epic-3 T95: seeker trial puzzle pad
 	_build_d3_seeker_trial(geom)
+	# Epic-3 T96: D3 welcome banner stretched across entrance arch
+	_build_d3_welcome_banner(geom)
+	# Epic-3 T97: ambient violet fog drifting across D3
+	_build_d3_atmosphere_fog(geom)
+	# Epic-3 T98: Epic 3 completion plaque
+	_build_d3_epic3_plaque(geom)
+	# Epic-3 T99: 3 high violet ambient fill lights
+	_build_d3_ambient_fills(geom)
+	# Epic-3 T100: FINALE — massive Arcane Overseer landmark
+	_build_d3_arcane_overseer_landmark(geom)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
@@ -8505,6 +8515,290 @@ func _build_d3_seeker_trial(geom: Node) -> void:
 	label.font_size = 16
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	trial.add_child(label)
+
+
+func _build_d3_welcome_banner(geom: Node) -> void:
+	## Epic-3 T96: a wide violet welcome banner stretched between the
+	## D3 entrance arch pillars at x=122 reading "MEMORY VAULT".
+	var banner_root: Node3D = Node3D.new()
+	banner_root.name = "D3WelcomeBanner"
+	banner_root.position = Vector3(122, 0, 0)
+	geom.add_child(banner_root)
+	# Banner cloth
+	var cloth: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(0.10, 0.95, 8.5)
+	cloth.mesh = cmesh
+	cloth.position = Vector3(0, 6.0, 0)
+	var cmat: StandardMaterial3D = StandardMaterial3D.new()
+	cmat.albedo_color = Color(0.16, 0.06, 0.30)
+	cmat.emission_enabled = true
+	cmat.emission = Color(0.85, 0.40, 1.0)
+	cmat.emission_energy_multiplier = 1.0
+	cmat.metallic = 0.10
+	cmat.roughness = 0.55
+	cloth.material_override = cmat
+	banner_root.add_child(cloth)
+	# Top + bottom emissive trim
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(1.0, 0.55, 1.0)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(1.0, 0.55, 1.0)
+	trim_mat.emission_energy_multiplier = 2.0
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ty: float in [6.45, 5.55]:
+		var trim: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(0.12, 0.08, 8.5)
+		trim.mesh = tmesh
+		trim.position = Vector3(0, ty, 0)
+		trim.material_override = trim_mat
+		banner_root.add_child(trim)
+	# Welcome text — duplicated for both sides
+	for fx: float in [-0.10, 0.10]:
+		var label: Label3D = Label3D.new()
+		label.text = "MEMORY VAULT"
+		label.position = Vector3(fx, 6.0, 0)
+		label.rotation = Vector3(0, deg_to_rad(-90 if fx < 0 else 90), 0)
+		label.modulate = Color(1.0, 0.55, 1.0)
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 6
+		label.font_size = 28
+		label.no_depth_test = true
+		banner_root.add_child(label)
+	# Slow emission pulse
+	var pulse: Tween = create_tween().set_loops()
+	pulse.tween_property(cmat, "emission_energy_multiplier", 1.6, 2.0).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(cmat, "emission_energy_multiplier", 0.85, 2.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_d3_atmosphere_fog(geom: Node) -> void:
+	## Epic-3 T97: ambient violet fog drifting across the entire D3 floor —
+	## 80 large translucent violet puffs.
+	var fog: GPUParticles3D = GPUParticles3D.new()
+	fog.name = "D3AtmosphereFog"
+	fog.position = D3_CENTER + Vector3(-30, 0.5, 0)
+	fog.amount = 80
+	fog.lifetime = 14.0
+	fog.preprocess = 6.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(0.5, 0.5, 18.0)
+	pmat.direction = Vector3(1, 0, 0)
+	pmat.spread = 6.0
+	pmat.initial_velocity_min = 0.45
+	pmat.initial_velocity_max = 0.85
+	pmat.gravity = Vector3.ZERO
+	pmat.scale_min = 0.85
+	pmat.scale_max = 1.40
+	pmat.color = Color(0.85, 0.40, 1.0, 0.20)
+	fog.process_material = pmat
+	var puff: SphereMesh = SphereMesh.new()
+	puff.radius = 0.85
+	puff.height = 1.70
+	var puff_mat: StandardMaterial3D = StandardMaterial3D.new()
+	puff_mat.albedo_color = Color(0.85, 0.40, 1.0, 0.20)
+	puff_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	puff_mat.emission_enabled = true
+	puff_mat.emission = Color(1.0, 0.55, 1.0)
+	puff_mat.emission_energy_multiplier = 0.55
+	puff_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	puff.material = puff_mat
+	fog.draw_pass_1 = puff
+	geom.add_child(fog)
+
+
+func _build_d3_epic3_plaque(geom: Node) -> void:
+	## Epic-3 T98: a stone tablet plaque commemorating Epic 3 completion.
+	var plaque: Node3D = Node3D.new()
+	plaque.name = "D3Epic3Plaque"
+	plaque.position = D3_CENTER + Vector3(15, 0, -3)
+	geom.add_child(plaque)
+	# Pedestal
+	var ped_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ped_mat.albedo_color = Color(0.16, 0.10, 0.20)
+	ped_mat.metallic = 0.55
+	ped_mat.roughness = 0.45
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pmesh: BoxMesh = BoxMesh.new()
+	pmesh.size = Vector3(0.85, 0.50, 0.40)
+	ped.mesh = pmesh
+	ped.position = Vector3(0, 0.25, 0)
+	ped.material_override = ped_mat
+	plaque.add_child(ped)
+	# Tilted stone tablet
+	var tablet: MeshInstance3D = MeshInstance3D.new()
+	var tmesh: BoxMesh = BoxMesh.new()
+	tmesh.size = Vector3(0.85, 0.65, 0.06)
+	tablet.mesh = tmesh
+	tablet.position = Vector3(0, 0.85, 0)
+	tablet.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	var tmat: StandardMaterial3D = StandardMaterial3D.new()
+	tmat.albedo_color = Color(0.30, 0.20, 0.40)
+	tmat.metallic = 0.65
+	tmat.roughness = 0.30
+	tmat.emission_enabled = true
+	tmat.emission = Color(1.0, 0.55, 1.0)
+	tmat.emission_energy_multiplier = 0.40
+	tablet.material_override = tmat
+	plaque.add_child(tablet)
+	# Engraved text
+	var label: Label3D = Label3D.new()
+	label.text = "EPIC 03\nMEMORY VAULT\nCOMPLETE"
+	label.position = Vector3(0, 0.95, 0.18)
+	label.rotation = Vector3(deg_to_rad(-25), 0, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 4
+	label.font_size = 14
+	label.no_depth_test = true
+	plaque.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 0.60, 0.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.30, 0)
+	sb.add_child(cs)
+	plaque.add_child(sb)
+
+
+func _build_d3_ambient_fills(geom: Node) -> void:
+	## Epic-3 T99: 3 high violet-tinted OmniLight3D fill lights spaced
+	## along the D3 length lifting overall light level.
+	var positions: Array[Vector3] = [
+		D3_CENTER + Vector3(-15, 8, 0),
+		D3_CENTER + Vector3(0, 8, 0),
+		D3_CENTER + Vector3(15, 8, 0),
+	]
+	for i in positions.size():
+		var fill: OmniLight3D = OmniLight3D.new()
+		fill.name = "D3FillLight_%d" % i
+		fill.position = positions[i]
+		fill.light_color = Color(0.85, 0.55, 1.0)
+		fill.light_energy = 1.4
+		fill.omni_range = 24.0
+		fill.omni_attenuation = 1.6
+		geom.add_child(fill)
+
+
+func _build_d3_arcane_overseer_landmark(geom: Node) -> void:
+	## Epic-3 T100 (FINALE): a massive ARCANE OVERSEER landmark hovering
+	## 14m above the D3 center — translucent violet humanoid + 8 orbital
+	## rune cubes + ground halo + real OmniLight3D casting violet over the
+	## entire district. The Memory Vault equivalent of D1's Globbler and
+	## D2's Glitch Herald.
+	var landmark: Node3D = Node3D.new()
+	landmark.name = "D3ArcaneOverseerLandmark"
+	landmark.position = D3_CENTER + Vector3(0, 14, 0)
+	geom.add_child(landmark)
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "RotationPivot"
+	landmark.add_child(pivot)
+	# Translucent humanoid body
+	var holo_mat: StandardMaterial3D = StandardMaterial3D.new()
+	holo_mat.albedo_color = Color(0.85, 0.55, 1.0, 0.45)
+	holo_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	holo_mat.emission_enabled = true
+	holo_mat.emission = Color(1.0, 0.55, 1.0)
+	holo_mat.emission_energy_multiplier = 2.4
+	holo_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Body capsule
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.95
+	bmesh.height = 2.85
+	body.mesh = bmesh
+	body.position = Vector3(0, 0, 0)
+	body.material_override = holo_mat
+	pivot.add_child(body)
+	# Head sphere
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.85
+	hmesh.height = 1.70
+	head.mesh = hmesh
+	head.position = Vector3(0, 2.20, 0)
+	head.material_override = holo_mat
+	pivot.add_child(head)
+	# 3 huge glowing white eyes (cyclops + 2 — overseer style)
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1, 1, 1, 0.9)
+	eye_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1, 1, 1)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for spec in [Vector3(-0.40, 2.30, 0.65), Vector3(0.40, 2.30, 0.65), Vector3(0, 2.65, 0.75)]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: SphereMesh = SphereMesh.new()
+		em.radius = 0.22
+		em.height = 0.44
+		eye.mesh = em
+		eye.position = spec
+		eye.material_override = eye_mat
+		pivot.add_child(eye)
+	# 8 orbital rune cubes circling at body height
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: BoxMesh = BoxMesh.new()
+		rmesh.size = Vector3(0.40, 0.40, 0.40)
+		rune.mesh = rmesh
+		rune.position = Vector3(cos(angle) * 2.85, sin(float(i) * 0.85) * 0.55, sin(angle) * 2.85)
+		rune.rotation = Vector3(0, -angle, deg_to_rad(15))
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(1.0, 0.55, 1.0)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.55, 1.0)
+		rmat.emission_energy_multiplier = 2.6
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		rune.material_override = rmat
+		pivot.add_child(rune)
+	# Slow main rotation
+	var spin: Tween = create_tween().set_loops()
+	spin.tween_property(pivot, "rotation:y", TAU, 18.0)
+	# Bobbing in place
+	var bob: Tween = create_tween().set_loops()
+	bob.tween_property(landmark, "position:y", 15.0, 3.0).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(landmark, "position:y", 14.0, 3.0).set_ease(Tween.EASE_IN_OUT)
+	# Ground halo beneath the landmark
+	var halo: MeshInstance3D = MeshInstance3D.new()
+	var hmesh2: TorusMesh = TorusMesh.new()
+	hmesh2.inner_radius = 4.5
+	hmesh2.outer_radius = 5.0
+	halo.mesh = hmesh2
+	halo.position = D3_CENTER + Vector3(0, 0.06, 0)
+	var hmat2: StandardMaterial3D = StandardMaterial3D.new()
+	hmat2.albedo_color = Color(1.0, 0.55, 1.0)
+	hmat2.emission_enabled = true
+	hmat2.emission = Color(1.0, 0.55, 1.0)
+	hmat2.emission_energy_multiplier = 2.4
+	hmat2.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	halo.material_override = hmat2
+	geom.add_child(halo)
+	var halo_pulse: Tween = create_tween().set_loops()
+	halo_pulse.tween_property(halo, "scale", Vector3(1.20, 1.0, 1.20), 2.0).set_ease(Tween.EASE_IN_OUT)
+	halo_pulse.tween_property(halo, "scale", Vector3(1.0, 1.0, 1.0), 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Real OmniLight at the landmark casting violet over the district
+	var landmark_light: OmniLight3D = OmniLight3D.new()
+	landmark_light.position = Vector3(0, 0, 0)
+	landmark_light.light_color = Color(1.0, 0.55, 1.0)
+	landmark_light.light_energy = 3.5
+	landmark_light.omni_range = 30.0
+	landmark_light.omni_attenuation = 1.4
+	pivot.add_child(landmark_light)
+	# ARCANE OVERSEER billboard
+	var label: Label3D = Label3D.new()
+	label.text = "ARCANE OVERSEER"
+	label.position = Vector3(0, 4.40, 0)
+	label.modulate = Color(1.0, 0.55, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 26
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	landmark.add_child(label)
 
 
 
