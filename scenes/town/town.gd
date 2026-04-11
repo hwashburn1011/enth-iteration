@@ -1319,3 +1319,16 @@ func _build_district_9(geom: Node) -> void:
 	var _b9 := D9Builder.new()
 	add_child(_b9)
 	_b9.build(self, geom)
+	# === EPIC 10: Town Heart Plaza — central hub at world origin ===
+	print("[town] entering Town Heart")
+	_build_town_heart(geom)
+	print("[town] Town Heart done")
+
+
+func _build_town_heart(geom: Node) -> void:
+	## Epic 10 entry point — delegates to TownHeartBuilder
+	## (scenes/town/districts/town_heart.gd). Builds the central hub plaza
+	## at world origin where all 9 districts radiate from.
+	var _bth := TownHeartBuilder.new()
+	add_child(_bth)
+	_bth.build(self, geom)

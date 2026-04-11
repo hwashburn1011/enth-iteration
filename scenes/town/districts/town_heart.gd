@@ -1,0 +1,235 @@
+class_name TownHeartBuilder
+extends Node
+
+# ============================================================================
+# Epic 10: Town Heart Plaza
+# ============================================================================
+# Grand central hub at world origin (0, 0, 0) where all 9 districts radiate
+# from. Acts as the player's home base and the visual anchor of the town.
+# Contains the Town Heart Beacon, 9 directional district markers, central
+# fountain, paved compass plaza, and surrounding ceremonial features.
+#
+# All Epic 10 helpers live here. Each task adds an instance method called
+# from build() in numerical order.
+
+const TOWN_CENTER: Vector3 = Vector3(0, 0, 0)
+
+
+func build(town: Node, geom: Node) -> void:
+	print("[TownHeartBuilder] start")
+	_build_th_beacon_monument(geom)
+	print("[TownHeartBuilder] done")
+
+
+func _build_th_beacon_monument(geom: Node) -> void:
+	## Epic-10 T1: Town Heart Beacon — central monument at world origin.
+	## Stepped basalt-and-brass pedestal with a tall iron spire crowned by
+	## a glowing cyan-orange dual-color core (the "data heart" of the town),
+	## ringed by 8 small directional markers (one per cardinal + ordinal),
+	## with an OmniLight wash and ambient cinder/data motes drifting above.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_BeaconMonument"
+	pivot.position = TOWN_CENTER + Vector3(0, 0, 0)
+	geom.add_child(pivot)
+	# ---- Materials ----
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.65)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	iron_mat.emission_enabled = true
+	iron_mat.emission = Color(0.45, 0.55, 0.65)
+	iron_mat.emission_energy_multiplier = 0.30
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.30, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.40, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 8.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var ember_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ember_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_enabled = true
+	ember_mat.emission = Color(1.0, 0.55, 0.10)
+	ember_mat.emission_energy_multiplier = 7.5
+	ember_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- 3-tier basalt pedestal ----
+	var tier_data: Array = [
+		{"r": 4.20, "h": 0.45, "y": 0.22},
+		{"r": 3.40, "h": 0.45, "y": 0.67},
+		{"r": 2.55, "h": 0.45, "y": 1.12},
+	]
+	for td in tier_data:
+		var t: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = td["r"]
+		tm.bottom_radius = td["r"] + 0.20
+		tm.height = td["h"]
+		t.mesh = tm
+		t.material_override = stone_mat
+		t.position = Vector3(0, td["y"], 0)
+		pivot.add_child(t)
+	# Combined pedestal collision
+	var ped_sb: StaticBody3D = StaticBody3D.new()
+	ped_sb.position = Vector3(0, 0.70, 0)
+	var ped_cs: CollisionShape3D = CollisionShape3D.new()
+	var ped_cyl: CylinderShape3D = CylinderShape3D.new()
+	ped_cyl.top_radius = 2.55
+	ped_cyl.bottom_radius = 4.40
+	ped_cyl.height = 1.40
+	ped_cs.shape = ped_cyl
+	ped_sb.add_child(ped_cs)
+	pivot.add_child(ped_sb)
+	# Brass top plate on the pedestal
+	var top_plate: MeshInstance3D = MeshInstance3D.new()
+	var tpm: CylinderMesh = CylinderMesh.new()
+	tpm.top_radius = 2.65
+	tpm.bottom_radius = 2.65
+	tpm.height = 0.10
+	top_plate.mesh = tpm
+	top_plate.material_override = brass_mat
+	top_plate.position = Vector3(0, 1.40, 0)
+	pivot.add_child(top_plate)
+	# ---- Tall iron spire ----
+	var spire: MeshInstance3D = MeshInstance3D.new()
+	var spm: CylinderMesh = CylinderMesh.new()
+	spm.top_radius = 0.20
+	spm.bottom_radius = 0.55
+	spm.height = 8.00
+	spire.mesh = spm
+	spire.material_override = iron_mat
+	spire.position = Vector3(0, 5.45, 0)
+	pivot.add_child(spire)
+	# Spire collision
+	var sp_sb: StaticBody3D = StaticBody3D.new()
+	sp_sb.position = Vector3(0, 5.45, 0)
+	var sp_cs: CollisionShape3D = CollisionShape3D.new()
+	var sp_cyl: CylinderShape3D = CylinderShape3D.new()
+	sp_cyl.top_radius = 0.20
+	sp_cyl.bottom_radius = 0.55
+	sp_cyl.height = 8.00
+	sp_cs.shape = sp_cyl
+	sp_sb.add_child(sp_cs)
+	pivot.add_child(sp_sb)
+	# Brass spire bands (3 wraps)
+	for by in [3.20, 5.50, 7.80]:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: TorusMesh = TorusMesh.new()
+		bdm.inner_radius = 0.32
+		bdm.outer_radius = 0.45
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, by, 0)
+		pivot.add_child(band)
+	# ---- Glowing dual-core data heart at the spire's top ----
+	# Outer brass cage (torus)
+	var cage: MeshInstance3D = MeshInstance3D.new()
+	var cm: TorusMesh = TorusMesh.new()
+	cm.inner_radius = 0.55
+	cm.outer_radius = 0.85
+	cage.mesh = cm
+	cage.material_override = brass_mat
+	cage.position = Vector3(0, 9.80, 0)
+	pivot.add_child(cage)
+	# Inner data core (cyan unshaded sphere)
+	var data_core: MeshInstance3D = MeshInstance3D.new()
+	var dcm: SphereMesh = SphereMesh.new()
+	dcm.radius = 0.55
+	dcm.height = 1.05
+	data_core.mesh = dcm
+	data_core.material_override = data_mat
+	data_core.position = Vector3(0, 9.80, 0)
+	pivot.add_child(data_core)
+	# Inner ember core (smaller amber sphere overlaid for warm contrast)
+	var ember_core: MeshInstance3D = MeshInstance3D.new()
+	var ecm: SphereMesh = SphereMesh.new()
+	ecm.radius = 0.32
+	ecm.height = 0.62
+	ember_core.mesh = ecm
+	ember_core.material_override = ember_mat
+	ember_core.position = Vector3(0, 9.80, 0)
+	pivot.add_child(ember_core)
+	# ---- 8 directional cardinal/ordinal markers around the pedestal ----
+	# Each marker is a small brass arrow pointing outward, with a glowing tip
+	for i in 8:
+		var ang: float = float(i) / 8.0 * TAU
+		var dx: float = cos(ang)
+		var dz: float = sin(ang)
+		# Arrow shaft (small box pointing outward)
+		var arrow: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.85, 0.16, 0.20)
+		arrow.mesh = am
+		arrow.material_override = brass_mat
+		arrow.position = Vector3(dx * 3.10, 1.50, dz * 3.10)
+		arrow.rotation.y = ang
+		pivot.add_child(arrow)
+		# Arrow tip (small prism)
+		var tip: MeshInstance3D = MeshInstance3D.new()
+		var tipm: PrismMesh = PrismMesh.new()
+		tipm.size = Vector3(0.20, 0.16, 0.30)
+		tip.mesh = tipm
+		tip.material_override = data_mat
+		tip.position = Vector3(dx * 3.55, 1.55, dz * 3.55)
+		tip.rotation.y = ang - PI / 2.0
+		pivot.add_child(tip)
+	# ---- Strong central OmniLight (cyan-tinted wash) ----
+	var lt_data: OmniLight3D = OmniLight3D.new()
+	lt_data.position = Vector3(0, 9.80, 0)
+	lt_data.light_color = Color(0.45, 0.85, 1.0)
+	lt_data.light_energy = 5.5
+	lt_data.omni_range = 22.0
+	pivot.add_child(lt_data)
+	# Warmer ground OmniLight at the brass top plate
+	var lt_warm: OmniLight3D = OmniLight3D.new()
+	lt_warm.position = Vector3(0, 1.80, 0)
+	lt_warm.light_color = Color(1.0, 0.55, 0.15)
+	lt_warm.light_energy = 3.0
+	lt_warm.omni_range = 12.0
+	pivot.add_child(lt_warm)
+	# ---- Drifting data motes around the core ----
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 9.80, 0)
+	motes.amount = 36
+	motes.lifetime = 3.5
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pmat.emission_sphere_radius = 1.10
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 180.0
+	pmat.initial_velocity_min = 0.4
+	pmat.initial_velocity_max = 0.9
+	pmat.gravity = Vector3(0, 0.0, 0)
+	pmat.scale_min = 0.06
+	pmat.scale_max = 0.12
+	pmat.color = Color(0.45, 0.85, 1.0, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.05
+	psmesh.height = 0.10
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# ---- Pulses ----
+	# Data core pulse — slow breath (5s cycle)
+	var dpulse: Tween = pivot.create_tween().set_loops()
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 11.0, 2.5).set_ease(Tween.EASE_IN_OUT)
+	dpulse.tween_property(data_mat, "emission_energy_multiplier", 6.0, 2.5).set_ease(Tween.EASE_IN_OUT)
+	# Ember core pulse — faster heartbeat (3s cycle)
+	var epulse: Tween = pivot.create_tween().set_loops()
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 10.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+	epulse.tween_property(ember_mat, "emission_energy_multiplier", 5.0, 1.5).set_ease(Tween.EASE_IN_OUT)
+	# Slow spire spin so the cage rotates around the cores
+	var spin: Tween = pivot.create_tween().set_loops()
+	spin.tween_property(cage, "rotation:y", TAU, 8.0)
