@@ -42,6 +42,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_planter_ring(geom)
 	_build_th_welcome_arch(geom)
 	_build_th_district_tribute_statues(geom)
+	_build_th_bell_tower(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -4376,3 +4377,256 @@ func _build_th_district_tribute_statues(geom: Node) -> void:
 		var apulse: Tween = sgroup.create_tween().set_loops()
 		apulse.tween_property(accent_mat, "emission_energy_multiplier", 8.5, period).set_ease(Tween.EASE_IN_OUT)
 		apulse.tween_property(accent_mat, "emission_energy_multiplier", 4.5, period).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_bell_tower(geom: Node) -> void:
+	## Epic-10 T26: tall basalt bell tower at the NE outer corner of the
+	## plaza, visible from far across the town. Stepped basalt base + 14m
+	## tower shaft with 4 brass band wraps + 4 narrow window slits, brass
+	## crown roof, hanging brass bell with iron clapper, top finial spire,
+	## and 4 corner brazier braziers near the bell housing.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_BellTower"
+	# NE outer corner, just past the lamppost ring at radius ~16.5
+	var ang: float = PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 16.50, 0, sin(ang) * 16.50)
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(0.45, 0.85, 1.0)
+	window_mat.emission_energy_multiplier = 6.5
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 8.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt base (3 levels) ----
+	var base1: MeshInstance3D = MeshInstance3D.new()
+	var b1m: BoxMesh = BoxMesh.new()
+	b1m.size = Vector3(3.50, 0.55, 3.50)
+	base1.mesh = b1m
+	base1.material_override = stone_mat
+	base1.position = Vector3(0, 0.27, 0)
+	pivot.add_child(base1)
+	var base2: MeshInstance3D = MeshInstance3D.new()
+	var b2m: BoxMesh = BoxMesh.new()
+	b2m.size = Vector3(3.00, 0.45, 3.00)
+	base2.mesh = b2m
+	base2.material_override = stone_mat
+	base2.position = Vector3(0, 0.77, 0)
+	pivot.add_child(base2)
+	var base3: MeshInstance3D = MeshInstance3D.new()
+	var b3m: BoxMesh = BoxMesh.new()
+	b3m.size = Vector3(2.55, 0.40, 2.55)
+	base3.mesh = b3m
+	base3.material_override = stone_mat
+	base3.position = Vector3(0, 1.20, 0)
+	pivot.add_child(base3)
+	# Combined base collision
+	var base_sb: StaticBody3D = StaticBody3D.new()
+	base_sb.position = Vector3(0, 0.70, 0)
+	var base_cs: CollisionShape3D = CollisionShape3D.new()
+	var base_bsh: BoxShape3D = BoxShape3D.new()
+	base_bsh.size = Vector3(3.50, 1.40, 3.50)
+	base_cs.shape = base_bsh
+	base_sb.add_child(base_cs)
+	pivot.add_child(base_sb)
+	# ---- 14m tower shaft ----
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(2.00, 14.00, 2.00)
+	shaft.mesh = sm
+	shaft.material_override = stone_mat
+	shaft.position = Vector3(0, 8.40, 0)
+	pivot.add_child(shaft)
+	# Shaft collision
+	var shaft_sb: StaticBody3D = StaticBody3D.new()
+	shaft_sb.position = Vector3(0, 8.40, 0)
+	var shaft_cs: CollisionShape3D = CollisionShape3D.new()
+	var shaft_bsh: BoxShape3D = BoxShape3D.new()
+	shaft_bsh.size = Vector3(2.00, 14.00, 2.00)
+	shaft_cs.shape = shaft_bsh
+	shaft_sb.add_child(shaft_cs)
+	pivot.add_child(shaft_sb)
+	# 4 brass band wraps
+	for by in [3.50, 6.50, 9.50, 12.50]:
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: BoxMesh = BoxMesh.new()
+		bdm.size = Vector3(2.20, 0.20, 2.20)
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(0, by, 0)
+		pivot.add_child(band)
+	# 4 narrow glowing window slits down the front face (one between each band)
+	for wy in [4.80, 7.80, 10.80, 13.80]:
+		var window: MeshInstance3D = MeshInstance3D.new()
+		var wmm: BoxMesh = BoxMesh.new()
+		wmm.size = Vector3(0.30, 0.85, 0.06)
+		window.mesh = wmm
+		window.material_override = window_mat
+		window.position = Vector3(0, wy, -1.04)
+		pivot.add_child(window)
+	# ---- Bell housing platform at the top of the shaft ----
+	var housing: MeshInstance3D = MeshInstance3D.new()
+	var hmm: BoxMesh = BoxMesh.new()
+	hmm.size = Vector3(2.85, 0.45, 2.85)
+	housing.mesh = hmm
+	housing.material_override = stone_mat
+	housing.position = Vector3(0, 15.65, 0)
+	pivot.add_child(housing)
+	# Brass top trim on housing
+	var housing_trim: MeshInstance3D = MeshInstance3D.new()
+	var htm: BoxMesh = BoxMesh.new()
+	htm.size = Vector3(3.00, 0.18, 3.00)
+	housing_trim.mesh = htm
+	housing_trim.material_override = brass_mat
+	housing_trim.position = Vector3(0, 15.95, 0)
+	pivot.add_child(housing_trim)
+	# 4 brass corner posts holding the roof
+	for cpx in [-1.20, 1.20]:
+		for cpz in [-1.20, 1.20]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmm: CylinderMesh = CylinderMesh.new()
+			pmm.top_radius = 0.10
+			pmm.bottom_radius = 0.12
+			pmm.height = 1.85
+			post.mesh = pmm
+			post.material_override = brass_mat
+			post.position = Vector3(cpx, 16.95, cpz)
+			pivot.add_child(post)
+	# ---- Brass crown roof (pyramid prism) ----
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmm: PrismMesh = PrismMesh.new()
+	rmm.size = Vector3(3.00, 1.50, 3.00)
+	roof.mesh = rmm
+	roof.material_override = brass_mat
+	roof.position = Vector3(0, 18.65, 0)
+	pivot.add_child(roof)
+	# Top finial spire
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fmm: PrismMesh = PrismMesh.new()
+	fmm.size = Vector3(0.40, 0.85, 0.40)
+	finial.mesh = fmm
+	finial.material_override = brass_mat
+	finial.position = Vector3(0, 19.85, 0)
+	pivot.add_child(finial)
+	# Finial top dot (small unshaded cyan sphere)
+	var finial_dot: MeshInstance3D = MeshInstance3D.new()
+	var fdm: SphereMesh = SphereMesh.new()
+	fdm.radius = 0.12
+	fdm.height = 0.24
+	finial_dot.mesh = fdm
+	finial_dot.material_override = window_mat
+	finial_dot.position = Vector3(0, 20.40, 0)
+	pivot.add_child(finial_dot)
+	# ---- Hanging brass bell ----
+	# Bell yoke beam (small box across the housing top)
+	var yoke: MeshInstance3D = MeshInstance3D.new()
+	var ym: BoxMesh = BoxMesh.new()
+	ym.size = Vector3(2.20, 0.18, 0.30)
+	yoke.mesh = ym
+	yoke.material_override = brass_mat
+	yoke.position = Vector3(0, 18.05, 0)
+	pivot.add_child(yoke)
+	# Bell pivot for swing animation
+	var bell_pivot: Node3D = Node3D.new()
+	bell_pivot.position = Vector3(0, 18.05, 0)
+	pivot.add_child(bell_pivot)
+	# Bell body (sphere stretched into bell shape)
+	var bell: MeshInstance3D = MeshInstance3D.new()
+	var blm: SphereMesh = SphereMesh.new()
+	blm.radius = 0.65
+	blm.height = 1.20
+	bell.mesh = blm
+	bell.material_override = brass_mat
+	bell.position = Vector3(0, -0.85, 0)
+	bell.scale = Vector3(1.0, 0.95, 1.0)
+	bell_pivot.add_child(bell)
+	# Bell skirt rim torus
+	var skirt: MeshInstance3D = MeshInstance3D.new()
+	var skm: TorusMesh = TorusMesh.new()
+	skm.inner_radius = 0.55
+	skm.outer_radius = 0.70
+	skirt.mesh = skm
+	skirt.material_override = brass_mat
+	skirt.position = Vector3(0, -1.35, 0)
+	bell_pivot.add_child(skirt)
+	# Iron clapper (small sphere hanging inside the bell)
+	var clapper: MeshInstance3D = MeshInstance3D.new()
+	var clm: SphereMesh = SphereMesh.new()
+	clm.radius = 0.14
+	clm.height = 0.28
+	clapper.mesh = clm
+	clapper.material_override = iron_mat
+	clapper.position = Vector3(0, -1.10, 0)
+	bell_pivot.add_child(clapper)
+	# ---- 4 corner braziers near the bell housing (one per corner post) ----
+	for cpx in [-1.20, 1.20]:
+		for cpz in [-1.20, 1.20]:
+			var bowl: MeshInstance3D = MeshInstance3D.new()
+			var bowm: SphereMesh = SphereMesh.new()
+			bowm.radius = 0.22
+			bowm.height = 0.40
+			bowl.mesh = bowm
+			bowl.material_override = brass_mat
+			bowl.position = Vector3(cpx, 17.95, cpz)
+			bowl.scale = Vector3(1.0, 0.55, 1.0)
+			pivot.add_child(bowl)
+			# Flame
+			var flame: MeshInstance3D = MeshInstance3D.new()
+			var flm: SphereMesh = SphereMesh.new()
+			flm.radius = 0.18
+			flm.height = 0.36
+			flame.mesh = flm
+			flame.material_override = flame_mat
+			flame.position = Vector3(cpx, 18.15, cpz)
+			pivot.add_child(flame)
+			# Corner OmniLight
+			var lt: OmniLight3D = OmniLight3D.new()
+			lt.position = Vector3(cpx, 18.15, cpz)
+			lt.light_color = Color(1.0, 0.55, 0.15)
+			lt.light_energy = 3.0
+			lt.omni_range = 9.5
+			pivot.add_child(lt)
+	# ---- Strong central bell housing OmniLight ----
+	var bell_lt: OmniLight3D = OmniLight3D.new()
+	bell_lt.position = Vector3(0, 17.50, 0)
+	bell_lt.light_color = Color(1.0, 0.65, 0.20)
+	bell_lt.light_energy = 4.0
+	bell_lt.omni_range = 16.0
+	pivot.add_child(bell_lt)
+	# ---- Pulses + bell sway tween ----
+	# Bell slow gentle sway
+	var sway: Tween = pivot.create_tween().set_loops()
+	sway.tween_property(bell_pivot, "rotation:z", 0.18, 2.0).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(bell_pivot, "rotation:z", -0.18, 2.0).set_ease(Tween.EASE_IN_OUT)
+	# Window pulse
+	var wpulse: Tween = pivot.create_tween().set_loops()
+	wpulse.tween_property(window_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
+	wpulse.tween_property(window_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	# Brazier flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 10.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 7.5, 0.5).set_ease(Tween.EASE_IN_OUT)
