@@ -32654,6 +32654,16 @@ func _build_district_8(geom: Node) -> void:
 	_build_d8_seagulls(geom)
 	# Epic-8 T10: sea spray particles
 	_build_d8_sea_spray(geom)
+	# Epic-8 T11: shipwreck remnants
+	_build_d8_shipwreck(geom)
+	# Epic-8 T12: sailor NPC
+	_build_d8_sailor_npc()
+	# Epic-8 T13: giant dock anchor
+	_build_d8_giant_anchor(geom)
+	# Epic-8 T14: dock pilings row
+	_build_d8_pilings_row(geom)
+	# Epic-8 T15: dolphins jumping
+	_build_d8_dolphins(geom)
 
 
 func _extend_boundary_for_d8(geom: Node) -> void:
@@ -33329,6 +33339,348 @@ func _build_d8_sea_spray(geom: Node) -> void:
 	spray_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	spray_mesh.material = spray_mat
 	geom.add_child(spray)
+
+
+func _build_d8_shipwreck(geom: Node) -> void:
+	## Epic-8 T11: shipwreck remnants — broken hull half-sunken + tilted
+	## mast + scattered planks + green seaweed.
+	var wreck: Node3D = Node3D.new()
+	wreck.name = "Shipwreck"
+	wreck.position = Vector3(D8_CENTER.x + 14.0, 0.0, -16.0)
+	geom.add_child(wreck)
+	var dark_wood: StandardMaterial3D = StandardMaterial3D.new()
+	dark_wood.albedo_color = Color(0.30, 0.18, 0.08)
+	dark_wood.roughness = 0.92
+	var algae_mat: StandardMaterial3D = StandardMaterial3D.new()
+	algae_mat.albedo_color = Color(0.20, 0.55, 0.30)
+	algae_mat.emission_enabled = true
+	algae_mat.emission = Color(0.20, 0.65, 0.30)
+	algae_mat.emission_energy_multiplier = 0.45
+	algae_mat.roughness = 0.85
+	# Tilted broken hull (large angled box)
+	var hull: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(5.50, 1.85, 2.40)
+	hull.mesh = hm
+	hull.material_override = dark_wood
+	hull.position = Vector3(0, 0.85, 0)
+	hull.rotation_degrees = Vector3(0, 0, 25)
+	wreck.add_child(hull)
+	# Tilted broken mast
+	var mast: MeshInstance3D = MeshInstance3D.new()
+	var mm: CylinderMesh = CylinderMesh.new()
+	mm.top_radius = 0.10
+	mm.bottom_radius = 0.18
+	mm.height = 4.20
+	mast.mesh = mm
+	mast.material_override = dark_wood
+	mast.position = Vector3(1.85, 2.85, 0)
+	mast.rotation_degrees = Vector3(0, 0, 65)
+	wreck.add_child(mast)
+	# 4 scattered planks
+	for i in 4:
+		var plank: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(1.40, 0.10, 0.30)
+		plank.mesh = pm
+		plank.material_override = dark_wood
+		plank.position = Vector3(
+			randf_range(-2.85, 2.85),
+			0.18,
+			randf_range(-1.85, 1.85)
+		)
+		plank.rotation_degrees = Vector3(0, randf_range(0, 360), 0)
+		wreck.add_child(plank)
+	# 5 algae clumps growing on the wreck
+	for i in 5:
+		var algae: MeshInstance3D = MeshInstance3D.new()
+		var am: SphereMesh = SphereMesh.new()
+		am.radius = 0.30
+		am.height = 0.45
+		algae.mesh = am
+		algae.material_override = algae_mat
+		algae.position = Vector3(
+			randf_range(-2.0, 2.0),
+			0.85 + randf_range(0, 0.85),
+			randf_range(-1.0, 1.0)
+		)
+		algae.scale = Vector3(1.0, 0.55, 1.0)
+		wreck.add_child(algae)
+	# Hull collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.85, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(5.50, 1.85, 2.40)
+	cs.shape = cb
+	sb.add_child(cs)
+	wreck.add_child(sb)
+
+
+func _build_d8_sailor_npc() -> void:
+	## Epic-8 T12: sailor NPC — striped shirt + red bandana + held bottle.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "SailorSlot"
+	slot.position = Vector3(D8_CENTER.x - 4.0, 0.0, 8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Sailor"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Saltwake")
+	if "npc_id" in npc:
+		npc.set("npc_id", "sailor_d8")
+	slot.add_child(npc)
+	# Blue striped shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.65, 1.05, 0.40)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.20, 0.30, 0.55)
+	shirt_mat.emission_enabled = true
+	shirt_mat.emission = Color(0.20, 0.30, 0.55)
+	shirt_mat.emission_energy_multiplier = 0.30
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.55, 0)
+	npc.add_child(shirt)
+	# 3 white horizontal stripes on the shirt
+	var stripe_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stripe_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	for sy in [0.40, 0.55, 0.70]:
+		var stripe: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(0.65, 0.06, 0.06)
+		stripe.mesh = stm
+		stripe.material_override = stripe_mat
+		stripe.position = Vector3(0, sy, 0.21)
+		npc.add_child(stripe)
+	# Red bandana
+	var bandana: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.22
+	bm.bottom_radius = 0.22
+	bm.height = 0.08
+	bandana.mesh = bm
+	var bandana_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bandana_mat.albedo_color = Color(0.85, 0.20, 0.20)
+	bandana_mat.emission_enabled = true
+	bandana_mat.emission = Color(0.85, 0.20, 0.20)
+	bandana_mat.emission_energy_multiplier = 0.85
+	bandana.material_override = bandana_mat
+	bandana.position = Vector3(0, 1.45, 0)
+	npc.add_child(bandana)
+	# Held bottle
+	var bottle: MeshInstance3D = MeshInstance3D.new()
+	var btm: CylinderMesh = CylinderMesh.new()
+	btm.top_radius = 0.05
+	btm.bottom_radius = 0.06
+	btm.height = 0.30
+	bottle.mesh = btm
+	var bottle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bottle_mat.albedo_color = Color(0.20, 0.55, 0.20, 0.65)
+	bottle_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	bottle_mat.emission_enabled = true
+	bottle_mat.emission = Color(0.20, 0.65, 0.20)
+	bottle_mat.emission_energy_multiplier = 0.65
+	bottle_mat.metallic = 0.65
+	bottle_mat.roughness = 0.10
+	bottle.material_override = bottle_mat
+	bottle.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(bottle)
+
+
+func _build_d8_giant_anchor(geom: Node) -> void:
+	## Epic-8 T13: giant dock anchor — large dark metal anchor leaning
+	## against the boardwalk.
+	var anchor: Node3D = Node3D.new()
+	anchor.name = "GiantAnchor"
+	anchor.position = Vector3(D8_CENTER.x - 22.0, 0.0, -8.0)
+	geom.add_child(anchor)
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.20, 0.20, 0.25)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.40
+	# Vertical shaft
+	var shaft: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.12
+	sm.bottom_radius = 0.18
+	sm.height = 2.40
+	shaft.mesh = sm
+	shaft.material_override = iron_mat
+	shaft.position = Vector3(0, 1.20, 0)
+	shaft.rotation_degrees = Vector3(0, 0, 25)
+	anchor.add_child(shaft)
+	# Top ring (torus)
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var rm: TorusMesh = TorusMesh.new()
+	rm.inner_radius = 0.18
+	rm.outer_radius = 0.30
+	ring.mesh = rm
+	ring.material_override = iron_mat
+	ring.position = Vector3(0.45, 2.40, 0)
+	anchor.add_child(ring)
+	# Crossbar (perpendicular at top of shaft)
+	var cross: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 0.08
+	cm.bottom_radius = 0.08
+	cm.height = 1.40
+	cross.mesh = cm
+	cross.material_override = iron_mat
+	cross.position = Vector3(0.30, 1.85, 0)
+	cross.rotation_degrees = Vector3(0, 0, 90)
+	anchor.add_child(cross)
+	# Left + right anchor flukes (curved boxes at base)
+	for sx in [-0.55, 0.55]:
+		var fluke: MeshInstance3D = MeshInstance3D.new()
+		var fm: PrismMesh = PrismMesh.new()
+		fm.size = Vector3(0.18, 0.85, 0.18)
+		fluke.mesh = fm
+		fluke.material_override = iron_mat
+		fluke.position = Vector3(sx, 0.35, 0)
+		fluke.rotation_degrees = Vector3(0, 0, sx * 90.0)
+		anchor.add_child(fluke)
+	# Anchor collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.85, 2.40, 0.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	anchor.add_child(sb)
+
+
+func _build_d8_pilings_row(geom: Node) -> void:
+	## Epic-8 T14: row of 8 wooden dock pilings rising from the water,
+	## marking the edge of a long dock.
+	var pilings: Node3D = Node3D.new()
+	pilings.name = "PilingsRow"
+	pilings.position = Vector3(D8_CENTER.x, 0.0, 18.0)
+	geom.add_child(pilings)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.40, 0.25, 0.10)
+	wood_mat.roughness = 0.92
+	var algae_mat: StandardMaterial3D = StandardMaterial3D.new()
+	algae_mat.albedo_color = Color(0.20, 0.55, 0.30)
+	algae_mat.emission_enabled = true
+	algae_mat.emission = Color(0.20, 0.65, 0.30)
+	algae_mat.emission_energy_multiplier = 0.45
+	for i in 8:
+		var piling: Node3D = Node3D.new()
+		piling.position = Vector3(-12.0 + i * 3.40, 0, 0)
+		pilings.add_child(piling)
+		# Tall thick wooden piling
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pm: CylinderMesh = CylinderMesh.new()
+		pm.top_radius = 0.22
+		pm.bottom_radius = 0.30
+		pm.height = 2.85
+		post.mesh = pm
+		post.material_override = wood_mat
+		post.position = Vector3(0, 1.42, 0)
+		piling.add_child(post)
+		# Algae growth at the base (waterline)
+		var algae: MeshInstance3D = MeshInstance3D.new()
+		var am: CylinderMesh = CylinderMesh.new()
+		am.top_radius = 0.30
+		am.bottom_radius = 0.30
+		am.height = 0.30
+		algae.mesh = am
+		algae.material_override = algae_mat
+		algae.position = Vector3(0, 0.40, 0)
+		piling.add_child(algae)
+		# Top cap (small disc)
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: CylinderMesh = CylinderMesh.new()
+		cmm.top_radius = 0.30
+		cmm.bottom_radius = 0.30
+		cmm.height = 0.08
+		cap.mesh = cmm
+		var cap_mat: StandardMaterial3D = StandardMaterial3D.new()
+		cap_mat.albedo_color = Color(0.30, 0.18, 0.08)
+		cap.material_override = cap_mat
+		cap.position = Vector3(0, 2.85, 0)
+		piling.add_child(cap)
+		# Piling collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var capsh: CapsuleShape3D = CapsuleShape3D.new()
+		capsh.radius = 0.30
+		capsh.height = 2.85
+		cs.shape = capsh
+		sb.add_child(cs)
+		piling.add_child(sb)
+
+
+func _build_d8_dolphins(geom: Node) -> void:
+	## Epic-8 T15: 3 dolphins jumping out of the water in slow arcs.
+	var dolphins: Node3D = Node3D.new()
+	dolphins.name = "Dolphins"
+	dolphins.position = Vector3(D8_CENTER.x + 8.0, 0.0, 14.0)
+	geom.add_child(dolphins)
+	var grey_mat: StandardMaterial3D = StandardMaterial3D.new()
+	grey_mat.albedo_color = Color(0.40, 0.50, 0.60)
+	grey_mat.metallic = 0.30
+	grey_mat.roughness = 0.55
+	var positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3( 3.40, 0,  1.40),
+		Vector3(-2.85, 0,  0.85),
+	]
+	for i in positions.size():
+		var dolphin: Node3D = Node3D.new()
+		dolphin.position = positions[i]
+		dolphins.add_child(dolphin)
+		# Body (long sphere)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.30
+		bm.height = 0.55
+		body.mesh = bm
+		body.material_override = grey_mat
+		body.scale = Vector3(0.85, 0.65, 1.85)
+		dolphin.add_child(body)
+		# Snout (small prism)
+		var snout: MeshInstance3D = MeshInstance3D.new()
+		var snm: PrismMesh = PrismMesh.new()
+		snm.size = Vector3(0.12, 0.10, 0.30)
+		snout.mesh = snm
+		snout.material_override = grey_mat
+		snout.position = Vector3(0, 0.04, 0.55)
+		dolphin.add_child(snout)
+		# Dorsal fin
+		var fin: MeshInstance3D = MeshInstance3D.new()
+		var fmm: PrismMesh = PrismMesh.new()
+		fmm.size = Vector3(0.04, 0.30, 0.20)
+		fin.mesh = fmm
+		fin.material_override = grey_mat
+		fin.position = Vector3(0, 0.40, 0)
+		dolphin.add_child(fin)
+		# Tail flukes
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: BoxMesh = BoxMesh.new()
+		tm.size = Vector3(0.30, 0.04, 0.18)
+		tail.mesh = tm
+		tail.material_override = grey_mat
+		tail.position = Vector3(0, 0, -0.55)
+		dolphin.add_child(tail)
+		# Jumping arc tween — rises and falls
+		var tw: Tween = dolphin.create_tween().set_loops()
+		tw.tween_interval(i * 0.85)
+		tw.tween_property(dolphin, "position:y", 1.85, 0.85)
+		tw.tween_property(dolphin, "rotation_degrees:x", -25.0, 0.55)
+		tw.tween_property(dolphin, "position:y", 0.20, 0.85)
+		tw.tween_property(dolphin, "rotation_degrees:x", 0.0, 0.55)
+		tw.tween_interval(2.0)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
