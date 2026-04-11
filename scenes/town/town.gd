@@ -8805,6 +8805,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_frozen_shelves(geom)
 	# Epic-5 T20: cold wind drift particles
 	_build_d5_cold_wind(geom)
+	# Epic-5 T21: ice bridge over a small chasm
+	_build_d5_ice_bridge(geom)
+	# Epic-5 T22: frozen mammoth statue
+	_build_d5_mammoth_statue(geom)
+	# Epic-5 T23: cryo engineer NPC
+	_build_d5_cryo_engineer_npc()
+	# Epic-5 T24: small ice cave entrance
+	_build_d5_ice_cave_entrance(geom)
+	# Epic-5 T25: frozen heart artifact
+	_build_d5_frozen_heart(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -10139,6 +10149,417 @@ func _build_d5_cold_wind(geom: Node) -> void:
 	# Position the emitter at the west edge so wind blows east
 	wind.position.x = D5_CENTER.x - 30.0
 	geom.add_child(wind)
+
+
+func _build_d5_ice_bridge(geom: Node) -> void:
+	## Epic-5 T21: 8m translucent ice bridge spanning a small chasm —
+	## arched plank deck + 2 side rails + supporting pillars at each end.
+	var bridge: Node3D = Node3D.new()
+	bridge.name = "IceBridge"
+	bridge.position = Vector3(D5_CENTER.x + 14.0, 0.0, -2.0)
+	geom.add_child(bridge)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	# Chasm — visible darker recess in the ground (large dark cylinder set
+	# slightly below grade)
+	var chasm: MeshInstance3D = MeshInstance3D.new()
+	var cm: CylinderMesh = CylinderMesh.new()
+	cm.top_radius = 3.20
+	cm.bottom_radius = 3.20
+	cm.height = 0.40
+	chasm.mesh = cm
+	var chasm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chasm_mat.albedo_color = Color(0.05, 0.10, 0.20)
+	chasm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	chasm.material_override = chasm_mat
+	chasm.position = Vector3(0, -0.18, 0)
+	bridge.add_child(chasm)
+	# Bridge deck (long box, slightly arched via 5 panel slabs)
+	for i in 5:
+		var panel: MeshInstance3D = MeshInstance3D.new()
+		var pmm: BoxMesh = BoxMesh.new()
+		pmm.size = Vector3(1.85, 0.12, 1.85)
+		panel.mesh = pmm
+		panel.material_override = ice_mat
+		var t: float = i / 4.0
+		var arch_y: float = 1.40 + sin(t * PI) * 0.40
+		panel.position = Vector3(-3.70 + i * 1.85, arch_y, 0)
+		bridge.add_child(panel)
+	# Side rails (2 long thin curving cylinders)
+	for sz in [-0.85, 0.85]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: CylinderMesh = CylinderMesh.new()
+		rm.top_radius = 0.06
+		rm.bottom_radius = 0.06
+		rm.height = 8.5
+		rail.mesh = rm
+		rail.material_override = ice_mat
+		rail.position = Vector3(0, 1.95, sz)
+		rail.rotation_degrees = Vector3(0, 0, 90)
+		bridge.add_child(rail)
+	# 2 end pillars
+	for sx in [-4.20, 4.20]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.85, 1.85, 1.85)
+		pillar.mesh = pm
+		pillar.material_override = ice_mat
+		pillar.position = Vector3(sx, 0.92, 0)
+		bridge.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 0.92, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 1.85, 1.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		bridge.add_child(sb)
+	# Deck collision (one slab spanning the bridge)
+	var dsb: StaticBody3D = StaticBody3D.new()
+	dsb.position = Vector3(0, 1.45, 0)
+	var dcs: CollisionShape3D = CollisionShape3D.new()
+	var dcb: BoxShape3D = BoxShape3D.new()
+	dcb.size = Vector3(8.50, 0.20, 1.85)
+	dcs.shape = dcb
+	dsb.add_child(dcs)
+	bridge.add_child(dsb)
+
+
+func _build_d5_mammoth_statue(geom: Node) -> void:
+	## Epic-5 T22: frozen mammoth statue — large procedural mammoth made
+	## of ice (body, head, tusks, 4 legs, trunk), suggesting an extinct
+	## subroutine preserved in the cache.
+	var mammoth: Node3D = Node3D.new()
+	mammoth.name = "MammothStatue"
+	mammoth.position = Vector3(D5_CENTER.x + 22.0, 0.0, 8.0)
+	geom.add_child(mammoth)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.82, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.80, 0.95)
+	ice_mat.emission_energy_multiplier = 0.45
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	var tusk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tusk_mat.albedo_color = Color(0.95, 0.92, 0.80)
+	tusk_mat.metallic = 0.30
+	tusk_mat.roughness = 0.30
+	# Body — large rounded sphere
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: SphereMesh = SphereMesh.new()
+	bm.radius = 1.40
+	bm.height = 2.40
+	body.mesh = bm
+	body.material_override = ice_mat
+	body.position = Vector3(0, 2.20, 0)
+	body.scale = Vector3(1.0, 0.95, 1.55)
+	mammoth.add_child(body)
+	# Head
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.95
+	hm.height = 1.65
+	head.mesh = hm
+	head.material_override = ice_mat
+	head.position = Vector3(0, 2.20, 1.85)
+	head.scale = Vector3(0.95, 1.0, 0.95)
+	mammoth.add_child(head)
+	# 2 large tusks (curved cylinders)
+	for sx in [-0.45, 0.45]:
+		var tusk: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.06
+		tm.bottom_radius = 0.18
+		tm.height = 1.85
+		tusk.mesh = tm
+		tusk.material_override = tusk_mat
+		tusk.position = Vector3(sx, 1.65, 2.55)
+		tusk.rotation_degrees = Vector3(35, 0, -15.0 if sx > 0 else 15.0)
+		mammoth.add_child(tusk)
+	# Trunk (3 narrowing sphere segments)
+	for i in 4:
+		var seg: MeshInstance3D = MeshInstance3D.new()
+		var sm: SphereMesh = SphereMesh.new()
+		sm.radius = 0.25 - i * 0.04
+		sm.height = 0.42 - i * 0.06
+		seg.mesh = sm
+		seg.material_override = ice_mat
+		seg.position = Vector3(0, 1.95 - i * 0.18, 2.55 + i * 0.30)
+		mammoth.add_child(seg)
+	# 4 legs (large cylinders)
+	for sx in [-0.85, 0.85]:
+		for sz in [-0.85, 0.85]:
+			var leg: MeshInstance3D = MeshInstance3D.new()
+			var lm: CylinderMesh = CylinderMesh.new()
+			lm.top_radius = 0.30
+			lm.bottom_radius = 0.40
+			lm.height = 1.85
+			leg.mesh = lm
+			leg.material_override = ice_mat
+			leg.position = Vector3(sx, 0.92, sz)
+			mammoth.add_child(leg)
+	# Pedestal stone block under the mammoth
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.50, 0.55)
+	stone_mat.roughness = 0.92
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pmm: BoxMesh = BoxMesh.new()
+	pmm.size = Vector3(4.20, 0.40, 4.20)
+	ped.mesh = pmm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.20, 0)
+	mammoth.add_child(ped)
+	# Pedestal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 0.40, 4.20)
+	cs.shape = cb
+	sb.add_child(cs)
+	mammoth.add_child(sb)
+	# Body collision (large box)
+	var bsb: StaticBody3D = StaticBody3D.new()
+	bsb.position = Vector3(0, 1.85, 0)
+	var bcs: CollisionShape3D = CollisionShape3D.new()
+	var bcb: BoxShape3D = BoxShape3D.new()
+	bcb.size = Vector3(2.40, 3.30, 4.20)
+	bcs.shape = bcb
+	bsb.add_child(bcs)
+	mammoth.add_child(bsb)
+
+
+func _build_d5_cryo_engineer_npc() -> void:
+	## Epic-5 T23: cryo engineer NPC — heavy snowsuit + welding-style helmet
+	## with a glowing visor + small toolbox at their feet.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CryoEngineerSlot"
+	slot.position = Vector3(D5_CENTER.x + 6.0, 0.0, 13.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CryoEngineer"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Argyle")
+	if "npc_id" in npc:
+		npc.set("npc_id", "engineer_d5")
+	slot.add_child(npc)
+	# Snowsuit body
+	var suit: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.75, 1.05, 0.55)
+	suit.mesh = sm
+	var suit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	suit_mat.albedo_color = Color(0.30, 0.50, 0.65)
+	suit_mat.roughness = 0.65
+	suit_mat.metallic = 0.25
+	suit.material_override = suit_mat
+	suit.position = Vector3(0, 0.55, 0)
+	npc.add_child(suit)
+	# Welding helmet (box with glowing cyan visor)
+	var helmet: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.40, 0.45, 0.40)
+	helmet.mesh = hm
+	var helmet_mat: StandardMaterial3D = StandardMaterial3D.new()
+	helmet_mat.albedo_color = Color(0.20, 0.25, 0.30)
+	helmet_mat.metallic = 0.85
+	helmet_mat.roughness = 0.30
+	helmet.material_override = helmet_mat
+	helmet.position = Vector3(0, 1.40, 0)
+	npc.add_child(helmet)
+	# Glowing visor strip
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.32, 0.10, 0.04)
+	visor.mesh = vm
+	var visor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	visor_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	visor_mat.emission_enabled = true
+	visor_mat.emission = Color(0.30, 1.0, 1.0)
+	visor_mat.emission_energy_multiplier = 3.0
+	visor_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = visor_mat
+	visor.position = Vector3(0, 1.40, 0.21)
+	npc.add_child(visor)
+	# Toolbox at their feet (small box)
+	var toolbox: MeshInstance3D = MeshInstance3D.new()
+	var tm: BoxMesh = BoxMesh.new()
+	tm.size = Vector3(0.55, 0.30, 0.30)
+	toolbox.mesh = tm
+	var tool_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tool_mat.albedo_color = Color(0.85, 0.55, 0.20)
+	tool_mat.metallic = 0.55
+	tool_mat.roughness = 0.45
+	toolbox.material_override = tool_mat
+	toolbox.position = Vector3(0.65, 0.15, 0.20)
+	npc.add_child(toolbox)
+
+
+func _build_d5_ice_cave_entrance(geom: Node) -> void:
+	## Epic-5 T24: small ice cave entrance — half-dome ice opening with a
+	## dark interior, hinting at unexplored areas behind the cache.
+	var cave: Node3D = Node3D.new()
+	cave.name = "IceCaveEntrance"
+	cave.position = Vector3(D5_CENTER.x + 24.0, 0.0, -16.0)
+	geom.add_child(cave)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.92)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.55
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	# Half-dome cave roof (large sphere flattened)
+	var dome: MeshInstance3D = MeshInstance3D.new()
+	var dm: SphereMesh = SphereMesh.new()
+	dm.radius = 3.40
+	dm.height = 5.40
+	dome.mesh = dm
+	dome.material_override = ice_mat
+	dome.position = Vector3(0, 2.20, 0)
+	dome.scale = Vector3(1.0, 0.85, 1.0)
+	cave.add_child(dome)
+	# Dark interior plug (large dark disk facing outward)
+	var dark: MeshInstance3D = MeshInstance3D.new()
+	var darkm: CylinderMesh = CylinderMesh.new()
+	darkm.top_radius = 1.85
+	darkm.bottom_radius = 1.85
+	darkm.height = 0.20
+	dark.mesh = darkm
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.04, 0.06, 0.10)
+	dark_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	dark.material_override = dark_mat
+	dark.position = Vector3(0, 1.85, 1.40)
+	dark.rotation_degrees = Vector3(90, 0, 0)
+	cave.add_child(dark)
+	# Faint inner light (mysterious blue glow from within)
+	var inner: OmniLight3D = OmniLight3D.new()
+	inner.light_color = Color(0.30, 0.65, 0.95)
+	inner.light_energy = 1.6
+	inner.omni_range = 5.5
+	inner.position = Vector3(0, 1.55, 0.85)
+	cave.add_child(inner)
+	# 4 hanging icicles around the opening
+	for i in 4:
+		var ic: MeshInstance3D = MeshInstance3D.new()
+		var im: PrismMesh = PrismMesh.new()
+		im.size = Vector3(0.20, 0.85 + randf() * 0.40, 0.20)
+		ic.mesh = im
+		ic.material_override = ice_mat
+		var ang: float = lerp(-PI * 0.30, PI * 0.30, float(i) / 3.0)
+		ic.position = Vector3(cos(ang + PI * 0.5) * 1.85, 3.20, sin(ang + PI * 0.5) * 1.85 + 1.20)
+		ic.rotation_degrees = Vector3(180, 0, 0)
+		cave.add_child(ic)
+	# Cave dome collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 2.20, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: SphereShape3D = SphereShape3D.new()
+	cap.radius = 2.80
+	cs.shape = cap
+	sb.add_child(cs)
+	cave.add_child(sb)
+
+
+func _build_d5_frozen_heart(geom: Node) -> void:
+	## Epic-5 T25: frozen heart artifact — small pulsing crystal heart on
+	## a stone pedestal. A hint at later quest collectibles.
+	var heart: Node3D = Node3D.new()
+	heart.name = "FrozenHeart"
+	heart.position = Vector3(D5_CENTER.x + 2.0, 0.0, -8.0)
+	geom.add_child(heart)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.55, 0.62, 0.68)
+	stone_mat.roughness = 0.92
+	# Pedestal
+	var ped: MeshInstance3D = MeshInstance3D.new()
+	var pm: BoxMesh = BoxMesh.new()
+	pm.size = Vector3(0.85, 1.10, 0.85)
+	ped.mesh = pm
+	ped.material_override = stone_mat
+	ped.position = Vector3(0, 0.55, 0)
+	heart.add_child(ped)
+	# Pedestal cap
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var cmm: CylinderMesh = CylinderMesh.new()
+	cmm.top_radius = 0.55
+	cmm.bottom_radius = 0.50
+	cmm.height = 0.20
+	cap.mesh = cmm
+	cap.material_override = stone_mat
+	cap.position = Vector3(0, 1.20, 0)
+	heart.add_child(cap)
+	# Heart artifact — 2 spheres + prism, pulsing
+	var heart_mat: StandardMaterial3D = StandardMaterial3D.new()
+	heart_mat.albedo_color = Color(0.40, 0.85, 1.0)
+	heart_mat.emission_enabled = true
+	heart_mat.emission = Color(0.30, 1.0, 1.0)
+	heart_mat.emission_energy_multiplier = 3.5
+	heart_mat.metallic = 0.40
+	heart_mat.roughness = 0.10
+	heart_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var pivot: Node3D = Node3D.new()
+	pivot.position = Vector3(0, 1.85, 0)
+	heart.add_child(pivot)
+	for sx in [-0.18, 0.18]:
+		var lobe: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.22
+		lm.height = 0.40
+		lobe.mesh = lm
+		lobe.material_override = heart_mat
+		lobe.position = Vector3(sx, 0.0, 0)
+		pivot.add_child(lobe)
+	var point: MeshInstance3D = MeshInstance3D.new()
+	var ptm: PrismMesh = PrismMesh.new()
+	ptm.size = Vector3(0.55, 0.40, 0.20)
+	point.mesh = ptm
+	point.material_override = heart_mat
+	point.position = Vector3(0, -0.20, 0)
+	point.rotation_degrees = Vector3(180, 0, 0)
+	pivot.add_child(point)
+	# Pulse heartbeat (the actual function of this artifact)
+	var tw: Tween = pivot.create_tween().set_loops()
+	tw.tween_property(pivot, "scale", Vector3.ONE * 1.20, 0.35)
+	tw.tween_property(pivot, "scale", Vector3.ONE * 0.95, 0.35)
+	tw.tween_property(pivot, "scale", Vector3.ONE * 1.10, 0.35)
+	tw.tween_property(pivot, "scale", Vector3.ONE * 0.95, 0.85)
+	# Hover spin
+	var ts: Tween = pivot.create_tween().set_loops()
+	ts.tween_property(pivot, "rotation_degrees:y", 360.0, 5.0)
+	ts.tween_property(pivot, "rotation_degrees:y", 0.0, 0.0)
+	# Aura light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 0.95, 1.0)
+	light.light_energy = 2.5
+	light.omni_range = 5.0
+	light.position = Vector3(0, 1.85, 0)
+	heart.add_child(light)
+	# Pedestal collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 0.55, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(0.85, 1.30, 0.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	heart.add_child(sb)
 
 
 
