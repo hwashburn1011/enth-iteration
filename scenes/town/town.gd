@@ -1590,6 +1590,16 @@ func _build_district_2(geom: Node) -> void:
 	_build_d2_data_scrolls(geom)
 	# Epic-2 T80: enchanter NPC with orbiting runes
 	_build_d2_enchanter_npc()
+	# Epic-2 T81: hospital wing extension building
+	_build_d2_hospital_wing(geom)
+	# Epic-2 T82: garage with stored hover-vehicle inside
+	_build_d2_garage(geom)
+	# Epic-2 T83: library ruins with floating data tomes
+	_build_d2_library_ruins(geom)
+	# Epic-2 T84: 4 gargoyle statues guarding the trading post
+	_build_d2_gargoyles(geom)
+	# Epic-2 T85: boss arena teaser at the far east edge
+	_build_d2_boss_arena_teaser(geom)
 
 
 const D2_CENTER := Vector3(85, 0, 0)
@@ -14378,4 +14388,508 @@ func _build_d2_enchanter_npc() -> void:
 	label.font_size = 18
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	enc.add_child(label)
+
+
+func _build_d2_hospital_wing(geom: Node) -> void:
+	## Epic-2 T81: a small hospital wing building next to the med tent.
+	## Wider concrete structure with red cross emblem on the front + a
+	## glowing entryway and 2 small upper windows.
+	var wing: Node3D = Node3D.new()
+	wing.name = "D2HospitalWing"
+	wing.position = D2_CENTER + Vector3(-12, 0, 14)
+	geom.add_child(wing)
+	# Main building
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.85, 0.85, 0.92)
+	wall_mat.metallic = 0.20
+	wall_mat.roughness = 0.55
+	wall_mat.emission_enabled = true
+	wall_mat.emission = Color(0.95, 0.95, 1.0)
+	wall_mat.emission_energy_multiplier = 0.30
+	var building: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(3.40, 3.20, 2.40)
+	building.mesh = bmesh
+	building.position = Vector3(0, 1.60, 0)
+	building.material_override = wall_mat
+	wing.add_child(building)
+	# Flat roof slab
+	var roof_mat: StandardMaterial3D = StandardMaterial3D.new()
+	roof_mat.albedo_color = Color(0.55, 0.55, 0.65)
+	roof_mat.metallic = 0.30
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rmesh: BoxMesh = BoxMesh.new()
+	rmesh.size = Vector3(3.65, 0.20, 2.65)
+	roof.mesh = rmesh
+	roof.position = Vector3(0, 3.30, 0)
+	roof.material_override = roof_mat
+	wing.add_child(roof)
+	# Big red cross emblem on the front face
+	var cross_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cross_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	cross_mat.emission_enabled = true
+	cross_mat.emission = Color(1.0, 0.30, 0.30)
+	cross_mat.emission_energy_multiplier = 1.8
+	cross_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var v_bar: MeshInstance3D = MeshInstance3D.new()
+	var vm: BoxMesh = BoxMesh.new()
+	vm.size = Vector3(0.30, 1.40, 0.10)
+	v_bar.mesh = vm
+	v_bar.position = Vector3(0, 2.30, 1.21)
+	v_bar.material_override = cross_mat
+	wing.add_child(v_bar)
+	var h_bar: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(1.0, 0.30, 0.10)
+	h_bar.mesh = hm
+	h_bar.position = Vector3(0, 2.30, 1.21)
+	h_bar.material_override = cross_mat
+	wing.add_child(h_bar)
+	# Glowing entryway — dark recessed door with cyan light frame
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dmesh: BoxMesh = BoxMesh.new()
+	dmesh.size = Vector3(0.85, 1.40, 0.10)
+	door.mesh = dmesh
+	door.position = Vector3(0, 0.80, 1.21)
+	var dmat: StandardMaterial3D = StandardMaterial3D.new()
+	dmat.albedo_color = Color(0.06, 0.10, 0.16)
+	dmat.emission_enabled = true
+	dmat.emission = Color(0.55, 0.95, 1.0)
+	dmat.emission_energy_multiplier = 0.85
+	dmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	door.material_override = dmat
+	wing.add_child(door)
+	# Door frame trim — 4 cyan emissive bars
+	var trim_mat: StandardMaterial3D = StandardMaterial3D.new()
+	trim_mat.albedo_color = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_enabled = true
+	trim_mat.emission = Color(0.55, 0.95, 1.0)
+	trim_mat.emission_energy_multiplier = 1.6
+	trim_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for spec in [
+		[Vector3(0, 0.10, 1.22), Vector3(0.95, 0.05, 0.04)],
+		[Vector3(0, 1.50, 1.22), Vector3(0.95, 0.05, 0.04)],
+		[Vector3(-0.45, 0.80, 1.22), Vector3(0.05, 1.40, 0.04)],
+		[Vector3(0.45, 0.80, 1.22), Vector3(0.05, 1.40, 0.04)],
+	]:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bmesh2: BoxMesh = BoxMesh.new()
+		bmesh2.size = spec[1]
+		bar.mesh = bmesh2
+		bar.position = spec[0]
+		bar.material_override = trim_mat
+		wing.add_child(bar)
+	# 2 upper window squares
+	for sx: float in [-0.95, 0.95]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm2: BoxMesh = BoxMesh.new()
+		wm2.size = Vector3(0.55, 0.45, 0.04)
+		win.mesh = wm2
+		win.position = Vector3(sx, 2.85, 1.22)
+		var wmat2: StandardMaterial3D = StandardMaterial3D.new()
+		wmat2.albedo_color = Color(0.95, 0.85, 0.55)
+		wmat2.emission_enabled = true
+		wmat2.emission = Color(1.0, 0.85, 0.55)
+		wmat2.emission_energy_multiplier = 1.4
+		wmat2.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		win.material_override = wmat2
+		wing.add_child(win)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "HOSPITAL"
+	label.position = Vector3(0, 4.0, 0)
+	label.modulate = Color(1.0, 0.30, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 22
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	wing.add_child(label)
+	# Collision around the building
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 3.20, 2.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.60, 0)
+	sb.add_child(cs)
+	wing.add_child(sb)
+
+
+func _build_d2_garage(geom: Node) -> void:
+	## Epic-2 T82: a garage building with an open roll-up door, revealing
+	## a small hover-vehicle stored inside. Big rusty metal walls + slot
+	## for the door + a half-built bike on the floor.
+	var garage: Node3D = Node3D.new()
+	garage.name = "D2Garage"
+	garage.position = D2_CENTER + Vector3(-18, 0, -8)
+	geom.add_child(garage)
+	# Walls — concrete sides
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.30, 0.30, 0.34)
+	wall_mat.metallic = 0.30
+	wall_mat.roughness = 0.65
+	# Back wall
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.40, 2.85, 0.20)
+	back.mesh = bm
+	back.position = Vector3(0, 1.42, -1.20)
+	back.material_override = wall_mat
+	garage.add_child(back)
+	# Side walls
+	for sx: float in [-1.70, 1.70]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var sm2: BoxMesh = BoxMesh.new()
+		sm2.size = Vector3(0.20, 2.85, 2.60)
+		side.mesh = sm2
+		side.position = Vector3(sx, 1.42, 0)
+		side.material_override = wall_mat
+		garage.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(3.60, 0.20, 2.80)
+	roof.mesh = rm
+	roof.position = Vector3(0, 2.95, 0)
+	roof.material_override = wall_mat
+	garage.add_child(roof)
+	# Half-rolled door — sits at the top of the front opening
+	var door_mat: StandardMaterial3D = StandardMaterial3D.new()
+	door_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	door_mat.metallic = 0.40
+	door_mat.roughness = 0.55
+	var door: MeshInstance3D = MeshInstance3D.new()
+	var dm: BoxMesh = BoxMesh.new()
+	dm.size = Vector3(3.40, 0.85, 0.10)
+	door.mesh = dm
+	door.position = Vector3(0, 2.40, 1.20)
+	door.material_override = door_mat
+	garage.add_child(door)
+	# Half-built bike inside (small bike body box)
+	var bike_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bike_mat.albedo_color = Color(0.20, 0.22, 0.28)
+	bike_mat.metallic = 0.85
+	bike_mat.roughness = 0.30
+	var bike: MeshInstance3D = MeshInstance3D.new()
+	var bk_mesh: BoxMesh = BoxMesh.new()
+	bk_mesh.size = Vector3(1.40, 0.40, 0.55)
+	bike.mesh = bk_mesh
+	bike.position = Vector3(0, 0.30, -0.20)
+	bike.rotation = Vector3(0, deg_to_rad(20), 0)
+	bike.material_override = bike_mat
+	garage.add_child(bike)
+	# Bike engine glow
+	var engine: MeshInstance3D = MeshInstance3D.new()
+	var em: SphereMesh = SphereMesh.new()
+	em.radius = 0.18
+	em.height = 0.36
+	engine.mesh = em
+	engine.position = Vector3(-0.45, 0.30, -0.20)
+	var emat: StandardMaterial3D = StandardMaterial3D.new()
+	emat.albedo_color = Color(1.0, 0.40, 0.20)
+	emat.emission_enabled = true
+	emat.emission = Color(1.0, 0.55, 0.20)
+	emat.emission_energy_multiplier = 2.4
+	emat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	engine.material_override = emat
+	garage.add_child(engine)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "GARAGE"
+	label.position = Vector3(0, 3.55, 0)
+	label.modulate = Color(1.0, 0.55, 0.20)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 18
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	garage.add_child(label)
+	# Collision around walls
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.40, 2.85, 2.60)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.42, 0)
+	sb.add_child(cs)
+	garage.add_child(sb)
+
+
+func _build_d2_library_ruins(geom: Node) -> void:
+	## Epic-2 T83: collapsed library — 3 broken bookshelf boxes leaning at
+	## angles + 4 floating "data tomes" hovering above them. Lore element
+	## telling "knowledge was destroyed here".
+	var lib: Node3D = Node3D.new()
+	lib.name = "D2LibraryRuins"
+	lib.position = D2_CENTER + Vector3(6, 0, 16)
+	geom.add_child(lib)
+	# 3 shelves leaning
+	var shelf_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shelf_mat.albedo_color = Color(0.30, 0.18, 0.10)
+	shelf_mat.metallic = 0.10
+	shelf_mat.roughness = 0.65
+	var shelf_specs: Array = [
+		[Vector3(-1.5, 1.10, 0), Vector3(0, 0, deg_to_rad(-12))],
+		[Vector3(0, 1.10, 0.55), Vector3(0, deg_to_rad(15), deg_to_rad(8))],
+		[Vector3(1.5, 1.10, -0.30), Vector3(0, deg_to_rad(-25), deg_to_rad(15))],
+	]
+	for spec in shelf_specs:
+		var shelf: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(1.0, 2.20, 0.40)
+		shelf.mesh = smesh
+		shelf.position = spec[0]
+		shelf.rotation = spec[1]
+		shelf.material_override = shelf_mat
+		lib.add_child(shelf)
+		# 3 colored book "row" boxes inside the shelf
+		for i in 3:
+			var book_color: Color = [Color(0.55, 0.30, 0.30), Color(0.30, 0.55, 0.30), Color(0.30, 0.30, 0.55)][i]
+			var book: MeshInstance3D = MeshInstance3D.new()
+			var bk: BoxMesh = BoxMesh.new()
+			bk.size = Vector3(0.85, 0.55, 0.30)
+			book.mesh = bk
+			book.position = (spec[0] as Vector3) + Vector3(0, -0.65 + i * 0.55, 0)
+			book.rotation = spec[1]
+			var bmat: StandardMaterial3D = StandardMaterial3D.new()
+			bmat.albedo_color = book_color
+			bmat.metallic = 0.10
+			book.material_override = bmat
+			lib.add_child(book)
+		# Collision per shelf
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.0, 2.20, 0.40)
+		cs.shape = cb
+		cs.position = spec[0]
+		sb.add_child(cs)
+		lib.add_child(sb)
+	# 4 floating data tomes hovering above
+	var tome_mat: StandardMaterial3D = StandardMaterial3D.new()
+	tome_mat.albedo_color = Color(0.85, 0.40, 1.0)
+	tome_mat.emission_enabled = true
+	tome_mat.emission = Color(1.0, 0.55, 1.0)
+	tome_mat.emission_energy_multiplier = 1.8
+	tome_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var tome: MeshInstance3D = MeshInstance3D.new()
+		var tmesh: BoxMesh = BoxMesh.new()
+		tmesh.size = Vector3(0.40, 0.30, 0.10)
+		tome.mesh = tmesh
+		var origin_y: float = 3.0 + (i % 2) * 0.55
+		tome.position = Vector3(-1.5 + i * 0.85, origin_y, 0)
+		tome.material_override = tome_mat
+		lib.add_child(tome)
+		# Bob + spin
+		var bob: Tween = create_tween().set_loops()
+		bob.tween_property(tome, "position:y", origin_y + 0.30, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		bob.tween_property(tome, "position:y", origin_y, 1.4 + i * 0.15).set_ease(Tween.EASE_IN_OUT)
+		var spin: Tween = create_tween().set_loops()
+		spin.tween_property(tome, "rotation:y", TAU, 6.0)
+	# Sign
+	var label: Label3D = Label3D.new()
+	label.text = "LIBRARY RUINS"
+	label.position = Vector3(0, 4.40, 0)
+	label.modulate = Color(0.85, 0.65, 1.0)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 5
+	label.font_size = 16
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	lib.add_child(label)
+
+
+func _build_d2_gargoyles(geom: Node) -> void:
+	## Epic-2 T84: 4 gargoyle statues guarding the trading post. Each is a
+	## small dark figure crouched on a pedestal with red eyes. Decorative
+	## ward-like flavor.
+	var positions: Array[Vector3] = [
+		D2_CENTER + Vector3(0, 0, -6),
+		D2_CENTER + Vector3(4, 0, -6),
+		D2_CENTER + Vector3(0, 0, -10),
+		D2_CENTER + Vector3(4, 0, -10),
+	]
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.16, 0.14, 0.18)
+	stone_mat.metallic = 0.30
+	stone_mat.roughness = 0.65
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(1.0, 0.20, 0.20)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(1.0, 0.30, 0.30)
+	eye_mat.emission_energy_multiplier = 2.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in positions.size():
+		var garg: Node3D = Node3D.new()
+		garg.name = "D2Gargoyle_%d" % i
+		garg.position = positions[i]
+		garg.rotation = Vector3(0, deg_to_rad(45 + i * 90), 0)
+		geom.add_child(garg)
+		# Pedestal
+		var ped: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.65, 0.65, 0.65)
+		ped.mesh = pmesh
+		ped.position = Vector3(0, 0.32, 0)
+		ped.material_override = stone_mat
+		garg.add_child(ped)
+		# Body — crouched cube
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm2: BoxMesh = BoxMesh.new()
+		bm2.size = Vector3(0.45, 0.45, 0.55)
+		body.mesh = bm2
+		body.position = Vector3(0, 0.85, 0)
+		body.material_override = stone_mat
+		garg.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hmesh: BoxMesh = BoxMesh.new()
+		hmesh.size = Vector3(0.35, 0.30, 0.35)
+		head.mesh = hmesh
+		head.position = Vector3(0, 1.20, 0.10)
+		head.material_override = stone_mat
+		garg.add_child(head)
+		# 2 red eyes
+		for ex: float in [-0.07, 0.07]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = 0.04
+			em.height = 0.08
+			eye.mesh = em
+			eye.position = Vector3(ex, 1.22, 0.28)
+			eye.material_override = eye_mat
+			garg.add_child(eye)
+		# Wing on top of body (small angled box)
+		for sx: float in [-0.30, 0.30]:
+			var wing: MeshInstance3D = MeshInstance3D.new()
+			var wmesh: BoxMesh = BoxMesh.new()
+			wmesh.size = Vector3(0.10, 0.45, 0.20)
+			wing.mesh = wmesh
+			wing.position = Vector3(sx, 1.10, -0.10)
+			wing.rotation = Vector3(0, 0, sign(sx) * deg_to_rad(20))
+			wing.material_override = stone_mat
+			garg.add_child(wing)
+		# Collision per gargoyle
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.65, 1.40, 0.65)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.70, 0)
+		sb.add_child(cs)
+		garg.add_child(sb)
+
+
+func _build_d2_boss_arena_teaser(geom: Node) -> void:
+	## Epic-2 T85: a massive shadowed boss arena teaser at the far east
+	## edge of D2 — a wide circular ring of dark stone pillars surrounding
+	## a glowing red rune-circle in the center. Tells the player "the
+	## final boss lives here, but is asleep". Telegraphs Epic 3.
+	var arena: Node3D = Node3D.new()
+	arena.name = "D2BossArenaTeaser"
+	arena.position = D2_CENTER + Vector3(28, 0, 0)
+	geom.add_child(arena)
+	# Big circular floor disc — dark amber emissive
+	var floor_mat: StandardMaterial3D = StandardMaterial3D.new()
+	floor_mat.albedo_color = Color(0.10, 0.04, 0.04)
+	floor_mat.metallic = 0.45
+	floor_mat.roughness = 0.55
+	floor_mat.emission_enabled = true
+	floor_mat.emission = Color(0.85, 0.20, 0.20)
+	floor_mat.emission_energy_multiplier = 0.45
+	var floor_disc: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: CylinderMesh = CylinderMesh.new()
+	fmesh.top_radius = 6.0
+	fmesh.bottom_radius = 6.0
+	fmesh.height = 0.10
+	floor_disc.mesh = fmesh
+	floor_disc.position = Vector3(0, 0.06, 0)
+	floor_disc.material_override = floor_mat
+	arena.add_child(floor_disc)
+	# 8 dark stone pillars in a ring
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.10, 0.10, 0.13)
+	stone_mat.metallic = 0.55
+	stone_mat.roughness = 0.45
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(1.0, 0.20, 0.30)
+	stone_mat.emission_energy_multiplier = 0.45
+	for i in 8:
+		var angle: float = (float(i) / 8.0) * TAU
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: BoxMesh = BoxMesh.new()
+		pmesh.size = Vector3(0.85, 6.0, 0.85)
+		pillar.mesh = pmesh
+		pillar.position = Vector3(cos(angle) * 5.5, 3.0, sin(angle) * 5.5)
+		pillar.material_override = stone_mat
+		arena.add_child(pillar)
+		# Top emissive crown
+		var crown: MeshInstance3D = MeshInstance3D.new()
+		var cm: SphereMesh = SphereMesh.new()
+		cm.radius = 0.30
+		cm.height = 0.60
+		crown.mesh = cm
+		crown.position = Vector3(cos(angle) * 5.5, 6.30, sin(angle) * 5.5)
+		var cmat: StandardMaterial3D = StandardMaterial3D.new()
+		cmat.albedo_color = Color(1.0, 0.30, 0.30)
+		cmat.emission_enabled = true
+		cmat.emission = Color(1.0, 0.40, 0.40)
+		cmat.emission_energy_multiplier = 2.6
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		crown.material_override = cmat
+		arena.add_child(crown)
+		# Collision per pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.85, 6.0, 0.85)
+		cs.shape = cb
+		cs.position = Vector3(cos(angle) * 5.5, 3.0, sin(angle) * 5.5)
+		sb.add_child(cs)
+		arena.add_child(sb)
+	# Center rune circle — 3 concentric pulsing torus rings
+	for r in 3:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmesh: TorusMesh = TorusMesh.new()
+		rmesh.inner_radius = 1.0 + r * 0.55
+		rmesh.outer_radius = 1.20 + r * 0.55
+		ring.mesh = rmesh
+		ring.position = Vector3(0, 0.12, 0)
+		var rmat: StandardMaterial3D = StandardMaterial3D.new()
+		rmat.albedo_color = Color(1.0, 0.20, 0.20)
+		rmat.emission_enabled = true
+		rmat.emission = Color(1.0, 0.30, 0.30)
+		rmat.emission_energy_multiplier = 2.4
+		rmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		ring.material_override = rmat
+		arena.add_child(ring)
+		# Pulse the ring scale outward
+		var pulse: Tween = create_tween().set_loops()
+		pulse.tween_property(ring, "scale", Vector3(1.10, 1.0, 1.10), 1.8 + r * 0.3).set_ease(Tween.EASE_IN_OUT)
+		pulse.tween_property(ring, "scale", Vector3(0.92, 1.0, 0.92), 1.8 + r * 0.3).set_ease(Tween.EASE_IN_OUT)
+	# Center marker — small dark sphere on the rune circle
+	var marker: MeshInstance3D = MeshInstance3D.new()
+	var mm: SphereMesh = SphereMesh.new()
+	mm.radius = 0.40
+	mm.height = 0.80
+	marker.mesh = mm
+	marker.position = Vector3(0, 0.50, 0)
+	var marker_mat: StandardMaterial3D = StandardMaterial3D.new()
+	marker_mat.albedo_color = Color(0.04, 0.04, 0.06)
+	marker_mat.metallic = 0.85
+	marker_mat.emission_enabled = true
+	marker_mat.emission = Color(1.0, 0.20, 0.20)
+	marker_mat.emission_energy_multiplier = 0.85
+	marker.material_override = marker_mat
+	arena.add_child(marker)
+	# Boss-tier name billboard
+	var label: Label3D = Label3D.new()
+	label.text = "BOSS ARENA\n— ASLEEP —"
+	label.position = Vector3(0, 8.0, 0)
+	label.modulate = Color(1.0, 0.30, 0.30)
+	label.outline_modulate = Color(0, 0, 0, 0.85)
+	label.outline_size = 6
+	label.font_size = 26
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	arena.add_child(label)
+
 
