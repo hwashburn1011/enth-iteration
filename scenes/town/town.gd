@@ -1995,6 +1995,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_fairy_lights(geom)
 	# Epic-4 T75: petal drift particles
 	_build_d4_petal_drift(geom)
+	# Epic-4 T76: thornling enemy patrol decorations
+	_build_d4_thornling_patrol(geom)
+	# Epic-4 T77: archery range with targets
+	_build_d4_archery_range(geom)
+	# Epic-4 T78: ranger NPC with bow
+	_build_d4_ranger_npc()
+	# Epic-4 T79: rabbit family creatures
+	_build_d4_rabbit_family(geom)
+	# Epic-4 T80: ivy-covered stone arch
+	_build_d4_ivy_stone_arch(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -6702,6 +6712,357 @@ func _build_d4_petal_drift(geom: Node) -> void:
 	pmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	petal_mesh.material = pmat
 	geom.add_child(drift)
+
+
+func _build_d4_thornling_patrol(geom: Node) -> void:
+	## Epic-4 T76: 3 hostile thornling props patrolling along a tween path.
+	## Decorative — these are not real combat enemies but show the corruption
+	## edge of the bloom cluster. Spiky dark-green pods with red eyes.
+	var patrol: Node3D = Node3D.new()
+	patrol.name = "ThornlingPatrol"
+	patrol.position = Vector3(D4_CENTER.x + 17.0, 0.0, -8.0)
+	geom.add_child(patrol)
+	var pod_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pod_mat.albedo_color = Color(0.15, 0.30, 0.10)
+	pod_mat.emission_enabled = true
+	pod_mat.emission = Color(0.20, 0.45, 0.15)
+	pod_mat.emission_energy_multiplier = 0.30
+	pod_mat.roughness = 0.65
+	var thorn_mat: StandardMaterial3D = StandardMaterial3D.new()
+	thorn_mat.albedo_color = Color(0.40, 0.20, 0.10)
+	thorn_mat.roughness = 0.85
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.95, 0.10, 0.10)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.95, 0.05, 0.05)
+	eye_mat.emission_energy_multiplier = 1.6
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var start_positions: Array = [
+		Vector3( 0.0, 0,  0.0),
+		Vector3(-2.5, 0,  1.0),
+		Vector3( 2.5, 0, -1.5),
+	]
+	for i in start_positions.size():
+		var thorn: Node3D = Node3D.new()
+		thorn.position = start_positions[i]
+		patrol.add_child(thorn)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.40
+		bm.height = 0.65
+		body.mesh = bm
+		body.material_override = pod_mat
+		body.position = Vector3(0, 0.45, 0)
+		thorn.add_child(body)
+		# 6 thorns radiating
+		for j in 6:
+			var ang: float = (TAU / 6.0) * j
+			var spike: MeshInstance3D = MeshInstance3D.new()
+			var spm: PrismMesh = PrismMesh.new()
+			spm.size = Vector3(0.10, 0.35, 0.10)
+			spike.mesh = spm
+			spike.material_override = thorn_mat
+			spike.position = Vector3(cos(ang) * 0.40, 0.55, sin(ang) * 0.40)
+			spike.rotation = Vector3(0, ang, PI * 0.5)
+			thorn.add_child(spike)
+		# 2 red eyes
+		for ex in [-0.10, 0.10]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var em: SphereMesh = SphereMesh.new()
+			em.radius = 0.05
+			em.height = 0.10
+			eye.mesh = em
+			eye.material_override = eye_mat
+			eye.position = Vector3(ex, 0.55, 0.32)
+			thorn.add_child(eye)
+		# Patrol tween — bobbing + drifting
+		var tw: Tween = thorn.create_tween().set_loops()
+		var sp: Vector3 = start_positions[i]
+		tw.tween_property(thorn, "position", sp + Vector3(2.0, 0, 0), 2.5)
+		tw.tween_property(thorn, "position", sp + Vector3(2.0, 0, 2.0), 2.5)
+		tw.tween_property(thorn, "position", sp + Vector3(0, 0, 2.0), 2.5)
+		tw.tween_property(thorn, "position", sp, 2.5)
+		# Bob
+		var tb: Tween = body.create_tween().set_loops()
+		tb.tween_property(body, "position:y", 0.55, 0.6)
+		tb.tween_property(body, "position:y", 0.45, 0.6)
+
+
+func _build_d4_archery_range(geom: Node) -> void:
+	## Epic-4 T77: archery range — line of 4 painted bullseye targets on
+	## wooden stands at the south end of D4.
+	var range_node: Node3D = Node3D.new()
+	range_node.name = "ArcheryRange"
+	range_node.position = Vector3(D4_CENTER.x - 16.0, 0.0, 14.0)
+	geom.add_child(range_node)
+	var stand_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stand_mat.albedo_color = Color(0.50, 0.32, 0.16)
+	stand_mat.roughness = 0.85
+	var ring_white: Color = Color(0.95, 0.95, 0.92)
+	var ring_red: Color = Color(0.85, 0.10, 0.10)
+	var ring_yellow: Color = Color(0.95, 0.85, 0.20)
+	var rings: Array = [
+		{"r": 0.55, "c": ring_white},
+		{"r": 0.40, "c": ring_red},
+		{"r": 0.25, "c": ring_white},
+		{"r": 0.10, "c": ring_yellow},
+	]
+	for i in 4:
+		var stand: Node3D = Node3D.new()
+		stand.position = Vector3(i * 2.4, 0, 0)
+		range_node.add_child(stand)
+		# 2 vertical posts
+		for sx in [-0.50, 0.50]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: BoxMesh = BoxMesh.new()
+			pm.size = Vector3(0.10, 1.80, 0.10)
+			post.mesh = pm
+			post.material_override = stand_mat
+			post.position = Vector3(sx, 0.90, 0)
+			stand.add_child(post)
+		# Horizontal cross brace
+		var brace: MeshInstance3D = MeshInstance3D.new()
+		var bcm: BoxMesh = BoxMesh.new()
+		bcm.size = Vector3(1.20, 0.10, 0.10)
+		brace.mesh = bcm
+		brace.material_override = stand_mat
+		brace.position = Vector3(0, 0.40, 0)
+		stand.add_child(brace)
+		# Bullseye rings (concentric flat cylinders)
+		for ring in rings:
+			var disc: MeshInstance3D = MeshInstance3D.new()
+			var dm: CylinderMesh = CylinderMesh.new()
+			dm.top_radius = ring["r"]
+			dm.bottom_radius = ring["r"]
+			dm.height = 0.04
+			disc.mesh = dm
+			var dmat: StandardMaterial3D = StandardMaterial3D.new()
+			dmat.albedo_color = ring["c"]
+			dmat.emission_enabled = true
+			dmat.emission = ring["c"]
+			dmat.emission_energy_multiplier = 0.25
+			dmat.roughness = 0.55
+			disc.material_override = dmat
+			disc.position = Vector3(0, 1.20, 0.0 - rings.find(ring) * 0.005)
+			disc.rotation_degrees = Vector3(90, 0, 0)
+			stand.add_child(disc)
+		# Stand collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.20, 1.80, 0.30)
+		cs.shape = cb
+		cs.position = Vector3(0, 0.90, 0)
+		sb.add_child(cs)
+		stand.add_child(sb)
+
+
+func _build_d4_ranger_npc() -> void:
+	## Epic-4 T78: ranger NPC with green hood + wooden longbow.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "RangerSlot"
+	slot.position = Vector3(D4_CENTER.x - 12.0, 0.0, 14.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Ranger"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Briarstride")
+	if "npc_id" in npc:
+		npc.set("npc_id", "ranger_d4")
+	slot.add_child(npc)
+	# Green hood block over head
+	var hood: MeshInstance3D = MeshInstance3D.new()
+	var hm: SphereMesh = SphereMesh.new()
+	hm.radius = 0.20
+	hm.height = 0.34
+	hood.mesh = hm
+	var hood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hood_mat.albedo_color = Color(0.20, 0.45, 0.20)
+	hood_mat.roughness = 0.85
+	hood.material_override = hood_mat
+	hood.position = Vector3(0, 1.40, 0)
+	npc.add_child(hood)
+	# Longbow at side (curved torus arc visible as full circle, scaled)
+	var bow: MeshInstance3D = MeshInstance3D.new()
+	var btm: TorusMesh = TorusMesh.new()
+	btm.inner_radius = 0.55
+	btm.outer_radius = 0.60
+	bow.mesh = btm
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	wood_mat.roughness = 0.85
+	bow.material_override = wood_mat
+	bow.position = Vector3(0.45, 0.85, 0)
+	bow.rotation_degrees = Vector3(0, 0, 90)
+	bow.scale = Vector3(1.0, 0.40, 1.0)
+	npc.add_child(bow)
+	# Bowstring (thin cylinder vertical)
+	var string: MeshInstance3D = MeshInstance3D.new()
+	var sm: CylinderMesh = CylinderMesh.new()
+	sm.top_radius = 0.005
+	sm.bottom_radius = 0.005
+	sm.height = 1.10
+	string.mesh = sm
+	var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sm_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	string.material_override = sm_mat
+	string.position = Vector3(0.45, 0.85, 0)
+	npc.add_child(string)
+
+
+func _build_d4_rabbit_family(geom: Node) -> void:
+	## Epic-4 T79: rabbit family — 4 rabbits of varying sizes hopping in
+	## a meadow patch with bobbing tweens.
+	var family: Node3D = Node3D.new()
+	family.name = "RabbitFamily"
+	family.position = Vector3(D4_CENTER.x - 14.0, 0.0, 0.0)
+	geom.add_child(family)
+	var fur_mat: StandardMaterial3D = StandardMaterial3D.new()
+	fur_mat.albedo_color = Color(0.75, 0.65, 0.55)
+	fur_mat.roughness = 0.90
+	var ear_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ear_mat.albedo_color = Color(0.85, 0.55, 0.50)
+	ear_mat.roughness = 0.85
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.10, 0.05, 0.05)
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var configs: Array = [
+		{"pos": Vector3( 0.0, 0,  0.0), "scale": 1.00},
+		{"pos": Vector3(-1.4, 0,  0.8), "scale": 0.65},
+		{"pos": Vector3( 1.5, 0, -0.4), "scale": 0.60},
+		{"pos": Vector3( 0.6, 0,  1.6), "scale": 0.55},
+	]
+	for cfg in configs:
+		var rabbit: Node3D = Node3D.new()
+		rabbit.position = cfg["pos"]
+		rabbit.scale = Vector3.ONE * cfg["scale"]
+		family.add_child(rabbit)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: SphereMesh = SphereMesh.new()
+		bm.radius = 0.18
+		bm.height = 0.30
+		body.mesh = bm
+		body.material_override = fur_mat
+		body.position = Vector3(0, 0.20, 0)
+		body.scale = Vector3(1.0, 0.85, 1.20)
+		rabbit.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.13
+		hm.height = 0.22
+		head.mesh = hm
+		head.material_override = fur_mat
+		head.position = Vector3(0, 0.32, 0.18)
+		rabbit.add_child(head)
+		# 2 long ears
+		for ex in [-0.06, 0.06]:
+			var ear: MeshInstance3D = MeshInstance3D.new()
+			var em: PrismMesh = PrismMesh.new()
+			em.size = Vector3(0.06, 0.22, 0.04)
+			ear.mesh = em
+			ear.material_override = ear_mat
+			ear.position = Vector3(ex, 0.50, 0.18)
+			rabbit.add_child(ear)
+		# 2 small eyes
+		for ex in [-0.05, 0.05]:
+			var eye: MeshInstance3D = MeshInstance3D.new()
+			var emm: SphereMesh = SphereMesh.new()
+			emm.radius = 0.02
+			emm.height = 0.04
+			eye.mesh = emm
+			eye.material_override = eye_mat
+			eye.position = Vector3(ex, 0.34, 0.30)
+			rabbit.add_child(eye)
+		# Cotton tail (white sphere)
+		var tail: MeshInstance3D = MeshInstance3D.new()
+		var tm: SphereMesh = SphereMesh.new()
+		tm.radius = 0.06
+		tm.height = 0.12
+		tail.mesh = tm
+		var tail_mat: StandardMaterial3D = StandardMaterial3D.new()
+		tail_mat.albedo_color = Color(0.95, 0.95, 0.92)
+		tail_mat.roughness = 0.90
+		tail.material_override = tail_mat
+		tail.position = Vector3(0, 0.20, -0.20)
+		rabbit.add_child(tail)
+		# Hopping tween
+		var tw: Tween = rabbit.create_tween().set_loops()
+		var origin: Vector3 = cfg["pos"]
+		tw.tween_property(rabbit, "position:y", 0.30, 0.30)
+		tw.tween_property(rabbit, "position:y", 0.0, 0.30)
+		tw.tween_interval(1.0 + randf() * 0.8)
+
+
+func _build_d4_ivy_stone_arch(geom: Node) -> void:
+	## Epic-4 T80: ivy-covered stone arch marking a side path. Two stone
+	## pillars with a curved torus top + green ivy clumps.
+	var arch: Node3D = Node3D.new()
+	arch.name = "IvyStoneArch"
+	arch.position = Vector3(D4_CENTER.x + 16.0, 0.0, 0.0)
+	geom.add_child(arch)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.60, 0.58, 0.52)
+	stone_mat.roughness = 0.95
+	# 2 pillars
+	for sx in [-1.40, 1.40]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.55, 3.20, 0.55)
+		pillar.mesh = pm
+		pillar.material_override = stone_mat
+		pillar.position = Vector3(sx, 1.60, 0)
+		arch.add_child(pillar)
+		# Pillar collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(sx, 1.60, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(0.55, 3.20, 0.55)
+		cs.shape = cb
+		sb.add_child(cs)
+		arch.add_child(sb)
+	# Curved arch top (half-torus, scaled)
+	var top: MeshInstance3D = MeshInstance3D.new()
+	var tm: TorusMesh = TorusMesh.new()
+	tm.inner_radius = 1.20
+	tm.outer_radius = 1.60
+	top.mesh = tm
+	top.material_override = stone_mat
+	top.position = Vector3(0, 3.20, 0)
+	top.rotation_degrees = Vector3(90, 0, 0)
+	top.scale = Vector3(1.0, 1.0, 0.45)
+	arch.add_child(top)
+	# Ivy clumps (green spheres draped on the arch)
+	var ivy_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ivy_mat.albedo_color = Color(0.20, 0.50, 0.18)
+	ivy_mat.emission_enabled = true
+	ivy_mat.emission = Color(0.15, 0.40, 0.12)
+	ivy_mat.emission_energy_multiplier = 0.20
+	ivy_mat.roughness = 0.85
+	for i in 14:
+		var ivy: MeshInstance3D = MeshInstance3D.new()
+		var im: SphereMesh = SphereMesh.new()
+		im.radius = 0.22
+		im.height = 0.40
+		ivy.mesh = im
+		ivy.material_override = ivy_mat
+		# Random along the arch top + pillars
+		var t: float = randf()
+		var ang: float = lerp(PI, 0.0, t)
+		var rx: float = cos(ang) * 1.40
+		var ry: float = 3.20 + sin(ang) * 1.20
+		ivy.position = Vector3(rx, ry, randf_range(-0.30, 0.30))
+		ivy.scale = Vector3(1.0, 0.55, 0.85)
+		arch.add_child(ivy)
 
 
 
