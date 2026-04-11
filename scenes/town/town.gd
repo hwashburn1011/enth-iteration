@@ -8775,6 +8775,16 @@ func _build_district_5(geom: Node) -> void:
 	_build_d5_great_monolith(geom)
 	# Epic-5 T4: cryo-keeper NPC
 	_build_d5_cryo_keeper_npc()
+	# Epic-5 T6: row of cryo-pod chambers
+	_build_d5_cryo_pods(geom)
+	# Epic-5 T7: ice golem creature
+	_build_d5_ice_golem(geom)
+	# Epic-5 T8: frost-tech server bank
+	_build_d5_frost_servers(geom)
+	# Epic-5 T9: ice crystal tree
+	_build_d5_crystal_tree(geom)
+	# Epic-5 T10: ambient snowfall particles
+	_build_d5_snowfall(geom)
 
 
 func _extend_boundary_for_d5(geom: Node) -> void:
@@ -9080,6 +9090,388 @@ func _build_d5_cryo_keeper_npc() -> void:
 	var tw: Tween = crystal.create_tween().set_loops()
 	tw.tween_property(crystal, "scale", Vector3.ONE * 1.20, 1.0)
 	tw.tween_property(crystal, "scale", Vector3.ONE * 0.85, 1.0)
+
+
+func _build_d5_cryo_pods(geom: Node) -> void:
+	## Epic-5 T6: 6 vertical cryo-pod chambers in a row, each containing
+	## a faintly visible silhouette of a frozen data-spirit.
+	var pods: Node3D = Node3D.new()
+	pods.name = "CryoPods"
+	pods.position = Vector3(D5_CENTER.x - 14.0, 0.0, -10.0)
+	geom.add_child(pods)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.40, 0.50, 0.60)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var glass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glass_mat.albedo_color = Color(0.55, 0.85, 1.0, 0.55)
+	glass_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_mat.emission_enabled = true
+	glass_mat.emission = Color(0.40, 0.85, 1.0)
+	glass_mat.emission_energy_multiplier = 0.85
+	glass_mat.metallic = 0.55
+	glass_mat.roughness = 0.10
+	var spirit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	spirit_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.65)
+	spirit_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	spirit_mat.emission_enabled = true
+	spirit_mat.emission = Color(0.30, 0.95, 1.0)
+	spirit_mat.emission_energy_multiplier = 1.4
+	spirit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 6:
+		var pod: Node3D = Node3D.new()
+		pod.position = Vector3(i * 1.85, 0, 0)
+		pods.add_child(pod)
+		# Base
+		var base: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.65
+		bm.bottom_radius = 0.75
+		bm.height = 0.40
+		base.mesh = bm
+		base.material_override = metal_mat
+		base.position = Vector3(0, 0.20, 0)
+		pod.add_child(base)
+		# Glass tube
+		var tube: MeshInstance3D = MeshInstance3D.new()
+		var tm: CylinderMesh = CylinderMesh.new()
+		tm.top_radius = 0.55
+		tm.bottom_radius = 0.55
+		tm.height = 2.30
+		tube.mesh = tm
+		tube.material_override = glass_mat
+		tube.position = Vector3(0, 1.55, 0)
+		pod.add_child(tube)
+		# Cap (metal hemisphere)
+		var cap: MeshInstance3D = MeshInstance3D.new()
+		var cmm: SphereMesh = SphereMesh.new()
+		cmm.radius = 0.55
+		cmm.height = 0.55
+		cap.mesh = cmm
+		cap.material_override = metal_mat
+		cap.position = Vector3(0, 2.85, 0)
+		cap.scale = Vector3(1.0, 0.55, 1.0)
+		pod.add_child(cap)
+		# Frozen spirit silhouette inside (humanoid blob)
+		var spirit: Node3D = Node3D.new()
+		spirit.position = Vector3(0, 1.55, 0)
+		pod.add_child(spirit)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bbm: SphereMesh = SphereMesh.new()
+		bbm.radius = 0.30
+		bbm.height = 0.85
+		body.mesh = bbm
+		body.material_override = spirit_mat
+		body.position = Vector3(0, 0, 0)
+		body.scale = Vector3(0.85, 1.10, 0.85)
+		spirit.add_child(body)
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		head.material_override = spirit_mat
+		head.position = Vector3(0, 0.55, 0)
+		spirit.add_child(head)
+		# Slow gentle bob (tube life-support breathing)
+		var tw: Tween = spirit.create_tween().set_loops()
+		tw.tween_property(spirit, "position:y", 1.65, 2.0 + randf() * 0.5)
+		tw.tween_property(spirit, "position:y", 1.45, 2.0 + randf() * 0.5)
+		# Status lights at the base (3 small dots)
+		for k in 3:
+			var dot: MeshInstance3D = MeshInstance3D.new()
+			var dmm: SphereMesh = SphereMesh.new()
+			dmm.radius = 0.05
+			dmm.height = 0.10
+			dot.mesh = dmm
+			var dot_mat: StandardMaterial3D = StandardMaterial3D.new()
+			dot_mat.albedo_color = Color(0.30, 1.0, 0.55) if k == 0 else (Color(1.0, 0.85, 0.30) if k == 1 else Color(0.95, 0.30, 0.30))
+			dot_mat.emission_enabled = true
+			dot_mat.emission = dot_mat.albedo_color
+			dot_mat.emission_energy_multiplier = 2.5
+			dot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			dot.material_override = dot_mat
+			var ang: float = (TAU / 3.0) * k
+			dot.position = Vector3(cos(ang) * 0.55, 0.30, sin(ang) * 0.55)
+			pod.add_child(dot)
+		# Pod collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var capsh: CapsuleShape3D = CapsuleShape3D.new()
+		capsh.radius = 0.65
+		capsh.height = 3.10
+		cs.shape = capsh
+		cs.position = Vector3(0, 1.55, 0)
+		sb.add_child(cs)
+		pod.add_child(sb)
+
+
+func _build_d5_ice_golem(geom: Node) -> void:
+	## Epic-5 T7: large hostile ice golem creature — chunky humanoid with
+	## glowing cyan eyes and a slow patrol path. Decorative for now.
+	var golem: Node3D = Node3D.new()
+	golem.name = "IceGolem"
+	golem.position = Vector3(D5_CENTER.x + 12.0, 0.0, -8.0)
+	geom.add_child(golem)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.70, 0.85, 0.95)
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.75, 0.95)
+	ice_mat.emission_energy_multiplier = 0.30
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.20
+	# Body (large chunky box)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.40, 1.85, 0.95)
+	body.mesh = bm
+	body.material_override = ice_mat
+	body.position = Vector3(0, 1.10, 0)
+	golem.add_child(body)
+	# Head (smaller block on top)
+	var head: MeshInstance3D = MeshInstance3D.new()
+	var hm: BoxMesh = BoxMesh.new()
+	hm.size = Vector3(0.85, 0.75, 0.75)
+	head.mesh = hm
+	head.material_override = ice_mat
+	head.position = Vector3(0, 2.40, 0)
+	golem.add_child(head)
+	# Cyan eye slits
+	var eye_mat: StandardMaterial3D = StandardMaterial3D.new()
+	eye_mat.albedo_color = Color(0.30, 1.0, 1.0)
+	eye_mat.emission_enabled = true
+	eye_mat.emission = Color(0.30, 1.0, 1.0)
+	eye_mat.emission_energy_multiplier = 4.0
+	eye_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for ex in [-0.20, 0.20]:
+		var eye: MeshInstance3D = MeshInstance3D.new()
+		var em: BoxMesh = BoxMesh.new()
+		em.size = Vector3(0.16, 0.06, 0.04)
+		eye.mesh = em
+		eye.material_override = eye_mat
+		eye.position = Vector3(ex, 2.45, 0.40)
+		golem.add_child(eye)
+	# Arms (two large rectangular boxes hanging at sides)
+	for sx in [-1.10, 1.10]:
+		var arm: MeshInstance3D = MeshInstance3D.new()
+		var am: BoxMesh = BoxMesh.new()
+		am.size = Vector3(0.55, 1.65, 0.55)
+		arm.mesh = am
+		arm.material_override = ice_mat
+		arm.position = Vector3(sx, 1.10, 0)
+		golem.add_child(arm)
+		# Fist (slightly larger sphere)
+		var fist: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.40
+		fm.height = 0.70
+		fist.mesh = fm
+		fist.material_override = ice_mat
+		fist.position = Vector3(sx, 0.20, 0)
+		golem.add_child(fist)
+	# Legs (two short stout boxes)
+	for sx in [-0.35, 0.35]:
+		var leg: MeshInstance3D = MeshInstance3D.new()
+		var lm: BoxMesh = BoxMesh.new()
+		lm.size = Vector3(0.50, 0.40, 0.55)
+		leg.mesh = lm
+		leg.material_override = ice_mat
+		leg.position = Vector3(sx, 0.20, 0)
+		golem.add_child(leg)
+	# Patrol tween — slow back and forth
+	var tw: Tween = golem.create_tween().set_loops()
+	tw.tween_property(golem, "position", Vector3(D5_CENTER.x + 16.0, 0.0, -8.0), 5.0)
+	tw.tween_property(golem, "rotation_degrees:y", 180.0, 0.6)
+	tw.tween_property(golem, "position", Vector3(D5_CENTER.x + 8.0, 0.0, -8.0), 5.0)
+	tw.tween_property(golem, "rotation_degrees:y", 0.0, 0.6)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.10, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 2.20, 1.10)
+	cs.shape = cb
+	sb.add_child(cs)
+	golem.add_child(sb)
+
+
+func _build_d5_frost_servers(geom: Node) -> void:
+	## Epic-5 T8: frost-tech server bank — 4 tall metal cabinets with cyan
+	## flicker LED grids and frost halos around them.
+	var bank: Node3D = Node3D.new()
+	bank.name = "FrostServers"
+	bank.position = Vector3(D5_CENTER.x + 8.0, 0.0, 12.0)
+	geom.add_child(bank)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.40, 0.50)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	var led_mat: StandardMaterial3D = StandardMaterial3D.new()
+	led_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	led_mat.emission_enabled = true
+	led_mat.emission = Color(0.30, 1.0, 1.0)
+	led_mat.emission_energy_multiplier = 2.5
+	led_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 4:
+		var rack: Node3D = Node3D.new()
+		rack.position = Vector3(i * 1.30, 0, 0)
+		bank.add_child(rack)
+		# Cabinet
+		var cab: MeshInstance3D = MeshInstance3D.new()
+		var cm: BoxMesh = BoxMesh.new()
+		cm.size = Vector3(1.10, 2.85, 0.85)
+		cab.mesh = cm
+		cab.material_override = metal_mat
+		cab.position = Vector3(0, 1.42, 0)
+		rack.add_child(cab)
+		# 8 horizontal LED strips on the front
+		for j in 8:
+			var strip: MeshInstance3D = MeshInstance3D.new()
+			var sm: BoxMesh = BoxMesh.new()
+			sm.size = Vector3(0.85, 0.06, 0.04)
+			strip.mesh = sm
+			strip.material_override = led_mat
+			strip.position = Vector3(0, 0.45 + j * 0.30, 0.42)
+			rack.add_child(strip)
+			# Flicker tween
+			var tw: Tween = strip.create_tween().set_loops()
+			tw.tween_interval((i * 8 + j) * 0.05)
+			tw.tween_property(strip, "scale:x", 0.40, 0.30)
+			tw.tween_property(strip, "scale:x", 1.0, 0.30)
+		# Frost halo light
+		var light: OmniLight3D = OmniLight3D.new()
+		light.light_color = Color(0.40, 0.85, 1.0)
+		light.light_energy = 1.2
+		light.omni_range = 2.6
+		light.position = Vector3(0, 1.85, 0.50)
+		rack.add_child(light)
+		# Cabinet collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, 1.42, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = Vector3(1.10, 2.85, 0.85)
+		cs.shape = cb
+		sb.add_child(cs)
+		rack.add_child(sb)
+
+
+func _build_d5_crystal_tree(geom: Node) -> void:
+	## Epic-5 T9: ice crystal tree — translucent prismatic trunk with
+	## branches of glowing cyan crystals instead of leaves.
+	var tree: Node3D = Node3D.new()
+	tree.name = "CrystalTree"
+	tree.position = Vector3(D5_CENTER.x - 8.0, 0.0, 12.0)
+	geom.add_child(tree)
+	var ice_mat: StandardMaterial3D = StandardMaterial3D.new()
+	ice_mat.albedo_color = Color(0.65, 0.85, 0.95, 0.85)
+	ice_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	ice_mat.emission_enabled = true
+	ice_mat.emission = Color(0.40, 0.85, 0.95)
+	ice_mat.emission_energy_multiplier = 0.65
+	ice_mat.metallic = 0.55
+	ice_mat.roughness = 0.10
+	var bright_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bright_mat.albedo_color = Color(0.30, 0.95, 1.0)
+	bright_mat.emission_enabled = true
+	bright_mat.emission = Color(0.30, 1.0, 1.0)
+	bright_mat.emission_energy_multiplier = 2.5
+	bright_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Trunk
+	var trunk: MeshInstance3D = MeshInstance3D.new()
+	var trm: CylinderMesh = CylinderMesh.new()
+	trm.top_radius = 0.20
+	trm.bottom_radius = 0.45
+	trm.height = 3.40
+	trunk.mesh = trm
+	trunk.material_override = ice_mat
+	trunk.position = Vector3(0, 1.70, 0)
+	tree.add_child(trunk)
+	# 5 branches as prisms angling outward
+	for i in 5:
+		var ang: float = (TAU / 5.0) * i
+		var branch: MeshInstance3D = MeshInstance3D.new()
+		var bm: PrismMesh = PrismMesh.new()
+		bm.size = Vector3(0.20, 1.40, 0.20)
+		branch.mesh = bm
+		branch.material_override = ice_mat
+		branch.position = Vector3(cos(ang) * 0.55, 3.20, sin(ang) * 0.55)
+		branch.rotation = Vector3(deg_to_rad(35) * sin(ang), ang, deg_to_rad(35) * cos(ang))
+		tree.add_child(branch)
+		# Cluster of bright crystal "leaves" at the branch tip
+		for j in 4:
+			var crystal: MeshInstance3D = MeshInstance3D.new()
+			var cm: PrismMesh = PrismMesh.new()
+			cm.size = Vector3(0.16, 0.30, 0.16)
+			crystal.mesh = cm
+			crystal.material_override = bright_mat
+			crystal.position = Vector3(
+				cos(ang) * 1.30 + randf_range(-0.20, 0.20),
+				3.85 + randf_range(-0.20, 0.20),
+				sin(ang) * 1.30 + randf_range(-0.20, 0.20)
+			)
+			crystal.rotation_degrees = Vector3(randf_range(-30, 30), randf_range(0, 360), randf_range(-30, 30))
+			tree.add_child(crystal)
+	# Top crystal cluster
+	for i in 3:
+		var top: MeshInstance3D = MeshInstance3D.new()
+		var tm2: PrismMesh = PrismMesh.new()
+		tm2.size = Vector3(0.22, 0.45, 0.22)
+		top.mesh = tm2
+		top.material_override = bright_mat
+		top.position = Vector3(randf_range(-0.20, 0.20), 3.65 + i * 0.15, randf_range(-0.20, 0.20))
+		tree.add_child(top)
+	# Trunk collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.45
+	cap.height = 3.40
+	cs.shape = cap
+	sb.add_child(cs)
+	tree.add_child(sb)
+
+
+func _build_d5_snowfall(geom: Node) -> void:
+	## Epic-5 T10: ambient snowfall — GPU particles drifting downward over
+	## the entire Frozen Cache district.
+	var snow: GPUParticles3D = GPUParticles3D.new()
+	snow.name = "Snowfall"
+	snow.position = Vector3(D5_CENTER.x, 14.0, 0.0)
+	snow.amount = 200
+	snow.lifetime = 9.0
+	snow.preprocess = 5.0
+	snow.explosiveness = 0.0
+	snow.randomness = 0.7
+	snow.visibility_aabb = AABB(Vector3(-40, -16, -25), Vector3(80, 30, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(35, 0.5, 22)
+	pm.direction = Vector3(0.10, -1, 0.05)
+	pm.spread = 18.0
+	pm.gravity = Vector3(0.05, -0.85, 0.04)
+	pm.initial_velocity_min = 0.45
+	pm.initial_velocity_max = 0.95
+	pm.angular_velocity_min = -45.0
+	pm.angular_velocity_max = 45.0
+	pm.scale_min = 0.06
+	pm.scale_max = 0.14
+	pm.color = Color(0.95, 0.97, 1.0, 0.95)
+	snow.process_material = pm
+	# Snowflake mesh — small flat box
+	var flake_mesh: BoxMesh = BoxMesh.new()
+	flake_mesh.size = Vector3(0.10, 0.02, 0.10)
+	snow.draw_pass_1 = flake_mesh
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(0.95, 0.97, 1.0)
+	fmat.emission_enabled = true
+	fmat.emission = Color(0.85, 0.95, 1.0)
+	fmat.emission_energy_multiplier = 1.4
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	fmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	flake_mesh.material = fmat
+	geom.add_child(snow)
 
 
 
