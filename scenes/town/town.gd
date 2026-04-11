@@ -1283,6 +1283,16 @@ func _build_east_plaza() -> void:
 	_build_crowd_seating(geom)
 	# Epic-1 T30: combat trainer NPC at the sparring arena edge
 	_build_combat_trainer_npc()
+	# Epic-1 T31: weapon rack with 4 displayed weapons
+	_build_weapon_rack(geom)
+	# Epic-1 T32: armored combat mannequin (humanoid display)
+	_build_combat_mannequin(geom)
+	# Epic-1 T33: padded training mat (warm-up zone)
+	_build_training_mat(geom)
+	# Epic-1 T34: scoreboard with HP/XP display panels
+	_build_score_board(geom)
+	# Epic-1 T35: cyan chalk technique lines painted on the spar zone floor
+	_build_chalk_lines(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -2117,6 +2127,238 @@ func _build_security_drones(geom: Node) -> void:
 		var tween: Tween = create_tween().set_loops()
 		for waypoint in path:
 			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_weapon_rack(geom: Node) -> void:
+	## Epic-1 T31: vertical weapon rack at (44, 0, -14) with 4 displayed weapons
+	var rack: Node3D = Node3D.new()
+	rack.name = "EastPlazaWeaponRack"
+	rack.position = Vector3(44, 0, -14)
+	geom.add_child(rack)
+	# Rack frame (vertical post)
+	var post_mat: StandardMaterial3D = StandardMaterial3D.new()
+	post_mat.albedo_color = Color(0.10, 0.18, 0.26)
+	post_mat.emission_enabled = true
+	post_mat.emission = Color(0.20, 0.55, 0.75)
+	post_mat.emission_energy_multiplier = 0.5
+	post_mat.metallic = 0.7
+	var frame: MeshInstance3D = MeshInstance3D.new()
+	var fmesh: BoxMesh = BoxMesh.new()
+	fmesh.size = Vector3(0.15, 2.4, 1.6)
+	frame.mesh = fmesh
+	frame.position = Vector3(0, 1.2, 0)
+	frame.material_override = post_mat
+	rack.add_child(frame)
+	# 4 weapons, evenly spaced along the rack height
+	var weapons: Array = [
+		# [shape_size, color, name]
+		[Vector3(0.06, 1.2, 0.10), Color(0.45, 0.95, 1.0), "BLADE"],   # sword
+		[Vector3(0.10, 0.4, 0.10), Color(1.0, 0.55, 0.20), "BOLT"],     # pistol-like
+		[Vector3(0.05, 1.0, 0.05), Color(0.85, 0.30, 1.0), "STAFF"],    # staff
+		[Vector3(0.30, 0.30, 0.05), Color(0.30, 0.85, 0.50), "BUCKLER"],# small shield
+	]
+	for i in weapons.size():
+		var entry = weapons[i]
+		var size: Vector3 = entry[0]
+		var hue: Color = entry[1]
+		var weapon_name: String = entry[2]
+		var w: MeshInstance3D = MeshInstance3D.new()
+		var wmesh: BoxMesh = BoxMesh.new()
+		wmesh.size = size
+		w.mesh = wmesh
+		w.position = Vector3(0.15, 0.5 + i * 0.55, 0)
+		var wmat: StandardMaterial3D = StandardMaterial3D.new()
+		wmat.albedo_color = hue
+		wmat.emission_enabled = true
+		wmat.emission = hue
+		wmat.emission_energy_multiplier = 1.4
+		wmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		w.material_override = wmat
+		rack.add_child(w)
+		# Tiny name label next to each weapon
+		var label: Label3D = Label3D.new()
+		label.text = weapon_name
+		label.position = Vector3(0.45, 0.5 + i * 0.55, 0)
+		label.modulate = hue
+		label.outline_modulate = Color(0, 0, 0, 0.85)
+		label.outline_size = 4
+		label.font_size = 14
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		rack.add_child(label)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var col_shape: CollisionShape3D = CollisionShape3D.new()
+	var col_box: BoxShape3D = BoxShape3D.new()
+	col_box.size = Vector3(0.6, 2.4, 1.6)
+	col_shape.shape = col_box
+	col_shape.position = Vector3(0, 1.2, 0)
+	sb.add_child(col_shape)
+	rack.add_child(sb)
+
+
+func _build_combat_mannequin(geom: Node) -> void:
+	## Epic-1 T32: armored humanoid mannequin (display, not interactive)
+	## next to the weapon rack
+	var mq: Node3D = Node3D.new()
+	mq.name = "EastPlazaCombatMannequin"
+	mq.position = Vector3(44, 0, -16)
+	geom.add_child(mq)
+	# Body — taller than dummies, armored look
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: CapsuleMesh = CapsuleMesh.new()
+	bmesh.radius = 0.32
+	bmesh.height = 1.8
+	body.mesh = bmesh
+	body.position = Vector3(0, 1.0, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.20, 0.30, 0.40)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.30, 0.65, 0.85)
+	bmat.emission_energy_multiplier = 0.4
+	bmat.metallic = 0.85
+	bmat.roughness = 0.3
+	body.material_override = bmat
+	mq.add_child(body)
+	# Helmet (sphere on top)
+	var helm: MeshInstance3D = MeshInstance3D.new()
+	var hmesh: SphereMesh = SphereMesh.new()
+	hmesh.radius = 0.32
+	hmesh.height = 0.64
+	helm.mesh = hmesh
+	helm.position = Vector3(0, 1.95, 0)
+	helm.material_override = bmat
+	mq.add_child(helm)
+	# Glowing visor stripe
+	var visor: MeshInstance3D = MeshInstance3D.new()
+	var vmesh: BoxMesh = BoxMesh.new()
+	vmesh.size = Vector3(0.55, 0.10, 0.05)
+	visor.mesh = vmesh
+	visor.position = Vector3(0, 1.95, -0.30)
+	var vmat: StandardMaterial3D = StandardMaterial3D.new()
+	vmat.albedo_color = Color(1.0, 0.30, 0.30)
+	vmat.emission_enabled = true
+	vmat.emission = Color(1.0, 0.20, 0.20)
+	vmat.emission_energy_multiplier = 2.5
+	vmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	visor.material_override = vmat
+	mq.add_child(visor)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var col_shape: CollisionShape3D = CollisionShape3D.new()
+	var col_capsule: CapsuleShape3D = CapsuleShape3D.new()
+	col_capsule.radius = 0.32
+	col_capsule.height = 1.8
+	col_shape.shape = col_capsule
+	col_shape.position = Vector3(0, 1.0, 0)
+	sb.add_child(col_shape)
+	mq.add_child(sb)
+
+
+func _build_training_mat(geom: Node) -> void:
+	## Epic-1 T33: padded training mat at (37, 0.02, -14) — flat soft area
+	## next to the spar zone where the player can warm up
+	var mat: MeshInstance3D = MeshInstance3D.new()
+	mat.name = "EastPlazaTrainingMat"
+	var mmesh: BoxMesh = BoxMesh.new()
+	mmesh.size = Vector3(2.0, 0.04, 2.0)
+	mat.mesh = mmesh
+	mat.position = Vector3(37, 0.02, -10)
+	var mmat: StandardMaterial3D = StandardMaterial3D.new()
+	mmat.albedo_color = Color(0.20, 0.55, 0.65)
+	mmat.emission_enabled = true
+	mmat.emission = Color(0.30, 0.75, 0.90)
+	mmat.emission_energy_multiplier = 0.6
+	mmat.roughness = 0.85
+	mat.material_override = mmat
+	geom.add_child(mat)
+
+
+func _build_score_board(geom: Node) -> void:
+	## Epic-1 T34: large scoreboard with mock HP/XP display panels
+	var board: Node3D = Node3D.new()
+	board.name = "EastPlazaScoreBoard"
+	board.position = Vector3(44, 0, -10)
+	geom.add_child(board)
+	# Backboard
+	var back: MeshInstance3D = MeshInstance3D.new()
+	var bmesh: BoxMesh = BoxMesh.new()
+	bmesh.size = Vector3(0.10, 2.0, 3.0)
+	back.mesh = bmesh
+	back.position = Vector3(0, 1.5, 0)
+	var bmat: StandardMaterial3D = StandardMaterial3D.new()
+	bmat.albedo_color = Color(0.05, 0.10, 0.20)
+	bmat.emission_enabled = true
+	bmat.emission = Color(0.10, 0.30, 0.55)
+	bmat.emission_energy_multiplier = 0.5
+	bmat.metallic = 0.6
+	back.material_override = bmat
+	board.add_child(back)
+	# Glowing display screen
+	var screen: MeshInstance3D = MeshInstance3D.new()
+	var smesh: BoxMesh = BoxMesh.new()
+	smesh.size = Vector3(0.05, 1.6, 2.6)
+	screen.mesh = smesh
+	screen.position = Vector3(0.08, 1.5, 0)
+	var smat: StandardMaterial3D = StandardMaterial3D.new()
+	smat.albedo_color = Color(0.10, 0.30, 0.55)
+	smat.emission_enabled = true
+	smat.emission = Color(0.30, 0.85, 1.0)
+	smat.emission_energy_multiplier = 1.4
+	smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	screen.material_override = smat
+	board.add_child(screen)
+	# Mock score text labels (3 lines)
+	var lines: Array[String] = [
+		"PLAYER",
+		"HP  100/100",
+		"XP    0/100",
+	]
+	for i in lines.size():
+		var line: Label3D = Label3D.new()
+		line.text = lines[i]
+		line.position = Vector3(0.12, 2.1 - i * 0.4, 0)
+		line.rotation_degrees = Vector3(0, 90, 0)
+		line.modulate = Color(0.40, 0.95, 1.0) if i == 0 else Color(1, 1, 1)
+		line.outline_modulate = Color(0, 0, 0, 0.95)
+		line.outline_size = 6
+		line.font_size = 22 if i == 0 else 18
+		line.no_depth_test = true
+		board.add_child(line)
+
+
+func _build_chalk_lines(geom: Node) -> void:
+	## Epic-1 T35: cyan chalk technique lines painted on the spar zone floor —
+	## footwork markers (4 lines + 1 center cross)
+	var chalk_mat: StandardMaterial3D = StandardMaterial3D.new()
+	chalk_mat.albedo_color = Color(0.40, 0.95, 1.0, 0.85)
+	chalk_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	chalk_mat.emission_enabled = true
+	chalk_mat.emission = Color(0.50, 0.95, 1.0)
+	chalk_mat.emission_energy_multiplier = 1.4
+	chalk_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# Center cross (2 perpendicular lines)
+	for entry in [
+		[Vector3(40, 0.13, -14), Vector3(2.0, 0.02, 0.05)],
+		[Vector3(40, 0.13, -14), Vector3(0.05, 0.02, 2.0)],
+	]:
+		var line: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: BoxMesh = BoxMesh.new()
+		lmesh.size = entry[1]
+		line.mesh = lmesh
+		line.position = entry[0]
+		line.material_override = chalk_mat
+		geom.add_child(line)
+	# 4 corner quadrant markers (small Xs)
+	for offset in [Vector3(-1.5, 0, -1.5), Vector3(1.5, 0, -1.5), Vector3(-1.5, 0, 1.5), Vector3(1.5, 0, 1.5)]:
+		for rot in [0.0, PI/2.0]:
+			var line: MeshInstance3D = MeshInstance3D.new()
+			var lmesh: BoxMesh = BoxMesh.new()
+			lmesh.size = Vector3(0.5, 0.02, 0.05)
+			line.mesh = lmesh
+			line.position = Vector3(40, 0.13, -14) + offset
+			line.rotation.y = rot + PI/4.0
+			line.material_override = chalk_mat
+			geom.add_child(line)
 
 
 func _build_sparring_arena(geom: Node) -> void:
