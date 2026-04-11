@@ -44,6 +44,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_district_tribute_statues(geom)
 	_build_th_bell_tower(geom)
 	_build_th_archive_tower(geom)
+	_build_th_forge_brazier_monument(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -4842,3 +4843,250 @@ func _build_th_archive_tower(geom: Node) -> void:
 	var dpulse: Tween = pivot.create_tween().set_loops()
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 8.5, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_forge_brazier_monument(geom: Node) -> void:
+	## Epic-10 T28: large standing brazier monument at the SW outer
+	## corner of the plaza, honoring the forge guild visually. Stepped
+	## basalt pedestal with brass anvil-and-hammer totem on the front,
+	## tall brass brazier bowl on a tapered stem, perpetual flame with
+	## strong OmniLight + ember mote shower, and 4 small ground torches
+	## around the pedestal corners.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_ForgeBrazierMonument"
+	# SW outer corner at radius ~16.5
+	var ang: float = 5.0 * PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 16.50, 0, sin(ang) * 16.50)
+	# Face the beacon (toward town center)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.45, 0.18, 0.05)
+	stone_mat.emission_energy_multiplier = 0.20
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.65
+	var iron_mat: StandardMaterial3D = StandardMaterial3D.new()
+	iron_mat.albedo_color = Color(0.18, 0.16, 0.18)
+	iron_mat.metallic = 0.85
+	iron_mat.roughness = 0.45
+	var flame_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flame_mat.albedo_color = Color(1.0, 0.65, 0.20)
+	flame_mat.emission_enabled = true
+	flame_mat.emission = Color(1.0, 0.55, 0.10)
+	flame_mat.emission_energy_multiplier = 9.5
+	flame_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var amber_mat: StandardMaterial3D = StandardMaterial3D.new()
+	amber_mat.albedo_color = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_enabled = true
+	amber_mat.emission = Color(1.0, 0.55, 0.10)
+	amber_mat.emission_energy_multiplier = 7.0
+	amber_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Stepped basalt pedestal (3 levels) ----
+	var base1: MeshInstance3D = MeshInstance3D.new()
+	var b1m: BoxMesh = BoxMesh.new()
+	b1m.size = Vector3(3.20, 0.55, 3.20)
+	base1.mesh = b1m
+	base1.material_override = stone_mat
+	base1.position = Vector3(0, 0.27, 0)
+	pivot.add_child(base1)
+	var base2: MeshInstance3D = MeshInstance3D.new()
+	var b2m: BoxMesh = BoxMesh.new()
+	b2m.size = Vector3(2.70, 0.45, 2.70)
+	base2.mesh = b2m
+	base2.material_override = stone_mat
+	base2.position = Vector3(0, 0.77, 0)
+	pivot.add_child(base2)
+	var base3: MeshInstance3D = MeshInstance3D.new()
+	var b3m: BoxMesh = BoxMesh.new()
+	b3m.size = Vector3(2.20, 0.55, 2.20)
+	base3.mesh = b3m
+	base3.material_override = stone_mat
+	base3.position = Vector3(0, 1.27, 0)
+	pivot.add_child(base3)
+	# Combined pedestal collision
+	var ped_sb: StaticBody3D = StaticBody3D.new()
+	ped_sb.position = Vector3(0, 0.77, 0)
+	var ped_cs: CollisionShape3D = CollisionShape3D.new()
+	var ped_bsh: BoxShape3D = BoxShape3D.new()
+	ped_bsh.size = Vector3(3.20, 1.55, 3.20)
+	ped_cs.shape = ped_bsh
+	ped_sb.add_child(ped_cs)
+	pivot.add_child(ped_sb)
+	# Brass top plate
+	var top_plate: MeshInstance3D = MeshInstance3D.new()
+	var tpm: BoxMesh = BoxMesh.new()
+	tpm.size = Vector3(2.30, 0.10, 2.30)
+	top_plate.mesh = tpm
+	top_plate.material_override = brass_mat
+	top_plate.position = Vector3(0, 1.60, 0)
+	pivot.add_child(top_plate)
+	# ---- Brass anvil-and-hammer totem on the front face of the pedestal ----
+	# Anvil base box
+	var anvil: MeshInstance3D = MeshInstance3D.new()
+	var anm: BoxMesh = BoxMesh.new()
+	anm.size = Vector3(0.85, 0.30, 0.30)
+	anvil.mesh = anm
+	anvil.material_override = brass_mat
+	anvil.position = Vector3(0, 0.95, -1.10)
+	pivot.add_child(anvil)
+	# Anvil horn (small box on the side)
+	var horn: MeshInstance3D = MeshInstance3D.new()
+	var hnm: BoxMesh = BoxMesh.new()
+	hnm.size = Vector3(0.30, 0.18, 0.30)
+	horn.mesh = hnm
+	horn.material_override = brass_mat
+	horn.position = Vector3(0.50, 1.00, -1.10)
+	pivot.add_child(horn)
+	# Hammer head crossing the anvil
+	var hamhead: MeshInstance3D = MeshInstance3D.new()
+	var hhm: BoxMesh = BoxMesh.new()
+	hhm.size = Vector3(0.50, 0.22, 0.30)
+	hamhead.mesh = hhm
+	hamhead.material_override = brass_mat
+	hamhead.position = Vector3(-0.20, 1.30, -1.10)
+	hamhead.rotation.z = -PI / 8.0
+	pivot.add_child(hamhead)
+	# Hammer handle
+	var hamhandle: MeshInstance3D = MeshInstance3D.new()
+	var hhdm: CylinderMesh = CylinderMesh.new()
+	hhdm.top_radius = 0.04
+	hhdm.bottom_radius = 0.04
+	hhdm.height = 0.85
+	hamhandle.mesh = hhdm
+	hamhandle.material_override = brass_mat
+	hamhandle.position = Vector3(0.20, 1.65, -1.10)
+	hamhandle.rotation.z = PI / 8.0
+	pivot.add_child(hamhandle)
+	# ---- Tapered brass stem rising from the top plate ----
+	var stem: MeshInstance3D = MeshInstance3D.new()
+	var stm: CylinderMesh = CylinderMesh.new()
+	stm.top_radius = 0.30
+	stm.bottom_radius = 0.55
+	stm.height = 4.00
+	stem.mesh = stm
+	stem.material_override = brass_mat
+	stem.position = Vector3(0, 3.65, 0)
+	pivot.add_child(stem)
+	# Stem brass rings (3 wraps)
+	for sy in [2.50, 4.00, 5.20]:
+		var ring: MeshInstance3D = MeshInstance3D.new()
+		var rmm: TorusMesh = TorusMesh.new()
+		rmm.inner_radius = 0.32
+		rmm.outer_radius = 0.45
+		ring.mesh = rmm
+		ring.material_override = brass_mat
+		ring.position = Vector3(0, sy, 0)
+		pivot.add_child(ring)
+	# ---- Tall brass brazier bowl ----
+	var bowl: MeshInstance3D = MeshInstance3D.new()
+	var bowm: SphereMesh = SphereMesh.new()
+	bowm.radius = 1.10
+	bowm.height = 1.85
+	bowl.mesh = bowm
+	bowl.material_override = brass_mat
+	bowl.position = Vector3(0, 6.00, 0)
+	bowl.scale = Vector3(1.0, 0.55, 1.0)
+	pivot.add_child(bowl)
+	# Bowl rim torus
+	var rim: MeshInstance3D = MeshInstance3D.new()
+	var rim_m: TorusMesh = TorusMesh.new()
+	rim_m.inner_radius = 1.00
+	rim_m.outer_radius = 1.20
+	rim.mesh = rim_m
+	rim.material_override = brass_mat
+	rim.position = Vector3(0, 6.45, 0)
+	pivot.add_child(rim)
+	# ---- Perpetual flame inside the bowl ----
+	var flame: MeshInstance3D = MeshInstance3D.new()
+	var flm: SphereMesh = SphereMesh.new()
+	flm.radius = 0.85
+	flm.height = 1.65
+	flame.mesh = flm
+	flame.material_override = flame_mat
+	flame.position = Vector3(0, 7.10, 0)
+	pivot.add_child(flame)
+	# Strong central flame OmniLight
+	var lt: OmniLight3D = OmniLight3D.new()
+	lt.position = Vector3(0, 7.20, 0)
+	lt.light_color = Color(1.0, 0.55, 0.15)
+	lt.light_energy = 6.0
+	lt.omni_range = 18.0
+	pivot.add_child(lt)
+	# Ember mote shower
+	var motes: GPUParticles3D = GPUParticles3D.new()
+	motes.position = Vector3(0, 7.85, 0)
+	motes.amount = 48
+	motes.lifetime = 3.0
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.direction = Vector3(0, 1, 0)
+	pmat.spread = 24.0
+	pmat.initial_velocity_min = 0.8
+	pmat.initial_velocity_max = 1.6
+	pmat.gravity = Vector3(0, 0.4, 0)
+	pmat.scale_min = 0.08
+	pmat.scale_max = 0.16
+	pmat.color = Color(1.0, 0.55, 0.10, 1.0)
+	motes.process_material = pmat
+	var psmesh: SphereMesh = SphereMesh.new()
+	psmesh.radius = 0.06
+	psmesh.height = 0.12
+	motes.draw_pass_1 = psmesh
+	pivot.add_child(motes)
+	# ---- 4 small ground torches around the pedestal corners ----
+	for cpx in [-1.40, 1.40]:
+		for cpz in [-1.40, 1.40]:
+			# Torch post (small iron cylinder)
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pmm: CylinderMesh = CylinderMesh.new()
+			pmm.top_radius = 0.06
+			pmm.bottom_radius = 0.08
+			pmm.height = 1.30
+			post.mesh = pmm
+			post.material_override = iron_mat
+			post.position = Vector3(cpx, 0.65, cpz)
+			pivot.add_child(post)
+			# Brass torch bowl
+			var t_bowl: MeshInstance3D = MeshInstance3D.new()
+			var tbm: SphereMesh = SphereMesh.new()
+			tbm.radius = 0.18
+			tbm.height = 0.32
+			t_bowl.mesh = tbm
+			t_bowl.material_override = brass_mat
+			t_bowl.position = Vector3(cpx, 1.40, cpz)
+			t_bowl.scale = Vector3(1.0, 0.55, 1.0)
+			pivot.add_child(t_bowl)
+			# Torch flame
+			var t_flame: MeshInstance3D = MeshInstance3D.new()
+			var tflm: SphereMesh = SphereMesh.new()
+			tflm.radius = 0.16
+			tflm.height = 0.32
+			t_flame.mesh = tflm
+			t_flame.material_override = flame_mat
+			t_flame.position = Vector3(cpx, 1.55, cpz)
+			pivot.add_child(t_flame)
+			# Corner OmniLight
+			var ct_lt: OmniLight3D = OmniLight3D.new()
+			ct_lt.position = Vector3(cpx, 1.55, cpz)
+			ct_lt.light_color = Color(1.0, 0.55, 0.15)
+			ct_lt.light_energy = 1.8
+			ct_lt.omni_range = 5.5
+			pivot.add_child(ct_lt)
+	# ---- Pulses ----
+	# Flame flicker
+	var fpulse: Tween = pivot.create_tween().set_loops()
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 11.5, 0.5).set_ease(Tween.EASE_IN_OUT)
+	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 8.0, 0.5).set_ease(Tween.EASE_IN_OUT)
+	# Brass + amber slow pulse
+	var apulse: Tween = pivot.create_tween().set_loops()
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 9.0, 1.6).set_ease(Tween.EASE_IN_OUT)
+	apulse.tween_property(amber_mat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
