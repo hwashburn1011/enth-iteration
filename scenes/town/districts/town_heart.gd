@@ -66,6 +66,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_data_tree_grove(geom)
 	_build_th_corner_mini_fountains(geom)
 	_build_th_open_pavilion(geom)
+	_build_th_hex_gazebo(geom)
 	print("[TownHeartBuilder] done")
 
 
@@ -8712,3 +8713,226 @@ func _build_th_open_pavilion(geom: Node) -> void:
 	var dpulse2: Tween = pivot.create_tween().set_loops()
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
 	dpulse2.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_th_hex_gazebo(geom: Node) -> void:
+	## Epic-10 T50 (HALFWAY MILESTONE): hexagonal gazebo shelter at the
+	## NE area between the bench ring and bell tower, balancing the SW
+	## round pavilion (T49) with a different silhouette. 6-sided stone
+	## hex floor, 6 brass corner posts, hex pyramid prism roof, 6 small
+	## round bench segments inside (one between each pair of posts), and
+	## hanging amber lanterns from the underside of the roof.
+	var pivot: Node3D = Node3D.new()
+	pivot.name = "TH_HexGazebo"
+	# NE position at radius 11.5 between the bench ring and bell tower
+	var ang: float = PI / 4.0
+	pivot.position = TOWN_CENTER + Vector3(cos(ang) * 11.50, 0, sin(ang) * 11.50)
+	pivot.rotation.y = -ang - PI / 2.0
+	geom.add_child(pivot)
+	# Materials
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.20, 0.22, 0.26)
+	stone_mat.metallic = 0.18
+	stone_mat.roughness = 0.85
+	stone_mat.emission_enabled = true
+	stone_mat.emission = Color(0.30, 0.45, 0.60)
+	stone_mat.emission_energy_multiplier = 0.18
+	var brass_mat: StandardMaterial3D = StandardMaterial3D.new()
+	brass_mat.albedo_color = Color(0.85, 0.55, 0.18)
+	brass_mat.metallic = 0.95
+	brass_mat.roughness = 0.30
+	brass_mat.emission_enabled = true
+	brass_mat.emission = Color(1.0, 0.50, 0.10)
+	brass_mat.emission_energy_multiplier = 0.55
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.32, 0.20, 0.12)
+	wood_mat.roughness = 0.85
+	wood_mat.metallic = 0.10
+	var bulb_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bulb_mat.albedo_color = Color(1.0, 0.75, 0.30)
+	bulb_mat.emission_enabled = true
+	bulb_mat.emission = Color(1.0, 0.65, 0.20)
+	bulb_mat.emission_energy_multiplier = 8.0
+	bulb_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var data_mat: StandardMaterial3D = StandardMaterial3D.new()
+	data_mat.albedo_color = Color(0.45, 0.85, 1.0)
+	data_mat.emission_enabled = true
+	data_mat.emission = Color(0.45, 0.85, 1.0)
+	data_mat.emission_energy_multiplier = 6.5
+	data_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# ---- Hexagonal stone floor (cylinder approximation, 6-sided look from torus rim) ----
+	var floor: MeshInstance3D = MeshInstance3D.new()
+	var fm: CylinderMesh = CylinderMesh.new()
+	fm.top_radius = 2.10
+	fm.bottom_radius = 2.10
+	fm.height = 0.30
+	floor.mesh = fm
+	floor.material_override = stone_mat
+	floor.position = Vector3(0, 0.15, 0)
+	pivot.add_child(floor)
+	# Floor collision
+	var floor_sb: StaticBody3D = StaticBody3D.new()
+	floor_sb.position = Vector3(0, 0.15, 0)
+	var floor_cs: CollisionShape3D = CollisionShape3D.new()
+	var floor_cyl: CylinderShape3D = CylinderShape3D.new()
+	floor_cyl.top_radius = 2.10
+	floor_cyl.bottom_radius = 2.10
+	floor_cyl.height = 0.30
+	floor_cs.shape = floor_cyl
+	floor_sb.add_child(floor_cs)
+	pivot.add_child(floor_sb)
+	# Brass top trim torus on the floor
+	var trim: MeshInstance3D = MeshInstance3D.new()
+	var trm: TorusMesh = TorusMesh.new()
+	trm.inner_radius = 2.00
+	trm.outer_radius = 2.10
+	trim.mesh = trm
+	trim.material_override = brass_mat
+	trim.position = Vector3(0, 0.32, 0)
+	pivot.add_child(trim)
+	# ---- 6 brass corner posts at hex vertices ----
+	for i in 6:
+		var pang: float = float(i) / 6.0 * TAU
+		var px: float = cos(pang) * 1.95
+		var pz: float = sin(pang) * 1.95
+		var post: MeshInstance3D = MeshInstance3D.new()
+		var pmm: CylinderMesh = CylinderMesh.new()
+		pmm.top_radius = 0.10
+		pmm.bottom_radius = 0.13
+		pmm.height = 3.20
+		post.mesh = pmm
+		post.material_override = brass_mat
+		post.position = Vector3(px, 1.95, pz)
+		pivot.add_child(post)
+		# Post collision
+		var post_sb: StaticBody3D = StaticBody3D.new()
+		post_sb.position = Vector3(px, 1.95, pz)
+		var post_cs: CollisionShape3D = CollisionShape3D.new()
+		var post_cyl: CylinderShape3D = CylinderShape3D.new()
+		post_cyl.top_radius = 0.13
+		post_cyl.bottom_radius = 0.13
+		post_cyl.height = 3.20
+		post_cs.shape = post_cyl
+		post_sb.add_child(post_cs)
+		pivot.add_child(post_sb)
+		# Post brass mid band
+		var band: MeshInstance3D = MeshInstance3D.new()
+		var bdm: TorusMesh = TorusMesh.new()
+		bdm.inner_radius = 0.13
+		bdm.outer_radius = 0.18
+		band.mesh = bdm
+		band.material_override = brass_mat
+		band.position = Vector3(px, 1.85, pz)
+		pivot.add_child(band)
+	# ---- Hex pyramid prism roof (PrismMesh stretched) ----
+	# Use 6 box panels arranged radially around the center for a hex roof feel
+	for i in 6:
+		var pang: float = float(i) / 6.0 * TAU
+		var dx: float = cos(pang)
+		var dz: float = sin(pang)
+		var panel: MeshInstance3D = MeshInstance3D.new()
+		var panm: PrismMesh = PrismMesh.new()
+		panm.size = Vector3(2.20, 1.20, 1.10)
+		panel.mesh = panm
+		panel.material_override = brass_mat
+		# Position the panel at an angled position above the post ring, pointing inward up
+		panel.position = Vector3(dx * 1.10, 4.00, dz * 1.10)
+		panel.rotation.y = pang + PI / 2.0
+		panel.rotation.x = -PI / 4.0
+		pivot.add_child(panel)
+	# Top central hex finial cap (small cylinder)
+	var cap: MeshInstance3D = MeshInstance3D.new()
+	var capm: CylinderMesh = CylinderMesh.new()
+	capm.top_radius = 0.30
+	capm.bottom_radius = 0.40
+	capm.height = 0.40
+	cap.mesh = capm
+	cap.material_override = brass_mat
+	cap.position = Vector3(0, 4.85, 0)
+	pivot.add_child(cap)
+	# Top finial spire prism
+	var finial: MeshInstance3D = MeshInstance3D.new()
+	var fmm: PrismMesh = PrismMesh.new()
+	fmm.size = Vector3(0.30, 0.85, 0.30)
+	finial.mesh = fmm
+	finial.material_override = brass_mat
+	finial.position = Vector3(0, 5.40, 0)
+	pivot.add_child(finial)
+	# Top finial cyan dot
+	var finial_dot: MeshInstance3D = MeshInstance3D.new()
+	var fdm: SphereMesh = SphereMesh.new()
+	fdm.radius = 0.13
+	fdm.height = 0.26
+	finial_dot.mesh = fdm
+	finial_dot.material_override = data_mat
+	finial_dot.position = Vector3(0, 5.95, 0)
+	pivot.add_child(finial_dot)
+	# ---- 6 round bench segments inside the gazebo, one between each pair of posts ----
+	for i in 6:
+		var bang: float = (float(i) + 0.5) / 6.0 * TAU
+		var bx: float = cos(bang) * 1.40
+		var bz: float = sin(bang) * 1.40
+		# Bench seat slab
+		var seat: MeshInstance3D = MeshInstance3D.new()
+		var smm: BoxMesh = BoxMesh.new()
+		smm.size = Vector3(1.10, 0.12, 0.45)
+		seat.mesh = smm
+		seat.material_override = wood_mat
+		seat.position = Vector3(bx, 0.65, bz)
+		seat.rotation.y = bang + PI / 2.0
+		pivot.add_child(seat)
+		# Bench collision
+		var seat_sb: StaticBody3D = StaticBody3D.new()
+		seat_sb.position = Vector3(bx, 0.45, bz)
+		seat_sb.rotation.y = bang + PI / 2.0
+		var seat_cs: CollisionShape3D = CollisionShape3D.new()
+		var seat_bsh: BoxShape3D = BoxShape3D.new()
+		seat_bsh.size = Vector3(1.10, 0.40, 0.45)
+		seat_cs.shape = seat_bsh
+		seat_sb.add_child(seat_cs)
+		pivot.add_child(seat_sb)
+	# ---- 6 hanging amber lanterns from the underside of the roof (one per panel) ----
+	for i in 6:
+		var lang: float = float(i) / 6.0 * TAU
+		var lx: float = cos(lang) * 1.30
+		var lz: float = sin(lang) * 1.30
+		# Lantern cord
+		var cord: MeshInstance3D = MeshInstance3D.new()
+		var crm: CylinderMesh = CylinderMesh.new()
+		crm.top_radius = 0.018
+		crm.bottom_radius = 0.018
+		crm.height = 0.65
+		cord.mesh = crm
+		cord.material_override = brass_mat
+		cord.position = Vector3(lx, 3.65, lz)
+		pivot.add_child(cord)
+		# Bulb
+		var bulb: MeshInstance3D = MeshInstance3D.new()
+		var blm: SphereMesh = SphereMesh.new()
+		blm.radius = 0.16
+		blm.height = 0.32
+		bulb.mesh = blm
+		bulb.material_override = bulb_mat
+		bulb.position = Vector3(lx, 3.20, lz)
+		pivot.add_child(bulb)
+		# Light
+		var lt: OmniLight3D = OmniLight3D.new()
+		lt.position = Vector3(lx, 3.20, lz)
+		lt.light_color = Color(1.0, 0.65, 0.20)
+		lt.light_energy = 2.2
+		lt.omni_range = 6.0
+		pivot.add_child(lt)
+	# Strong central cyan finial OmniLight
+	var finial_lt: OmniLight3D = OmniLight3D.new()
+	finial_lt.position = Vector3(0, 5.20, 0)
+	finial_lt.light_color = Color(0.55, 0.90, 1.0)
+	finial_lt.light_energy = 2.5
+	finial_lt.omni_range = 7.5
+	pivot.add_child(finial_lt)
+	# Pulses
+	var bpulse2: Tween = pivot.create_tween().set_loops()
+	bpulse2.tween_property(bulb_mat, "emission_energy_multiplier", 9.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	bpulse2.tween_property(bulb_mat, "emission_energy_multiplier", 6.5, 1.6).set_ease(Tween.EASE_IN_OUT)
+	var dpulse3: Tween = pivot.create_tween().set_loops()
+	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 8.0, 1.8).set_ease(Tween.EASE_IN_OUT)
+	dpulse3.tween_property(data_mat, "emission_energy_multiplier", 5.0, 1.8).set_ease(Tween.EASE_IN_OUT)
