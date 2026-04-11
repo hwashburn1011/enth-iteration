@@ -1263,6 +1263,16 @@ func _build_east_plaza() -> void:
 	_build_transit_pad(geom)
 	# Epic-1 T20: shop signage with glow text labels
 	_build_shop_signage(geom)
+	# Epic-1 T21: cyan ground light strips guiding the path through the plaza
+	_build_ground_light_strips(geom)
+	# Epic-1 T22: 3 small maintenance bots sweeping the plaza floor
+	_build_maintenance_bots(geom)
+	# Epic-1 T23: rare sky data fragments falling slowly through the plaza
+	_build_sky_data_fragments(geom)
+	# Epic-1 T24: glowing power conduits running across the plaza ground
+	_build_power_conduits(geom)
+	# Epic-1 T25: plaza arch gateway at the western entrance
+	_build_plaza_arch_gateway(geom)
 
 
 func _build_east_plaza_ground(geom: Node) -> void:
@@ -2097,6 +2107,183 @@ func _build_security_drones(geom: Node) -> void:
 		var tween: Tween = create_tween().set_loops()
 		for waypoint in path:
 			tween.tween_property(drone, "position", waypoint, 4.0).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_ground_light_strips(geom: Node) -> void:
+	## Epic-1 T21: thin cyan light strips embedded in the floor leading from the
+	## main town path edge into the plaza centerpiece
+	for i: int in 8:
+		var strip: MeshInstance3D = MeshInstance3D.new()
+		var smesh: BoxMesh = BoxMesh.new()
+		smesh.size = Vector3(0.4, 0.02, 0.08)
+		strip.mesh = smesh
+		strip.position = Vector3(22 + i * 1.4, 0.02, 0)
+		var smat: StandardMaterial3D = StandardMaterial3D.new()
+		smat.albedo_color = Color(0.30, 0.85, 1.0)
+		smat.emission_enabled = true
+		smat.emission = Color(0.40, 0.95, 1.0)
+		smat.emission_energy_multiplier = 2.5
+		smat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		strip.material_override = smat
+		geom.add_child(strip)
+		# Sequential pulse — each strip flashes in turn for a "follow me" effect
+		var tween: Tween = create_tween().set_loops()
+		var dim_amount: float = 0.6
+		var bright_amount: float = 4.0
+		tween.tween_interval(i * 0.15)
+		tween.tween_property(smat, "emission_energy_multiplier", bright_amount, 0.4).set_ease(Tween.EASE_OUT)
+		tween.tween_property(smat, "emission_energy_multiplier", dim_amount, 0.8).set_ease(Tween.EASE_IN)
+		tween.tween_interval((8 - i) * 0.15)
+
+
+func _build_maintenance_bots(geom: Node) -> void:
+	## Epic-1 T22: 3 small disk-shaped maintenance bots sweeping the plaza floor
+	for i: int in 3:
+		var bot: Node3D = Node3D.new()
+		bot.name = "EastPlazaMaintBot_%d" % i
+		bot.position = Vector3(28 + i * 4, 0.1, 9 - i * 5)
+		geom.add_child(bot)
+		# Disc body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bmesh: CylinderMesh = CylinderMesh.new()
+		bmesh.top_radius = 0.22
+		bmesh.bottom_radius = 0.22
+		bmesh.height = 0.10
+		body.mesh = bmesh
+		var bmat: StandardMaterial3D = StandardMaterial3D.new()
+		bmat.albedo_color = Color(0.85, 0.85, 0.90)
+		bmat.emission_enabled = true
+		bmat.emission = Color(1.0, 0.95, 0.90)
+		bmat.emission_energy_multiplier = 0.4
+		bmat.metallic = 0.85
+		body.material_override = bmat
+		bot.add_child(body)
+		# Top status LED
+		var led: MeshInstance3D = MeshInstance3D.new()
+		var lmesh: SphereMesh = SphereMesh.new()
+		lmesh.radius = 0.04
+		lmesh.height = 0.08
+		led.mesh = lmesh
+		led.position = Vector3(0.05, 0.06, 0)
+		var lmat: StandardMaterial3D = StandardMaterial3D.new()
+		lmat.albedo_color = Color(0.30, 1.0, 0.40)
+		lmat.emission_enabled = true
+		lmat.emission = Color(0.30, 1.0, 0.40)
+		lmat.emission_energy_multiplier = 3.0
+		lmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		led.material_override = lmat
+		bot.add_child(led)
+		# Sweep tween — patrol along the south edge
+		var tween: Tween = create_tween().set_loops()
+		var p1 := Vector3(24 + i * 6, 0.1, 9 - i * 5)
+		var p2 := Vector3(40 - i * 4, 0.1, 9 - i * 5)
+		tween.tween_property(bot, "position", p1, 6.0 + i).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(bot, "position", p2, 6.0 + i).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build_sky_data_fragments(geom: Node) -> void:
+	## Epic-1 T23: slow falling cyan/orange data fragments overhead — rare,
+	## small particles that drift down through the plaza
+	var particles: GPUParticles3D = GPUParticles3D.new()
+	particles.amount = 30
+	particles.lifetime = 12.0
+	particles.position = Vector3(32, 8.0, 0)
+	var pmat: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pmat.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pmat.emission_box_extents = Vector3(10, 0.5, 18)
+	pmat.direction = Vector3(0, -1, 0)
+	pmat.gravity = Vector3(0.05, -0.4, 0.02)
+	pmat.initial_velocity_min = 0.1
+	pmat.initial_velocity_max = 0.3
+	pmat.scale_min = 0.06
+	pmat.scale_max = 0.14
+	pmat.color = Color(0.85, 0.55, 0.30, 0.85)
+	particles.process_material = pmat
+	var dot_mesh: SphereMesh = SphereMesh.new()
+	dot_mesh.radius = 0.05
+	dot_mesh.height = 0.10
+	particles.draw_pass_1 = dot_mesh
+	geom.add_child(particles)
+
+
+func _build_power_conduits(geom: Node) -> void:
+	## Epic-1 T24: glowing cyan power conduits running across the plaza floor
+	## connecting the data terminal to the kiosks (4 lines radiating outward)
+	var conduit_mat: StandardMaterial3D = StandardMaterial3D.new()
+	conduit_mat.albedo_color = Color(0.15, 0.45, 0.65)
+	conduit_mat.emission_enabled = true
+	conduit_mat.emission = Color(0.20, 0.70, 0.95)
+	conduit_mat.emission_energy_multiplier = 1.4
+	conduit_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 4 lines from the centerpiece (32, 0, 0) to each kiosk corner
+	var endpoints: Array[Vector3] = [
+		Vector3(28, 0.04, -4), Vector3(36, 0.04, -4),
+		Vector3(28, 0.04, 4), Vector3(36, 0.04, 4),
+	]
+	for ep in endpoints:
+		var conduit: MeshInstance3D = MeshInstance3D.new()
+		var cmesh: BoxMesh = BoxMesh.new()
+		var dist: float = (ep - Vector3(32, 0.04, 0)).length()
+		cmesh.size = Vector3(0.10, 0.02, dist)
+		conduit.mesh = cmesh
+		var midpoint: Vector3 = Vector3(32, 0.04, 0).lerp(ep, 0.5)
+		conduit.position = midpoint
+		conduit.look_at(ep, Vector3.UP)
+		conduit.material_override = conduit_mat
+		geom.add_child(conduit)
+
+
+func _build_plaza_arch_gateway(geom: Node) -> void:
+	## Epic-1 T25: large arch gateway at the west entrance of the plaza
+	## (where the connecting path meets the plaza)
+	var arch: Node3D = Node3D.new()
+	arch.name = "EastPlazaArchGateway"
+	arch.position = Vector3(21, 0, 0)
+	geom.add_child(arch)
+	# 2 vertical pillars
+	var pillar_mat: StandardMaterial3D = StandardMaterial3D.new()
+	pillar_mat.albedo_color = Color(0.10, 0.18, 0.26)
+	pillar_mat.emission_enabled = true
+	pillar_mat.emission = Color(0.30, 0.85, 1.0)
+	pillar_mat.emission_energy_multiplier = 0.7
+	pillar_mat.metallic = 0.7
+	for x_offset: float in [-3.0, 3.0]:
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pmesh: CylinderMesh = CylinderMesh.new()
+		pmesh.top_radius = 0.25
+		pmesh.bottom_radius = 0.35
+		pmesh.height = 4.0
+		pillar.mesh = pmesh
+		pillar.position = Vector3(0, 2.0, x_offset)
+		pillar.material_override = pillar_mat
+		arch.add_child(pillar)
+		# Collision per pillar
+		var sb: StaticBody3D = StaticBody3D.new()
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var col_box: BoxShape3D = BoxShape3D.new()
+		col_box.size = Vector3(0.7, 4.0, 0.7)
+		col_shape.shape = col_box
+		col_shape.position = Vector3(0, 2.0, x_offset)
+		sb.add_child(col_shape)
+		arch.add_child(sb)
+	# Top crossbar
+	var crossbar: MeshInstance3D = MeshInstance3D.new()
+	var cmesh: BoxMesh = BoxMesh.new()
+	cmesh.size = Vector3(0.5, 0.5, 6.5)
+	crossbar.mesh = cmesh
+	crossbar.position = Vector3(0, 4.0, 0)
+	crossbar.material_override = pillar_mat
+	arch.add_child(crossbar)
+	# Glowing arch label
+	var label: Label3D = Label3D.new()
+	label.text = "EAST PLAZA"
+	label.position = Vector3(0, 4.5, 0)
+	label.modulate = Color(0.40, 0.95, 1.0)
+	label.outline_modulate = Color(0, 0.05, 0.10, 0.95)
+	label.outline_size = 8
+	label.font_size = 32
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	arch.add_child(label)
 
 
 func _build_data_fountain(geom: Node) -> void:
