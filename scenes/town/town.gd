@@ -17170,6 +17170,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_synth_musician_npc()
 	# Epic-6 T35: satellite dish cluster
 	_build_d6_satellite_dishes(geom)
+	# Epic-6 T36: cyber implant clinic
+	_build_d6_implant_clinic(geom)
+	# Epic-6 T37: cyberdoc NPC
+	_build_d6_cyberdoc_npc()
+	# Epic-6 T38: ATM machine row
+	_build_d6_atm_row(geom)
+	# Epic-6 T39: rave dancer crowd
+	_build_d6_rave_dancers(geom)
+	# Epic-6 T40: ground steam vents
+	_build_d6_steam_vents(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -20066,6 +20076,393 @@ func _build_d6_satellite_dishes(geom: Node) -> void:
 	cs.shape = cb
 	sb.add_child(cs)
 	dishes.add_child(sb)
+
+
+func _build_d6_implant_clinic(geom: Node) -> void:
+	## Epic-6 T36: cyber implant clinic — clean white storefront with a
+	## green cross emblem, an operating chair visible inside, and a row
+	## of glowing implant cylinders on display.
+	var clinic: Node3D = Node3D.new()
+	clinic.name = "ImplantClinic"
+	clinic.position = Vector3(D6_CENTER.x - 14.0, 0.0, 14.0)
+	geom.add_child(clinic)
+	var white_mat: StandardMaterial3D = StandardMaterial3D.new()
+	white_mat.albedo_color = Color(0.92, 0.95, 0.98)
+	white_mat.emission_enabled = true
+	white_mat.emission = Color(0.65, 0.85, 0.95)
+	white_mat.emission_energy_multiplier = 0.30
+	white_mat.roughness = 0.45
+	# Storefront wall
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(4.20, 3.40, 0.30)
+	wall.mesh = wm
+	wall.material_override = white_mat
+	wall.position = Vector3(0, 1.70, -1.20)
+	clinic.add_child(wall)
+	# Side walls
+	for sx in [-2.0, 2.0]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.30, 3.40, 2.40)
+		side.mesh = swm
+		side.material_override = white_mat
+		side.position = Vector3(sx, 1.70, 0)
+		clinic.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(4.20, 0.18, 2.55)
+	roof.mesh = rm
+	roof.material_override = white_mat
+	roof.position = Vector3(0, 3.50, 0)
+	clinic.add_child(roof)
+	# Green cross emblem
+	var cross_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cross_mat.albedo_color = Color(0.30, 0.95, 0.30)
+	cross_mat.emission_enabled = true
+	cross_mat.emission = Color(0.30, 1.0, 0.30)
+	cross_mat.emission_energy_multiplier = 3.5
+	cross_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for axis in 2:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.85, 0.30, 0.06) if axis == 0 else Vector3(0.30, 0.85, 0.06)
+		bar.mesh = bm
+		bar.material_override = cross_mat
+		bar.position = Vector3(0, 2.65, 1.21)
+		clinic.add_child(bar)
+	# Operating chair (white box on a column)
+	var chair: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.85, 0.20, 1.40)
+	chair.mesh = cm
+	chair.material_override = white_mat
+	chair.position = Vector3(0, 0.85, -0.20)
+	clinic.add_child(chair)
+	var col: MeshInstance3D = MeshInstance3D.new()
+	var clm: BoxMesh = BoxMesh.new()
+	clm.size = Vector3(0.30, 0.55, 0.30)
+	col.mesh = clm
+	col.material_override = white_mat
+	col.position = Vector3(0, 0.42, -0.20)
+	clinic.add_child(col)
+	# Implant cylinders display (3 small glowing tubes inside the clinic)
+	var implant_mat: StandardMaterial3D = StandardMaterial3D.new()
+	implant_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	implant_mat.emission_enabled = true
+	implant_mat.emission = Color(0.30, 1.0, 0.55)
+	implant_mat.emission_energy_multiplier = 2.5
+	implant_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for i in 3:
+		var implant: MeshInstance3D = MeshInstance3D.new()
+		var im: CylinderMesh = CylinderMesh.new()
+		im.top_radius = 0.08
+		im.bottom_radius = 0.08
+		im.height = 0.30
+		implant.mesh = im
+		implant.material_override = implant_mat
+		implant.position = Vector3(-0.55 + i * 0.55, 1.85, 0.40)
+		clinic.add_child(implant)
+		var tw: Tween = implant.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(implant, "scale:y", 1.30, 0.85)
+		tw.tween_property(implant, "scale:y", 0.85, 0.85)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.30, 1.0, 0.55)
+	light.light_energy = 2.0
+	light.omni_range = 5.0
+	light.position = Vector3(0, 2.20, 1.20)
+	clinic.add_child(light)
+	# Clinic collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 3.40, 2.55)
+	cs.shape = cb
+	sb.add_child(cs)
+	clinic.add_child(sb)
+
+
+func _build_d6_cyberdoc_npc() -> void:
+	## Epic-6 T37: cyberdoc NPC — white lab coat + surgical mask + scalpel
+	## glow in hand.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "CyberDocSlot"
+	slot.position = Vector3(D6_CENTER.x - 14.0, 0.0, 13.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "CyberDoc"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Splice")
+	if "npc_id" in npc:
+		npc.set("npc_id", "cyberdoc_d6")
+	slot.add_child(npc)
+	# White lab coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Surgical mask (small box across face)
+	var mask: MeshInstance3D = MeshInstance3D.new()
+	var mm: BoxMesh = BoxMesh.new()
+	mm.size = Vector3(0.40, 0.20, 0.06)
+	mask.mesh = mm
+	var mask_mat: StandardMaterial3D = StandardMaterial3D.new()
+	mask_mat.albedo_color = Color(0.55, 0.85, 0.95)
+	mask.material_override = mask_mat
+	mask.position = Vector3(0, 1.30, 0.21)
+	npc.add_child(mask)
+	# Scalpel in hand
+	var scalpel: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.04, 0.20, 0.10)
+	scalpel.mesh = sm
+	var scalpel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	scalpel_mat.albedo_color = Color(0.85, 0.92, 1.0)
+	scalpel_mat.emission_enabled = true
+	scalpel_mat.emission = Color(0.30, 0.95, 1.0)
+	scalpel_mat.emission_energy_multiplier = 2.5
+	scalpel_mat.metallic = 0.95
+	scalpel_mat.roughness = 0.05
+	scalpel.material_override = scalpel_mat
+	scalpel.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(scalpel)
+
+
+func _build_d6_atm_row(geom: Node) -> void:
+	## Epic-6 T38: row of 4 ATM machines — wall-mounted screens with cash
+	## slot below + green LED status.
+	var row: Node3D = Node3D.new()
+	row.name = "ATMRow"
+	row.position = Vector3(D6_CENTER.x - 12.0, 0.0, -16.0)
+	geom.add_child(row)
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.20, 0.18, 0.25)
+	wall_mat.metallic = 0.55
+	wall_mat.roughness = 0.45
+	# Backing wall slab
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(8.50, 3.40, 0.30)
+	wall.mesh = wm
+	wall.material_override = wall_mat
+	wall.position = Vector3(0, 1.70, -0.18)
+	row.add_child(wall)
+	for i in 4:
+		var atm: Node3D = Node3D.new()
+		atm.position = Vector3(-3.20 + i * 2.20, 0, 0)
+		row.add_child(atm)
+		# ATM body (recessed)
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(1.85, 2.40, 0.20)
+		body.mesh = bm
+		body.material_override = wall_mat
+		body.position = Vector3(0, 1.40, 0)
+		atm.add_child(body)
+		# Screen
+		var screen: MeshInstance3D = MeshInstance3D.new()
+		var sm: BoxMesh = BoxMesh.new()
+		sm.size = Vector3(1.40, 0.95, 0.06)
+		screen.mesh = sm
+		var screen_mat: StandardMaterial3D = StandardMaterial3D.new()
+		screen_mat.albedo_color = Color(0.30, 0.95, 1.0)
+		screen_mat.emission_enabled = true
+		screen_mat.emission = Color(0.30, 1.0, 1.0)
+		screen_mat.emission_energy_multiplier = 2.5
+		screen_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		screen.material_override = screen_mat
+		screen.position = Vector3(0, 1.85, 0.10)
+		atm.add_child(screen)
+		# Cash slot (small dark rectangle)
+		var slot: MeshInstance3D = MeshInstance3D.new()
+		var stm: BoxMesh = BoxMesh.new()
+		stm.size = Vector3(1.10, 0.10, 0.04)
+		slot.mesh = stm
+		var slot_mat: StandardMaterial3D = StandardMaterial3D.new()
+		slot_mat.albedo_color = Color(0.05, 0.05, 0.08)
+		slot_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		slot.material_override = slot_mat
+		slot.position = Vector3(0, 1.10, 0.10)
+		atm.add_child(slot)
+		# Green LED status
+		var led: MeshInstance3D = MeshInstance3D.new()
+		var lm: SphereMesh = SphereMesh.new()
+		lm.radius = 0.05
+		lm.height = 0.10
+		led.mesh = lm
+		var led_mat: StandardMaterial3D = StandardMaterial3D.new()
+		led_mat.albedo_color = Color(0.30, 1.0, 0.30)
+		led_mat.emission_enabled = true
+		led_mat.emission = Color(0.30, 1.0, 0.30)
+		led_mat.emission_energy_multiplier = 3.0
+		led_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		led.material_override = led_mat
+		led.position = Vector3(0.85, 2.30, 0.10)
+		atm.add_child(led)
+		# Slow blink
+		var tw: Tween = led.create_tween().set_loops()
+		tw.tween_interval(i * 0.30)
+		tw.tween_property(led, "scale", Vector3.ONE * 1.40, 0.55)
+		tw.tween_property(led, "scale", Vector3.ONE * 0.55, 0.55)
+	# Wall collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, -0.18)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(8.50, 3.40, 0.30)
+	cs.shape = cb
+	sb.add_child(cs)
+	row.add_child(sb)
+
+
+func _build_d6_rave_dancers(geom: Node) -> void:
+	## Epic-6 T39: 5 small rave dancer figures jumping/swaying near the
+	## dance club. Bright glowsticks tracing arcs.
+	var crowd: Node3D = Node3D.new()
+	crowd.name = "RaveDancers"
+	crowd.position = Vector3(D6_CENTER.x - 22.0, 0.0, 8.0)
+	geom.add_child(crowd)
+	var dancer_colors: Array = [
+		Color(0.95, 0.20, 0.85),
+		Color(0.30, 0.95, 0.55),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.85, 0.20),
+		Color(0.95, 0.30, 0.30),
+	]
+	for i in 5:
+		var dancer: Node3D = Node3D.new()
+		dancer.position = Vector3(
+			randf_range(-3.0, 3.0),
+			0,
+			randf_range(-2.5, 2.5)
+		)
+		crowd.add_child(dancer)
+		# Body
+		var body: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.55, 0.95, 0.30)
+		body.mesh = bm
+		var body_mat: StandardMaterial3D = StandardMaterial3D.new()
+		body_mat.albedo_color = dancer_colors[i]
+		body_mat.emission_enabled = true
+		body_mat.emission = dancer_colors[i]
+		body_mat.emission_energy_multiplier = 0.65
+		body_mat.roughness = 0.65
+		body.material_override = body_mat
+		body.position = Vector3(0, 0.55, 0)
+		dancer.add_child(body)
+		# Head
+		var head: MeshInstance3D = MeshInstance3D.new()
+		var hm: SphereMesh = SphereMesh.new()
+		hm.radius = 0.18
+		hm.height = 0.32
+		head.mesh = hm
+		var skin_mat: StandardMaterial3D = StandardMaterial3D.new()
+		skin_mat.albedo_color = Color(0.95, 0.85, 0.75)
+		head.material_override = skin_mat
+		head.position = Vector3(0, 1.20, 0)
+		dancer.add_child(head)
+		# 2 glowsticks held overhead (small bright cylinders)
+		var stick_mat: StandardMaterial3D = StandardMaterial3D.new()
+		stick_mat.albedo_color = dancer_colors[(i + 2) % 5]
+		stick_mat.emission_enabled = true
+		stick_mat.emission = dancer_colors[(i + 2) % 5]
+		stick_mat.emission_energy_multiplier = 4.0
+		stick_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		for sx in [-0.30, 0.30]:
+			var stick: MeshInstance3D = MeshInstance3D.new()
+			var stm: CylinderMesh = CylinderMesh.new()
+			stm.top_radius = 0.025
+			stm.bottom_radius = 0.025
+			stm.height = 0.30
+			stick.mesh = stm
+			stick.material_override = stick_mat
+			stick.position = Vector3(sx, 1.65, 0)
+			dancer.add_child(stick)
+		# Jump tween
+		var tw: Tween = dancer.create_tween().set_loops()
+		tw.tween_property(dancer, "position:y", 0.30, 0.25)
+		tw.tween_property(dancer, "position:y", 0.0, 0.25)
+		# Sway tween
+		var ts: Tween = dancer.create_tween().set_loops()
+		ts.tween_property(dancer, "rotation_degrees:z", 12.0, 0.40)
+		ts.tween_property(dancer, "rotation_degrees:z", -12.0, 0.40)
+
+
+func _build_d6_steam_vents(geom: Node) -> void:
+	## Epic-6 T40: 4 steam vents on the ground — small dark grates with
+	## thick rising steam from below.
+	var vents: Node3D = Node3D.new()
+	vents.name = "SteamVents"
+	vents.position = Vector3(D6_CENTER.x - 4.0, 0.0, 4.0)
+	geom.add_child(vents)
+	var grate_mat: StandardMaterial3D = StandardMaterial3D.new()
+	grate_mat.albedo_color = Color(0.20, 0.18, 0.22)
+	grate_mat.metallic = 0.85
+	grate_mat.roughness = 0.45
+	for i in 4:
+		var vent: Node3D = Node3D.new()
+		vent.position = Vector3(
+			randf_range(-6, 6),
+			0,
+			randf_range(-4, 4)
+		)
+		vents.add_child(vent)
+		# Grate (flat box with slits)
+		var grate: MeshInstance3D = MeshInstance3D.new()
+		var gm: BoxMesh = BoxMesh.new()
+		gm.size = Vector3(0.85, 0.04, 0.85)
+		grate.mesh = gm
+		grate.material_override = grate_mat
+		grate.position = Vector3(0, 0.04, 0)
+		vent.add_child(grate)
+		# Steam particles
+		var steam: GPUParticles3D = GPUParticles3D.new()
+		steam.amount = 30
+		steam.lifetime = 2.5
+		steam.preprocess = 1.0
+		steam.position = Vector3(0, 0.20, 0)
+		var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+		pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		pm.emission_box_extents = Vector3(0.40, 0.05, 0.40)
+		pm.direction = Vector3(0, 1, 0)
+		pm.spread = 22.0
+		pm.gravity = Vector3.ZERO
+		pm.initial_velocity_min = 0.55
+		pm.initial_velocity_max = 1.20
+		pm.scale_min = 0.30
+		pm.scale_max = 0.55
+		pm.color = Color(0.92, 0.92, 0.95, 0.55)
+		steam.process_material = pm
+		var sm_mesh: SphereMesh = SphereMesh.new()
+		sm_mesh.radius = 0.30
+		sm_mesh.height = 0.60
+		steam.draw_pass_1 = sm_mesh
+		var sm_mat: StandardMaterial3D = StandardMaterial3D.new()
+		sm_mat.albedo_color = Color(0.92, 0.92, 0.95, 0.45)
+		sm_mat.emission_enabled = true
+		sm_mat.emission = Color(0.85, 0.85, 0.95)
+		sm_mat.emission_energy_multiplier = 0.55
+		sm_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm_mesh.material = sm_mat
+		vent.add_child(steam)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
