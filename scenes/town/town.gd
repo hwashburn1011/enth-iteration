@@ -17210,6 +17210,16 @@ func _build_district_6(geom: Node) -> void:
 	_build_d6_pigeons(geom)
 	# Epic-6 T55: ramen customer NPC
 	_build_d6_ramen_customer_npc()
+	# Epic-6 T56: cyber pharmacy
+	_build_d6_pharmacy(geom)
+	# Epic-6 T57: pharmacist NPC
+	_build_d6_pharmacist_npc()
+	# Epic-6 T58: street fighter training dummy
+	_build_d6_fighter_dummy(geom)
+	# Epic-6 T59: street fighter NPC
+	_build_d6_street_fighter_npc()
+	# Epic-6 T60: hover taxi vehicle
+	_build_d6_hover_taxi(geom)
 
 
 func _extend_boundary_for_d6(geom: Node) -> void:
@@ -21776,6 +21786,416 @@ func _build_d6_ramen_customer_npc() -> void:
 	sm_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	sm_mesh.material = sm_mat
 	npc.add_child(steam)
+
+
+func _build_d6_pharmacy(geom: Node) -> void:
+	## Epic-6 T56: cyber pharmacy storefront — green cross sign + shelves
+	## of glowing pill bottles visible behind the counter.
+	var pharm: Node3D = Node3D.new()
+	pharm.name = "CyberPharmacy"
+	pharm.position = Vector3(D6_CENTER.x - 28.0, 0.0, 14.0)
+	geom.add_child(pharm)
+	var wall_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wall_mat.albedo_color = Color(0.85, 0.92, 0.88)
+	wall_mat.roughness = 0.55
+	# Walls
+	var wall: MeshInstance3D = MeshInstance3D.new()
+	var wm: BoxMesh = BoxMesh.new()
+	wm.size = Vector3(4.20, 3.20, 0.30)
+	wall.mesh = wm
+	wall.material_override = wall_mat
+	wall.position = Vector3(0, 1.60, -1.20)
+	pharm.add_child(wall)
+	for sx in [-2.0, 2.0]:
+		var side: MeshInstance3D = MeshInstance3D.new()
+		var swm: BoxMesh = BoxMesh.new()
+		swm.size = Vector3(0.30, 3.20, 2.55)
+		side.mesh = swm
+		side.material_override = wall_mat
+		side.position = Vector3(sx, 1.60, 0)
+		pharm.add_child(side)
+	# Roof
+	var roof: MeshInstance3D = MeshInstance3D.new()
+	var rm: BoxMesh = BoxMesh.new()
+	rm.size = Vector3(4.20, 0.18, 2.85)
+	roof.mesh = rm
+	roof.material_override = wall_mat
+	roof.position = Vector3(0, 3.30, 0)
+	pharm.add_child(roof)
+	# Green cross sign
+	var cross_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cross_mat.albedo_color = Color(0.30, 0.95, 0.30)
+	cross_mat.emission_enabled = true
+	cross_mat.emission = Color(0.30, 1.0, 0.30)
+	cross_mat.emission_energy_multiplier = 4.0
+	cross_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for axis in 2:
+		var bar: MeshInstance3D = MeshInstance3D.new()
+		var bm: BoxMesh = BoxMesh.new()
+		bm.size = Vector3(0.95, 0.30, 0.06) if axis == 0 else Vector3(0.30, 0.95, 0.06)
+		bar.mesh = bm
+		bar.material_override = cross_mat
+		bar.position = Vector3(0, 2.55, 1.21)
+		pharm.add_child(bar)
+	# Shelving inside (back wall row of pill bottles)
+	var pill_colors: Array = [
+		Color(0.95, 0.20, 0.30),
+		Color(0.30, 0.95, 0.55),
+		Color(0.95, 0.85, 0.20),
+		Color(0.30, 0.65, 0.95),
+		Color(0.95, 0.30, 0.85),
+	]
+	for i in 5:
+		var bottle: MeshInstance3D = MeshInstance3D.new()
+		var bm: CylinderMesh = CylinderMesh.new()
+		bm.top_radius = 0.10
+		bm.bottom_radius = 0.10
+		bm.height = 0.30
+		bottle.mesh = bm
+		var bottle_mat: StandardMaterial3D = StandardMaterial3D.new()
+		bottle_mat.albedo_color = pill_colors[i]
+		bottle_mat.emission_enabled = true
+		bottle_mat.emission = pill_colors[i]
+		bottle_mat.emission_energy_multiplier = 1.4
+		bottle_mat.metallic = 0.30
+		bottle_mat.roughness = 0.20
+		bottle.material_override = bottle_mat
+		bottle.position = Vector3(-1.40 + i * 0.70, 1.85, -0.95)
+		pharm.add_child(bottle)
+	# Light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.30, 1.0, 0.55)
+	light.light_energy = 2.0
+	light.omni_range = 5.0
+	light.position = Vector3(0, 2.20, 1.20)
+	pharm.add_child(light)
+	# Pharmacy collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.60, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(4.20, 3.20, 2.85)
+	cs.shape = cb
+	sb.add_child(cs)
+	pharm.add_child(sb)
+
+
+func _build_d6_pharmacist_npc() -> void:
+	## Epic-6 T57: pharmacist NPC — white coat + cyan tinted glasses +
+	## holding a small green pill bottle.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "PharmacistSlot"
+	slot.position = Vector3(D6_CENTER.x - 28.0, 0.0, 13.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "Pharmacist"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Doseage")
+	if "npc_id" in npc:
+		npc.set("npc_id", "pharmacist_d6")
+	slot.add_child(npc)
+	# White lab coat
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.65, 1.20, 0.45)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	coat_mat.roughness = 0.55
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.60, 0)
+	npc.add_child(coat)
+	# Cyan glasses
+	var glasses: MeshInstance3D = MeshInstance3D.new()
+	var gmm: BoxMesh = BoxMesh.new()
+	gmm.size = Vector3(0.40, 0.10, 0.04)
+	glasses.mesh = gmm
+	var glasses_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glasses_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.85)
+	glasses_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glasses_mat.emission_enabled = true
+	glasses_mat.emission = Color(0.30, 0.95, 1.0)
+	glasses_mat.emission_energy_multiplier = 1.4
+	glasses_mat.metallic = 0.55
+	glasses_mat.roughness = 0.10
+	glasses.material_override = glasses_mat
+	glasses.position = Vector3(0, 1.42, 0.21)
+	npc.add_child(glasses)
+	# Pill bottle
+	var bottle: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.08
+	bm.bottom_radius = 0.08
+	bm.height = 0.18
+	bottle.mesh = bm
+	var bottle_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bottle_mat.albedo_color = Color(0.30, 0.95, 0.55)
+	bottle_mat.emission_enabled = true
+	bottle_mat.emission = Color(0.30, 1.0, 0.55)
+	bottle_mat.emission_energy_multiplier = 1.4
+	bottle.material_override = bottle_mat
+	bottle.position = Vector3(0.40, 0.85, 0.20)
+	npc.add_child(bottle)
+
+
+func _build_d6_fighter_dummy(geom: Node) -> void:
+	## Epic-6 T58: street fighter training dummy — torso bag suspended on a
+	## post with rope, with a damage particle puff each "hit".
+	var dummy: Node3D = Node3D.new()
+	dummy.name = "FighterDummy"
+	dummy.position = Vector3(D6_CENTER.x + 26.0, 0.0, -8.0)
+	geom.add_child(dummy)
+	var metal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	metal_mat.albedo_color = Color(0.30, 0.32, 0.40)
+	metal_mat.metallic = 0.85
+	metal_mat.roughness = 0.30
+	# Vertical post
+	var post: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.10
+	pm.bottom_radius = 0.14
+	pm.height = 3.40
+	post.mesh = pm
+	post.material_override = metal_mat
+	post.position = Vector3(0, 1.70, 0)
+	dummy.add_child(post)
+	# Horizontal arm extending forward
+	var arm: MeshInstance3D = MeshInstance3D.new()
+	var am: CylinderMesh = CylinderMesh.new()
+	am.top_radius = 0.06
+	am.bottom_radius = 0.08
+	am.height = 1.10
+	arm.mesh = am
+	arm.material_override = metal_mat
+	arm.position = Vector3(0.55, 3.20, 0)
+	arm.rotation_degrees = Vector3(0, 0, 90)
+	dummy.add_child(arm)
+	# Rope hanging down
+	var rope: MeshInstance3D = MeshInstance3D.new()
+	var rmm: CylinderMesh = CylinderMesh.new()
+	rmm.top_radius = 0.025
+	rmm.bottom_radius = 0.025
+	rmm.height = 0.85
+	rope.mesh = rmm
+	var rope_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rope_mat.albedo_color = Color(0.55, 0.40, 0.20)
+	rope_mat.roughness = 0.85
+	rope.material_override = rope_mat
+	rope.position = Vector3(1.10, 2.55, 0)
+	dummy.add_child(rope)
+	# Bag (large red cylinder)
+	var bag: MeshInstance3D = MeshInstance3D.new()
+	var bgm: CylinderMesh = CylinderMesh.new()
+	bgm.top_radius = 0.30
+	bgm.bottom_radius = 0.40
+	bgm.height = 1.40
+	bag.mesh = bgm
+	var bag_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bag_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	bag_mat.metallic = 0.30
+	bag_mat.roughness = 0.55
+	bag.material_override = bag_mat
+	bag.position = Vector3(1.10, 1.45, 0)
+	dummy.add_child(bag)
+	# Bag swing tween (suggests recent hits)
+	var tw: Tween = bag.create_tween().set_loops()
+	tw.tween_property(bag, "rotation_degrees:x", 8.0, 0.85)
+	tw.tween_property(bag, "rotation_degrees:x", -8.0, 0.85)
+	# Post collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	sb.position = Vector3(0, 1.70, 0)
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cap: CapsuleShape3D = CapsuleShape3D.new()
+	cap.radius = 0.14
+	cap.height = 3.40
+	cs.shape = cap
+	sb.add_child(cs)
+	dummy.add_child(sb)
+
+
+func _build_d6_street_fighter_npc() -> void:
+	## Epic-6 T59: street fighter NPC training near the dummy — wraps on
+	## fists, sleeveless top, fighting stance.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "StreetFighterSlot"
+	slot.position = Vector3(D6_CENTER.x + 24.0, 0.0, -8.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "StreetFighter"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Knockback")
+	if "npc_id" in npc:
+		npc.set("npc_id", "fighter_d6")
+	slot.add_child(npc)
+	# Sleeveless white shirt
+	var shirt: MeshInstance3D = MeshInstance3D.new()
+	var sm: BoxMesh = BoxMesh.new()
+	sm.size = Vector3(0.55, 0.85, 0.40)
+	shirt.mesh = sm
+	var shirt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	shirt_mat.albedo_color = Color(0.95, 0.95, 0.92)
+	shirt_mat.roughness = 0.85
+	shirt.material_override = shirt_mat
+	shirt.position = Vector3(0, 0.60, 0)
+	npc.add_child(shirt)
+	# Wrapped fists (2 white spheres)
+	var wrap_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wrap_mat.albedo_color = Color(0.85, 0.85, 0.80)
+	wrap_mat.roughness = 0.85
+	for sx in [-0.30, 0.30]:
+		var fist: MeshInstance3D = MeshInstance3D.new()
+		var fm: SphereMesh = SphereMesh.new()
+		fm.radius = 0.12
+		fm.height = 0.22
+		fist.mesh = fm
+		fist.material_override = wrap_mat
+		fist.position = Vector3(sx * 0.85, 0.85, 0.30)
+		npc.add_child(fist)
+	# Headband (red strip)
+	var band: MeshInstance3D = MeshInstance3D.new()
+	var bm: CylinderMesh = CylinderMesh.new()
+	bm.top_radius = 0.22
+	bm.bottom_radius = 0.22
+	bm.height = 0.08
+	band.mesh = bm
+	var band_mat: StandardMaterial3D = StandardMaterial3D.new()
+	band_mat.albedo_color = Color(0.95, 0.20, 0.20)
+	band_mat.emission_enabled = true
+	band_mat.emission = Color(0.95, 0.20, 0.20)
+	band_mat.emission_energy_multiplier = 0.85
+	band.material_override = band_mat
+	band.position = Vector3(0, 1.40, 0)
+	npc.add_child(band)
+	# Punching tween (sway forward)
+	var tw: Tween = npc.create_tween().set_loops()
+	tw.tween_property(npc, "position:z", -7.85, 0.20)
+	tw.tween_property(npc, "position:z", -8.0, 0.20)
+	tw.tween_interval(0.40)
+
+
+func _build_d6_hover_taxi(geom: Node) -> void:
+	## Epic-6 T60: hover taxi vehicle — yellow checkered car with a side
+	## "TAXI" sign on top, hovering above the ground.
+	var taxi: Node3D = Node3D.new()
+	taxi.name = "HoverTaxi"
+	taxi.position = Vector3(D6_CENTER.x - 18.0, 1.40, -2.0)
+	geom.add_child(taxi)
+	var yellow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	yellow_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	yellow_mat.metallic = 0.55
+	yellow_mat.roughness = 0.30
+	var dark_mat: StandardMaterial3D = StandardMaterial3D.new()
+	dark_mat.albedo_color = Color(0.10, 0.10, 0.15)
+	dark_mat.metallic = 0.85
+	dark_mat.roughness = 0.30
+	# Body chassis (long box)
+	var body: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(3.20, 0.85, 1.40)
+	body.mesh = bm
+	body.material_override = yellow_mat
+	taxi.add_child(body)
+	# Cabin (smaller box on top)
+	var cabin: MeshInstance3D = MeshInstance3D.new()
+	var cmm: BoxMesh = BoxMesh.new()
+	cmm.size = Vector3(2.20, 0.95, 1.20)
+	cabin.mesh = cmm
+	cabin.material_override = yellow_mat
+	cabin.position = Vector3(-0.20, 0.90, 0)
+	taxi.add_child(cabin)
+	# Black checker stripe along the side
+	var checker: MeshInstance3D = MeshInstance3D.new()
+	var chm: BoxMesh = BoxMesh.new()
+	chm.size = Vector3(3.20, 0.20, 0.06)
+	checker.mesh = chm
+	checker.material_override = dark_mat
+	checker.position = Vector3(0, 0.0, 0.72)
+	taxi.add_child(checker)
+	# Windows (cyan emissive)
+	var window_mat: StandardMaterial3D = StandardMaterial3D.new()
+	window_mat.albedo_color = Color(0.30, 0.85, 1.0, 0.65)
+	window_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	window_mat.emission_enabled = true
+	window_mat.emission = Color(0.30, 0.95, 1.0)
+	window_mat.emission_energy_multiplier = 1.4
+	window_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	for sx in [-0.85, 0.45]:
+		var win: MeshInstance3D = MeshInstance3D.new()
+		var wm: BoxMesh = BoxMesh.new()
+		wm.size = Vector3(0.95, 0.65, 0.06)
+		win.mesh = wm
+		win.material_override = window_mat
+		win.position = Vector3(sx, 0.95, 0.62)
+		taxi.add_child(win)
+	# Top "TAXI" sign
+	var sign: MeshInstance3D = MeshInstance3D.new()
+	var snm: BoxMesh = BoxMesh.new()
+	snm.size = Vector3(0.95, 0.30, 0.30)
+	sign.mesh = snm
+	var sign_mat: StandardMaterial3D = StandardMaterial3D.new()
+	sign_mat.albedo_color = Color(0.95, 0.85, 0.20)
+	sign_mat.emission_enabled = true
+	sign_mat.emission = Color(0.95, 0.85, 0.20)
+	sign_mat.emission_energy_multiplier = 2.5
+	sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	sign.material_override = sign_mat
+	sign.position = Vector3(0, 1.55, 0)
+	taxi.add_child(sign)
+	var label: Label3D = Label3D.new()
+	label.text = "TAXI"
+	label.modulate = Color(0.10, 0.05, 0.05)
+	label.outline_modulate = Color(0.95, 0.85, 0.20)
+	label.outline_size = 4
+	label.font_size = 48
+	label.pixel_size = 0.005
+	label.position = Vector3(0, 1.55, 0.16)
+	taxi.add_child(label)
+	# Magenta underglow strip
+	var glow: MeshInstance3D = MeshInstance3D.new()
+	var glm: BoxMesh = BoxMesh.new()
+	glm.size = Vector3(3.20, 0.06, 1.40)
+	glow.mesh = glm
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.95, 0.20, 0.85)
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.95, 0.20, 0.85)
+	glow_mat.emission_energy_multiplier = 4.0
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow.material_override = glow_mat
+	glow.position = Vector3(0, -0.45, 0)
+	taxi.add_child(glow)
+	# Underglow light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(1.0, 0.30, 0.85)
+	light.light_energy = 2.0
+	light.omni_range = 4.0
+	light.position = Vector3(0, -0.30, 0)
+	taxi.add_child(light)
+	# Hover bob tween
+	var tw: Tween = taxi.create_tween().set_loops()
+	tw.tween_property(taxi, "position:y", 1.55, 1.4)
+	tw.tween_property(taxi, "position:y", 1.40, 1.4)
+	# Body collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(3.20, 1.85, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.45, 0)
+	sb.add_child(cs)
+	taxi.add_child(sb)
 
 
 const D3_CENTER := Vector3(150, 0, 0)
