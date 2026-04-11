@@ -220,10 +220,29 @@ func _on_floor_completed(floor_number: int) -> void:
 		await get_tree().create_timer(2.0).timeout
 		_load_floor(_current_floor_index)
 	else:
+		# Full dungeon clear — final boss is down. This is the moment
+		# the compaction loop closes and the next iteration unlocks.
+		# Without this advance the player is permanently stuck on iter 1
+		# and the IterationManager / enemy HP scaling work from Epic 4
+		# never engages.
+		_advance_compaction_iteration()
 		await get_tree().create_timer(2.0).timeout
 		EventBus.returned_to_town.emit()
 		GameManager.set_meta(&"town_entry_type", "portal_return")
 		GameManager.change_scene_to("res://scenes/town/Town.tscn")
+
+
+func _advance_compaction_iteration() -> void:
+	if not has_node("/root/IterationManager"):
+		return
+	var im: Node = get_node("/root/IterationManager")
+	if not im.has_method(&"advance_iteration"):
+		return
+	# Skip the no-op when the player is already at the final iteration so
+	# the toast doesn't claim a fresh advance that didn't happen.
+	if im.has_method(&"is_final_iteration") and im.is_final_iteration():
+		return
+	im.advance_iteration()
 
 
 func _update_environment_for_floor(accent: Color) -> void:
