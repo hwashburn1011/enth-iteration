@@ -2005,6 +2005,16 @@ func _build_district_4(geom: Node) -> void:
 	_build_d4_rabbit_family(geom)
 	# Epic-4 T80: ivy-covered stone arch
 	_build_d4_ivy_stone_arch(geom)
+	# Epic-4 T81: druid stone circle with rune glow
+	_build_d4_druid_circle(geom)
+	# Epic-4 T82: ancient stone sundial
+	_build_d4_ancient_sundial(geom)
+	# Epic-4 T83: traveling merchant cart
+	_build_d4_merchant_cart(geom)
+	# Epic-4 T84: traveling merchant NPC
+	_build_d4_traveling_merchant_npc()
+	# Epic-4 T85: firefly particles drifting upward
+	_build_d4_fireflies(geom)
 
 
 const D4_CENTER := Vector3(220, 0, 0)
@@ -7063,6 +7073,384 @@ func _build_d4_ivy_stone_arch(geom: Node) -> void:
 		ivy.position = Vector3(rx, ry, randf_range(-0.30, 0.30))
 		ivy.scale = Vector3(1.0, 0.55, 0.85)
 		arch.add_child(ivy)
+
+
+func _build_d4_druid_circle(geom: Node) -> void:
+	## Epic-4 T81: druid stone circle — 7 standing stones in a ring with
+	## glowing green rune carvings, surrounding a central altar.
+	var circle: Node3D = Node3D.new()
+	circle.name = "DruidCircle"
+	circle.position = Vector3(D4_CENTER.x + 4.0, 0.0, -14.0)
+	geom.add_child(circle)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.45, 0.42, 0.38)
+	stone_mat.roughness = 0.95
+	var rune_mat: StandardMaterial3D = StandardMaterial3D.new()
+	rune_mat.albedo_color = Color(0.30, 0.85, 0.40)
+	rune_mat.emission_enabled = true
+	rune_mat.emission = Color(0.25, 0.95, 0.40)
+	rune_mat.emission_energy_multiplier = 1.6
+	rune_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	# 7 standing stones
+	for i in 7:
+		var ang: float = (TAU / 7.0) * i
+		var radius: float = 4.0
+		var stone: Node3D = Node3D.new()
+		stone.position = Vector3(cos(ang) * radius, 0, sin(ang) * radius)
+		stone.rotation.y = -ang + PI * 0.5
+		circle.add_child(stone)
+		# Standing stone — uneven height
+		var pillar: MeshInstance3D = MeshInstance3D.new()
+		var pm: BoxMesh = BoxMesh.new()
+		pm.size = Vector3(0.65, 2.40 + (i % 3) * 0.30, 0.45)
+		pillar.mesh = pm
+		pillar.material_override = stone_mat
+		pillar.position = Vector3(0, pm.size.y * 0.5, 0)
+		stone.add_child(pillar)
+		# Rune carving (small glowing rectangle)
+		var rune: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(0.30, 0.50, 0.04)
+		rune.mesh = rm
+		rune.material_override = rune_mat
+		rune.position = Vector3(0, 1.40, 0.25)
+		stone.add_child(rune)
+		# Pulse the rune
+		var tw: Tween = rune.create_tween().set_loops()
+		tw.tween_interval(i * 0.20)
+		tw.tween_property(rune, "scale:y", 1.20, 1.0)
+		tw.tween_property(rune, "scale:y", 0.85, 1.0)
+		# Stone collision
+		var sb: StaticBody3D = StaticBody3D.new()
+		sb.position = Vector3(0, pm.size.y * 0.5, 0)
+		var cs: CollisionShape3D = CollisionShape3D.new()
+		var cb: BoxShape3D = BoxShape3D.new()
+		cb.size = pm.size
+		cs.shape = cb
+		sb.add_child(cs)
+		stone.add_child(sb)
+	# Central altar
+	var altar: MeshInstance3D = MeshInstance3D.new()
+	var am: CylinderMesh = CylinderMesh.new()
+	am.top_radius = 0.85
+	am.bottom_radius = 1.00
+	am.height = 0.65
+	altar.mesh = am
+	altar.material_override = stone_mat
+	altar.position = Vector3(0, 0.32, 0)
+	circle.add_child(altar)
+	# Glowing crystal on top of altar
+	var crystal: MeshInstance3D = MeshInstance3D.new()
+	var cm: PrismMesh = PrismMesh.new()
+	cm.size = Vector3(0.40, 0.85, 0.40)
+	crystal.mesh = cm
+	var crystal_mat: StandardMaterial3D = StandardMaterial3D.new()
+	crystal_mat.albedo_color = Color(0.30, 0.95, 0.50)
+	crystal_mat.emission_enabled = true
+	crystal_mat.emission = Color(0.25, 0.95, 0.45)
+	crystal_mat.emission_energy_multiplier = 2.5
+	crystal_mat.metallic = 0.40
+	crystal_mat.roughness = 0.10
+	crystal.material_override = crystal_mat
+	crystal.position = Vector3(0, 1.05, 0)
+	circle.add_child(crystal)
+	# Crystal hover + spin
+	var ts: Tween = crystal.create_tween().set_loops()
+	ts.tween_property(crystal, "rotation_degrees:y", 360.0, 6.0)
+	ts.tween_property(crystal, "rotation_degrees:y", 0.0, 0.0)
+	var th: Tween = crystal.create_tween().set_loops()
+	th.tween_property(crystal, "position:y", 1.20, 1.4)
+	th.tween_property(crystal, "position:y", 1.05, 1.4)
+	# Central light
+	var light: OmniLight3D = OmniLight3D.new()
+	light.light_color = Color(0.40, 1.0, 0.55)
+	light.light_energy = 2.5
+	light.omni_range = 8.0
+	light.position = Vector3(0, 1.20, 0)
+	circle.add_child(light)
+	# Altar collision
+	var asb: StaticBody3D = StaticBody3D.new()
+	asb.position = Vector3(0, 0.32, 0)
+	var acs: CollisionShape3D = CollisionShape3D.new()
+	var acap: CylinderShape3D = CylinderShape3D.new()
+	acap.radius = 1.00
+	acap.height = 0.65
+	acs.shape = acap
+	asb.add_child(acs)
+	circle.add_child(asb)
+
+
+func _build_d4_ancient_sundial(geom: Node) -> void:
+	## Epic-4 T82: ancient stone sundial — round disc on a low pedestal
+	## with a triangular gnomon casting a slow-rotating shadow blade.
+	var sundial: Node3D = Node3D.new()
+	sundial.name = "AncientSundial"
+	sundial.position = Vector3(D4_CENTER.x - 4.0, 0.0, 4.0)
+	geom.add_child(sundial)
+	var stone_mat: StandardMaterial3D = StandardMaterial3D.new()
+	stone_mat.albedo_color = Color(0.65, 0.62, 0.55)
+	stone_mat.roughness = 0.92
+	# Pedestal base
+	var base: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(1.00, 0.30, 1.00)
+	base.mesh = bm
+	base.material_override = stone_mat
+	base.position = Vector3(0, 0.15, 0)
+	sundial.add_child(base)
+	# Pillar
+	var pillar: MeshInstance3D = MeshInstance3D.new()
+	var pm: CylinderMesh = CylinderMesh.new()
+	pm.top_radius = 0.30
+	pm.bottom_radius = 0.40
+	pm.height = 0.85
+	pillar.mesh = pm
+	pillar.material_override = stone_mat
+	pillar.position = Vector3(0, 0.72, 0)
+	sundial.add_child(pillar)
+	# Disc
+	var disc: MeshInstance3D = MeshInstance3D.new()
+	var dm: CylinderMesh = CylinderMesh.new()
+	dm.top_radius = 0.85
+	dm.bottom_radius = 0.85
+	dm.height = 0.10
+	disc.mesh = dm
+	disc.material_override = stone_mat
+	disc.position = Vector3(0, 1.20, 0)
+	sundial.add_child(disc)
+	# 12 hour notches around the disc edge
+	var notch_mat: StandardMaterial3D = StandardMaterial3D.new()
+	notch_mat.albedo_color = Color(0.30, 0.25, 0.20)
+	notch_mat.emission_enabled = true
+	notch_mat.emission = Color(0.85, 0.65, 0.20)
+	notch_mat.emission_energy_multiplier = 0.40
+	for i in 12:
+		var ang: float = (TAU / 12.0) * i
+		var notch: MeshInstance3D = MeshInstance3D.new()
+		var nm: BoxMesh = BoxMesh.new()
+		nm.size = Vector3(0.06, 0.04, 0.18)
+		notch.mesh = nm
+		notch.material_override = notch_mat
+		notch.position = Vector3(cos(ang) * 0.70, 1.27, sin(ang) * 0.70)
+		notch.rotation.y = -ang
+		sundial.add_child(notch)
+	# Gnomon — triangular blade rising from the center
+	var gnomon: MeshInstance3D = MeshInstance3D.new()
+	var gm: PrismMesh = PrismMesh.new()
+	gm.size = Vector3(0.10, 0.65, 0.85)
+	gnomon.mesh = gm
+	var bronze_mat: StandardMaterial3D = StandardMaterial3D.new()
+	bronze_mat.albedo_color = Color(0.65, 0.45, 0.20)
+	bronze_mat.metallic = 0.70
+	bronze_mat.roughness = 0.40
+	gnomon.material_override = bronze_mat
+	gnomon.position = Vector3(0, 1.55, 0)
+	sundial.add_child(gnomon)
+	# Slow rotation tween (simulates time passing)
+	var tw: Tween = sundial.create_tween().set_loops()
+	tw.tween_property(sundial, "rotation_degrees:y", 360.0, 60.0)
+	tw.tween_property(sundial, "rotation_degrees:y", 0.0, 0.0)
+	# Collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(1.00, 1.30, 1.00)
+	cs.shape = cb
+	cs.position = Vector3(0, 0.65, 0)
+	sb.add_child(cs)
+	sundial.add_child(sb)
+
+
+func _build_d4_merchant_cart(geom: Node) -> void:
+	## Epic-4 T83: traveling merchant cart — wooden wagon with cloth canopy
+	## and barrels/crates of wares stacked behind.
+	var cart: Node3D = Node3D.new()
+	cart.name = "MerchantCart"
+	cart.position = Vector3(D4_CENTER.x - 9.0, 0.0, -2.0)
+	geom.add_child(cart)
+	var wood_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wood_mat.albedo_color = Color(0.50, 0.32, 0.16)
+	wood_mat.roughness = 0.85
+	# Cart bed (large box)
+	var bed: MeshInstance3D = MeshInstance3D.new()
+	var bm: BoxMesh = BoxMesh.new()
+	bm.size = Vector3(2.20, 0.30, 1.20)
+	bed.mesh = bm
+	bed.material_override = wood_mat
+	bed.position = Vector3(0, 0.55, 0)
+	cart.add_child(bed)
+	# Side rails
+	for sz in [-0.55, 0.55]:
+		var rail: MeshInstance3D = MeshInstance3D.new()
+		var rm: BoxMesh = BoxMesh.new()
+		rm.size = Vector3(2.20, 0.45, 0.08)
+		rail.mesh = rm
+		rail.material_override = wood_mat
+		rail.position = Vector3(0, 0.92, sz)
+		cart.add_child(rail)
+	# Wheels (2 large round)
+	var wheel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	wheel_mat.albedo_color = Color(0.30, 0.20, 0.10)
+	wheel_mat.roughness = 0.85
+	for sx in [-0.85, 0.85]:
+		for sz in [-0.70, 0.70]:
+			var wheel: MeshInstance3D = MeshInstance3D.new()
+			var wm: CylinderMesh = CylinderMesh.new()
+			wm.top_radius = 0.45
+			wm.bottom_radius = 0.45
+			wm.height = 0.10
+			wheel.mesh = wm
+			wheel.material_override = wheel_mat
+			wheel.position = Vector3(sx, 0.45, sz)
+			wheel.rotation_degrees = Vector3(0, 0, 90)
+			cart.add_child(wheel)
+	# Cloth canopy (4 posts + sloped top box)
+	for cx in [-0.95, 0.95]:
+		for cz in [-0.50, 0.50]:
+			var post: MeshInstance3D = MeshInstance3D.new()
+			var pm: CylinderMesh = CylinderMesh.new()
+			pm.top_radius = 0.04
+			pm.bottom_radius = 0.04
+			pm.height = 1.20
+			post.mesh = pm
+			post.material_override = wood_mat
+			post.position = Vector3(cx, 1.40, cz)
+			cart.add_child(post)
+	var canopy: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(2.30, 0.10, 1.30)
+	canopy.mesh = cm
+	var cloth_mat: StandardMaterial3D = StandardMaterial3D.new()
+	cloth_mat.albedo_color = Color(0.85, 0.20, 0.30)
+	cloth_mat.roughness = 0.85
+	canopy.material_override = cloth_mat
+	canopy.position = Vector3(0, 2.05, 0)
+	cart.add_child(canopy)
+	# Wares — 2 barrels + 1 crate stacked
+	var barrel_mat: StandardMaterial3D = StandardMaterial3D.new()
+	barrel_mat.albedo_color = Color(0.45, 0.28, 0.12)
+	barrel_mat.roughness = 0.85
+	for bx in [-0.55, 0.55]:
+		var barrel: MeshInstance3D = MeshInstance3D.new()
+		var bbm: CylinderMesh = CylinderMesh.new()
+		bbm.top_radius = 0.30
+		bbm.bottom_radius = 0.30
+		bbm.height = 0.80
+		barrel.mesh = bbm
+		barrel.material_override = barrel_mat
+		barrel.position = Vector3(bx, 1.10, 0)
+		cart.add_child(barrel)
+	var crate: MeshInstance3D = MeshInstance3D.new()
+	var crm: BoxMesh = BoxMesh.new()
+	crm.size = Vector3(0.55, 0.55, 0.55)
+	crate.mesh = crm
+	crate.material_override = wood_mat
+	crate.position = Vector3(0, 1.00, 0)
+	cart.add_child(crate)
+	# Cart collision
+	var sb: StaticBody3D = StaticBody3D.new()
+	var cs: CollisionShape3D = CollisionShape3D.new()
+	var cb: BoxShape3D = BoxShape3D.new()
+	cb.size = Vector3(2.40, 1.85, 1.40)
+	cs.shape = cb
+	cs.position = Vector3(0, 1.00, 0)
+	sb.add_child(cs)
+	cart.add_child(sb)
+
+
+func _build_d4_traveling_merchant_npc() -> void:
+	## Epic-4 T84: traveling merchant NPC standing beside the cart with
+	## a long blue coat and a small purse.
+	var npc_slots: Node3D = get_node_or_null("%NPCSlots") as Node3D
+	if npc_slots == null:
+		return
+	var slot: Marker3D = Marker3D.new()
+	slot.name = "TravelingMerchantSlot"
+	slot.position = Vector3(D4_CENTER.x - 7.5, 0.0, -2.0)
+	npc_slots.add_child(slot)
+	var npc_scene: PackedScene = load("res://scenes/entities/npcs/VillagerR3.tscn") as PackedScene
+	if npc_scene == null:
+		return
+	var npc: Node3D = npc_scene.instantiate() as Node3D
+	npc.name = "TravelingMerchant"
+	if "npc_name" in npc:
+		npc.set("npc_name", "Roving Trader")
+	if "npc_id" in npc:
+		npc.set("npc_id", "trader_d4")
+	slot.add_child(npc)
+	# Blue coat (overlay box)
+	var coat: MeshInstance3D = MeshInstance3D.new()
+	var cm: BoxMesh = BoxMesh.new()
+	cm.size = Vector3(0.60, 1.00, 0.40)
+	coat.mesh = cm
+	var coat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	coat_mat.albedo_color = Color(0.20, 0.30, 0.65)
+	coat_mat.roughness = 0.80
+	coat.material_override = coat_mat
+	coat.position = Vector3(0, 0.55, 0)
+	npc.add_child(coat)
+	# Coin purse at hip
+	var purse: MeshInstance3D = MeshInstance3D.new()
+	var pm: SphereMesh = SphereMesh.new()
+	pm.radius = 0.10
+	pm.height = 0.18
+	purse.mesh = pm
+	var purse_mat: StandardMaterial3D = StandardMaterial3D.new()
+	purse_mat.albedo_color = Color(0.50, 0.32, 0.16)
+	purse_mat.roughness = 0.85
+	purse.material_override = purse_mat
+	purse.position = Vector3(0.30, 0.50, 0.10)
+	npc.add_child(purse)
+	# Tall pointed hat (cone via prism)
+	var hat: MeshInstance3D = MeshInstance3D.new()
+	var hm: PrismMesh = PrismMesh.new()
+	hm.size = Vector3(0.40, 0.50, 0.40)
+	hat.mesh = hm
+	var hat_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hat_mat.albedo_color = Color(0.30, 0.20, 0.50)
+	hat_mat.roughness = 0.80
+	hat.material_override = hat_mat
+	hat.position = Vector3(0, 1.55, 0)
+	npc.add_child(hat)
+
+
+func _build_d4_fireflies(geom: Node) -> void:
+	## Epic-4 T85: yellow firefly particles drifting upward in a wide volume
+	## around the central bloom area, giving warm magic atmosphere.
+	var fireflies: GPUParticles3D = GPUParticles3D.new()
+	fireflies.name = "Fireflies"
+	fireflies.position = Vector3(D4_CENTER.x, 1.0, 0.0)
+	fireflies.amount = 60
+	fireflies.lifetime = 6.0
+	fireflies.preprocess = 3.0
+	fireflies.explosiveness = 0.0
+	fireflies.randomness = 0.7
+	fireflies.visibility_aabb = AABB(Vector3(-25, -2, -25), Vector3(50, 12, 50))
+	var pm: ParticleProcessMaterial = ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(20, 0.5, 18)
+	pm.direction = Vector3(0, 1, 0)
+	pm.spread = 35.0
+	pm.gravity = Vector3(0, 0.10, 0)
+	pm.initial_velocity_min = 0.30
+	pm.initial_velocity_max = 0.65
+	pm.scale_min = 0.06
+	pm.scale_max = 0.12
+	pm.color = Color(1.0, 0.92, 0.45, 1.0)
+	fireflies.process_material = pm
+	# Firefly mesh — small bright sphere
+	var firefly_mesh: SphereMesh = SphereMesh.new()
+	firefly_mesh.radius = 0.05
+	firefly_mesh.height = 0.10
+	fireflies.draw_pass_1 = firefly_mesh
+	var fmat: StandardMaterial3D = StandardMaterial3D.new()
+	fmat.albedo_color = Color(1.0, 0.92, 0.45)
+	fmat.emission_enabled = true
+	fmat.emission = Color(1.0, 0.85, 0.35)
+	fmat.emission_energy_multiplier = 2.5
+	fmat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	firefly_mesh.material = fmat
+	geom.add_child(fireflies)
 
 
 
