@@ -18,6 +18,11 @@ func _ready() -> void:
 	# TreasurePileR5 prop, all wearing the placeholder white R3 baked albedo.
 	# Apply digital theme overrides so they fit the cyan/violet cyber theme.
 	_polish_arena_props()
+	# Phase 2 #17: cinematic intro banner. Make each iteration's boss
+	# feel like an event — tinted iteration label + boss name banner
+	# with a music sting on entry. Deferred so the scene tree, HUD,
+	# and player are all parented before we add the canvas overlay.
+	call_deferred(&"_play_boss_arena_intro")
 
 
 func _polish_arena_props() -> void:
@@ -114,6 +119,117 @@ func _apply_to_meshes(root: Node, mat: Material) -> void:
 			(n as MeshInstance3D).material_override = mat
 		for c in n.get_children():
 			stack.append(c)
+
+
+func _play_boss_arena_intro() -> void:
+	## Phase 2 #17: drop-in cinematic banner that pops on boss arena entry.
+	## Two stacked Labels in a CanvasLayer overlay:
+	##   line 1: "ITERATION N"  — color tinted to match the dungeon biome
+	##   line 2: "THE CORRUPTED COMPILER" — big slab caps, white outline
+	## Plus a brief audio sting + a slowed-time pause so the player
+	## actually registers the moment.
+	if not is_inside_tree():
+		return
+	# Sting cue. Reuse boss_intro if it exists, else fall back to the
+	# generic stinger that's already loaded for the dungeon. AudioManager
+	# warns silently if the cue is missing (T54).
+	AudioManager.play_sfx("boss_intro")
+	# Resolve the iteration tint + label
+	var iter: int = 1
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"get_current_iteration"):
+			iter = int(im.get_current_iteration())
+	var iter_color: Color = _intro_tint_for_iteration(iter)
+	# CanvasLayer + holder Control
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 90
+	add_child(canvas)
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_FULL_RECT)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(holder)
+	# Background vignette wash that fades the dungeon back so the
+	# banner reads. Almost-transparent black gradient.
+	var bg: ColorRect = ColorRect.new()
+	bg.color = Color(0.0, 0.0, 0.0, 0.0)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(bg)
+	# Iteration label (small, color-tinted)
+	var iter_label: Label = Label.new()
+	iter_label.text = "ITERATION %d" % iter
+	iter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	iter_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	iter_label.offset_top = 220
+	iter_label.offset_bottom = 260
+	iter_label.add_theme_font_size_override(&"font_size", 28)
+	iter_label.add_theme_color_override(&"font_color", iter_color)
+	iter_label.add_theme_constant_override(&"outline_size", 6)
+	iter_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.95))
+	iter_label.modulate.a = 0.0
+	iter_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(iter_label)
+	# Boss name banner (huge slab caps)
+	var boss_label: Label = Label.new()
+	boss_label.text = "THE CORRUPTED COMPILER"
+	boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	boss_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	boss_label.offset_top = 264
+	boss_label.offset_bottom = 360
+	boss_label.add_theme_font_size_override(&"font_size", 64)
+	boss_label.add_theme_color_override(&"font_color", Color(1.0, 0.95, 0.92))
+	boss_label.add_theme_constant_override(&"outline_size", 12)
+	boss_label.add_theme_color_override(&"font_outline_color", Color(0.05, 0.05, 0.10, 1.0))
+	boss_label.modulate.a = 0.0
+	boss_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(boss_label)
+	# Subtitle hint
+	var sub_label: Label = Label.new()
+	sub_label.text = "the loop will not close itself"
+	sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	sub_label.offset_top = 360
+	sub_label.offset_bottom = 392
+	sub_label.add_theme_font_size_override(&"font_size", 18)
+	sub_label.add_theme_color_override(&"font_color", Color(0.80, 0.85, 0.95))
+	sub_label.add_theme_constant_override(&"outline_size", 4)
+	sub_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	sub_label.modulate.a = 0.0
+	sub_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(sub_label)
+	# Tween: bg darken → iter pop → boss pop → hold → fade everything → free
+	var tw: Tween = create_tween()
+	tw.tween_property(bg, "color:a", 0.45, 0.30)
+	tw.parallel().tween_property(iter_label, "modulate:a", 1.0, 0.30)
+	tw.tween_property(boss_label, "modulate:a", 1.0, 0.35)
+	tw.parallel().tween_property(sub_label, "modulate:a", 1.0, 0.45)
+	tw.tween_interval(2.0)
+	tw.tween_property(boss_label, "modulate:a", 0.0, 0.55)
+	tw.parallel().tween_property(iter_label, "modulate:a", 0.0, 0.55)
+	tw.parallel().tween_property(sub_label, "modulate:a", 0.0, 0.55)
+	tw.parallel().tween_property(bg, "color:a", 0.0, 0.6)
+	tw.tween_callback(canvas.queue_free)
+	# Camera shake on the player camera so the moment registers.
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if not players.is_empty():
+		var cam: Camera3D = players[0].get_viewport().get_camera_3d()
+		if cam and cam.has_method(&"shake"):
+			cam.shake(0.20, 4.0)
+
+
+func _intro_tint_for_iteration(iter: int) -> Color:
+	## Mirrors the dungeon biome tint table so the boss intro reads
+	## in the same palette as the room around it. Index clamped against
+	## the array length so post-V1 iterations past 4 reuse the last tint.
+	const TINTS: Array[Color] = [
+		Color(0.55, 0.85, 1.00),  # 1 — cyan archive
+		Color(0.75, 0.55, 1.00),  # 2 — violet strata
+		Color(0.95, 0.75, 0.30),  # 3 — amber fault
+		Color(1.00, 0.40, 0.35),  # 4 — red horizon
+	]
+	var idx: int = clampi(iter - 1, 0, TINTS.size() - 1)
+	return TINTS[idx]
 
 
 func _on_boss_defeated(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
