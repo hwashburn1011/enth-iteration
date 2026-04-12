@@ -47,24 +47,30 @@ func _on_iteration_advanced_force_save(_new_iteration: int) -> void:
 
 
 func _on_auto_save_trigger(_arg: Variant = null) -> void:
-	_try_auto_save()
+	# Milestone autosave triggers (floor_completed, returned_to_town,
+	# portal_used, dungeon_entered) are bounded transition events, not
+	# periodic ticks — they fire a handful of times per run. Bypass
+	# MIN_SAVE_INTERVAL: rate-limiting them silently dropped the save
+	# right before a scene change, which left T68's pending_player_data
+	# meta carrying stale state and the new scene's player rolled back to
+	# whatever the last successful save captured.
+	_force_milestone_save()
 
 
 func _on_auto_save_trigger_no_arg() -> void:
-	_try_auto_save()
+	_force_milestone_save()
 
 
-func _try_auto_save() -> void:
-	var now: float = Time.get_ticks_msec() / 1000.0
-	if now - last_save_time < MIN_SAVE_INTERVAL:
-		return
-	# Queue if in combat
+func _force_milestone_save() -> void:
+	# Still respect the in-combat queue — we don't want to snapshot
+	# mid-room with active enemies on screen, that's the whole point of
+	# the deferred path. But unconditionally save once combat clears.
 	if GameManager.has_meta(&"is_in_combat") and GameManager.get_meta(&"is_in_combat"):
 		_save_queued = true
 		if not EventBus.enemy_defeated.is_connected(_on_combat_may_have_ended):
 			EventBus.enemy_defeated.connect(_on_combat_may_have_ended)
 		return
-	last_save_time = now
+	last_save_time = Time.get_ticks_msec() / 1000.0
 	save_game()
 
 
@@ -255,6 +261,17 @@ func save_game() -> bool:
 		return false
 	file.store_string(JSON.stringify(current_data, "\t"))
 	file.close()
+	# Stage pending metas from the just-saved snapshot. apply_to_player only
+	# applies state when these metas exist; previously they were *only*
+	# populated in _apply_loaded_data (i.e. load_game), so an autosave on
+	# dungeon_entered → change_scene_to(dungeon) would write the file but
+	# the new dungeon scene's player respawn would still see no pending data
+	# and stay at default level 1 with empty equipment. Mirror the load
+	# population here so save → scene swap → apply_to_player carries the
+	# freshly-saved player forward instead of resetting them.
+	set_meta(&"pending_player_data", current_data.get("player", {}))
+	set_meta(&"pending_inventory_data", current_data.get("inventory", {}))
+	set_meta(&"pending_equipment_data", current_data.get("equipment", {}))
 	EventBus.game_saved.emit()
 	return true
 
