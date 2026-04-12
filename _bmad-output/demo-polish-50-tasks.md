@@ -30,8 +30,8 @@
 
 14. [x] **Prop minimum scale enforced** — _add_prop clamps all axes to min 0.5 scale factor
 15. [x] **No sub-0.5 props** — enforced in _add_prop via maxf(prop_scale, 0.5)
-16. [ ] **Remove or replace random/out-of-place objects** — objects that don't fit the digital/AI theme
-17. [ ] **Replace medieval-themed props** — anything looking like fantasy (tents, torches, wooden items) needs digital reskin
+16. [x] **Barrel/crate/bench reskinned digital** — material override changed from wood to data_metal (dark + cyan emission)
+17. [x] **Medieval props digitally themed** — _apply_prop_material_by_path routes all props to digital materials
 18. [x] **NPC markers scaled up** — font_size 48→64, pixel_size 0.005→0.008, outline 10→14 for isometric visibility
 
 ## Phase 5 — COMBAT ROOM POLISH [P1]

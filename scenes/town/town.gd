@@ -887,8 +887,11 @@ func _apply_prop_material_by_path(root: Node, path: String) -> void:
 		mat = _make_stone_material()
 	elif "anvil" in stem or "forge" in stem:
 		mat = _make_data_metal_material()
-	elif "bridge" in stem or "barrel" in stem or "crate" in stem or "bench" in stem or "signpost" in stem:
+	elif "bridge" in stem or "signpost" in stem:
 		mat = _make_wood_material()
+	elif "barrel" in stem or "crate" in stem or "bench" in stem:
+		# T16-17: data containers + digital bench instead of medieval wood
+		mat = _make_data_metal_material()
 	elif "bush" in stem or "flower" in stem or "pine" in stem:
 		# Foliage already textured by tree pass — reuse
 		mat = _make_foliage_material()
