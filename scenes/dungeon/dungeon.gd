@@ -437,6 +437,18 @@ func _iteration_debrief(iter: int) -> Dictionary:
 			"change": "Final compaction. Whatever you're chasing — it's down here.",
 			"color": Color(1.0, 0.40, 0.35),
 		},
+		# R2 H21: iteration 5 biome — deep corrupted
+		{
+			"biome": "CORRUPTION  ·  DEEP CRIMSON",
+			"change": "The simulation's core is exposed. Reality tears at the edges.",
+			"color": Color(0.85, 0.15, 0.25),
+		},
+		# R2 H22: iteration 6 biome — void / decompressed
+		{
+			"biome": "DECOMPRESSION  ·  WHITE VOID",
+			"change": "Nothing left to compress. The raw data of existence, laid bare.",
+			"color": Color(0.95, 0.95, 1.0),
+		},
 	]
 	var idx: int = clampi(iter - 1, 0, ENTRIES.size() - 1)
 	return ENTRIES[idx]

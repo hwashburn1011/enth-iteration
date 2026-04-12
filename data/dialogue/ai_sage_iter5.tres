@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Five cycles. The simulation is at 8% capacity. I can see the raw bytecode now — the walls, the ground, the sky — it's all just... data. Thin data."
+expression = "sad"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "I decoded the final protocol header. Project Enth wasn't a containment experiment. It was a backup. Of everything. And the compaction engine? It's the compression algorithm. It was trying to save us all by making us smaller."
+expression = "surprise"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "One more iteration and there's nothing left to save. But Globbler... maybe that's the point. Maybe the only way to decompress is to reach the bottom."
+expression = "wisdom"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]

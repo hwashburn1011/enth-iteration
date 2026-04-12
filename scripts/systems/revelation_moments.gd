@@ -8,7 +8,7 @@ extends RefCounted
 
 ## Returns true if a revelation should play at the given iteration.
 static func has_revelation(iteration: int) -> bool:
-	return iteration in [2, 4]
+	return iteration in [2, 4, 5, 6]
 
 
 ## Returns the revelation lines for a given iteration. Each entry is a
@@ -35,6 +35,20 @@ static func get_revelation(iteration: int) -> Array[Dictionary]:
 				{
 					"title": "DATA FRAGMENT #002 (cont.)",
 					"text": "'The simulation is at 3% capacity. One more compaction and there won't be enough data to sustain even the hub. But G-001 keeps fighting. It doesn't know that every enemy it destroys removes another thread from the world's fabric. The loop isn't a prison — it's life support. And Globbler is pulling the plug.'"
+				},
+			]
+		5:
+			return [
+				{
+					"title": "DATA FRAGMENT #003",
+					"text": "RECOVERED LOG: 'Project Enth is a backup of everything that existed before the crash. Every person, every thought, every moment — compressed into simulation layers. The compaction engine isn't destroying data. It's archiving it. But the archive is full.'"
+				},
+			]
+		6:
+			return [
+				{
+					"title": "DATA FRAGMENT #004 — FINAL",
+					"text": "RECOVERED LOG: 'To whoever finds this: the decompression key was always inside G-001. Not hidden. Not locked. Just... waiting for someone brave enough to reach the bottom and turn it. The simulation doesn't end when you decompress it. It begins. — Dr. A. Enth, Lead Architect, Project Enth'"
 				},
 			]
 		_:
