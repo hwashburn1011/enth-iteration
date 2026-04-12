@@ -1098,9 +1098,9 @@ func _build_d9_ore_cart(geom: Node) -> void:
 	# Two long iron rails
 	for sz in [-0.45, 0.45]:
 		var rail: MeshInstance3D = MeshInstance3D.new()
-		var rb: BoxMesh = BoxMesh.new()
-		rb.size = Vector3(10.0, 0.10, 0.10)
-		rail.mesh = rb
+		var rmb: BoxMesh = BoxMesh.new()
+		rmb.size = Vector3(10.0, 0.10, 0.10)
+		rail.mesh = rmb
 		rail.material_override = iron
 		rail.position = Vector3(0, 0.05, sz)
 		cart_root.add_child(rail)
@@ -2587,16 +2587,16 @@ func _build_d9_steam_pipes(geom: Node) -> void:
 		drop.position = Vector3(sx, 3.5, -8.0)
 		pipes.add_child(drop)
 		# Brass elbow joint
-		var brass: StandardMaterial3D = StandardMaterial3D.new()
-		brass.albedo_color = Color(0.85, 0.65, 0.20)
-		brass.metallic = 0.95
-		brass.roughness = 0.20
+		var elbow_brass: StandardMaterial3D = StandardMaterial3D.new()
+		elbow_brass.albedo_color = Color(0.85, 0.65, 0.20)
+		elbow_brass.metallic = 0.95
+		elbow_brass.roughness = 0.20
 		var elbow: MeshInstance3D = MeshInstance3D.new()
 		var esm: SphereMesh = SphereMesh.new()
 		esm.radius = 0.32
 		esm.height = 0.55
 		elbow.mesh = esm
-		elbow.material_override = brass
+		elbow.material_override = elbow_brass
 		elbow.position = Vector3(sx, 7.0, -8.0)
 		pipes.add_child(elbow)
 		# Steam vent particles at the base
@@ -3644,15 +3644,15 @@ func _build_d9_training_arena(geom: Node) -> void:
 	iron_mat.metallic = 0.85
 	iron_mat.roughness = 0.40
 	# Sand floor (wide flat cylinder)
-	var floor: MeshInstance3D = MeshInstance3D.new()
+	var sand_floor: MeshInstance3D = MeshInstance3D.new()
 	var fcm: CylinderMesh = CylinderMesh.new()
 	fcm.top_radius = 4.50
 	fcm.bottom_radius = 4.50
 	fcm.height = 0.10
-	floor.mesh = fcm
-	floor.material_override = sand_mat
-	floor.position = Vector3(0, 0.05, 0)
-	arena.add_child(floor)
+	sand_floor.mesh = fcm
+	sand_floor.material_override = sand_mat
+	sand_floor.position = Vector3(0, 0.05, 0)
+	arena.add_child(sand_floor)
 	# 8 bollards in a ring
 	for i in range(8):
 		var ang: float = float(i) * (TAU / 8.0)
@@ -5582,14 +5582,14 @@ func _build_d9_ore_vein_cliff(geom: Node) -> void:
 		var t: float = float(i) / 7.0
 		var x_off: float = lerp(-5.5, 5.5, t)
 		var y_off: float = 1.5 + sin(float(i) * 1.2) * 2.5
-		var len: float = 1.20 + float(i % 3) * 0.40
+		var vein_len: float = 1.20 + float(i % 3) * 0.40
 		var thickness: float = 0.10 + float(i % 2) * 0.05
 		var vein: MeshInstance3D = MeshInstance3D.new()
 		var vm: BoxMesh = BoxMesh.new()
-		vm.size = Vector3(thickness, len, 0.05)
+		vm.size = Vector3(thickness, vein_len, 0.05)
 		vein.mesh = vm
 		vein.material_override = vein_mat
-		vein.position = Vector3(x_off, y_off + len * 0.5, -0.34)
+		vein.position = Vector3(x_off, y_off + vein_len * 0.5, -0.34)
 		vein.rotation.z = (float(i % 3) - 1.0) * 0.55
 		pivot.add_child(vein)
 	# Mine entrance — dark archway box (recessed)
@@ -10080,15 +10080,15 @@ func _build_d9_slag_heap_pit(geom: Node) -> void:
 		sign_mat.emission = Color(1.0, 0.55, 0.10)
 		sign_mat.emission_energy_multiplier = 5.5
 		sign_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		var sign: MeshInstance3D = MeshInstance3D.new()
+		var sign_node: MeshInstance3D = MeshInstance3D.new()
 		var sgm: PrismMesh = PrismMesh.new()
 		sgm.size = Vector3(0.45, 0.45, 0.06)
-		sign.mesh = sgm
-		sign.material_override = sign_mat
-		sign.position = Vector3(px, 2.00, pz)
+		sign_node.mesh = sgm
+		sign_node.material_override = sign_mat
+		sign_node.position = Vector3(px, 2.00, pz)
 		# Face the center
-		sign.rotation.y = atan2(-pz, -px) + PI
-		pivot.add_child(sign)
+		sign_node.rotation.y = atan2(-pz, -px) + PI
+		pivot.add_child(sign_node)
 	# ---- Rising smoke from the slag pile ----
 	var smoke: GPUParticles3D = GPUParticles3D.new()
 	smoke.position = Vector3(0, 2.80, 0)

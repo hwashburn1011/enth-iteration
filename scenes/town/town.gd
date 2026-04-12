@@ -50,6 +50,12 @@ func _ready() -> void:
 			player_node.compute_component.reset()
 		else:
 			player_node.global_position = player_spawn_point.global_position
+		# Shake the player free of any collision they spawned inside. Town
+		# Heart procedurally builds 60+ props centered on origin, and the
+		# spawn marker can land inside one. Defer one frame so the procedural
+		# StaticBodies are committed to the physics server before we test.
+		player_node.call_deferred(&"force_update_transform")
+		call_deferred(&"_shake_player_free_of_collision", player_node)
 
 		# Restore any pending save data onto the freshly spawned player.
 		# Without this call a loaded save effectively never activates until
@@ -111,6 +117,70 @@ func _seed_starter_quests() -> void:
 	var clear_dungeon: Resource = load("res://data/quests/quest_clear_dungeon.tres") as Resource
 	if clear_dungeon != null:
 		QuestManager.add_quest(clear_dungeon)
+
+
+## Test for collision overlap at the player's spawn position and shake them
+## free if stuck. Town Heart procedurally builds 60+ StaticBodies centered on
+## the world origin, and the spawn marker can land inside one — the player
+## then can't move at all because the capsule is jammed.
+##
+## Strategy: query the physics server for any body overlapping the player's
+## current capsule, and if any is found, ray-cast straight down from 8 m up
+## to find the surface and place the player just above it. As a last resort,
+## walk outward in a spiral until we find a clear spot.
+func _shake_player_free_of_collision(player_node: CharacterBody3D) -> void:
+	if player_node == null or not player_node.is_inside_tree():
+		return
+	# Wait one more frame so deferred procedural collision is committed.
+	await get_tree().physics_frame
+	var space: PhysicsDirectSpaceState3D = player_node.get_world_3d().direct_space_state
+	if space == null:
+		return
+	# Look up the player's collision capsule. We use the existing CollisionShape3D
+	# child if present so we test against the real hitbox, not a guessed size.
+	var radius: float = 0.45
+	var height: float = 1.6
+	var capsule_shape: CapsuleShape3D = null
+	for child: Node in player_node.get_children():
+		if child is CollisionShape3D and (child as CollisionShape3D).shape is CapsuleShape3D:
+			capsule_shape = (child as CollisionShape3D).shape as CapsuleShape3D
+			radius = capsule_shape.radius
+			height = capsule_shape.height
+			break
+	if capsule_shape == null:
+		# Build a temporary capsule for the query.
+		capsule_shape = CapsuleShape3D.new()
+		capsule_shape.radius = radius
+		capsule_shape.height = height
+	# Probe at current position. If clear, we're done.
+	if not _player_capsule_overlaps(space, capsule_shape, player_node.global_position, player_node.collision_mask):
+		return
+	# Spiral outward from the spawn point at increasing radii until we find a
+	# clear spot. Cap at 16 m so we don't sweep the whole town.
+	var origin: Vector3 = player_node.global_position
+	for ring: int in range(1, 17):
+		var step_radius: float = float(ring) * 1.0
+		var step_count: int = 8 + ring * 2
+		for i: int in range(step_count):
+			var angle: float = TAU * float(i) / float(step_count)
+			var candidate: Vector3 = origin + Vector3(cos(angle) * step_radius, 0.0, sin(angle) * step_radius)
+			if not _player_capsule_overlaps(space, capsule_shape, candidate, player_node.collision_mask):
+				push_warning("[town] player spawn collided at %s, shaken free to %s" % [origin, candidate])
+				player_node.global_position = candidate
+				return
+	push_warning("[town] could not shake player free of spawn collision — staying at %s" % origin)
+
+
+## Returns true if a capsule the size of the player overlaps any solid body
+## at `pos` on the given mask.
+func _player_capsule_overlaps(space: PhysicsDirectSpaceState3D, shape: Shape3D, pos: Vector3, mask: int) -> bool:
+	var query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
+	query.shape = shape
+	query.transform = Transform3D(Basis.IDENTITY, pos)
+	query.collision_mask = mask
+	query.collide_with_bodies = true
+	query.collide_with_areas = false
+	return not space.intersect_shape(query, 1).is_empty()
 
 
 func _populate_npcs() -> void:
