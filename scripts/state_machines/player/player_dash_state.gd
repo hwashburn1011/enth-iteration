@@ -10,6 +10,9 @@ extends "res://scripts/state_machines/state.gd"
 const DASH_CANCEL_LOCKOUT: float = 0.06
 const DASH_SHAKE_AMP: float = 0.06
 const DASH_SHAKE_DECAY: float = 10.0
+## T91: Coyote time — grace period after dash cooldown expires where
+## a dash input that arrived during cooldown is still honored.
+const DASH_COYOTE_TIME: float = 0.1
 
 var _iframe_timer: float = 0.0
 var _iframe_active: bool = false
@@ -93,6 +96,8 @@ func enter() -> void:
 	# floor so the player can't permanently dash). Defensive
 	# against missing equipment / empty core slot / non-core resource.
 	p.can_dash = false
+	# T91: Store dash input timestamp for coyote time buffering
+	p.set_meta(&"last_dash_input_time", Time.get_ticks_msec())
 	var cd: float = p.dash_cooldown
 	var equip: Node = p.get_node_or_null("EquipmentComponent") as Node
 	if equip:
@@ -136,6 +141,8 @@ func physics_update(delta: float) -> void:
 		var current_input: Vector2 = Input.get_vector(
 			&"move_left", &"move_right", &"move_forward", &"move_back"
 		)
+		# T94: Landing impact on dash end — small dust burst + subtle shake
+		_spawn_landing_impact(p)
 		if current_input.length() > 0.0:
 			state_machine.force_transition_to(state_machine.get_node("WalkState") as Node)
 		else:
@@ -252,6 +259,40 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 	scene_root.add_child(trail_particles)
 	trail_particles.global_position = from.lerp(to, 0.5) + Vector3(0, 0.5, 0)
 	p.get_tree().create_timer(0.6).timeout.connect(trail_particles.queue_free)
+
+
+func _spawn_landing_impact(p: CharacterBody3D) -> void:
+	## T94: Small dust ring + subtle camera shake on dash landing.
+	if not p.is_inside_tree():
+		return
+	var scene_root: Node = p.get_tree().current_scene
+	# Dust ring
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.15
+	torus.outer_radius = 0.3
+	torus.rings = 10
+	torus.ring_segments = 12
+	ring.mesh = torus
+	ring.scale = Vector3(0.5, 0.5, 0.5)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(0.4, 0.85, 0.8, 0.5)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.3, 0.7, 0.65)
+	mat.emission_energy_multiplier = 1.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	scene_root.add_child(ring)
+	ring.global_position = p.global_position + Vector3(0, 0.05, 0)
+	var tw: Tween = ring.create_tween()
+	tw.tween_property(ring, "scale", Vector3(2.0, 0.5, 2.0), 0.2).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.25)
+	tw.tween_callback(ring.queue_free)
+	# Subtle landing shake
+	var camera: Camera3D = p.get_viewport().get_camera_3d()
+	if camera and camera.has_method(&"shake"):
+		camera.shake(0.03, 12.0)
 
 
 func _flash_transparent(p: CharacterBody3D, transparent: bool) -> void:

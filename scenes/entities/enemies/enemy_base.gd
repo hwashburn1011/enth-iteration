@@ -227,9 +227,38 @@ func _on_hit_received(damage_info: Resource) -> void:
 	# Aggro on hit
 	if target_player == null and damage_info.source.is_in_group(&"player"):
 		target_player = damage_info.source as Node3D
+	# T78: Brief white hit flash on enemy model when taking damage
+	_flash_hit_white()
 	var hurt_state: Node = state_machine.get_node_or_null("EnemyHurtState") as Node
 	if hurt_state:
 		state_machine.force_transition_to(hurt_state)
+
+
+func _flash_hit_white() -> void:
+	## T78: Brief 0.1s white material override flash on all enemy meshes.
+	## Snapshots current material_override per mesh, applies white unshaded,
+	## then restores after the flash duration.
+	var meshes: Array[MeshInstance3D] = get_mesh_instances()
+	if meshes.is_empty():
+		return
+	var flash_mat: StandardMaterial3D = StandardMaterial3D.new()
+	flash_mat.albedo_color = Color(1.0, 1.0, 1.0, 0.9)
+	flash_mat.emission_enabled = true
+	flash_mat.emission = Color.WHITE
+	flash_mat.emission_energy_multiplier = 5.0
+	flash_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	flash_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var saved: Dictionary = {}
+	for mesh: MeshInstance3D in meshes:
+		saved[mesh] = mesh.material_override
+		mesh.material_override = flash_mat
+	if not is_inside_tree():
+		return
+	get_tree().create_timer(0.1, true, false, true).timeout.connect(func() -> void:
+		for mesh: MeshInstance3D in meshes:
+			if is_instance_valid(mesh) and saved.has(mesh):
+				mesh.material_override = saved[mesh]
+	)
 
 
 func _capture_baseline_scale() -> void:
@@ -424,7 +453,7 @@ func _polish_r3_enemy(r3_root: Node3D, body_color: Color, eye_color: Color) -> v
 	body_mat.albedo_color = body_color
 	body_mat.emission_enabled = true
 	body_mat.emission = body_color * 0.7
-	body_mat.emission_energy_multiplier = 0.5
+	body_mat.emission_energy_multiplier = 3.0
 	body_mat.metallic = 0.2
 	body_mat.roughness = 0.5
 	body_mat.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED

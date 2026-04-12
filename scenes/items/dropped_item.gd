@@ -99,6 +99,19 @@ func _ready() -> void:
 
 	_tooltip.visible = false
 
+	# T72: Increased loot glow — add OmniLight3D so drops are unmissable
+	var loot_light: OmniLight3D = OmniLight3D.new()
+	loot_light.position = Vector3(0, 0.8, 0)
+	loot_light.light_color = _rarity_color(item.rarity) if item else Color.WHITE
+	loot_light.light_energy = 2.5
+	loot_light.omni_range = 5.0
+	loot_light.omni_attenuation = 1.5
+	add_child(loot_light)
+	# Pulse the loot light for attention
+	var loot_tween: Tween = loot_light.create_tween().set_loops()
+	loot_tween.tween_property(loot_light, "light_energy", 3.5, 0.8).set_ease(Tween.EASE_IN_OUT)
+	loot_tween.tween_property(loot_light, "light_energy", 2.0, 0.8).set_ease(Tween.EASE_IN_OUT)
+
 	# Initial drop shimmer — bright pulse that fades
 	if item:
 		_spawn_drop_shimmer()

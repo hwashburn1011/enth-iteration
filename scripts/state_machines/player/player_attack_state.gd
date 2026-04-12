@@ -51,6 +51,8 @@ var _combo_step: int = 0
 var _bolt_fired: bool = false
 ## Cached attack direction for the projectile.
 var _attack_direction: Vector3 = Vector3.FORWARD
+## T90: Input buffering — queued attack during recovery chains into next combo.
+var _buffered_attack: bool = false
 
 
 func enter() -> void:
@@ -58,6 +60,7 @@ func enter() -> void:
 	_timer = 0.0
 	_hitbox_enabled = false
 	_bolt_fired = false
+	_buffered_attack = false
 	_has_hit.clear()
 	_hits_landed_this_swing = 0
 
@@ -138,9 +141,18 @@ func physics_update(delta: float) -> void:
 			_bolt_fired = true
 			_fire_lightning_bolt(p)
 
+	# T90: Buffer attack input during recovery frames so queued clicks chain
+	if _timer >= DATA_PULSE_FIRE_TIME and not _is_energy_burst:
+		if Input.is_action_just_pressed(&"attack_primary"):
+			_buffered_attack = true
+
 	if _timer >= _duration:
 		if _is_energy_burst:
 			_set_hitbox_active(p, false)
+		# T90: If attack was buffered during recovery, chain into next attack
+		if _buffered_attack and p.can_attack:
+			state_machine.transition_to(state_machine.get_node("AttackState") as Node)
+			return
 		var input_vector: Vector2 = Input.get_vector(
 			&"move_left", &"move_right", &"move_forward", &"move_back"
 		)

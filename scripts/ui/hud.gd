@@ -77,6 +77,7 @@ func _ready() -> void:
 	_create_quest_widget()
 	EventBus.quest_updated.connect(_on_quest_updated)
 	_create_gold_display()
+	_create_floor_indicator()
 	EventBus.enemy_defeated.connect(_on_enemy_defeated_gold)
 
 
@@ -608,6 +609,59 @@ func _update_prompt_display(player: CharacterBody3D) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(_prompt_icon, "scale", Vector2(1.15, 1.15), 0.1).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_prompt_icon, "scale", Vector2(1.0, 1.0), 0.08)
+
+
+## T84: Floor number indicator — "FLOOR X/Y" in top-right during dungeon.
+var _floor_panel: PanelContainer = null
+var _floor_label: Label = null
+
+
+func _create_floor_indicator() -> void:
+	_floor_panel = PanelContainer.new()
+	_floor_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_floor_panel.offset_left = -160.0
+	_floor_panel.offset_top = 82.0  # under the iteration chip
+	_floor_panel.offset_right = -14.0
+	_floor_panel.offset_bottom = 108.0
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.08, 0.12, 0.88)
+	style.border_color = Color(0.18, 0.55, 0.45, 0.85)
+	style.set_border_width_all(1)
+	style.border_width_left = 4
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(6)
+	_floor_panel.add_theme_stylebox_override(&"panel", style)
+	_floor_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_floor_panel.visible = false
+	_floor_label = Label.new()
+	_floor_label.text = ""
+	_floor_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_floor_label.add_theme_color_override(&"font_color", Color(0.55, 0.9, 0.75))
+	_floor_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_floor_label.add_theme_constant_override(&"outline_size", 2)
+	_floor_label.add_theme_font_size_override(&"font_size", 14)
+	_floor_panel.add_child(_floor_label)
+	_container.add_child(_floor_panel)
+	EventBus.floor_completed.connect(_on_floor_indicator_update)
+
+
+func _on_floor_indicator_update(_floor_num: int) -> void:
+	# Hide floor indicator when floor completes (boss or transition soon)
+	if _floor_panel:
+		_floor_panel.visible = false
+
+
+func update_floor_indicator(current_floor: int, total_floors: int) -> void:
+	## Called by the dungeon scene to show "FLOOR X/Y" during runs.
+	if _floor_label:
+		_floor_label.text = "FLOOR %d/%d" % [current_floor, total_floors]
+	if _floor_panel:
+		_floor_panel.visible = true
+
+
+func hide_floor_indicator() -> void:
+	if _floor_panel:
+		_floor_panel.visible = false
 
 
 func _refresh_prompt_from_tree() -> void:

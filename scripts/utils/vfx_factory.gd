@@ -215,19 +215,20 @@ static func spawn_damage_number(position: Vector3, amount: int, is_crit: bool, p
 	## Phase 4 #40 polish: no_depth_test for readability, crit scale pulse for pop.
 	var label: Label3D = Label3D.new()
 	# Scale font size by damage amount (clamped)
+	# T77: Increased damage number sizes for readability at distance
 	var size_factor: float = clampf(amount / 20.0, 0.6, 2.5)
 	if is_crit:
 		label.text = str(amount) + "!"
-		label.font_size = int(44 * size_factor)
+		label.font_size = int(64 * size_factor)
 		label.modulate = Color(1.0, 0.9, 0.1)
 		label.outline_modulate = Color(0.4, 0.15, 0, 0.9)
-		label.outline_size = 7
+		label.outline_size = 10
 	else:
 		label.text = str(amount)
-		label.font_size = int(28 * size_factor)
+		label.font_size = int(42 * size_factor)
 		label.modulate = Color(1.0, 0.35, 0.2)
 		label.outline_modulate = Color(0, 0, 0, 0.8)
-		label.outline_size = 5
+		label.outline_size = 7
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.no_depth_test = true
 	label.fixed_size = true

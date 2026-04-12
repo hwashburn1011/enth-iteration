@@ -133,6 +133,17 @@ func _activate(enemy: CharacterBody3D) -> void:
 		sm.set_process(true)
 		sm.set_physics_process(true)
 		sm.set_process_unhandled_input(true)
+	# T97: Spawn-in scale tween animation — enemies scale from 0.01 to 1.0
+	# over 0.3s so they visually materialize rather than popping in.
+	var mdl: Node3D = enemy.get_node_or_null("%Model") as Node3D
+	if mdl == null:
+		mdl = enemy.get_node_or_null("Model") as Node3D
+	if mdl:
+		var target_scale: Vector3 = mdl.scale
+		mdl.scale = Vector3(0.01, 0.01, 0.01)
+		var tw: Tween = enemy.create_tween()
+		tw.tween_property(mdl, "scale", target_scale * 1.15, 0.2).set_ease(Tween.EASE_OUT)
+		tw.tween_property(mdl, "scale", target_scale, 0.1)
 
 
 func _deactivate(enemy: CharacterBody3D) -> void:

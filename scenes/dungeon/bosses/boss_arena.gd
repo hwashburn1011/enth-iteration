@@ -246,4 +246,39 @@ func _on_boss_defeated(_type: StringName, _pos: Vector3, _loot: Resource) -> voi
 		portal.global_position = global_position
 		add_child(portal)
 
+	# T88: "PORTAL ACTIVATED" text when boss dies and portal spawns
+	_spawn_portal_activated_text()
+
 	EventBus.boss_defeated.disconnect(_on_boss_defeated)
+
+
+func _spawn_portal_activated_text() -> void:
+	## T88: Large "PORTAL ACTIVATED" HUD text that fades out over 2s.
+	if not is_inside_tree():
+		return
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 80
+	add_child(canvas)
+	var label: Label = Label.new()
+	label.text = "PORTAL ACTIVATED"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER)
+	label.offset_top = -30.0
+	label.offset_bottom = 30.0
+	label.offset_left = -250.0
+	label.offset_right = 250.0
+	label.add_theme_font_size_override(&"font_size", 52)
+	label.add_theme_color_override(&"font_color", Color(0.4, 0.8, 1.0))
+	label.add_theme_constant_override(&"outline_size", 10)
+	label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.95))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.modulate.a = 0.0
+	canvas.add_child(label)
+	var tw: Tween = label.create_tween()
+	tw.tween_property(label, "modulate:a", 1.0, 0.2)
+	tw.tween_property(label, "scale", Vector2(1.15, 1.15), 0.12).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "scale", Vector2(1.0, 1.0), 0.1)
+	tw.tween_interval(1.5)
+	tw.tween_property(label, "modulate:a", 0.0, 0.6)
+	tw.tween_callback(canvas.queue_free)
