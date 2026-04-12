@@ -73,6 +73,10 @@ func _process(_delta: float) -> void:
 	# Pulse the interaction indicator
 	if _interact_indicator and _interact_indicator.visible:
 		_interact_indicator.position.y = _indicator_base_y + sin(Time.get_ticks_msec() * 0.005) * 0.1
+	# T98: Interact prompt scale pulse — gentle 1.0→1.1 over 0.5s loop
+	if _prompt_label and _prompt_label.visible:
+		var pulse: float = 1.0 + sin(Time.get_ticks_msec() * 0.006) * 0.05
+		_prompt_label.scale = Vector3(pulse, pulse, pulse)
 	# Phase 4 #36 — bob the quest marker gently
 	if _quest_marker and _quest_marker.visible:
 		_quest_marker.position.y = 2.9 + sin(Time.get_ticks_msec() * 0.004) * 0.12

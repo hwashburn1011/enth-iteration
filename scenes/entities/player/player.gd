@@ -284,6 +284,32 @@ func _build_player_extras() -> void:
 	shadow.material_override = shadow_mat
 	add_child(shadow)
 
+	# T76: Edge glow on player — slightly larger duplicate sphere behind model
+	# with bright cyan emission so Globbler is always visible in dark rooms.
+	var edge_glow: MeshInstance3D = MeshInstance3D.new()
+	edge_glow.name = "EdgeGlow"
+	var glow_sphere: SphereMesh = SphereMesh.new()
+	glow_sphere.radius = 0.55
+	glow_sphere.height = 1.1
+	glow_sphere.radial_segments = 16
+	glow_sphere.rings = 8
+	edge_glow.mesh = glow_sphere
+	edge_glow.position = Vector3(0, 0.5, 0)
+	var glow_mat: StandardMaterial3D = StandardMaterial3D.new()
+	glow_mat.albedo_color = Color(0.15, 0.7, 0.65, 0.12)
+	glow_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glow_mat.emission_enabled = true
+	glow_mat.emission = Color(0.1, 0.6, 0.55)
+	glow_mat.emission_energy_multiplier = 2.0
+	glow_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow_mat.cull_mode = BaseMaterial3D.CULL_FRONT  # render only back faces = rim effect
+	edge_glow.material_override = glow_mat
+	add_child(edge_glow)
+	# Subtle pulse on edge glow
+	var glow_tween: Tween = create_tween().set_loops()
+	glow_tween.tween_property(glow_mat, "albedo_color:a", 0.22, 1.2).set_ease(Tween.EASE_IN_OUT)
+	glow_tween.tween_property(glow_mat, "albedo_color:a", 0.08, 1.2).set_ease(Tween.EASE_IN_OUT)
+
 	# Player highlight ring (helps visibility on dark dungeon floors)
 	var ring: MeshInstance3D = MeshInstance3D.new()
 	ring.name = "HighlightRing"
@@ -653,6 +679,17 @@ func _apply_level_up_hitstop() -> void:
 
 func _on_dash_cooldown_timeout() -> void:
 	can_dash = true
+	# T91: Coyote time — if the player pressed dash during cooldown within
+	# the grace window, auto-trigger the dash now that cooldown expired.
+	if has_meta(&"last_dash_input_time"):
+		var last_input_ms: int = int(get_meta(&"last_dash_input_time"))
+		var elapsed_ms: int = Time.get_ticks_msec() - last_input_ms
+		if elapsed_ms < int(PlayerDashState.DASH_COYOTE_TIME * 1000.0):
+			if Input.is_action_pressed(&"dash"):
+				var dash_state: Node = state_machine.get_node_or_null("DashState") as Node
+				if dash_state and can_dash:
+					state_machine.force_transition_to(dash_state)
+					return
 	# Brief ring flash to indicate dash ready
 	_flash_ring_ready()
 

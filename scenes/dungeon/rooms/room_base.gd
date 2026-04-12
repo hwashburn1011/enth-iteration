@@ -55,6 +55,40 @@ func _on_all_enemies_defeated() -> void:
 	room_cleared.emit()
 	_show_exit_indicator()
 	_clear_danger_lighting()
+	# T81: "ROOM CLEAR!" text popup when all enemies die
+	_spawn_room_clear_popup()
+
+
+func _spawn_room_clear_popup() -> void:
+	## T81: Large "ROOM CLEAR!" HUD text that fades out over 1.5s.
+	if not is_inside_tree():
+		return
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 80
+	add_child(canvas)
+	var label: Label = Label.new()
+	label.text = "ROOM CLEAR!"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	label.offset_top = 180.0
+	label.offset_bottom = 240.0
+	label.offset_left = -200.0
+	label.offset_right = 200.0
+	label.add_theme_font_size_override(&"font_size", 48)
+	label.add_theme_color_override(&"font_color", Color(0.2, 1.0, 0.4))
+	label.add_theme_constant_override(&"outline_size", 8)
+	label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.95))
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.modulate.a = 0.0
+	canvas.add_child(label)
+	var tw: Tween = label.create_tween()
+	tw.tween_property(label, "modulate:a", 1.0, 0.15)
+	tw.tween_property(label, "scale", Vector2(1.1, 1.1), 0.1).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "scale", Vector2(1.0, 1.0), 0.08)
+	tw.tween_interval(1.0)
+	tw.tween_property(label, "modulate:a", 0.0, 0.5)
+	tw.tween_callback(canvas.queue_free)
 
 
 func _show_exit_indicator() -> void:
