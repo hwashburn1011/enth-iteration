@@ -37,8 +37,16 @@ func _run_respawn_sequence() -> void:
 	# 2. Fade to black
 	await _fade(0.0, 1.0, FADE_DURATION)
 
-	# 3. Trigger item degradation (handled by InventoryComponent in Epic 4)
+	# 3. Trigger item degradation (handled by EquipmentComponent)
 	EventBus.item_degradation_triggered.emit()
+
+	# 3a. Persist the degradation BEFORE the scene change. EquipmentComponent
+	# mutates the dying player's per-instance item resources in-place — but
+	# change_scene_to() frees that player and the new town scene rebuilds
+	# the player's equipment from the save file. Without an intermediate
+	# save_game() call, every death rolled the durability counter back to
+	# the previous save state and the death penalty was effectively dead.
+	SaveManager.save_game()
 
 	# 4. Load town scene
 	await GameManager.change_scene_to(TOWN_SCENE_PATH)
