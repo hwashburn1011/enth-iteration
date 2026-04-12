@@ -38,7 +38,7 @@ func _load_all_classes() -> void:
 			if def != null and def.class_id != &"":
 				classes[def.class_id] = def
 	dir.list_dir_end()
-	print("ClassRegistry: loaded %d classes" % classes.size())
+	#print("ClassRegistry: loaded %d classes" % classes.size())
 
 
 func _build_restriction_index() -> void:

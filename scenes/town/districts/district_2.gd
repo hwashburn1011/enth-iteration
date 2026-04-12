@@ -12,7 +12,7 @@ const D2_CENTER := Vector3(85, 0, 0)
 
 func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_2(geom).
-	print("[D2Builder] start")
+	#print("[D2Builder] start")
 	_unlock_east_gate_and_extend(geom)
 	_build_d2_ground(geom)
 	_build_d2_entrance_arch(geom)
@@ -113,7 +113,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d2_epic2_plaque(geom)
 	_build_d2_ambient_lighting(geom)
 	_build_d2_glitch_herald_landmark(geom)
-	print("[D2Builder] done")
+	#print("[D2Builder] done")
 
 
 func _unlock_east_gate_and_extend(geom: Node) -> void:

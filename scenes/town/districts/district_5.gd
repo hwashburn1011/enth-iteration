@@ -15,7 +15,7 @@ func extend_boundary(geom: Node) -> void:
 
 func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_5(geom).
-	print("[D5Builder] start")
+	#print("[D5Builder] start")
 	extend_boundary(geom)
 	_build_d5_ground(geom)
 	_build_d5_entrance_arch(geom)
@@ -116,7 +116,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d5_district_plaque(geom)
 	_build_d5_ambient_tweak(geom)
 	_build_d5_frost_monarch(geom)
-	print("[D5Builder] done")
+	#print("[D5Builder] done")
 
 
 func _build_d5_ground(geom: Node) -> void:

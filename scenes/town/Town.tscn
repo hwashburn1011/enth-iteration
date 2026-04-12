@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://ptcodskpowyf" path="res://scenes/town/town.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://pp3l1tdt0ooe" path="res://scenes/town/DungeonEntrance.tscn" id="2_entrance"]
-[ext_resource type="Environment" path="res://assets/placeholders/town_environment.tres" id="3_env"]
+[ext_resource type="Environment" uid="uid://ced7mffe7aj20" path="res://assets/placeholders/town_environment.tres" id="3_env"]
 [ext_resource type="PackedScene" uid="uid://b6le80bowp5hc" path="res://assets/models/buildings/town_hero_building_r3.glb" id="4_town_hero_building_r3"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
