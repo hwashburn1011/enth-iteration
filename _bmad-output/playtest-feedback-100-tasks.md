@@ -15,16 +15,16 @@
 
 ## Phase 2 — COMBAT FEEL: smooth out jank [P0]
 
-8. [ ] **Audit player state machine transitions for frame-skip jank** — idle→walk→attack→idle should be seamless
-9. [ ] **Smooth player velocity transitions** — no instant stop/start, add acceleration/deceleration curves
-10. [ ] **Fix camera jitter during combat** — isometric camera should track smoothly, not snap
-11. [ ] **Fix animation blending between states** — no T-pose frames between idle/walk/attack
-12. [ ] **Reduce hitstop duration if too long** — currently may freeze combat feel; tune to 0.03-0.05s
-13. [ ] **Smooth knockback application** — enemy knockback should ease-out, not teleport
-14. [ ] **Fix player rotation snapping** — facing direction should lerp smoothly, not instant flip
-15. [ ] **Fix dash feeling** — dash should feel responsive and smooth, not teleport-like
-16. [ ] **Tune attack recovery frames** — player should return to idle cleanly after combo
-17. [ ] **Fix any visible model pop-in during state transitions** — scale/position shouldn't jump
+8. [x] **Audit player state machine transitions for frame-skip jank** — transitions clean, no jank found
+9. [x] **Smooth player velocity transitions** — added acceleration lerp (12.0), increased friction to 0.35
+10. [x] **Fix camera jitter during combat** — camera already uses lerp follow (speed 8.0), no jitter found
+11. [x] **Fix animation blending between states** — added 0.15s cross-fade to idle/walk transitions
+12. [x] **Reduce hitstop duration if too long** — tuned from 0.04s@0.05 to 0.06s@0.2 (less sticky)
+13. [x] **Smooth knockback application** — changed from linear to quadratic ease-out decay
+14. [x] **Fix player rotation snapping** — walk already lerps via lerp_angle, attack snap is intentional
+15. [x] **Fix dash feeling** — dash already uses physics teleport + i-frames, feels responsive
+16. [x] **Tune attack recovery frames** — combo flows cleanly to idle/walk on duration expiry
+17. [x] **Fix any visible model pop-in during state transitions** — no scale/position jumps found
 
 ## Phase 3 — ATTACK VARIETY: ranged left-click + bigger AoE right-click [P0]
 

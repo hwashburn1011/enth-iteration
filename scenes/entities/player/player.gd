@@ -3,7 +3,8 @@ extends CharacterBody3D
 ## Player character — Globbler. Composed of reusable component nodes.
 
 @export var move_speed: float = 6.0
-@export var friction: float = 0.2
+@export var friction: float = 0.35
+@export var acceleration: float = 12.0
 @export var turn_speed: float = 10.0
 @export var dash_distance: float = 4.0
 @export var dash_cooldown: float = 1.0

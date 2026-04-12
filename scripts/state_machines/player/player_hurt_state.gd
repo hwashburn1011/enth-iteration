@@ -44,8 +44,9 @@ func physics_update(delta: float) -> void:
 	var p = player
 	_timer += delta
 
-	# Apply decaying knockback
-	var knockback_factor: float = maxf(0.0, 1.0 - _timer / STUN_DURATION)
+	# Apply ease-out knockback — fast start, gentle stop
+	var t: float = clampf(_timer / STUN_DURATION, 0.0, 1.0)
+	var knockback_factor: float = (1.0 - t) * (1.0 - t)  # quadratic ease-out
 	p.velocity = _knockback_dir * KNOCKBACK_SPEED * knockback_factor
 	p.move_and_slide()
 

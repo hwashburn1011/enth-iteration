@@ -9,7 +9,7 @@ const DUST_INTERVAL: float = 0.3
 func enter() -> void:
 	var p = player
 	if p and p.animation_player.has_animation(&"walk"):
-		p.animation_player.play(&"walk")
+		p.animation_player.play(&"walk", 0.15)
 
 
 func handle_input(event: InputEvent) -> void:
@@ -78,7 +78,7 @@ func physics_update(delta: float) -> void:
 	# = ~15% speed, the worst-case "I'm pinned" punishment).
 	if &"is_blocking" in p and p.is_blocking:
 		speed *= p.BLOCK_MOVE_SLOW
-	p.velocity = direction * speed
+	p.velocity = p.velocity.lerp(direction * speed, p.acceleration * delta)
 	p.facing_direction = direction
 
 	var target_angle: float = atan2(direction.x, direction.z)

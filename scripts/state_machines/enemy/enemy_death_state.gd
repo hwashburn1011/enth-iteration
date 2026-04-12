@@ -22,9 +22,9 @@ func enter() -> void:
 	_spawn_death_burst(enemy)
 
 	# Brief micro-hitstop on death for impact
-	Engine.time_scale = 0.3
+	Engine.time_scale = 0.4
 	if enemy.is_inside_tree():
-		enemy.get_tree().create_timer(0.05, true, false, true).timeout.connect(func() -> void:
+		enemy.get_tree().create_timer(0.04, true, false, true).timeout.connect(func() -> void:
 			Engine.time_scale = 1.0
 		)
 
