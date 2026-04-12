@@ -7337,8 +7337,7 @@ func _build_d9_molten_geyser(geom: Node) -> void:
 	sb.position = Vector3(0, 0.70, 0)
 	var cs: CollisionShape3D = CollisionShape3D.new()
 	var cylsh: CylinderShape3D = CylinderShape3D.new()
-	cylsh.top_radius = 1.10
-	cylsh.bottom_radius = 2.40
+	cylsh.radius = maxf(1.10, 2.40)
 	cylsh.height = 1.40
 	cs.shape = cylsh
 	sb.add_child(cs)
@@ -7637,8 +7636,7 @@ func _build_d9_geyser_observation_deck(geom: Node) -> void:
 	sb.position = Vector3(0, 0.28, 0)
 	var cs: CollisionShape3D = CollisionShape3D.new()
 	var cylsh: CylinderShape3D = CylinderShape3D.new()
-	cylsh.top_radius = 3.30
-	cylsh.bottom_radius = 3.40
+	cylsh.radius = maxf(3.30, 3.40)
 	cylsh.height = 0.55
 	cs.shape = cylsh
 	sb.add_child(cs)
@@ -8017,8 +8015,7 @@ func _build_d9_forge_memorial(geom: Node) -> void:
 	sb.position = Vector3(0, 0.45, 0)
 	var cs: CollisionShape3D = CollisionShape3D.new()
 	var cylsh: CylinderShape3D = CylinderShape3D.new()
-	cylsh.top_radius = 1.90
-	cylsh.bottom_radius = 3.20
+	cylsh.radius = maxf(1.90, 3.20)
 	cylsh.height = 0.90
 	cs.shape = cylsh
 	sb.add_child(cs)
@@ -9638,8 +9635,7 @@ func _build_d9_drift_lava_pool(geom: Node) -> void:
 	rim_sb.position = Vector3(0, 0.18, 0)
 	var rim_cs: CollisionShape3D = CollisionShape3D.new()
 	var rim_cyl: CylinderShape3D = CylinderShape3D.new()
-	rim_cyl.top_radius = 2.85
-	rim_cyl.bottom_radius = 2.85
+	rim_cyl.radius = maxf(2.85, 2.85)
 	rim_cyl.height = 0.30
 	rim_cs.shape = rim_cyl
 	rim_sb.add_child(rim_cs)
@@ -9977,8 +9973,7 @@ func _build_d9_slag_heap_pit(geom: Node) -> void:
 	rim_sb.position = Vector3(0, 0.20, 0)
 	var rim_cs: CollisionShape3D = CollisionShape3D.new()
 	var rim_cyl: CylinderShape3D = CylinderShape3D.new()
-	rim_cyl.top_radius = 5.00
-	rim_cyl.bottom_radius = 5.00
+	rim_cyl.radius = maxf(5.00, 5.00)
 	rim_cyl.height = 0.40
 	rim_cs.shape = rim_cyl
 	rim_sb.add_child(rim_cs)
@@ -11354,8 +11349,7 @@ func _build_d9_boss_arena_floor(geom: Node) -> void:
 	sb.position = Vector3(0, 0.55, 0)
 	var cs: CollisionShape3D = CollisionShape3D.new()
 	var cylsh: CylinderShape3D = CylinderShape3D.new()
-	cylsh.top_radius = 8.00
-	cylsh.bottom_radius = 11.00
+	cylsh.radius = maxf(8.00, 11.00)
 	cylsh.height = 1.10
 	cs.shape = cylsh
 	sb.add_child(cs)
@@ -12466,4 +12460,3 @@ func _build_d9_arena_fortifications(geom: Node) -> void:
 	var rpulse: Tween = pivot.create_tween().set_loops()
 	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 9.5, 1.6).set_ease(Tween.EASE_IN_OUT)
 	rpulse.tween_property(rune_mat, "emission_energy_multiplier", 5.5, 1.6).set_ease(Tween.EASE_IN_OUT)
-
