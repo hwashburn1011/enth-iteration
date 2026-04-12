@@ -16,6 +16,13 @@ const ZOOM_MAX: float = 22.0
 const ZOOM_STEP: float = 1.5
 const ZOOM_LERP_SPEED: float = 12.0
 
+## Camera collision pull-in. When a wall sits between the camera arm
+## anchor and the player, raycast from the player up the arm and pull the
+## camera to the first hit (minus a small backoff) so the wall is behind
+## the camera instead of occluding the player. Mask 1 = world geometry.
+const COLLISION_BACKOFF: float = 0.4
+const COLLISION_MASK: int = 1
+
 ## Fixed camera arm offset — positions camera above and behind target at isometric angle.
 ## R5 fix: was (10, 14, 10) — too steep, hid the character behind walls. New angle
 ## is shallower (more "above and slightly forward") so wall occlusion is reduced.
@@ -64,6 +71,22 @@ func _process(delta: float) -> void:
 	_lean_offset = _lean_offset.lerp(target_lean, LEAN_RESPONSIVENESS * delta)
 
 	var desired_pos: Vector3 = target.global_position + offset + _camera_arm + _lean_offset
+	# Camera collision: if a wall sits on the line from the player to the
+	# desired camera position, pull the camera in to the first hit point
+	# (minus a small backoff) so the wall ends up behind the camera and
+	# stops occluding the player. Cheap raycast each frame; the camera
+	# arm springs back to its full length the moment line-of-sight clears.
+	var anchor: Vector3 = target.global_position + offset + Vector3(0, 0.8, 0)
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	if space != null:
+		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(anchor, desired_pos)
+		query.collision_mask = COLLISION_MASK
+		query.collide_with_areas = false
+		var hit: Dictionary = space.intersect_ray(query)
+		if not hit.is_empty():
+			var hit_pos: Vector3 = hit["position"] as Vector3
+			var dir: Vector3 = (desired_pos - anchor).normalized()
+			desired_pos = hit_pos - dir * COLLISION_BACKOFF
 	# Apply screen shake
 	if _shake_intensity > 0.0:
 		desired_pos += Vector3(
