@@ -125,3 +125,66 @@ func _on_item_collected(item: Resource) -> void:
 	if item != null and "item_id" in item:
 		item_id = String(item.item_id)
 	_progress_event(&"item_collected", item_id)
+
+
+## --- Save / load ---
+##
+## Quest progress was previously fully in-memory: active_quests stored Resource
+## refs whose `current_count` and `is_completed` fields are not @exported, so
+## .tres reload always returns 0/false. After save/load, town.gd re-seeded the
+## starter quest from a fresh load() and every player saw their quest snap
+## back to step zero. These hooks let SaveManager snapshot the current
+## per-objective progress + completed list and rebuild it on load.
+
+const _QUEST_PATHS: Dictionary = {
+	"clear_dungeon": "res://data/quests/quest_clear_dungeon.tres",
+	"hidden_container": "res://data/quests/quest_hidden_container.tres",
+	"recruit_cache_sprite": "res://data/quests/quest_recruit_cache_sprite.tres",
+}
+
+
+func to_save_data() -> Dictionary:
+	var actives: Array = []
+	for q: Resource in active_quests:
+		var counts: Array = []
+		for obj: Resource in q.objectives:
+			counts.append(int(obj.current_count))
+		actives.append({
+			"quest_id": q.quest_id,
+			"objective_counts": counts,
+			"is_completed": bool(q.is_completed),
+		})
+	return {
+		"active": actives,
+		"completed": completed_quests.duplicate(),
+	}
+
+
+func from_save_data(data: Dictionary) -> void:
+	# Replace in-memory state. Caller is responsible for invoking this BEFORE
+	# any town.gd._seed_starter_quests fires so the seed call is a no-op.
+	active_quests.clear()
+	completed_quests.clear()
+	var done: Array = data.get("completed", []) as Array
+	for cid: Variant in done:
+		completed_quests.append(String(cid))
+	var actives: Array = data.get("active", []) as Array
+	for entry: Variant in actives:
+		var e: Dictionary = entry as Dictionary
+		var qid: String = String(e.get("quest_id", ""))
+		if qid.is_empty() or qid in completed_quests:
+			continue
+		var path: String = _QUEST_PATHS.get(qid, "") as String
+		if path.is_empty():
+			push_warning("QuestManager.from_save_data: unknown quest_id '%s'" % qid)
+			continue
+		var quest: Resource = load(path)
+		if quest == null:
+			continue
+		# Apply per-objective progress that the .tres reload reset to 0.
+		var counts: Array = e.get("objective_counts", []) as Array
+		for i: int in range(quest.objectives.size()):
+			if i < counts.size():
+				quest.objectives[i].current_count = int(counts[i])
+		quest.is_completed = bool(e.get("is_completed", false))
+		active_quests.append(quest)
