@@ -22,8 +22,8 @@ func _ready() -> void:
 	stats_component.base_integrity = 3.0
 
 
-func _physics_process(delta: float) -> void:
-	super._physics_process(delta)
+func _process(delta: float) -> void:
+	super._process(delta)
 	if _teleport_timer > 0.0:
 		_teleport_timer -= delta
 
