@@ -7,11 +7,15 @@
 script = ExtResource("2")
 objective_text = "Reach Floor 5 of the Compaction Loop"
 target_count = 1
+event_name = &"floor_completed"
+event_filter = "5"
 
 [sub_resource type="Resource" id="obj2"]
 script = ExtResource("2")
 objective_text = "Defeat the Corrupted Compiler"
 target_count = 1
+event_name = &"boss_defeated"
+event_filter = "corrupted_compiler"
 
 [resource]
 script = ExtResource("1")

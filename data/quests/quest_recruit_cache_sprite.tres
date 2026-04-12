@@ -7,11 +7,15 @@
 script = ExtResource("2")
 objective_text = "Find the Cache Sprite in the Archive Subnet"
 target_count = 1
+event_name = &"dialogue_started"
+event_filter = "cache_sprite"
 
 [sub_resource type="Resource" id="obj2"]
 script = ExtResource("2")
 objective_text = "Talk to the Cache Sprite in town"
 target_count = 1
+event_name = &"npc_talked"
+event_filter = "cache_sprite"
 
 [resource]
 script = ExtResource("1")

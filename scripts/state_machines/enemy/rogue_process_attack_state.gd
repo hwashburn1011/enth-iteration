@@ -20,6 +20,11 @@ var _telegraph_done: bool = false
 var _strike_count: int = 0
 var _next_strike_time: float = 0.0
 var _attack_dir: Vector3 = Vector3.ZERO
+## Snapshot of pre-telegraph material_override per mesh so _set_telegraph(false)
+## can restore the polish materials from _polish_r3_enemy. Without this, every
+## attack permanently clears material_override to null and the rogue process
+## reverts to its placeholder GLB white from the second swing onward.
+var _pre_telegraph_materials: Dictionary = {}
 
 
 func _init() -> void:
@@ -150,22 +155,33 @@ func exit() -> void:
 func _set_telegraph(enemy: CharacterBody3D, active: bool) -> void:
 	var meshes: Array[MeshInstance3D] = enemy.get_mesh_instances()
 	if active:
+		# Snapshot the pre-telegraph materials so we can put them back on
+		# the matching _set_telegraph(false) call.
+		_pre_telegraph_materials.clear()
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.albedo_color = Color(0.5, 0.5, 1.0)
 		mat.emission_enabled = true
 		mat.emission = Color(0.3, 0.3, 1.0)
 		mat.emission_energy_multiplier = 1.5
 		for mesh: MeshInstance3D in meshes:
+			_pre_telegraph_materials[mesh] = mesh.material_override
 			mesh.material_override = mat
 	else:
-		# Restore enraged glow or clear
-		var clear_mat: Material = null
+		# Enraged: re-apply the enrage glow (overrides any snapshot, since the
+		# enrage handler in rogue_process.gd already snapshotted polish materials
+		# into _pre_enrage_materials and they'll be restored on pool reset).
+		# Otherwise: restore each mesh's pre-telegraph material so we don't wipe
+		# the polish from _polish_r3_enemy.
 		if enemy.get(&"is_enraged"):
-			var mat: StandardMaterial3D = StandardMaterial3D.new()
-			mat.albedo_color = Color(0.3, 0.3, 1.0)
-			mat.emission_enabled = true
-			mat.emission = Color(0.2, 0.2, 1.0)
-			mat.emission_energy_multiplier = 2.0
-			clear_mat = mat
-		for mesh: MeshInstance3D in meshes:
-			mesh.material_override = clear_mat
+			var enrage_mat: StandardMaterial3D = StandardMaterial3D.new()
+			enrage_mat.albedo_color = Color(0.3, 0.3, 1.0)
+			enrage_mat.emission_enabled = true
+			enrage_mat.emission = Color(0.2, 0.2, 1.0)
+			enrage_mat.emission_energy_multiplier = 2.0
+			for mesh: MeshInstance3D in meshes:
+				mesh.material_override = enrage_mat
+		else:
+			for mesh: MeshInstance3D in meshes:
+				if _pre_telegraph_materials.has(mesh):
+					mesh.material_override = _pre_telegraph_materials[mesh]
+		_pre_telegraph_materials.clear()

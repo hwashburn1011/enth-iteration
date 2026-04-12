@@ -6,6 +6,10 @@ const TELEGRAPH_DURATION: float = 0.5
 const ML_ATTACK_DURATION: float = 0.7
 
 var _telegraph_done: bool = false
+## Pre-glow material snapshot per mesh — restored on glow off so we don't
+## wipe the polish materials applied by _polish_r3_enemy. Same pattern T39
+## used for rogue process.
+var _pre_glow_materials: Dictionary = {}
 
 
 func _init() -> void:
@@ -167,12 +171,16 @@ func _spawn_muzzle_flash(enemy: CharacterBody3D) -> void:
 func _set_glow(enemy: CharacterBody3D, glow: bool) -> void:
 	var meshes: Array[MeshInstance3D] = enemy.get_mesh_instances()
 	if glow:
+		_pre_glow_materials.clear()
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.emission_enabled = true
 		mat.emission = Color(0.2, 1.0, 0.2)
 		mat.emission_energy_multiplier = 1.5
 		for mesh: MeshInstance3D in meshes:
+			_pre_glow_materials[mesh] = mesh.material_override
 			mesh.material_override = mat
 	else:
 		for mesh: MeshInstance3D in meshes:
-			mesh.material_override = null
+			if _pre_glow_materials.has(mesh):
+				mesh.material_override = _pre_glow_materials[mesh]
+		_pre_glow_materials.clear()
