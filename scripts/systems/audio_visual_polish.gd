@@ -15,6 +15,9 @@ const DUNGEON_AMBIENT_BY_ITER: Dictionary = {
 	4: "dungeon_ambient_collapse",# red horizon — needs authoring
 	5: "dungeon_ambient_corrupt", # deep crimson — needs authoring
 	6: "dungeon_ambient_void",    # white void — needs authoring
+	7: "dungeon_ambient_mosaic",  # glitch mosaic — needs authoring
+	8: "dungeon_ambient_mirror",  # infinite mirror — needs authoring
+	9: "dungeon_ambient_origin",  # pure white / origin — needs authoring
 }
 
 ## J42: Boss music per iteration.
@@ -25,6 +28,9 @@ const BOSS_MUSIC_BY_ITER: Dictionary = {
 	4: "boss_music_v2",
 	5: "boss_music_v3",  # needs authoring — desperate
 	6: "boss_music_final",# needs authoring — final confrontation
+	7: "boss_music_mosaic",# needs authoring — fragmented, glitchy
+	8: "boss_music_mirror",# needs authoring — recursive, echoing
+	9: "boss_music_origin",# needs authoring — ultimate, transcendent
 }
 
 ## J43: Victory fanfare — play when all_enemies_defeated fires.
@@ -45,6 +51,9 @@ const TOWN_MUSIC_BY_ITER: Dictionary = {
 	4: "town_ambient_tense",
 	5: "town_ambient_dire", # needs authoring
 	6: "town_ambient_dire",
+	7: "town_ambient_fractured",# needs authoring — glitch mosaic
+	8: "town_ambient_echo",     # needs authoring — infinite mirror
+	9: "town_ambient_origin",   # needs authoring — pure white finale
 }
 
 ## J47: Dialogue typing SFX — subtle keystroke per character.
