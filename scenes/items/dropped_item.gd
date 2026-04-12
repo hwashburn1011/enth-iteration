@@ -23,6 +23,15 @@ func _ready() -> void:
 	_base_y = position.y + 0.3
 	body_entered.connect(_on_body_entered)
 	body_exited.connect(_on_body_exited)
+	# Godot's body_entered only fires on state change. When a drop spawns
+	# inside the player's existing capsule (inventory drop with a small
+	# random offset, boss death drops at the kill site, container chests
+	# the player is standing on), the player is *already* overlapping the
+	# area when it enters the tree, so the signal never fires and the
+	# pickup prompt stays silent until the player walks away and back.
+	# Poll overlaps once on the next physics frame and synthesize the
+	# enter event for any already-inside player body.
+	call_deferred(&"_check_initial_overlaps")
 
 	# Add glowing platform disc under item
 	var platform_scene: PackedScene = load("res://assets/models/props/item_platform.glb") as PackedScene
@@ -158,6 +167,15 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed(&"interact"):
 		_try_pickup()
+
+
+func _check_initial_overlaps() -> void:
+	if not is_inside_tree():
+		return
+	for body: Node3D in get_overlapping_bodies():
+		if body.is_in_group(&"player"):
+			_on_body_entered(body)
+			return
 
 
 func _on_body_entered(body: Node3D) -> void:

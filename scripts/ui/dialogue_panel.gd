@@ -161,7 +161,11 @@ func start_dialogue(data: Array[Resource]) -> void:
 			camera.zoom_to(11.0, 0.5)
 	get_tree().paused = true
 	GameManager.set_state(GameManager.GameState.DIALOGUE)
-	EventBus.dialogue_started.emit(&"")
+	# Emit the actual npc_id rather than &"" so listeners that filter by
+	# speaker (story_room recruit gating, T37 QuestManager objective
+	# filters keyed on dialogue_started + npc_id) actually receive the
+	# right id for NPCBase-derived NPCs that route through this panel.
+	EventBus.dialogue_started.emit(StringName(speaker_npc_id))
 	_display_line(dialogue_data[0])
 
 

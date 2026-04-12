@@ -4,7 +4,7 @@ extends Node
 
 const SAVE_PATH: String = "user://save_data.json"
 const BACKUP_DIR: String = "user://backups/"
-const SCHEMA_VERSION: int = 2
+const SCHEMA_VERSION: int = 3
 
 var current_data: Dictionary = {}
 var last_save_time: float = 0.0
@@ -235,6 +235,16 @@ func save_game() -> bool:
 		if im.has_method(&"to_save_data"):
 			current_data["progression"] = im.to_save_data()
 
+	# 7. Quest progress — QuestManager state. Same problem as progression:
+	# active_quests + completed_quests are pure in-memory and the per-
+	# objective current_count fields are non-@exported, so a fresh .tres
+	# load on town reentry restores them to zero. Without this snapshot,
+	# every save/load wiped quest progress and the starter quest re-seeded.
+	if has_node("/root/QuestManager"):
+		var qm: Node = get_node("/root/QuestManager")
+		if qm.has_method(&"to_save_data"):
+			current_data["quests"] = qm.to_save_data()
+
 	# Create backup before writing
 	_create_backup()
 
@@ -313,6 +323,14 @@ func _migrate_save(data: Dictionary, from_version: int, to_version: int) -> Dict
 				if "progression" not in migrated:
 					migrated["progression"] = {"current_iteration": 1}
 				migrated["schema_version"] = 2
+			2:
+				# v2 → v3: introduce quests section for QuestManager. Existing
+				# v2 saves had no quest data — every load wiped quest progress
+				# back to a fresh seed. Treat them as having no active or
+				# completed quests; the next town entry will re-seed normally.
+				if "quests" not in migrated:
+					migrated["quests"] = {"active": [], "completed": []}
+				migrated["schema_version"] = 3
 	return migrated
 
 
@@ -385,6 +403,15 @@ func _apply_loaded_data(data: Dictionary) -> void:
 		var im: Node = get_node("/root/IterationManager")
 		if im.has_method(&"from_save_data"):
 			im.from_save_data(progression)
+
+	# 7. Quest progress — restore QuestManager state. Apply BEFORE the town
+	# scene reloads so town.gd._seed_starter_quests sees the restored
+	# active/completed lists and its idempotent add_quest is a no-op.
+	var quests: Dictionary = data.get("quests", defaults.get("quests", {})) as Dictionary
+	if has_node("/root/QuestManager"):
+		var qm: Node = get_node("/root/QuestManager")
+		if qm.has_method(&"from_save_data"):
+			qm.from_save_data(quests)
 
 	# Player, inventory, and equipment are applied after scene load
 	# (player node must exist). Store data for deferred application.

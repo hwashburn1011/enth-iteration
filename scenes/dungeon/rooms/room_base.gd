@@ -58,10 +58,15 @@ func _on_all_enemies_defeated() -> void:
 
 
 func _show_exit_indicator() -> void:
-	var exit_point: Marker3D = get_node_or_null("ExitTrigger") as Marker3D
+	# ExitTrigger is an Area3D (per _ready), so casting to Marker3D was
+	# always null and the first branch was dead. Use Node3D for the cast
+	# since both Area3D and Marker3D inherit from it and both expose
+	# .position. Rooms with only ExitTrigger (no ExitPoint marker) were
+	# silently skipping the exit beacon entirely.
+	var exit_point: Node3D = get_node_or_null("ExitTrigger") as Node3D
 	if exit_point == null:
 		# Try finding ExitPoint marker instead
-		exit_point = get_node_or_null("ExitPoint") as Marker3D
+		exit_point = get_node_or_null("ExitPoint") as Node3D
 	if exit_point == null:
 		return
 	# Glowing green beacon

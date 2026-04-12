@@ -67,8 +67,14 @@ func _unhandled_input(event: InputEvent) -> void:
 func refresh_abilities(modules: Array[Resource]) -> void:
 	for i: int in 4:
 		var module: Resource = modules[i] if i < modules.size() else null
+		var prev_module: Resource = ability_slots[i].get("module") as Resource
 		ability_slots[i]["module"] = module
-		if module == null:
+		# Always reset cooldown when the slot's module changes — without
+		# this branch, swapping a module mid-cooldown left the new module
+		# locked behind the previous module's cooldown timer + is_ready
+		# flag. Only the unequip-to-null path was clearing it before, so
+		# swap-to-different-module inherited the stale cooldown.
+		if module != prev_module:
 			ability_slots[i]["cooldown_timer"] = 0.0
 			ability_slots[i]["is_ready"] = true
 

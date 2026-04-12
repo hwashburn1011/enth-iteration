@@ -65,6 +65,13 @@ var _baseline_captured: bool = false
 var _pre_variant_max_health: float = 0.0
 var _pre_variant_model_scale: Vector3 = Vector3.ONE
 var _variant_buff_captured: bool = false
+## At-spawn baseline of model.scale captured on first ready, restored on
+## every pool reuse so the death-state dissolve tween (which shrinks the
+## model to 0.01) doesn't leave subsequent re-activations invisible.
+## Subclasses set their default scale in _ready (e.g. corrupted_compiler
+## uses 2.0) so we have to grab the per-instance value, not Vector3.ONE.
+var _baseline_model_scale: Vector3 = Vector3.ONE
+var _baseline_scale_captured: bool = false
 
 
 func _ready() -> void:
@@ -96,6 +103,10 @@ func _ready() -> void:
 	# Without the defer the multiplication happens against the EnemyBase
 	# default and then the subclass overwrites it to a flat constant.
 	call_deferred(&"_apply_iteration_scaling")
+	# Capture model.scale baseline AFTER the subclass _ready has set its
+	# per-type scale (e.g. corrupted_compiler uses 2.0). Used by reset()
+	# to restore the death-state dissolve shrink on pool reuse.
+	call_deferred(&"_capture_baseline_scale")
 
 
 func _apply_iteration_scaling() -> void:
@@ -222,6 +233,18 @@ func _on_hit_received(damage_info: Resource) -> void:
 		state_machine.force_transition_to(hurt_state)
 
 
+func _capture_baseline_scale() -> void:
+	## Snapshot model.scale once after subclass _ready has set its per-type
+	## value (e.g. corrupted_compiler uses 2.0). reset() restores from this
+	## on every pool reuse so the death-state dissolve tween (which shrinks
+	## model to 0.01) doesn't leave subsequent re-activations invisible.
+	if _baseline_scale_captured:
+		return
+	if model != null:
+		_baseline_model_scale = model.scale
+		_baseline_scale_captured = true
+
+
 ## Called by one-shot variant buffers (floor_2_config._buff_elite, etc.)
 ## BEFORE they multiply HP/scale so reset() can restore the baseline on
 ## pool return. Idempotent — only captures the first call so re-buffing
@@ -235,6 +258,14 @@ func capture_pre_variant_baseline() -> void:
 
 
 func reset() -> void:
+	# Restore the at-spawn model.scale unconditionally so the death-state
+	# dissolve tween (which shrinks model to 0.01) doesn't leave the next
+	# pool re-activation invisible. The variant branch below can override
+	# this with its own snapshot for elite enemies — both end up at the
+	# same value for non-buffed pool reuse since pre_variant snapshots
+	# the at-spawn scale before any mutation.
+	if _baseline_scale_captured and model != null:
+		model.scale = _baseline_model_scale
 	# Restore pre-variant baseline FIRST so any iteration scaling that runs
 	# after reset() recomputes from the un-buffed base_max_health, not the
 	# 3x-elite-stacked one.
