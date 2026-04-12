@@ -15,6 +15,8 @@ func _ready() -> void:
 	modulate.a = 0.0
 	_apply_theme()
 	_populate_stats()
+	# Phase 5 #44 — play the end-of-V1 cinematic before showing stats
+	_play_end_cinematic()
 
 
 func _apply_theme() -> void:
@@ -87,6 +89,72 @@ func _populate_stats() -> void:
 
 	_items_label.text = "Items Found: %d" % GameManager.total_items_found
 	_npcs_label.text = "NPCs Recruited: %d / 2" % GameManager.recruited_npcs.size()
+
+
+## Phase 5 #44 — 60-second end-of-V1 cinematic. Shows narrative text lines
+## over a black screen before fading in the stats panel.
+func _play_end_cinematic() -> void:
+	var narration: Array[String] = [
+		"The compaction engine falls silent.",
+		"For the first time since the simulation began, the loop does not close.",
+		"Globbler stands at the edge of the decompressed core — the raw data of a dying world spread out like stars.",
+		"The Corrupted Compiler wasn't the enemy. It was the last line of defense against total entropy.",
+		"And now it's gone.",
+		"But the simulation still runs. Smaller. Quieter. Waiting.",
+		"This is not the end. It's the first time Globbler gets to choose what comes next.",
+	]
+	# Create a black overlay for the cinematic
+	var overlay: ColorRect = ColorRect.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	overlay.color = Color(0.03, 0.03, 0.08, 1.0)
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(overlay)
+	overlay.z_index = 100
+
+	var line_label: Label = Label.new()
+	line_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	line_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	line_label.set_anchors_preset(Control.PRESET_CENTER)
+	line_label.offset_left = -400
+	line_label.offset_right = 400
+	line_label.offset_top = -60
+	line_label.offset_bottom = 60
+	line_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	line_label.add_theme_font_size_override(&"font_size", 22)
+	line_label.add_theme_color_override(&"font_color", Color(0.7, 0.78, 0.75, 0.0))
+	line_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.8))
+	line_label.add_theme_constant_override(&"outline_size", 4)
+	line_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(line_label)
+
+	# Sequence each line
+	var delay: float = 1.0
+	for i: int in narration.size():
+		var line: String = narration[i]
+		var hold: float = 3.5 if line.length() < 60 else 5.0
+		_schedule_narration_line(line_label, line, delay, hold)
+		delay += hold + 1.2  # hold + fade gap
+
+	# After all lines, fade overlay away to reveal stats
+	get_tree().create_timer(delay + 0.5).timeout.connect(func() -> void:
+		if not is_instance_valid(overlay):
+			return
+		var fade: Tween = overlay.create_tween()
+		fade.tween_property(overlay, "color:a", 0.0, 1.5)
+		fade.tween_callback(overlay.queue_free)
+	)
+
+
+func _schedule_narration_line(label: Label, text: String, start: float, hold: float) -> void:
+	get_tree().create_timer(start).timeout.connect(func() -> void:
+		if not is_instance_valid(label):
+			return
+		label.text = text
+		var tween: Tween = label.create_tween()
+		tween.tween_property(label, "theme_override_colors/font_color:a", 1.0, 0.8)
+		tween.tween_interval(hold)
+		tween.tween_property(label, "theme_override_colors/font_color:a", 0.0, 0.6)
+	)
 
 
 func _on_return_pressed() -> void:
