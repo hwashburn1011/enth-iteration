@@ -151,7 +151,7 @@ static func _show_fragment(canvas: CanvasLayer, title_text: String, body_text: S
 	body.text = body_text
 	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	body.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	body.set_anchors_preset(Control.PRESET_WIDE)
+	body.set_anchors_preset(Control.PRESET_FULL_RECT)
 	body.offset_top = 50
 	body.autowrap_mode = TextServer.AUTOWRAP_WORD
 	body.add_theme_font_size_override(&"font_size", 18)

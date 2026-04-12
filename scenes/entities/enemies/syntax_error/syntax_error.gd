@@ -7,6 +7,7 @@ const CLONE_CHANCE: float = 0.3
 const MAX_CLONES: int = 2
 
 var _clones_spawned: int = 0
+var _previous_health: float = 0.0
 
 
 func _ready() -> void:
@@ -20,6 +21,7 @@ func _ready() -> void:
 	stats_component.base_bandwidth = 5.0
 	stats_component.base_memory = 0.0
 	stats_component.base_integrity = 4.0
+	_previous_health = health_component.current_health
 	# Connect to damage signal to spawn clones
 	if health_component.has_signal(&"health_changed"):
 		if not health_component.health_changed.is_connected(_on_health_changed):
@@ -29,12 +31,17 @@ func _ready() -> void:
 func reset() -> void:
 	_clones_spawned = 0
 	super.reset()
+	if health_component:
+		_previous_health = health_component.current_health
 
 
-func _on_health_changed(_new_health: float, _old_health: float) -> void:
-	if _new_health < _old_health and _clones_spawned < MAX_CLONES:
+## HealthComponent emits (new_value, max_value) — NOT (new, old).
+## We compare against _previous_health to detect actual damage taken.
+func _on_health_changed(new_health: float, _max_health: float) -> void:
+	if new_health < _previous_health and _clones_spawned < MAX_CLONES:
 		if randf() < CLONE_CHANCE:
 			_spawn_glitch_clone()
+	_previous_health = new_health
 
 
 func _spawn_glitch_clone() -> void:
