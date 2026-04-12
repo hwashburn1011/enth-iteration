@@ -17,6 +17,30 @@ game_name: 'Enth: Iteration'
 
 # Enth: Iteration - Game Design Document
 
+> **V1 demo scope notice (added 2026-04-11)**
+>
+> This GDD describes the **full game** — 9 compaction iterations, full
+> 9-district town, NPC affinity / recruitment chains, cooking, lounge,
+> fishing, farming, faction subsystems, etc. The first shipping
+> milestone is a **vertical slice demo** with a *much* tighter scope.
+>
+> **The V1 demo ships:**
+> - 4 compaction iterations (not 9). `IterationManager.FINAL_ITERATION = 4`.
+> - Minimal hub: spawn, sage, save shrine, vendor, dungeon entrance, training dummy.
+> - 5-10 hours of dungeon content with biome shifts and boss variants.
+> - Tight combat + save/load + progression loop.
+>
+> **The V1 demo does NOT ship:**
+> - Town building / 9-district expansion / 78-prop Town Heart
+> - NPC affinity / recruitment chains
+> - Cooking, lounge bar, fishing, farming, faction subsystems
+> - Skill tree / class system (V1 ships flat 4-stat allocation)
+> - Boss rush, daily challenges, hardcore mode, photo mode, telescope
+>
+> Source of truth for V1 scope: `_bmad-output/v1-demo-backlog.md`.
+> System-level in/out tags: `_bmad-output/v1-systems-audit.md`.
+> Bump back to the full GDD scope post-V1 release.
+
 **Author:** Heath
 **Game Type:** RPG
 **Target Platform(s):** PC (Steam)

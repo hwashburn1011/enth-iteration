@@ -5,6 +5,18 @@ inputDocuments: ['gdd.md', 'game-architecture.md']
 
 # Enth: Iteration - Epic Breakdown
 
+> **V1 demo scope notice (added 2026-04-11)**
+>
+> This epics doc breaks down the **full game**. The first shipping
+> milestone is a tighter **V1 vertical slice demo** that cuts town
+> building, NPC affinity, recruitment chains, and ~12 dead system
+> areas. See `_bmad-output/v1-demo-backlog.md` for the V1 backlog and
+> `_bmad-output/v1-systems-audit.md` for the per-script in/out tags.
+>
+> Many of the epics below are post-V1. Don't start work on them until
+> the V1 demo backlog has burned through Phase 0-6. The Phase numbering
+> in `v1-demo-backlog.md` is the active execution order.
+
 ## Overview
 
 This document provides the complete epic and story breakdown for Enth: Iteration, decomposing the requirements from the GDD and Architecture into implementable stories designed for autonomous AI agent execution.
