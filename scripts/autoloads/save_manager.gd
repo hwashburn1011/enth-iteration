@@ -176,12 +176,19 @@ func save_game() -> bool:
 				var item: Resource = player.inventory_component.grid[y][x] as Resource
 				if item != null and item not in _seen_items:
 					_seen_items.append(item)
+					# Save the BASE stat_modifiers, not the effective (durability-
+					# scaled, core-bonus-merged) result. On load the item will be
+					# rebuilt and get_effective_stat_modifiers() runs again at
+					# equip time — saving the effective values would double-scale
+					# durability and double-merge CoreItem.core_bonus_stats every
+					# save/load cycle. The saved durability separately rebuilds
+					# the scaling at load time.
 					grid_items.append({
 						"item_id": item.item_id,
 						"grid_pos": [x, y],
 						"durability": item.current_durability,
 						"rarity": item.rarity,
-						"stat_modifiers": item.get_effective_stat_modifiers() if item.has_method(&"get_effective_stat_modifiers") else item.stat_modifiers.duplicate(),
+						"stat_modifiers": item.stat_modifiers.duplicate(),
 					})
 		current_data["inventory"]["grid_items"] = grid_items
 		var hotbar: Array = []

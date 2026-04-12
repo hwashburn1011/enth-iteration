@@ -81,6 +81,15 @@ func get_enemy(type: String) -> CharacterBody3D:
 		if health.has_method(&"reset"):
 			health.reset()
 
+	# Re-apply iteration scaling on every activation. The pool was
+	# warmed up at game launch with whatever iteration was current then,
+	# so without this an enemy taken out of the pool stays locked to its
+	# original iteration even after the player advances mid-session.
+	# enemy_base._apply_iteration_scaling is idempotent — it captures the
+	# baseline once and recomputes from baseline * current_iter_mult.
+	if enemy.has_method(&"_apply_iteration_scaling"):
+		enemy._apply_iteration_scaling()
+
 	return enemy
 
 
