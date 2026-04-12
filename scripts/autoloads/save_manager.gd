@@ -197,21 +197,25 @@ func save_game() -> bool:
 			hotbar.append({"item_id": prompt.item_id, "quantity": int(entry["quantity"])})
 		current_data["inventory"]["prompt_hotbar"] = hotbar
 
-	# 3. Equipment data
+	# 3. Equipment data — mirror the grid_items shape so durability, rolled
+	# rarity, and rolled stat_modifiers (the item_generator affixes) survive
+	# save/load. Storing only item_id was wiping every player's gear back to
+	# the base template on every load — a fully-rolled Legendary became a
+	# stock common copy. Helper closure keeps the slot serialization tight.
 	if player and player.equipment_component:
 		var eq: Node = player.equipment_component
 		var modules: Array = []
 		for m: Variant in eq.module_slots:
-			modules.append(m.item_id if m else null)
+			modules.append(_serialize_equipped_slot(m))
 		current_data["equipment"]["modules"] = modules
-		current_data["equipment"]["core"] = eq.core_slot.item_id if eq.core_slot else null
+		current_data["equipment"]["core"] = _serialize_equipped_slot(eq.core_slot)
 		var chips: Array = []
 		for c: Variant in eq.chip_slots:
-			chips.append(c.item_id if c else null)
+			chips.append(_serialize_equipped_slot(c))
 		current_data["equipment"]["chips"] = chips
 		var protocols: Array = []
 		for p: Variant in eq.protocol_slots:
-			protocols.append(p.item_id if p else null)
+			protocols.append(_serialize_equipped_slot(p))
 		current_data["equipment"]["protocols"] = protocols
 
 	# 4. Town data
@@ -444,36 +448,69 @@ func apply_to_player(player: Node) -> void:
 			for i: int in int(e.get("quantity", 1)):
 				player.inventory_component.add_prompt(prompt)
 
-	# Equipment
+	# Equipment — _create_equipped_item handles both the legacy v1 string
+	# entries (just an item_id) and the new v2 dict entries that carry
+	# durability + rarity + rolled stat_modifiers from T34.
 	var eq_data: Dictionary = get_meta(&"pending_equipment_data", {}) as Dictionary
 	var modules: Array = eq_data.get("modules", []) as Array
 	for i: int in modules.size():
-		if modules[i] != null:
-			var item: Resource = _item_registry.create_item(str(modules[i]))
-			if item:
-				player.equipment_component.equip(item, i)
-	var core_id: Variant = eq_data.get("core")
-	if core_id != null:
-		var item: Resource = _item_registry.create_item(str(core_id))
+		var item: Resource = _create_equipped_item(modules[i])
 		if item:
-			player.equipment_component.equip(item)
+			player.equipment_component.equip(item, i)
+	var core_entry: Variant = eq_data.get("core")
+	var core_item: Resource = _create_equipped_item(core_entry)
+	if core_item:
+		player.equipment_component.equip(core_item)
 	var chips: Array = eq_data.get("chips", []) as Array
 	for i: int in chips.size():
-		if chips[i] != null:
-			var item: Resource = _item_registry.create_item(str(chips[i]))
-			if item:
-				player.equipment_component.equip(item, i)
+		var chip_item: Resource = _create_equipped_item(chips[i])
+		if chip_item:
+			player.equipment_component.equip(chip_item, i)
 	var protocols: Array = eq_data.get("protocols", []) as Array
 	for i: int in protocols.size():
-		if protocols[i] != null:
-			var item: Resource = _item_registry.create_item(str(protocols[i]))
-			if item:
-				player.equipment_component.equip(item, i)
+		var proto_item: Resource = _create_equipped_item(protocols[i])
+		if proto_item:
+			player.equipment_component.equip(proto_item, i)
 
 	# Clean up pending data
 	remove_meta(&"pending_player_data")
 	remove_meta(&"pending_inventory_data")
 	remove_meta(&"pending_equipment_data")
+
+
+func _serialize_equipped_slot(item: Variant) -> Variant:
+	## Mirror of the grid_items entry shape but as a single dict (or null
+	## when the slot is empty) so the existing save layout stays flat.
+	## Preserves rolled rarity / rolled affixes (stat_modifiers) /
+	## durability so loaded equipment matches what the player had.
+	if item == null:
+		return null
+	return {
+		"item_id": item.item_id,
+		"durability": item.current_durability,
+		"rarity": item.rarity,
+		"stat_modifiers": item.stat_modifiers.duplicate(),
+	}
+
+
+func _create_equipped_item(entry: Variant) -> Resource:
+	## Inverse of _serialize_equipped_slot. Accepts both the legacy v1
+	## string format ("just an item_id") and the v2 dict format so old
+	## saves don't break — they just lose the rolled details that
+	## weren't being saved anyway.
+	if entry == null:
+		return null
+	if entry is String:
+		return _item_registry.create_item(entry as String)
+	if entry is Dictionary:
+		var e: Dictionary = entry as Dictionary
+		return _item_registry.create_item(
+			str(e.get("item_id", "")),
+			float(e.get("durability", 100.0)),
+			e.get("stat_modifiers", {}) as Dictionary,
+			int(e.get("rarity", 0))
+		)
+	return null
 
 
 func _find_player() -> Node:
