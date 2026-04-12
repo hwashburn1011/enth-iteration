@@ -51,10 +51,45 @@ func _on_area_entered(area: Area3D) -> void:
 	info = load("res://scripts/combat/damage_calculator.gd").calculate(info)
 	hit_received.emit(info)
 
+	# Phase 3 #25 — block / parry. If the target is the player and
+	# they're holding block, mitigate or fully negate the incoming
+	# hit. The first ~0.18s of a fresh block is a perfect parry that
+	# negates the hit AND tags the attacker with `fragmented` so the
+	# follow-up swing punches harder. Sustained block past the parry
+	# window is just damage reduction.
+	var blocked: bool = false
+	if &"is_blocking" in owner_entity and owner_entity.is_blocking:
+		blocked = true
+		var parry: bool = false
+		if owner_entity.has_method(&"is_in_parry_window"):
+			parry = bool(owner_entity.is_in_parry_window())
+		if parry:
+			info.final_damage = 0.0
+			# Tag the attacker fragmented for free
+			if info.source is Node and info.source.has_node("StatusEffectManager"):
+				var sm: Node = info.source.get_node("StatusEffectManager")
+				if sm.has_method(&"apply_effect"):
+					var effect: Resource = load("res://scripts/combat/status_effect_library.gd").make_fragmented()
+					if effect != null:
+						sm.apply_effect(effect)
+		else:
+			# 80% mitigation — readable as "I'm absorbing it but it
+			# still chips through". The const lives on player.gd.
+			var reduction: float = 0.80
+			if &"BLOCK_DAMAGE_REDUCTION" in owner_entity:
+				reduction = float(owner_entity.BLOCK_DAMAGE_REDUCTION)
+			info.final_damage *= (1.0 - reduction)
+
 	# Apply damage to HealthComponent if present
 	var health: Node = owner_entity.get_node_or_null("HealthComponent") as Node
 	if health:
 		health.take_damage(info.final_damage)
+	# Suppress the apply_status routing on a successful block /
+	# parry — the whole point of holding block is "I refuse the
+	# debuff". Drop through to the existing apply_status path
+	# below ONLY when blocked is false.
+	if blocked:
+		return
 
 	# Phase 3 #22 — status effect routing. The source's hitbox can
 	# tag the swing with `apply_status = "<name>"` and we'll route a

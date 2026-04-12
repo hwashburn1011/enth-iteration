@@ -71,6 +71,11 @@ func physics_update(delta: float) -> void:
 	if p.has_meta(&"status_throttled"):
 		var slow_frac: float = float(p.get_meta(&"status_throttled"))
 		speed *= clampf(1.0 - slow_frac, 0.1, 1.0)
+	# Phase 3 #25 — block slows the player to 30% of move speed.
+	# Stacks multiplicatively with throttled (so blocking + snared
+	# = ~15% speed, the worst-case "I'm pinned" punishment).
+	if &"is_blocking" in p and p.is_blocking:
+		speed *= p.BLOCK_MOVE_SLOW
 	p.velocity = direction * speed
 	p.facing_direction = direction
 
