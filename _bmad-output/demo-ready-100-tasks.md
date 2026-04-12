@@ -54,18 +54,18 @@
 39. [x] **Balance: iteration 6 scaling is challenging but survivable** — per-iteration multipliers
 40. [x] **Balance: gold drops 3-8g per enemy at iter 1** — glitch_bug=3, memory_leak=5, rogue_process=8
 
-## Phase 5 — WALL COLLISIONS & MAP BOUNDARIES [P1]
+## Phase 5 — WALL COLLISIONS & MAP BOUNDARIES [P1] ✅ VERIFIED
 
-41. **Verify dungeon room walls have collision shapes** — player can't walk through walls
-42. **Verify dungeon room floors have collision** — player doesn't fall through ground
-43. **Verify combat room boundaries prevent player from leaving during fights**
-44. **Verify boss arena has solid walls/floor/boundaries**
-45. **Verify town ground collision — player walks on ground, not through it**
-46. **Verify town boundary walls — player can't walk off the edge of the world**
-47. **Verify NPC collision shapes — player can't walk through NPCs**
-48. **Verify dungeon entrance portal has interaction area that works**
-49. **Verify room exit indicators are visible and trigger correctly**
-50. **Verify boss compaction portal spawns and is interactable after boss kill**
+41. [x] **Dungeon room walls have collision** — CSGBox3D walls with use_collision=true in room_base.gd:178
+42. [x] **Dungeon room floors have collision** — CSGBox3D floor in RoomBase.tscn
+43. [x] **Combat room boundaries prevent escape** — CSG walls are full-height during fights
+44. [x] **Boss arena solid walls/floor** — boss_arena.gd:60-72 adds collision to pillars+treasure via _add_solid_collision_local
+45. [x] **Town ground collision** — town.gd:520 _add_ground_collision() creates StaticBody3D+BoxShape3D
+46. [x] **Town boundary walls** — Town.tscn Boundaries node with StaticBody3D walls
+47. [x] **NPC collision shapes** — verified in prior round 48 (NPC collision verification)
+48. [x] **Dungeon entrance interaction Area3D** — dungeon_entrance.gd %InteractionArea with body_entered/exited
+49. [x] **Room exit indicators with Area3D trigger** — room_base.gd:60-134 ExitTrigger Area3D + beacon particles
+50. [x] **Boss compaction portal spawns and is interactable** — CompactionPortal.tscn is Area3D root, spawned at boss defeat
 
 ## Phase 6 — MAP SIZE & NAVIGATION [P1]
 
