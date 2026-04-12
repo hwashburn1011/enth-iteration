@@ -65,6 +65,13 @@ func _on_area_entered(area: Area3D) -> void:
 			parry = bool(owner_entity.is_in_parry_window())
 		if parry:
 			info.final_damage = 0.0
+			# A7: Riposte — deal 50% of the blocked damage back to the attacker
+			if info.source is Node:
+				var riposte_dmg: float = info.base_damage * 0.5
+				var attacker_hp: Node = info.source.get_node_or_null("HealthComponent") as Node
+				if attacker_hp and attacker_hp.has_method(&"take_damage"):
+					attacker_hp.take_damage(riposte_dmg)
+					EventBus.damage_dealt.emit(info.source as Node3D, riposte_dmg, false)
 			# Tag the attacker fragmented for free
 			if info.source is Node and info.source.has_node("StatusEffectManager"):
 				var sm: Node = info.source.get_node("StatusEffectManager")
@@ -102,6 +109,9 @@ func _on_area_entered(area: Area3D) -> void:
 	var health: Node = owner_entity.get_node_or_null("HealthComponent") as Node
 	if health:
 		health.take_damage(info.final_damage)
+	# F63: Wire thorns passive — reflect damage back to attacker when player takes damage
+	if owner_entity.is_in_group(&"player") and info.final_damage > 0.0 and info.source is Node:
+		CombatFeelWiring.on_player_took_damage(owner_entity, info.source, info.final_damage)
 	# Suppress the apply_status routing on a successful block /
 	# parry — the whole point of holding block is "I refuse the
 	# debuff". Drop through to the existing apply_status path

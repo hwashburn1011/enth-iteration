@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Deadlock II"
+item_id = "module_deadlock_2"
+description = "Freezes all enemies in range for 4s, then deals burst damage."
+rarity = 3
+item_type = "module"
+compute_cost = 26.0
+cooldown = 7.0
+ability_name = "Deadlock II"
+ability_description = "4s AoE freeze followed by burst damage."

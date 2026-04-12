@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ChipItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/chip_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Bandwidth Booster II"
+item_id = "chip_bandwidth_booster_2"
+description = "+10 Bandwidth. Compute regen +25%."
+rarity = 3
+item_type = "chip"
+stat_modifiers = {"bandwidth": 10.0}
+chip_slot_type = "utility"

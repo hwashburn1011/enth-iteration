@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Persistent Thread II"
+item_id = "core_persistent_thread_2"
+description = "Hardened thread. Health regen +3/s, +15 integrity."
+rarity = 3
+item_type = "core"
+core_passive = "Hardened thread — health regen +3/s"
+core_bonus_stats = {"integrity": 15.0, "memory": 10.0}
+dash_cooldown_reduction = 0.6

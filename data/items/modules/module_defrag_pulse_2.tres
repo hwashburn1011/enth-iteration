@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Defrag Pulse II"
+item_id = "module_defrag_pulse_2"
+description = "Heals 40% max health and grants 3s damage immunity."
+rarity = 3
+item_type = "module"
+compute_cost = 22.0
+cooldown = 8.0
+ability_name = "Defrag Pulse II"
+ability_description = "40% max health heal + 3s damage immunity."

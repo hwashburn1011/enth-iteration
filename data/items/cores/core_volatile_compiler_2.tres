@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Volatile Compiler II"
+item_id = "core_volatile_compiler_2"
+description = "Overclocked compiler. +12% crit chance, +15 processing."
+rarity = 3
+item_type = "core"
+core_passive = "Overclocked — +12% crit chance"
+core_bonus_stats = {"processing": 15.0}
+compute_on_kill = 12.0

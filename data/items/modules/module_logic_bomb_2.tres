@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Logic Bomb II"
+item_id = "module_logic_bomb_2"
+description = "Delayed detonation dealing massive damage in a large radius."
+rarity = 3
+item_type = "module"
+compute_cost = 24.0
+cooldown = 4.5
+ability_name = "Logic Bomb II"
+ability_description = "Delayed massive AoE detonation in a large radius."

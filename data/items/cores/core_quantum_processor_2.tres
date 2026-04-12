@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Quantum Processor II"
+item_id = "core_quantum_processor_2"
+description = "Dual-channel quantum core. +15% crit damage."
+rarity = 3
+item_type = "core"
+core_passive = "Dual-channel quantum — +15% crit damage"
+core_bonus_stats = {"processing": 12.0, "bandwidth": 8.0}

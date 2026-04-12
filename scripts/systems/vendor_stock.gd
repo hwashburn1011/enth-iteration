@@ -32,11 +32,24 @@ const TIER_STOCK: Array[Dictionary] = [
 	{"item_id": "core_persistent_thread", "name": "Persistent Thread", "price": 200, "rarity": 3, "min_iter": 4},
 	{"item_id": "module_deadlock", "name": "Deadlock", "price": 140, "rarity": 2, "min_iter": 4},
 	{"item_id": "module_refactor", "name": "Refactor", "price": 160, "rarity": 3, "min_iter": 4},
-	# Iteration 5 stock
+	# Iteration 5 stock — tier 2 upgrades unlock here
+	{"item_id": "module_fork_bomb_2", "name": "Fork Bomb II", "price": 180, "rarity": 3, "min_iter": 5},
+	{"item_id": "module_logic_bomb_2", "name": "Logic Bomb II", "price": 180, "rarity": 3, "min_iter": 5},
+	{"item_id": "module_packet_storm_2", "name": "Packet Storm II", "price": 200, "rarity": 3, "min_iter": 5},
+	{"item_id": "chip_bandwidth_booster_2", "name": "Bandwidth Booster II", "price": 150, "rarity": 3, "min_iter": 5},
+	{"item_id": "chip_armor_plating_2", "name": "Armor Plating II", "price": 150, "rarity": 3, "min_iter": 5},
+	{"item_id": "chip_assault_processor_2", "name": "Assault Processor II", "price": 150, "rarity": 3, "min_iter": 5},
 	{"item_id": "chip_overclock", "name": "Overclock", "price": 150, "rarity": 2, "min_iter": 5},
 	{"item_id": "core_entropy_engine", "name": "Entropy Engine", "price": 250, "rarity": 3, "min_iter": 5},
 	{"item_id": "module_stack_overflow", "name": "Stack Overflow", "price": 180, "rarity": 2, "min_iter": 5},
-	# Iteration 6 stock
+	# Iteration 6 stock — remaining tier 2 upgrades
+	{"item_id": "module_defrag_pulse_2", "name": "Defrag Pulse II", "price": 200, "rarity": 3, "min_iter": 6},
+	{"item_id": "module_deadlock_2", "name": "Deadlock II", "price": 220, "rarity": 3, "min_iter": 6},
+	{"item_id": "chip_kinetic_dash_2", "name": "Kinetic Dash II", "price": 180, "rarity": 3, "min_iter": 6},
+	{"item_id": "chip_counterstrike_2", "name": "Counterstrike II", "price": 200, "rarity": 3, "min_iter": 6},
+	{"item_id": "core_quantum_processor_2", "name": "Quantum Processor II", "price": 300, "rarity": 3, "min_iter": 6},
+	{"item_id": "core_volatile_compiler_2", "name": "Volatile Compiler II", "price": 320, "rarity": 3, "min_iter": 6},
+	{"item_id": "core_persistent_thread_2", "name": "Persistent Thread II", "price": 350, "rarity": 3, "min_iter": 6},
 	{"item_id": "chip_void_shield", "name": "Void Shield", "price": 200, "rarity": 3, "min_iter": 6},
 	{"item_id": "core_decompressor", "name": "Decompressor", "price": 320, "rarity": 3, "min_iter": 6},
 	{"item_id": "module_null_wave", "name": "Null Wave", "price": 220, "rarity": 3, "min_iter": 6},

@@ -102,6 +102,13 @@ func _build_ui() -> void:
 	_style_pause_button(tree_btn)
 	vbox.add_child(tree_btn)
 
+	# A4: Bestiary button
+	var bestiary_btn: Button = Button.new()
+	bestiary_btn.text = "Bestiary"
+	bestiary_btn.pressed.connect(_open_bestiary)
+	_style_pause_button(bestiary_btn)
+	vbox.add_child(bestiary_btn)
+
 	var menu_btn: Button = Button.new()
 	menu_btn.text = "Quit to Main Menu"
 	menu_btn.pressed.connect(_quit_to_menu)
@@ -177,6 +184,93 @@ func _open_statistics() -> void:
 func _open_skill_tree() -> void:
 	var panel: Control = SkillTreePanel.new()
 	get_tree().root.add_child(panel)
+
+
+## A4: Open bestiary panel showing discovered enemies.
+func _open_bestiary() -> void:
+	var bestiary: Control = Control.new()
+	bestiary.set_script(load("res://scripts/ui/bestiary_screen.gd"))
+	bestiary.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	# Build required node structure that bestiary_screen.gd expects via %UniqueNames
+	var bg: ColorRect = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.02, 0.06, 0.95)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	bestiary.add_child(bg)
+
+	var entry_list: ItemList = ItemList.new()
+	entry_list.unique_name_in_owner = true
+	entry_list.name = "EntryList"
+	entry_list.set_anchors_preset(Control.PRESET_LEFT_WIDE)
+	entry_list.offset_right = 250.0
+	entry_list.offset_top = 20.0
+	entry_list.offset_bottom = -20.0
+	entry_list.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
+	bestiary.add_child(entry_list)
+
+	var detail: VBoxContainer = VBoxContainer.new()
+	detail.unique_name_in_owner = true
+	detail.name = "DetailContainer"
+	detail.set_anchors_preset(Control.PRESET_RIGHT_WIDE)
+	detail.offset_left = 270.0
+	detail.offset_top = 20.0
+	detail.offset_right = -20.0
+	detail.offset_bottom = -60.0
+	detail.add_theme_constant_override(&"separation", 8)
+	bestiary.add_child(detail)
+
+	var hero_render: TextureRect = TextureRect.new()
+	hero_render.unique_name_in_owner = true
+	hero_render.name = "HeroRender"
+	hero_render.custom_minimum_size = Vector2(128, 128)
+	hero_render.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	detail.add_child(hero_render)
+
+	var display_name: Label = Label.new()
+	display_name.unique_name_in_owner = true
+	display_name.name = "DisplayName"
+	display_name.add_theme_font_size_override(&"font_size", 22)
+	display_name.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	detail.add_child(display_name)
+
+	var tagline: Label = Label.new()
+	tagline.unique_name_in_owner = true
+	tagline.name = "Tagline"
+	tagline.add_theme_color_override(&"font_color", Color(0.6, 0.65, 0.7))
+	detail.add_child(tagline)
+
+	var tuning_summary: Label = Label.new()
+	tuning_summary.unique_name_in_owner = true
+	tuning_summary.name = "TuningSummary"
+	tuning_summary.add_theme_font_size_override(&"font_size", 14)
+	tuning_summary.add_theme_color_override(&"font_color", Color(0.7, 0.75, 0.8))
+	detail.add_child(tuning_summary)
+
+	var encounter_notes: RichTextLabel = RichTextLabel.new()
+	encounter_notes.unique_name_in_owner = true
+	encounter_notes.name = "EncounterNotes"
+	encounter_notes.custom_minimum_size = Vector2(0, 60)
+	encounter_notes.bbcode_enabled = true
+	detail.add_child(encounter_notes)
+
+	var lore_flavor: RichTextLabel = RichTextLabel.new()
+	lore_flavor.unique_name_in_owner = true
+	lore_flavor.name = "LoreFlavor"
+	lore_flavor.custom_minimum_size = Vector2(0, 60)
+	lore_flavor.bbcode_enabled = true
+	detail.add_child(lore_flavor)
+
+	var close_btn: Button = Button.new()
+	close_btn.unique_name_in_owner = true
+	close_btn.name = "CloseButton"
+	close_btn.text = "Close"
+	close_btn.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	close_btn.offset_left = -100.0
+	close_btn.offset_top = -40.0
+	bestiary.add_child(close_btn)
+
+	get_tree().root.add_child(bestiary)
 
 
 func _toggle_settings() -> void:

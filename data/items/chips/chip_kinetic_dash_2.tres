@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ChipItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/chip_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Kinetic Dash II"
+item_id = "chip_kinetic_dash_2"
+description = "Dash distance +40%. Dash cooldown −0.5s."
+rarity = 3
+item_type = "chip"
+stat_modifiers = {"bandwidth": 8.0}
+chip_slot_type = "utility"
+passive_id = "dash_kinetic"
