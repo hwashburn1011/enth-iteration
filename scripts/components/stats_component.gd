@@ -16,6 +16,11 @@ var level_points: Dictionary = {
 	"integrity": 0,
 }
 var equipment_bonuses: Dictionary = {}
+## Phase 3 #26 — passive node bonuses. Parallel to equipment_bonuses
+## but populated by PassiveProgression.add_stat_bonus on level 3, 6,
+## 9, etc. Survives equipment swaps and gets summed into get_stat
+## the same way equipment bonuses do.
+var passive_bonuses: Dictionary = {}
 
 
 func get_stat(stat_name: String) -> float:
@@ -34,7 +39,16 @@ func get_stat(stat_name: String) -> float:
 			return 0.0
 	var level_bonus: float = float(level_points.get(stat_name, 0))
 	var equip_bonus: float = float(equipment_bonuses.get(stat_name, 0.0))
-	return base_value + level_bonus + equip_bonus
+	var passive_bonus: float = float(passive_bonuses.get(stat_name, 0.0))
+	return base_value + level_bonus + equip_bonus + passive_bonus
+
+
+## Phase 3 #26 — passive node helper. Adds (stacking) bonus to a
+## stat from a skill tree node. Re-applied on load via the player's
+## unlocked_passives serialized list.
+func add_passive_bonus(stat_name: String, amount: float) -> void:
+	passive_bonuses[stat_name] = float(passive_bonuses.get(stat_name, 0.0)) + amount
+	stats_changed.emit()
 
 
 func allocate_point(stat_name: String) -> void:

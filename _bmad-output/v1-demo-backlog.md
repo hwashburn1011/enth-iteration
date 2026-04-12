@@ -63,23 +63,23 @@ The dungeon → boss → return → iterate cycle has to feel tight and rewardin
 18. ✅ **Post-iteration save shrine** — explicit "rest" interaction in town between runs that recovers HP/compute and locks in the autosave. Currently respawn does this implicitly.
 19. ✅ **Compaction portal polish** — the final-floor portal needs better VFX + an audible cue. It's the moment the loop closes; it should land.
 
-## Phase 3 — Combat & build depth (weeks 3-5)
+## Phase 3 — Combat & build depth (weeks 3-5)  ✅ DONE
 
 5-10 hours of dungeon needs more than 3 enemies and 4 modules.
 
-20. **Enemy roster expansion** — go from 3 base enemies (glitch_bug, memory_leak, rogue_process) to 6-8. New behaviors: charger, shielder, summoner, sniper, suicide bomber.
-21. **Mixed-type combat rooms** — current rooms spawn one type. Mix at least two for every room past floor 1.
-22. **Status effects** — at least 3 (burn, slow, shock). Each enemy archetype gets one signature effect; player gets a chip / module that applies one.
-23. **Player-side debuff icons** — HUD strip showing active status effects with timers.
-24. **Light combo system** — 3-hit chain on basic attack with a heavier finisher. Each hit slightly different timing/damage. No animation rework needed — just hitbox tuning.
-25. **Block or parry** — dash is currently the only defense. Add a hold-to-block that drains compute, or a tight parry window that opens a counter.
-26. **Skill tree / passive nodes** — 4 stats is too thin for 6 iterations. Each level grants 1 stat point + every 3 levels a passive node from a small tree (10-15 nodes total for V1).
-27. **Module roster expansion** — go from 3 modules to 6-8. Add: Fork Bomb (DoT cone), Garbage Collect (pull-in vacuum), Recursion (chain damage), Deadlock (stun), Refactor (buff next attack).
-28. **Core roster expansion** — go from 2 to 4-5 cores with bespoke effects, not just stat sticks.
-29. **Chip roster expansion** — same. 6-8 chips with at least 2 that change moveset (e.g. dash gives a damage cone).
-30. **Loot affix tier widening** — legendary should *feel* legendary. Rare = +20% to a stat, Legendary = unique effect or +100%.
-31. **Hit reactions** — enemy stagger / flinch frames. Currently enemies eat hits without flinching, which kills the hit-confirm payoff from T2.
-32. **Boss telegraph polish** — color + audio + duration cue per attack. T39-T43 fixed the snapshot bugs but the actual telegraphs still read poorly.
+20. ✅ **Enemy roster expansion** — 5 runtime promotions (Charger/Shielder/Sniper/Bomber/Summoner) overlay the 3 base enemies → 8 archetypes. Promotion chance scales with iteration (12%/22%/35%).
+21. ✅ **Mixed-type combat rooms** — floor 2 + floor 3 configs now mix 2 enemy types per room.
+22. ✅ **Status effects** — corrupted (DoT), throttled (slow), fragmented (damage amp). Enemy attacks tag metas; hurtbox routes to StatusEffectManager.
+23. ✅ **Player-side debuff icons** — HUD strip with tinted chips per effect, timers, anchored top-left.
+24. ✅ **Light combo system** — 3-hit chain with COMBO_DAMAGE_MULTS [1.0, 1.15, 1.60], scaled hitboxes, finisher applies fragmented.
+25. ✅ **Block or parry** — hold F to block (80% reduction, 8 compute/s drain, 30% move slow), 0.18s parry window for counter.
+26. ✅ **Skill tree / passive nodes** — 12-node flat rotation granted every 3 levels. Stat, crit, dash_cd, compute_on_kill effect types. Persisted through save/load.
+27. ✅ **Module roster expansion** — 5 new modules (Fork Bomb, Garbage Collect, Recursion, Deadlock, Refactor) + dispatch in ability_manager.
+28. ✅ **Core roster expansion** — 3 new cores with compute_on_kill, dash_cd_reduction, extra_crit_chance. Consumer hooks wired.
+29. ✅ **Chip roster expansion** — 5 new chips with passive_id lookup. Kinetic dash damage, parry counterstrike, bandwidth booster, etc.
+30. ✅ **Loot affix tier widening** — RARITY_MULTIPLIERS [1.0, 1.25, 1.6, 2.5], AFFIX_COUNTS scaled, AFFIX_VALUE_MULT for legendary.
+31. ✅ **Hit reactions** — enemy stagger with STUN_DURATION 0.5s, FLASH_DURATION 0.16s, procedural lean + squash via _apply_stagger.
+32. ✅ **Boss telegraph polish** — v2 circle/line telegraphs, arena circles, _play_telegraph_cue audio routing.
 
 ## Phase 4 — Onboarding & UX (weeks 4-5, parallel)
 

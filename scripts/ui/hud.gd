@@ -38,6 +38,14 @@ var _iteration_label: Label = null
 ## affinity_changed signals fire so we don't bake state into the HUD ctor.
 var _last_affinity_tier: Dictionary = {}
 
+# Phase 3 #23 — debuff icon strip. Anchored top-left under the
+# health/compute bars; child chips are PanelContainers keyed by
+# effect name in _debuff_chips so we can refresh remaining-time
+# labels every frame without rebuilding the row on each tick.
+var _debuff_strip: HBoxContainer = null
+var _debuff_chips: Dictionary = {}  # effect_name (String) -> Dictionary{panel, label, manager_ref}
+var _player_status_manager: Node = null
+
 
 func _ready() -> void:
 	layer = 10
@@ -59,11 +67,13 @@ func _ready() -> void:
 	_create_room_indicator()
 	_create_iteration_chip()
 	_create_controls_hint()
+	_create_debuff_strip()
 
 
 func _process(delta: float) -> void:
 	_process_streak(delta)
 	_process_low_health(delta)
+	_process_debuff_timers()
 
 
 func show_boss_bar(boss: Node, boss_display_name: String) -> void:
@@ -266,6 +276,18 @@ func _connect_player() -> void:
 	player.level_component.xp_changed.connect(_on_xp_changed)
 	player.level_component.leveled_up.connect(_on_leveled_up_hud)
 	_update_xp_display(player.level_component)
+	# Phase 3 #23 — wire the debuff strip to the player's
+	# StatusEffectManager. The manager fires effect_applied /
+	# effect_removed signals (added in T22 land), and the strip
+	# rebuilds its chip dict on each event.
+	_player_status_manager = player.get_node_or_null("StatusEffectManager")
+	if _player_status_manager:
+		if not _player_status_manager.effect_applied.is_connected(_on_status_effect_applied):
+			_player_status_manager.effect_applied.connect(_on_status_effect_applied)
+		if not _player_status_manager.effect_removed.is_connected(_on_status_effect_removed):
+			_player_status_manager.effect_removed.connect(_on_status_effect_removed)
+		# Repaint any pre-existing effects (e.g. mid-room HUD reload)
+		_rebuild_debuff_strip()
 
 
 func _create_controls_hint() -> void:
@@ -798,3 +820,139 @@ func _update_streak_display() -> void:
 	var tween: Tween = _streak_label.create_tween()
 	tween.tween_property(_streak_label, "scale", Vector2(1.18, 1.18), 0.09).set_ease(Tween.EASE_OUT)
 	tween.tween_property(_streak_label, "scale", Vector2(1.0, 1.0), 0.08).set_ease(Tween.EASE_IN_OUT)
+
+
+# === Phase 3 #23 — debuff icon strip ===
+
+const _DEBUFF_TINT_TABLE: Dictionary = {
+	# Effect-name → fill tint. Mirrors the per-archetype palette so the
+	# player learns "blue chip = slow, green chip = DoT, violet chip =
+	# damage amp" without needing actual icon art.
+	"Throttled": Color(0.35, 0.65, 1.00),    # Glitch Bug snare — cyan
+	"Corrupted": Color(0.30, 0.85, 0.40),    # Memory Leak DoT — green
+	"Fragmented": Color(0.85, 0.40, 1.00),   # Rogue Process amp — violet
+}
+
+
+func _create_debuff_strip() -> void:
+	## Anchored top-left under the existing health/compute bars. Container
+	## starts hidden — _on_status_effect_applied makes it visible when
+	## the first chip lands and _on_status_effect_removed hides it again
+	## when the last one drops.
+	if _debuff_strip != null and is_instance_valid(_debuff_strip):
+		return
+	_debuff_strip = HBoxContainer.new()
+	_debuff_strip.name = "DebuffStrip"
+	_debuff_strip.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_debuff_strip.offset_left = 16.0
+	_debuff_strip.offset_top = 110.0  # under the HP/compute/XP stack
+	_debuff_strip.add_theme_constant_override(&"separation", 6)
+	_debuff_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_debuff_strip.visible = false
+	_container.add_child(_debuff_strip)
+
+
+func _on_status_effect_applied(effect_name: String) -> void:
+	## A new (or refreshed) effect landed. If we already have a chip
+	## for this name, the StatusEffectManager has just refreshed the
+	## remaining_duration — _process_debuff_timers will pick up the
+	## new value next frame, no rebuild needed.
+	if _debuff_chips.has(effect_name):
+		return
+	_add_debuff_chip(effect_name)
+
+
+func _on_status_effect_removed(effect_name: String) -> void:
+	if not _debuff_chips.has(effect_name):
+		return
+	var entry: Dictionary = _debuff_chips[effect_name] as Dictionary
+	var panel: PanelContainer = entry.get("panel") as PanelContainer
+	if panel and is_instance_valid(panel):
+		panel.queue_free()
+	_debuff_chips.erase(effect_name)
+	if _debuff_chips.is_empty() and _debuff_strip:
+		_debuff_strip.visible = false
+
+
+func _add_debuff_chip(effect_name: String) -> void:
+	## Build a single PanelContainer chip and stash it in _debuff_chips
+	## so _process_debuff_timers can refresh the remaining-time label
+	## without rebuilding the row on every tick.
+	if _debuff_strip == null:
+		return
+	var tint: Color = _DEBUFF_TINT_TABLE.get(effect_name, Color(0.85, 0.45, 0.30)) as Color
+	var panel: PanelContainer = PanelContainer.new()
+	panel.custom_minimum_size = Vector2(64, 38)
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.12, 0.92)
+	style.border_color = tint
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(4)
+	panel.add_theme_stylebox_override(&"panel", style)
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override(&"separation", 1)
+	var name_label: Label = Label.new()
+	name_label.text = effect_name.to_upper()
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override(&"font_size", 11)
+	name_label.add_theme_color_override(&"font_color", tint)
+	name_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	name_label.add_theme_constant_override(&"outline_size", 2)
+	vbox.add_child(name_label)
+	var time_label: Label = Label.new()
+	time_label.text = "0.0s"
+	time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	time_label.add_theme_font_size_override(&"font_size", 13)
+	time_label.add_theme_color_override(&"font_color", Color(0.95, 0.95, 0.95))
+	time_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	time_label.add_theme_constant_override(&"outline_size", 2)
+	vbox.add_child(time_label)
+	panel.add_child(vbox)
+	_debuff_strip.add_child(panel)
+	_debuff_chips[effect_name] = {"panel": panel, "label": time_label}
+	_debuff_strip.visible = true
+
+
+func _process_debuff_timers() -> void:
+	## Refresh the per-chip remaining-time label by reading the
+	## StatusEffectManager's active_effects array. Cheap O(N*M) where
+	## N <= 3 (V1 roster) and M <= 3 (typical concurrent effects).
+	if _player_status_manager == null or not is_instance_valid(_player_status_manager):
+		return
+	if _debuff_chips.is_empty():
+		return
+	var active: Array = _player_status_manager.active_effects as Array
+	for entry: Variant in active:
+		var d: Dictionary = entry as Dictionary
+		var effect: Resource = d.get("effect") as Resource
+		if effect == null:
+			continue
+		var name: String = effect.effect_name
+		if not _debuff_chips.has(name):
+			continue
+		var chip: Dictionary = _debuff_chips[name] as Dictionary
+		var label: Label = chip.get("label") as Label
+		if label and is_instance_valid(label):
+			var rem: float = float(d.get("remaining_duration", 0.0))
+			label.text = "%.1fs" % maxf(0.0, rem)
+
+
+func _rebuild_debuff_strip() -> void:
+	## Tear down any existing chips and rebuild from the manager's
+	## active_effects array. Used on connect when the manager already
+	## has effects that landed before the HUD finished wiring up.
+	for name: String in _debuff_chips.keys():
+		var entry: Dictionary = _debuff_chips[name] as Dictionary
+		var panel: PanelContainer = entry.get("panel") as PanelContainer
+		if panel and is_instance_valid(panel):
+			panel.queue_free()
+	_debuff_chips.clear()
+	if _player_status_manager == null:
+		return
+	var active: Array = _player_status_manager.active_effects as Array
+	for d: Variant in active:
+		var dd: Dictionary = d as Dictionary
+		var effect: Resource = dd.get("effect") as Resource
+		if effect != null:
+			_add_debuff_chip(effect.effect_name)

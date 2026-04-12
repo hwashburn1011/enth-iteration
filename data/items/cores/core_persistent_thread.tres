@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Persistent Thread"
+item_id = "core_persistent_thread"
+description = "Background-thread architecture trims dash cooldown by 0.4s. Built for evade-spam play."
+rarity = 2
+item_type = "core"
+core_passive = "Dash cooldown −0.4s"
+core_bonus_stats = {"integrity": 5.0, "bandwidth": 4.0}
+dash_cooldown_reduction = 0.4

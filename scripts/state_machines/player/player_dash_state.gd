@@ -57,6 +57,11 @@ func enter() -> void:
 	# Dash ghost trail VFX
 	_spawn_dash_trail(p, from_position, p.global_position)
 
+	# Phase 3 #29 — Kinetic Dash chip: damage every enemy whose
+	# global position lies near the dash path. Read once on dash
+	# enter so the hit happens visually with the ghost trail.
+	_apply_kinetic_dash_damage(p, from_position, p.global_position)
+
 	# Brief screen shake on dash
 	var camera: Camera3D = p.get_viewport().get_camera_3d()
 	if camera and camera.has_method(&"shake"):
@@ -71,9 +76,22 @@ func enter() -> void:
 	_iframe_timer = 0.0
 	_flash_transparent(p, true)
 
-	# Start cooldown timer
+	# Start cooldown timer. Phase 3 #28: Persistent Thread core
+	# subtracts dash_cooldown_reduction seconds (clamped at 0.2s
+	# floor so the player can't permanently dash). Defensive
+	# against missing equipment / empty core slot / non-core resource.
 	p.can_dash = false
-	p.dash_cooldown_timer.start(p.dash_cooldown)
+	var cd: float = p.dash_cooldown
+	var equip: Node = p.get_node_or_null("EquipmentComponent") as Node
+	if equip:
+		var core: Resource = equip.get(&"core_slot") as Resource
+		if core != null and (&"dash_cooldown_reduction" in core):
+			cd -= float(core.dash_cooldown_reduction)
+	# Phase 3 #26 — passive dash cooldown reduction from skill tree nodes.
+	if p.has_meta(&"passive_dash_cd_reduction"):
+		cd -= float(p.get_meta(&"passive_dash_cd_reduction"))
+	cd = maxf(0.2, cd)
+	p.dash_cooldown_timer.start(cd)
 
 
 func handle_input(event: InputEvent) -> void:
@@ -112,6 +130,50 @@ func exit() -> void:
 	_iframe_active = false
 	player.is_invulnerable = false
 	_flash_transparent(player, false)
+
+
+## Phase 3 #29 — Kinetic Dash chip damage tuning. Hit anything within
+## KINETIC_DASH_RADIUS of the dash line for a flat damage value scaled
+## off processing. Constants live here so the chip is one rebalance
+## edit away from being retuned.
+const KINETIC_DASH_RADIUS: float = 1.5
+const KINETIC_DASH_DAMAGE: float = 14.0
+const KINETIC_DASH_PROCESSING_SCALE: float = 0.6
+
+
+func _apply_kinetic_dash_damage(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
+	## Read once per dash. The chip lookup is cheap (4 slot iter) so
+	## we don't cache. Defensive against missing equipment / no chips.
+	var equip: Node = p.get_node_or_null("EquipmentComponent") as Node
+	if equip == null or not equip.has_method(&"has_chip_passive"):
+		return
+	if not equip.has_chip_passive("dash_kinetic"):
+		return
+	var stats: Node = p.get_node_or_null("StatsComponent") as Node
+	var processing: float = 0.0
+	if stats and stats.has_method(&"get_stat"):
+		processing = float(stats.get_stat("processing"))
+	var dmg: float = KINETIC_DASH_DAMAGE + processing * KINETIC_DASH_PROCESSING_SCALE
+	var dash_dir: Vector3 = to - from
+	var dash_len: float = dash_dir.length()
+	if dash_len < 0.01:
+		return
+	dash_dir = dash_dir / dash_len
+	# Walk every enemy and reject any whose perpendicular distance
+	# from the dash line exceeds the radius. The math is point-to-
+	# segment in 3D — we project onto the dash dir and clamp.
+	for enemy: Node in p.get_tree().get_nodes_in_group(&"enemies"):
+		if not enemy is Node3D:
+			continue
+		var enemy_pos: Vector3 = (enemy as Node3D).global_position
+		var to_enemy: Vector3 = enemy_pos - from
+		var t: float = clampf(to_enemy.dot(dash_dir), 0.0, dash_len)
+		var nearest: Vector3 = from + dash_dir * t
+		if enemy_pos.distance_to(nearest) > KINETIC_DASH_RADIUS:
+			continue
+		var hp: Node = enemy.get_node_or_null("HealthComponent") as Node
+		if hp and hp.has_method(&"take_damage"):
+			hp.take_damage(dmg)
 
 
 func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:

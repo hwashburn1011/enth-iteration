@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ChipItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/chip_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Kinetic Dash Chip"
+item_id = "chip_kinetic_dash"
+description = "Your dash damages every enemy it passes through. Build for evade-strike weaves."
+rarity = 2
+item_type = "chip"
+stat_modifiers = {"bandwidth": 2.0}
+chip_slot_type = "utility"
+passive_id = "dash_kinetic"

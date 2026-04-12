@@ -38,6 +38,8 @@ static func calculate(info: Resource) -> Resource:
 	# advertised "10% critical hit bonus" passive (was dead data — the
 	# core_passive field was a flavor string nothing read).
 	crit_chance += _get_core_crit_bonus(info.source)
+	# Phase 3 #26 — passive crit bonus from skill tree nodes.
+	crit_chance += _get_passive_crit_bonus(info.source)
 	if randf() * 100.0 < crit_chance:
 		damage *= CRIT_MULTIPLIER
 		info.is_critical = true
@@ -89,6 +91,16 @@ static func _get_core_crit_bonus(source: Node) -> float:
 	if not (&"extra_crit_chance" in core):
 		return 0.0
 	return float(core.extra_crit_chance)
+
+
+## Phase 3 #26 — passive crit bonus from skill tree nodes. Reads the
+## player meta set by _grant_passive. Returns 0.0 for non-player sources.
+static func _get_passive_crit_bonus(source: Node) -> float:
+	if source == null:
+		return 0.0
+	if not source.has_meta(&"passive_crit_bonus"):
+		return 0.0
+	return float(source.get_meta(&"passive_crit_bonus"))
 
 
 static func _apply_status_modifiers(damage: float, info: Resource) -> float:

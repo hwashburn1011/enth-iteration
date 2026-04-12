@@ -57,6 +57,11 @@ func enter() -> void:
 	_set_telegraph(enemy, true)
 
 	enemy.hitbox_component.set_meta(&"damage_type", &"physical")
+	# Phase 3 #22 — Rogue Process signature: fragmented. Each strike
+	# tags the player with a damage-amp window so subsequent hits
+	# from anyone (other rogue processes, glitch bugs, the boss)
+	# punch harder. Reads as the "marked target" archetype.
+	enemy.hitbox_component.set_meta(&"apply_status", &"fragmented")
 
 	# Ground telegraph based on attack pattern
 	if enemy.is_inside_tree() and _attack_dir.length() > 0.1:

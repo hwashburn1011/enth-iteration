@@ -6,9 +6,13 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 	var spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 
 	match room_index:
-		0:  # Open Arena — 3 Memory Leaks
+		0:  # Open Arena — Phase 3 #21: 2 Memory Leaks + 1 Glitch Bug.
+			# Pre-T21 this room was 3x memory leak — pure ranged kite,
+			# trivially handled by walking sideways. Adding the bug
+			# forces the player to commit to a direction (close the
+			# bug, expose to leak fire) on the floor-3 opener.
 			if spawner:
-				spawner.enemy_types = ["memory_leak"]
+				spawner.enemy_types = ["memory_leak", "memory_leak", "glitch_bug"]
 				spawner.spawn_count = 3
 		2:  # Pillars — 4 Glitch Bugs + 1 Memory Leak
 			if spawner:

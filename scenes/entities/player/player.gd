@@ -31,6 +31,37 @@ var can_dash: bool = true
 var can_attack: bool = true
 var _prompt_cooldown: float = 0.0
 
+# Phase 3 #24 — light combo system. Each basic attack increments
+# combo_count (1 → 2 → 3 → reset to 1). The chain decays back to 0
+# when combo_window_left runs out of time, which physics_process
+# decrements while the player isn't mid-attack. Energy Burst breaks
+# the chain entirely. PlayerAttackState reads + updates these.
+var combo_count: int = 0
+var combo_window_left: float = 0.0
+const COMBO_WINDOW: float = 1.10  # ~2x DATA_PULSE_COOLDOWN, gives breathing room
+
+# Phase 3 #26 — skill tree / passive nodes. The player unlocks
+# 1 passive every 3 levels (level 3, 6, 9, 12, ...). Auto-allocated
+# in deterministic rotation order from PassiveNodeDatabase. The
+# unlocked_passives list serializes to save data so progression
+# survives reload. Effect application lives in _grant_passive.
+var unlocked_passives: Array[String] = []
+const PASSIVE_GRANT_LEVEL_INTERVAL: int = 3
+
+# Phase 3 #25 — block / parry. Holding `block` (F by default) drains
+# compute and mitigates incoming damage by BLOCK_DAMAGE_REDUCTION. The
+# first BLOCK_PARRY_WINDOW seconds of a fresh block are a perfect parry
+# — incoming hits are fully negated and the attacker gets tagged
+# `fragmented` for free. hurtbox_component reads is_blocking +
+# block_started_at to apply the damage reduction and parry payoff.
+var is_blocking: bool = false
+var block_started_at: float = 0.0
+const BLOCK_COMPUTE_DRAIN_PER_SEC: float = 8.0
+const BLOCK_DAMAGE_REDUCTION: float = 0.80  # 80% mitigation
+const BLOCK_MOVE_SLOW: float = 0.30  # walk at 30% while blocking
+const BLOCK_PARRY_WINDOW: float = 0.18  # first 0.18s of block = perfect parry
+var _block_shield_ring: MeshInstance3D = null
+
 
 func get_mesh_instances() -> Array[MeshInstance3D]:
 	## Walk the model subtree and collect every MeshInstance3D so visual
@@ -334,6 +365,18 @@ func _on_died() -> void:
 func _process(delta: float) -> void:
 	if _prompt_cooldown > 0.0:
 		_prompt_cooldown -= delta
+	# Phase 3 #24 — combo decay. The window only ticks down while we
+	# aren't actively swinging; PlayerAttackState refreshes the window
+	# on every basic-attack enter() so chained hits keep the count.
+	if combo_window_left > 0.0:
+		combo_window_left -= delta
+		if combo_window_left <= 0.0:
+			combo_count = 0
+	# Phase 3 #25 — block tick. Hold to drain compute, release or
+	# run dry to drop the block. Blocked while attacking/dashing/dead
+	# is just ignored (the action poll is skipped via the state-machine
+	# guards in the active states).
+	_tick_block(delta)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -464,6 +507,44 @@ func _on_leveled_up(_new_level: int) -> void:
 	var panel: Node = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)
+	# Phase 3 #26 — passive node grant every PASSIVE_GRANT_LEVEL_INTERVAL levels.
+	# The rotation index equals the number of passives already unlocked, so
+	# reloading a save and re-granting produces the same sequence.
+	if _new_level > 0 and _new_level % PASSIVE_GRANT_LEVEL_INTERVAL == 0:
+		var idx: int = unlocked_passives.size()
+		var node_id: String = PassiveNodeDatabase.get_id_at_index(idx)
+		if node_id != "":
+			unlocked_passives.append(node_id)
+			_grant_passive(node_id)
+
+
+## Phase 3 #26 — apply a single passive node's effect. Called on level-up
+## and on save-load replay. For "stat" nodes, delegates to StatsComponent.
+## For behavior nodes (crit / dash_cd / compute_kill), stacks into player
+## metas that the respective consumers read each frame / event.
+func _grant_passive(node_id: String) -> void:
+	var node: Dictionary = PassiveNodeDatabase.get_by_id(node_id)
+	if node.is_empty():
+		push_warning("Player._grant_passive: unknown node '%s'" % node_id)
+		return
+	var effect_type: String = str(node.get("effect_type", ""))
+	var amount: float = float(node.get("amount", 0.0))
+	match effect_type:
+		"stat":
+			var key: String = str(node.get("effect_key", ""))
+			if key != "" and stats_component:
+				stats_component.add_passive_bonus(key, amount)
+		"crit":
+			var prev: float = float(get_meta(&"passive_crit_bonus", 0.0))
+			set_meta(&"passive_crit_bonus", prev + amount)
+		"dash_cd":
+			var prev: float = float(get_meta(&"passive_dash_cd_reduction", 0.0))
+			set_meta(&"passive_dash_cd_reduction", prev + amount)
+		"compute_kill":
+			var prev: float = float(get_meta(&"passive_compute_on_kill", 0.0))
+			set_meta(&"passive_compute_on_kill", prev + amount)
+		_:
+			push_warning("Player._grant_passive: unknown effect_type '%s'" % effect_type)
 
 
 func _apply_level_up_hitstop() -> void:
@@ -498,3 +579,108 @@ func _flash_ring_ready() -> void:
 
 func _on_attack_cooldown_timeout() -> void:
 	can_attack = true
+
+
+# === Phase 3 #25 — block / parry ===
+
+func _tick_block(delta: float) -> void:
+	## Polled per-frame from _process. Reads the `block` action,
+	## starts/stops the block state, drains compute, drops on empty.
+	## Movement-side restrictions live in player_walk_state which
+	## reads is_blocking + BLOCK_MOVE_SLOW directly.
+	if not Input.is_action_pressed(&"block"):
+		if is_blocking:
+			_stop_block()
+		return
+	# Block-blocking states: dead / charging / dashing / mid-attack.
+	# can_attack flips false during attack windups so it's a clean
+	# proxy for "currently swinging".
+	if health_component and health_component.is_dead:
+		if is_blocking:
+			_stop_block()
+		return
+	if not is_blocking:
+		_start_block()
+		return
+	# Drain compute. The compute_component uses spend() which checks
+	# the floor — we use it directly so the compute_depleted signal
+	# fires on empty (which lets the HUD react if anything's wired).
+	var drain: float = BLOCK_COMPUTE_DRAIN_PER_SEC * delta
+	if compute_component and compute_component.current_compute > 0.0:
+		# Use a direct decrement instead of spend() because spend()
+		# requires the FULL amount and bails atomically; we want
+		# partial drain on the last tick.
+		compute_component.current_compute = maxf(
+			0.0, compute_component.current_compute - drain
+		)
+		compute_component.compute_changed.emit(
+			compute_component.current_compute, compute_component.max_compute
+		)
+		if compute_component.current_compute <= 0.0:
+			_stop_block()
+
+
+func _start_block() -> void:
+	is_blocking = true
+	block_started_at = Time.get_ticks_msec() / 1000.0
+	set_meta(&"is_blocking", true)  # so hurtbox_component can read it
+	_spawn_block_shield()
+
+
+func _stop_block() -> void:
+	is_blocking = false
+	if has_meta(&"is_blocking"):
+		remove_meta(&"is_blocking")
+	_despawn_block_shield()
+
+
+func _spawn_block_shield() -> void:
+	## Cyan torus ring around the player while blocking. Tween-driven
+	## subtle pulse so the player can see the block is active and the
+	## brief parry window is over (the ring is brighter during parry).
+	if _block_shield_ring and is_instance_valid(_block_shield_ring):
+		_block_shield_ring.queue_free()
+	_block_shield_ring = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 1.05
+	torus.outer_radius = 1.30
+	torus.rings = 24
+	torus.ring_segments = 24
+	_block_shield_ring.mesh = torus
+	_block_shield_ring.position = Vector3(0, 0.6, 0)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	# Bright cyan during parry window, cooler during sustained block
+	mat.albedo_color = Color(0.45, 1.0, 0.95, 0.65)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.30, 0.85, 1.0)
+	mat.emission_energy_multiplier = 3.5
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	_block_shield_ring.material_override = mat
+	add_child(_block_shield_ring)
+	# Fade the parry-window glow down to a steady block hum
+	var tween: Tween = _block_shield_ring.create_tween()
+	tween.tween_interval(BLOCK_PARRY_WINDOW)
+	tween.tween_property(mat, "emission_energy_multiplier", 1.6, 0.18)
+	tween.parallel().tween_property(mat, "albedo_color", Color(0.30, 0.75, 1.0, 0.40), 0.18)
+
+
+func _despawn_block_shield() -> void:
+	if _block_shield_ring and is_instance_valid(_block_shield_ring):
+		var ring: MeshInstance3D = _block_shield_ring
+		_block_shield_ring = null
+		var mat: Material = ring.material_override
+		var tween: Tween = ring.create_tween()
+		if mat is StandardMaterial3D:
+			tween.tween_property(mat as StandardMaterial3D, "albedo_color:a", 0.0, 0.10)
+		tween.tween_callback(ring.queue_free)
+
+
+func is_in_parry_window() -> bool:
+	## Returns true if the player started blocking within the last
+	## BLOCK_PARRY_WINDOW seconds. Read by hurtbox_component on the
+	## confirmed-hit path to upgrade a normal block into a parry.
+	if not is_blocking:
+		return false
+	var now: float = Time.get_ticks_msec() / 1000.0
+	return (now - block_started_at) < BLOCK_PARRY_WINDOW

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Refactor"
+item_id = "module_refactor"
+description = "Briefly Overclocks yourself — your next 4 seconds of attacks deal +50% damage."
+rarity = 2
+item_type = "module"
+compute_cost = 20.0
+cooldown = 12.0
+ability_name = "Refactor"
+ability_description = "Self-buff — Overclocked window for 4s."

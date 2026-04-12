@@ -168,6 +168,8 @@ func save_game() -> bool:
 			current_data["player"]["xp"] = player.level_component.current_xp
 			current_data["player"]["xp_to_next"] = player.level_component.xp_to_next_level
 			current_data["player"]["unspent_stat_points"] = player.level_component.unspent_stat_points
+		# Phase 3 #26 — persist unlocked passive nodes for replay on load.
+		current_data["player"]["unlocked_passives"] = player.unlocked_passives.duplicate()
 	# Save current scene path
 	var scene_path: String = get_tree().current_scene.scene_file_path
 	if scene_path != "":
@@ -470,6 +472,14 @@ func apply_to_player(player: Node) -> void:
 		player.level_component.current_xp = int(pdata.get("xp", 0))
 		player.level_component.xp_to_next_level = int(pdata.get("xp_to_next", player.level_component.xp_to_next_level))
 		player.level_component.unspent_stat_points = int(pdata.get("unspent_stat_points", 0))
+
+	# Phase 3 #26 — restore unlocked passives and re-apply their effects.
+	var saved_passives: Array = pdata.get("unlocked_passives", []) as Array
+	player.unlocked_passives.clear()
+	for pid: Variant in saved_passives:
+		var node_id: String = str(pid)
+		player.unlocked_passives.append(node_id)
+		player._grant_passive(node_id)
 
 	# Inventory
 	var inv_data: Dictionary = get_meta(&"pending_inventory_data", {}) as Dictionary

@@ -62,7 +62,21 @@ func physics_update(delta: float) -> void:
 	var direction: Vector3 = camera_basis * Vector3(input_vector.x, 0.0, input_vector.y)
 	direction = direction.normalized()
 
-	p.velocity = direction * p.move_speed
+	# Phase 3 #22 — throttled status slows the player. The meta is set
+	# by StatusEffectManager._on_effect_start when a Glitch Bug lunge
+	# connects, and unset on expiry. Multiplying through here keeps
+	# the slow concentrated to the moments the player is actively
+	# moving — no need to mutate p.move_speed.
+	var speed: float = p.move_speed
+	if p.has_meta(&"status_throttled"):
+		var slow_frac: float = float(p.get_meta(&"status_throttled"))
+		speed *= clampf(1.0 - slow_frac, 0.1, 1.0)
+	# Phase 3 #25 — block slows the player to 30% of move speed.
+	# Stacks multiplicatively with throttled (so blocking + snared
+	# = ~15% speed, the worst-case "I'm pinned" punishment).
+	if &"is_blocking" in p and p.is_blocking:
+		speed *= p.BLOCK_MOVE_SLOW
+	p.velocity = direction * speed
 	p.facing_direction = direction
 
 	var target_angle: float = atan2(direction.x, direction.z)

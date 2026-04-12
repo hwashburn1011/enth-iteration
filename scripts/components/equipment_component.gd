@@ -126,6 +126,23 @@ func get_all_equipped_items() -> Array[Resource]:
 	return items
 
 
+## Phase 3 #29 — chip passive lookup. Returns true if any equipped
+## chip carries the given passive_id. Defensive against null slots
+## and chips without the new field. Used by player_dash_state and
+## hurtbox_component to gate moveset-altering passives.
+func has_chip_passive(id: String) -> bool:
+	if id == "":
+		return false
+	for c: Resource in chip_slots:
+		if c == null:
+			continue
+		if not (&"passive_id" in c):
+			continue
+		if String(c.passive_id) == id:
+			return true
+	return false
+
+
 func _on_equipment_changed() -> void:
 	if _stats_component:
 		_stats_component.recalculate_equipment_bonuses(get_all_equipped_items())

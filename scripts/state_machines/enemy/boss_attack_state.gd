@@ -9,6 +9,15 @@ const OVERFLOW_PROJECTILE_COUNT: int = 3
 const STACK_OVERFLOW_TELEGRAPH: float = 1.5
 const STACK_OVERFLOW_DAMAGE: float = 50.0
 
+# Phase 3 #32 — projectile fan telegraph constants for memory_overflow.
+# The line is drawn 12 units long so it reaches the arena edge from
+# any boss position; width is the projectile's collision diameter so
+# the player can read the actual hit zone, not a vague hint. Lead
+# duration is the wind-up window before the leak_projectiles spawn.
+const TELEGRAPH_PROJECTILE_LENGTH: float = 12.0
+const TELEGRAPH_PROJECTILE_WIDTH: float = 0.55
+const TELEGRAPH_PROJECTILE_LEAD: float = 0.55
+
 var _attack_count: int = 0
 var _spawn_timer: float = 0.0
 
@@ -16,6 +25,20 @@ var _spawn_timer: float = 0.0
 func _init() -> void:
 	base_damage = 20.0
 	attack_cooldown = 0.5
+
+
+## Phase 3 #32 — telegraph audio cue. Routes through AudioManager
+## (the actual loaded autoload) instead of the SfxManager hook in
+## attack_telegraph.gd which is referenced by some legacy components
+## but not registered as an autoload. play_sfx warns silently if the
+## clip name is missing (T54), so we can ship the wiring before the
+## actual audio assets land.
+func _play_telegraph_cue(cue_id: StringName) -> void:
+	if not state_machine or not state_machine.is_inside_tree():
+		return
+	var am: Node = state_machine.get_node_or_null("/root/AudioManager")
+	if am and am.has_method(&"play_sfx"):
+		am.play_sfx(String(cue_id))
 
 
 ## Phase 2 #14 — boss variant per iteration. Pulls the current
@@ -119,16 +142,21 @@ func _do_compile_error(boss: CharacterBody3D) -> void:
 	var speed_mult: float = 1.2 if boss.current_phase >= 2 else 1.0
 	var telegraph: float = COMPILE_ERROR_TELEGRAPH / speed_mult
 
-	# Ground AoE telegraph indicator
+	# Phase 3 #32 — polished AoE telegraph: 3-phase yellow → orange → red
+	# ramp with outline ring (v2 helper) instead of the flat red disk.
+	# Audio sting fires on telegraph start so the player can react even
+	# with the camera off-center.
 	if boss.is_inside_tree() and boss.target_player:
 		var attack_dir: Vector3 = (boss.target_player.global_position - boss.global_position).normalized()
 		attack_dir.y = 0.0
-		AttackTelegraph.show_circle(
+		AttackTelegraph.show_circle_telegraph(
 			boss.global_position + attack_dir * 1.5,
 			boss.attack_range * 0.8,
 			telegraph,
-			boss.get_tree().current_scene
+			boss.get_tree().current_scene,
+			false,  # use_decal=false → plane fill (no Decal hit on dungeon scenes)
 		)
+		_play_telegraph_cue(&"boss_telegraph_aoe")
 
 	await boss.get_tree().create_timer(telegraph).timeout
 	if not is_instance_valid(boss) or boss.is_transitioning:
@@ -164,6 +192,29 @@ func _do_memory_overflow(boss: CharacterBody3D) -> void:
 	elif iter_proj >= 3:
 		proj_count = 4
 	var center_idx: float = float(proj_count - 1) * 0.5
+
+	# Phase 3 #32 — telegraph the projectile fan BEFORE it fires so the
+	# player can dash out of the line. Pre-T32 the projectiles spawned
+	# instantly with no warning, which made memory_overflow feel like a
+	# damage roulette instead of a readable attack. We draw a thin line
+	# telegraph along each spawn vector and play the projectile cue.
+	if boss.is_inside_tree():
+		for i: int in proj_count:
+			var angle_offset: float = (float(i) - center_idx) * 0.3
+			var dir: Vector3 = base_dir.rotated(Vector3.UP, angle_offset)
+			AttackTelegraph.show_line_telegraph(
+				boss.global_position + Vector3(0, 0.5, 0),
+				dir,
+				TELEGRAPH_PROJECTILE_LENGTH,
+				TELEGRAPH_PROJECTILE_WIDTH,
+				TELEGRAPH_PROJECTILE_LEAD,
+				boss.get_tree().current_scene,
+			)
+		_play_telegraph_cue(&"boss_telegraph_projectile")
+		await boss.get_tree().create_timer(TELEGRAPH_PROJECTILE_LEAD).timeout
+		if not is_instance_valid(boss) or boss.is_transitioning:
+			return
+
 	for i: int in proj_count:
 		var angle_offset: float = (float(i) - center_idx) * 0.3
 		var dir: Vector3 = base_dir.rotated(Vector3.UP, angle_offset)
@@ -193,6 +244,22 @@ func _do_stack_overflow(boss: CharacterBody3D) -> void:
 		Vector3(-10, 0, 10), Vector3(10, 0, 10)
 	]
 	var safe_corner: Vector3 = corners[randi() % corners.size()]
+
+	# Phase 3 #32 — pre-T32 only the safe corner had a green tint, which
+	# read as "stand here for a reward" instead of "everywhere else is
+	# about to die". Now we paint the danger zone with the polished v2
+	# circle telegraph (3-phase yellow → orange → red ramp on a giant
+	# AoE) AND keep the safe corner indicator so the player has both
+	# pieces of information. Audio sting fires on telegraph start.
+	if boss.is_inside_tree():
+		AttackTelegraph.show_circle_telegraph(
+			boss.global_position,
+			18.0,  # ~ arena radius — covers everything except the safe corner
+			STACK_OVERFLOW_TELEGRAPH,
+			boss.get_tree().current_scene,
+			false,
+		)
+		_play_telegraph_cue(&"boss_telegraph_arena")
 
 	# Create visual indicator (placeholder green zone)
 	var safe_zone: MeshInstance3D = MeshInstance3D.new()

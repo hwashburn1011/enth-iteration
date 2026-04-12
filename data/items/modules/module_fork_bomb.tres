@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Fork Bomb"
+item_id = "module_fork_bomb"
+description = "Forward cone of corrupting forks. Tags every enemy in the cone with Corrupted DoT."
+rarity = 2
+item_type = "module"
+compute_cost = 18.0
+cooldown = 6.0
+ability_name = "Fork Bomb"
+ability_description = "Cone DoT — applies Corrupted to every enemy in front of you."
