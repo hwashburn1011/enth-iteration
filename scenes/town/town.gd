@@ -112,6 +112,15 @@ func _ready() -> void:
 	# Show "TOWN" location label briefly
 	_show_location_label("TOWN")
 
+	# Phase 5 #42 — check for revelation moment on return from dungeon.
+	# Revelations fire for the iteration that just completed (current - 1)
+	# because IterationManager already advanced by the time town loads.
+	if GameManager.has_meta(&"just_completed_iteration"):
+		var completed_iter: int = int(GameManager.get_meta(&"just_completed_iteration"))
+		GameManager.remove_meta(&"just_completed_iteration")
+		if RevelationMoments.has_revelation(completed_iter):
+			RevelationMoments.play_revelation(completed_iter, self)
+
 	# Narrative: demo end check after returning from boss
 	if GameManager.should_trigger_demo_end():
 		_setup_demo_end_trigger()
