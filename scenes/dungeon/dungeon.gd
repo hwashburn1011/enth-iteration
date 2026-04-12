@@ -31,7 +31,11 @@ var _player: CharacterBody3D = null
 
 func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
-	AudioManager.play_music("dungeon_ambient")
+	# W23: Wire per-iteration dungeon ambient music
+	var _iter: int = 1
+	if has_node("/root/IterationManager"):
+		_iter = int(get_node("/root/IterationManager").current_iteration)
+	AudioSceneWiring.wire_dungeon_music(_iter)
 
 	# --- Lighting and Environment ---
 	_setup_environment()
