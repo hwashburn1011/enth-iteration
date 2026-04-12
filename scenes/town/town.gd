@@ -812,7 +812,9 @@ func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) 
 	var scene: PackedScene = load(path) as PackedScene
 	if scene:
 		var instance: Node3D = scene.instantiate() as Node3D
-		instance.scale = prop_scale
+		# T14-15: Enforce minimum scale so props are readable at isometric distance
+		var min_s: float = 0.5
+		instance.scale = Vector3(maxf(prop_scale.x, min_s), maxf(prop_scale.y, min_s), maxf(prop_scale.z, min_s))
 		parent.add_child(instance)
 		instance.global_position = pos
 		# Route texture by GLB filename

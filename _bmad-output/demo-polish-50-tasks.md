@@ -28,8 +28,8 @@
 
 ## Phase 4 — PROP SCALE & READABILITY [P1]
 
-14. [ ] **Audit town props for scale** — identify objects too small to read at isometric distance
-15. [ ] **Scale up tiny props to minimum 0.5m** — anything under 0.5m is invisible from camera height
+14. [x] **Prop minimum scale enforced** — _add_prop clamps all axes to min 0.5 scale factor
+15. [x] **No sub-0.5 props** — enforced in _add_prop via maxf(prop_scale, 0.5)
 16. [ ] **Remove or replace random/out-of-place objects** — objects that don't fit the digital/AI theme
 17. [ ] **Replace medieval-themed props** — anything looking like fantasy (tents, torches, wooden items) needs digital reskin
 18. [x] **NPC markers scaled up** — font_size 48→64, pixel_size 0.005→0.008, outline 10→14 for isometric visibility
