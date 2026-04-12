@@ -10,6 +10,10 @@ const LUNGE_SPEED: float = 10.0
 
 var _telegraph_done: bool = false
 var _lunge_dir: Vector3 = Vector3.ZERO
+## Pre-telegraph material snapshot so the red flash doesn't permanently
+## clobber the polish materials set by _polish_r3_enemy. Same pattern T39
+## used for the rogue process attack state.
+var _pre_flash_materials: Dictionary = {}
 
 
 func _init() -> void:
@@ -98,13 +102,19 @@ func exit() -> void:
 func _set_telegraph_flash(enemy: CharacterBody3D, flash: bool) -> void:
 	var meshes: Array[MeshInstance3D] = enemy.get_mesh_instances()
 	if flash:
+		# Snapshot existing materials so we can restore them on flash off,
+		# instead of nulling and wiping the polish from _polish_r3_enemy.
+		_pre_flash_materials.clear()
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.albedo_color = Color(1.0, 0.2, 0.2)
 		mat.emission_enabled = true
 		mat.emission = Color(1.0, 0.0, 0.0)
 		mat.emission_energy_multiplier = 2.0
 		for mesh: MeshInstance3D in meshes:
+			_pre_flash_materials[mesh] = mesh.material_override
 			mesh.material_override = mat
 	else:
 		for mesh: MeshInstance3D in meshes:
-			mesh.material_override = null
+			if _pre_flash_materials.has(mesh):
+				mesh.material_override = _pre_flash_materials[mesh]
+		_pre_flash_materials.clear()
