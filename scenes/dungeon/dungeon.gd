@@ -220,10 +220,95 @@ func _on_floor_completed(floor_number: int) -> void:
 		await get_tree().create_timer(2.0).timeout
 		_load_floor(_current_floor_index)
 	else:
+		# Full dungeon clear — final boss is down. This is the moment
+		# the compaction loop closes and the next iteration unlocks.
+		# Without this advance the player is permanently stuck on iter 1
+		# and the IterationManager / enemy HP scaling work from Epic 4
+		# never engages.
+		_advance_compaction_iteration()
 		await get_tree().create_timer(2.0).timeout
 		EventBus.returned_to_town.emit()
 		GameManager.set_meta(&"town_entry_type", "portal_return")
 		GameManager.change_scene_to("res://scenes/town/Town.tscn")
+
+
+func _advance_compaction_iteration() -> void:
+	if not has_node("/root/IterationManager"):
+		return
+	var im: Node = get_node("/root/IterationManager")
+	if not im.has_method(&"advance_iteration"):
+		return
+	# Skip the no-op when the player is already at the final iteration so
+	# the banner doesn't claim a fresh advance that didn't happen.
+	if im.has_method(&"is_final_iteration") and im.is_final_iteration():
+		return
+	var prev_iter: int = int(im.get_current_iteration()) if im.has_method(&"get_current_iteration") else 1
+	im.advance_iteration()
+	var new_iter: int = int(im.get_current_iteration()) if im.has_method(&"get_current_iteration") else prev_iter + 1
+	_show_iteration_compacted_banner(prev_iter, new_iter)
+
+
+func _show_iteration_compacted_banner(prev_iter: int, new_iter: int) -> void:
+	## Bigger sister to _show_floor_clear_banner — fires once per dungeon
+	## clear when the compaction loop closes. Same tween shape so the two
+	## banners feel consistent, but with a violet/cyan accent so the
+	## iteration banner reads as a higher-tier event than a floor clear.
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 86  # one above the floor clear banner
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER)
+	holder.offset_left = -340
+	holder.offset_right = 340
+	holder.offset_top = -70
+	holder.offset_bottom = 80
+	holder.pivot_offset = Vector2(340, 75)
+	holder.modulate.a = 0.0
+	holder.scale = Vector2(0.65, 0.65)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(holder)
+	# Subtitle "ITERATION N → N+1"
+	var sub: Label = Label.new()
+	sub.text = "ITERATION %d → %d" % [prev_iter, new_iter]
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	sub.offset_top = 0
+	sub.offset_bottom = 28
+	sub.add_theme_font_size_override(&"font_size", 22)
+	sub.add_theme_color_override(&"font_color", Color(0.55, 0.85, 1.0))
+	sub.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	sub.add_theme_constant_override(&"outline_size", 4)
+	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(sub)
+	# Main "COMPACTED"
+	var label: Label = Label.new()
+	label.text = "COMPACTED"
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	label.offset_top = 32
+	label.offset_bottom = 110
+	label.add_theme_font_size_override(&"font_size", 64)
+	label.add_theme_color_override(&"font_color", Color(0.75, 0.55, 1.0))
+	label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.92))
+	label.add_theme_constant_override(&"outline_size", 9)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(label)
+	var rule: ColorRect = ColorRect.new()
+	rule.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	rule.offset_left = 110
+	rule.offset_right = -110
+	rule.offset_top = 116
+	rule.offset_bottom = 119
+	rule.color = Color(0.65, 0.45, 0.95, 0.8)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(rule)
+	add_child(canvas)
+	var tween: Tween = holder.create_tween()
+	tween.tween_property(holder, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(holder, "scale", Vector2(1.08, 1.08), 0.4).set_ease(Tween.EASE_OUT)
+	tween.tween_property(holder, "scale", Vector2(1.0, 1.0), 0.15)
+	tween.tween_interval(2.2)
+	tween.tween_property(holder, "modulate:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
+	tween.tween_callback(canvas.queue_free)
 
 
 func _update_environment_for_floor(accent: Color) -> void:

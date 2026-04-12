@@ -32,6 +32,8 @@ var _boss_ref: Node = null
 var _controls_hint: PanelContainer = null
 var _prompt_indicator_root: Control = null
 var _room_panel: PanelContainer = null
+var _iteration_panel: PanelContainer = null
+var _iteration_label: Label = null
 
 
 func _ready() -> void:
@@ -43,7 +45,9 @@ func _ready() -> void:
 	EventBus.dialogue_started.connect(_on_dialogue_started)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
 	EventBus.enemy_defeated.connect(_on_enemy_killed_streak)
+	EventBus.scene_changed.connect(_refresh_iteration_chip)
 	_create_room_indicator()
+	_create_iteration_chip()
 	_create_controls_hint()
 
 
@@ -337,6 +341,69 @@ func _create_room_indicator() -> void:
 	# Connect to floor manager signals
 	EventBus.floor_completed.connect(_on_floor_completed_hud)
 	EventBus.scene_changed.connect(_on_scene_changed_hud)
+
+
+func _create_iteration_chip() -> void:
+	## Persistent compaction-iteration indicator. Sits just below the room
+	## indicator chip in the top-right corner so the player can read both at
+	## a glance. Hidden when IterationManager isn't present (defensive — the
+	## autoload was missing for most of the project's life and the rest of
+	## the codebase still feature-detects).
+	_iteration_panel = PanelContainer.new()
+	_iteration_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_iteration_panel.offset_left = -120.0
+	_iteration_panel.offset_top = 50.0  # under the room indicator (ends at 46)
+	_iteration_panel.offset_right = -14.0
+	_iteration_panel.offset_bottom = 78.0
+	var iter_style: StyleBoxFlat = StyleBoxFlat.new()
+	iter_style.bg_color = Color(0.06, 0.05, 0.12, 0.88)
+	iter_style.border_color = Color(0.55, 0.4, 0.85, 0.85)  # violet to match the COMPACTED banner
+	iter_style.set_border_width_all(1)
+	iter_style.border_width_left = 4
+	iter_style.set_corner_radius_all(4)
+	iter_style.set_content_margin_all(6)
+	_iteration_panel.add_theme_stylebox_override(&"panel", iter_style)
+	_iteration_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_iteration_label = Label.new()
+	_iteration_label.text = ""
+	_iteration_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_iteration_label.add_theme_color_override(&"font_color", Color(0.78, 0.62, 1.0))
+	_iteration_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_iteration_label.add_theme_constant_override(&"outline_size", 2)
+	_iteration_label.add_theme_font_size_override(&"font_size", 13)
+	_iteration_panel.add_child(_iteration_label)
+	_container.add_child(_iteration_panel)
+	# Initial value + listen for advances. iteration_advanced fires from
+	# IterationManager.advance_iteration so the chip retitles immediately
+	# when the dungeon clear branch (T21) lands.
+	_refresh_iteration_chip()
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_signal(&"iteration_advanced") and not im.iteration_advanced.is_connected(_on_iteration_advanced):
+			im.iteration_advanced.connect(_on_iteration_advanced)
+
+
+func _refresh_iteration_chip(_path: String = "") -> void:
+	if _iteration_panel == null or _iteration_label == null:
+		return
+	if not has_node("/root/IterationManager"):
+		_iteration_panel.visible = false
+		return
+	var im: Node = get_node("/root/IterationManager")
+	var iter: int = 1
+	if im.has_method(&"get_current_iteration"):
+		iter = int(im.get_current_iteration())
+	elif "current_iteration" in im:
+		iter = int(im.current_iteration)
+	var final_iter: int = 9
+	if "FINAL_ITERATION" in im:
+		final_iter = int(im.FINAL_ITERATION)
+	_iteration_label.text = "ITER %d/%d" % [iter, final_iter]
+	_iteration_panel.visible = true
+
+
+func _on_iteration_advanced(_new_iteration: int) -> void:
+	_refresh_iteration_chip()
 
 
 func update_room_indicator(room_index: int, total_rooms: int, floor_name: String) -> void:
