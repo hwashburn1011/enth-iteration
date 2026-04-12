@@ -272,6 +272,10 @@ func _build_iteration_preview_line() -> String:
 
 
 func _on_yes_pressed(canvas: CanvasLayer) -> void:
+	# UI click cue — menu_click.wav was authored but never wired anywhere.
+	# These dungeon-entry buttons are the highest-frequency decision point
+	# in the run loop, so they're the best home for the cue.
+	AudioManager.play_sfx("menu_click")
 	canvas.queue_free()
 	_confirm_ui = null
 	GameManager.set_state(GameManager.GameState.PLAYING)
@@ -280,6 +284,7 @@ func _on_yes_pressed(canvas: CanvasLayer) -> void:
 
 
 func _on_no_pressed(canvas: CanvasLayer) -> void:
+	AudioManager.play_sfx("menu_click")
 	canvas.queue_free()
 	_confirm_ui = null
 	GameManager.set_state(GameManager.GameState.PLAYING)
