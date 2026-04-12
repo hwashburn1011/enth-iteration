@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Collect 5 items"
+target_count = 5
+event_name = &"item_collected"
+event_filter = ""
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_collect_5_items"
+quest_name = "Data Hoarder"
+description = "Salvage useful data fragments scattered throughout the simulation. Collect 5 items of any type."
+category = "side"
+objectives = [SubResource("obj1")]

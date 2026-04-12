@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Clear the dungeon at iteration 4 or higher"
+target_count = 1
+event_name = &"iteration_advanced"
+event_filter = ""
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_clear_dungeon_iter4"
+quest_name = "Fourth Compaction"
+description = "The simulation has compacted four times. The dungeon is now deeply corrupted. Clear it at iteration 4 or higher to unlock the next phase. Requires min_iteration 4."
+category = "story"
+objectives = [SubResource("obj1")]

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Kill 8 Memory Leaks"
+target_count = 8
+event_name = &"enemy_defeated"
+event_filter = "memory_leak"
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_kill_memory_leaks"
+quest_name = "Memory Cleanup"
+description = "Memory Leaks are draining system resources and destabilizing the simulation. Destroy 8 of them before they consume everything."
+category = "side"
+objectives = [SubResource("obj1")]

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Recruit all 3 NPCs"
+target_count = 3
+event_name = &"npc_recruited"
+event_filter = ""
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_recruit_all_npcs"
+quest_name = "Full Party"
+description = "The simulation's inhabitants are scattered and lost. Find and recruit all 3 NPCs to rebuild the digital community."
+category = "story"
+objectives = [SubResource("obj1")]

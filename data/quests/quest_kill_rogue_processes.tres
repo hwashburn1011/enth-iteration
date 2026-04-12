@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Kill 5 Rogue Processes"
+target_count = 5
+event_name = &"enemy_defeated"
+event_filter = "rogue_process"
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_kill_rogue_processes"
+quest_name = "Process Termination"
+description = "Rogue Processes have broken free from their sandboxes and threaten the core systems. Terminate 5 of them."
+category = "side"
+objectives = [SubResource("obj1")]

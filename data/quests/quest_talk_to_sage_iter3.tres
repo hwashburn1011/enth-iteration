@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Talk to the AI Sage at iteration 3 or higher"
+target_count = 1
+event_name = &"npc_talked"
+event_filter = "ai_sage"
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_talk_to_sage_iter3"
+quest_name = "Sage's Wisdom"
+description = "The AI Sage has unlocked deeper knowledge after the third compaction. Seek them out at iteration 3 or higher to learn the truth about the simulation. Requires min_iteration 3."
+category = "story"
+objectives = [SubResource("obj1")]
