@@ -14,10 +14,10 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 			# beat the player just spammed left-click through. Adding a
 			# back-line memory leak gives the room a "split your attention"
 			# read on the very first dungeon-content room past floor 1.
-			spawner.enemy_types = ["glitch_bug", "glitch_bug", "memory_leak"]
+			spawner.enemy_types.assign(["glitch_bug", "glitch_bug", "memory_leak"])
 			spawner.spawn_count = 3
 		2:  # Pillars — 2 Glitch Bugs + 2 Memory Leaks
-			spawner.enemy_types = ["glitch_bug", "memory_leak"]
+			spawner.enemy_types.assign(["glitch_bug", "memory_leak"])
 			spawner.spawn_count = 4
 		3:  # Corridor Ambush — Phase 3 #21: 2 Rogue Processes + 1 Glitch
 			# Bug. Pre-T21 this was a 1v2 rogue duel — fine on iter 1, but
@@ -25,13 +25,13 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 			# (T13) started swapping rogues OUT of other rooms. Adding the
 			# bug ensures every floor-2 ambush has at least 2 archetypes
 			# even at iter 1 when T13's swap chance is 0%.
-			spawner.enemy_types = ["rogue_process", "rogue_process", "glitch_bug"]
+			spawner.enemy_types.assign(["rogue_process", "rogue_process", "glitch_bug"])
 			spawner.spawn_count = 3
 		4:  # Pillars (encore) — mixed swarm before the floor finale
-			spawner.enemy_types = ["glitch_bug", "rogue_process", "memory_leak"]
+			spawner.enemy_types.assign(["glitch_bug", "rogue_process", "memory_leak"])
 			spawner.spawn_count = 5
 		5:  # Elevated — Elite encounter (floor finale)
-			spawner.enemy_types = ["rogue_process", "memory_leak"]
+			spawner.enemy_types.assign(["rogue_process", "memory_leak"])
 			spawner.spawn_count = 2
 			# Post-spawn: buff the first enemy as elite
 			spawner.all_enemies_defeated.connect(func() -> void: pass)  # placeholder

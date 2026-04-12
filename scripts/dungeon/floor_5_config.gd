@@ -12,15 +12,15 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 		2:  # Open Arena (NEW) — gauntlet of mixed enemies before the boss
 			var arena_spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 			if arena_spawner:
-				arena_spawner.enemy_types = ["glitch_bug", "memory_leak", "rogue_process"]
+				arena_spawner.enemy_types.assign(["glitch_bug", "memory_leak", "rogue_process"])
 				arena_spawner.spawn_count = 7
 		3:  # Pillars (NEW) — second pre-boss room, heavier rogue weight
 			var pill_spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 			if pill_spawner:
-				pill_spawner.enemy_types = ["rogue_process", "rogue_process", "memory_leak"]
+				pill_spawner.enemy_types.assign(["rogue_process", "rogue_process", "memory_leak"])
 				pill_spawner.spawn_count = 6
 		5:  # Boss Arena — spawn the Corrupted Compiler boss
 			var spawner: Node = room.get_node_or_null("EnemySpawner") as Node
 			if spawner:
-				spawner.enemy_types = ["corrupted_compiler"]
+				spawner.enemy_types.assign(["corrupted_compiler"])
 				spawner.spawn_count = 1

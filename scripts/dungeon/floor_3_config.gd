@@ -12,15 +12,15 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 			# forces the player to commit to a direction (close the
 			# bug, expose to leak fire) on the floor-3 opener.
 			if spawner:
-				spawner.enemy_types = ["memory_leak", "memory_leak", "glitch_bug"]
+				spawner.enemy_types.assign(["memory_leak", "memory_leak", "glitch_bug"])
 				spawner.spawn_count = 3
 		2:  # Pillars — 4 Glitch Bugs + 1 Memory Leak
 			if spawner:
-				spawner.enemy_types = ["glitch_bug", "glitch_bug", "glitch_bug", "glitch_bug", "memory_leak"]
+				spawner.enemy_types.assign(["glitch_bug", "glitch_bug", "glitch_bug", "glitch_bug", "memory_leak"])
 				spawner.spawn_count = 5
 		3:  # Corridor Ambush (NEW) — 4 Glitch Bugs + 2 Rogue Processes
 			if spawner:
-				spawner.enemy_types = ["glitch_bug", "rogue_process"]
+				spawner.enemy_types.assign(["glitch_bug", "rogue_process"])
 				spawner.spawn_count = 6
 		4:  # Story Room — set NPC id for Cache Sprite
 			if (room.has_method(&"get_entry_point") and room.get(&"npc_id") != null):
@@ -32,12 +32,12 @@ static func configure_room(room: Node3D, room_index: int) -> void:
 			# entirely). Spawn count is 2: the mini-boss + one regular
 			# memory_leak so the player can't just kite forever.
 			if spawner:
-				spawner.enemy_types = ["memory_leak", "memory_leak"]
+				spawner.enemy_types.assign(["memory_leak", "memory_leak"])
 				spawner.spawn_count = 2
 				_setup_miniboss_after_spawn(spawner)
 		6:  # Elevated — 2 Rogue Processes + 2 Memory Leaks
 			if spawner:
-				spawner.enemy_types = ["rogue_process", "memory_leak"]
+				spawner.enemy_types.assign(["rogue_process", "memory_leak"])
 				spawner.spawn_count = 4
 
 
