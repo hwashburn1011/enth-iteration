@@ -4,6 +4,8 @@ extends "res://scripts/state_machines/state.gd"
 
 const MAX_CHARGE_TIME: float = 2.0
 const MOVE_SPEED_MULTIPLIER: float = 0.5
+## Post-V1 C21: max charge delivers 3x damage (was 2x).
+const MAX_CHARGE_MULTIPLIER: float = 3.0
 
 var charge_time: float = 0.0
 var _original_move_speed: float = 0.0
@@ -70,7 +72,7 @@ func physics_update(delta: float) -> void:
 
 func _release_burst() -> void:
 	var p = player
-	var charge_multiplier: float = lerpf(0.5, 2.0, charge_time / MAX_CHARGE_TIME)
+	var charge_multiplier: float = lerpf(0.5, MAX_CHARGE_MULTIPLIER, charge_time / MAX_CHARGE_TIME)
 	var compute_cost: float = 15.0 * charge_multiplier
 
 	if not p.compute_component.spend(compute_cost):
