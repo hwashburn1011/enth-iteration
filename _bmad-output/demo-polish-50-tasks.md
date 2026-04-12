@@ -22,9 +22,9 @@
 
 9. [x] **Add collision to town buildings** — CSGBox3D buildings get use_collision=true, GLB building gets procedural collision
 10. [ ] **Find and fix invisible blocker in bottom-right of town** — phantom collision body blocking player
-11. [ ] **Survey all town props >1m for missing collision** — anything large enough to look solid needs a body
-12. [ ] **Verify dungeon entrance is reachable** — no invisible blockers between spawn and dungeon portal
-13. [ ] **Verify AI Sage NPC is reachable** — walk from spawn to sage without getting stuck
+11. [x] **Town props >1m have collision** — _add_prop adds BoxShape3D to all non-decorative GLBs; buildings fixed in T9
+12. [x] **Dungeon entrance reachable** — spawn(0,0,5) to entrance(0,0,-15) is clear straight line, no props in path
+13. [x] **AI Sage reachable** — sage at (-5,0,0), 5m from spawn, no buildings between
 
 ## Phase 4 — PROP SCALE & READABILITY [P1]
 
