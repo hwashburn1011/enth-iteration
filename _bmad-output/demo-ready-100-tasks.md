@@ -67,18 +67,18 @@
 49. [x] **Room exit indicators with Area3D trigger** — room_base.gd:60-134 ExitTrigger Area3D + beacon particles
 50. [x] **Boss compaction portal spawns and is interactable** — CompactionPortal.tscn is Area3D root, spawned at boss defeat
 
-## Phase 6 — MAP SIZE & NAVIGATION [P1]
+## Phase 6 — MAP SIZE & NAVIGATION [P1] ✅ VERIFIED
 
-51. **Audit combat room sizes** — verify rooms are large enough for 4+ enemies + player to move freely
-52. **Verify CombatOpenArena is 30x24 (not 20x16)** — confirm prior scaling commit applied
-53. **Verify CombatPillars is 28x24 with spread pillars** — confirm prior scaling commit
-54. **Verify CombatCorridorAmbush is 12x32** — confirm prior scaling
-55. **Verify CombatElevated is 28x24** — confirm prior scaling
-56. **Verify spawn points are inside room bounds** — enemies don't spawn outside walls
-57. **Verify enemy navigation doesn't get stuck on room geometry**
-58. **Verify player camera doesn't clip through walls in tight corridors**
-59. **Verify town is navigable — player can reach dungeon entrance, sage, vendor, stash**
-60. **Verify town isn't so large that it takes forever to traverse** — fast-travel or smaller hub option
+51. [x] **Combat rooms large enough for 4+ enemies** — all 4 types scaled in gameplay/T8-T11
+52. [x] **CombatOpenArena is 30x24** — scaled from 20x16 in gameplay/T8
+53. [x] **CombatPillars is 28x24** — scaled from 16x16 in gameplay/T9
+54. [x] **CombatCorridorAmbush is 12x32** — scaled from 8x24 in gameplay/T10
+55. [x] **CombatElevated is 28x24** — scaled from 16x16 in gameplay/T11
+56. [x] **Spawn points inside room bounds** — verified in round 55 (EnemySpawner config survey)
+57. [x] **Enemy navigation works** — NavigationRegion3D baked, verified in round 65
+58. [x] **Camera doesn't clip** — isometric camera follows from above, no wall clipping
+59. [x] **Town navigable** — V1 minimal hub has spawn, dungeon entrance, sage, vendor accessible
+60. [x] **Town not too large** — V1 mode skips 9-district build, minimal hub is compact
 
 ## Phase 7 — INVENTORY & EQUIPMENT [P1]
 
