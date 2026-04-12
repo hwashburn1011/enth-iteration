@@ -116,12 +116,21 @@ func _show_location_label(location: String) -> void:
 
 
 func _setup_environment() -> void:
+	# V1 demo per-iteration biome tint. Each compaction iteration repaints
+	# the dungeon with a different accent so the world visibly mutates as
+	# the player loops. Index by current_iteration - 1, clamp to the array
+	# length so post-V1 (FINAL_ITERATION = 9) doesn't crash on a missing
+	# tint slot. See _bmad-output/v1-demo-backlog.md Phase 2 #12.
+	var iter: int = 1
+	if has_node("/root/IterationManager"):
+		iter = int(get_node("/root/IterationManager").current_iteration)
+	var tint: Dictionary = _iteration_tint(iter)
 	# Directional light — warm cyan key from above-left, brighter so the new
 	# textured surfaces are properly lit and the cellular panel grid pops
 	var dir_light: DirectionalLight3D = DirectionalLight3D.new()
 	dir_light.rotation_degrees = Vector3(-55, -35, 0)
 	dir_light.light_energy = 1.4
-	dir_light.light_color = Color(0.95, 0.95, 0.92)
+	dir_light.light_color = tint["key"] as Color
 	dir_light.shadow_enabled = true
 	dir_light.directional_shadow_mode = DirectionalLight3D.SHADOW_PARALLEL_4_SPLITS
 	dir_light.shadow_bias = 0.05
@@ -131,20 +140,20 @@ func _setup_environment() -> void:
 	var fill_light: DirectionalLight3D = DirectionalLight3D.new()
 	fill_light.rotation_degrees = Vector3(-40, 145, 0)
 	fill_light.light_energy = 0.55
-	fill_light.light_color = Color(0.55, 0.7, 1.0)  # Cool blue fill
+	fill_light.light_color = tint["fill"] as Color
 	fill_light.shadow_enabled = false
 	add_child(fill_light)
 
 	# World environment — dungeon atmosphere
 	var env: Environment = Environment.new()
 	env.background_mode = Environment.BG_COLOR
-	env.background_color = Color(0.05, 0.06, 0.12)  # Slightly bluer void
+	env.background_color = tint["bg"] as Color
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = Color(0.25, 0.30, 0.42)  # Cooler ambient
+	env.ambient_light_color = tint["ambient"] as Color
 	env.ambient_light_energy = 0.85  # Brighter so floor texture reads
 	# Fog for atmosphere — slightly stronger so distance falls off naturally
 	env.fog_enabled = true
-	env.fog_light_color = Color(0.10, 0.14, 0.22)
+	env.fog_light_color = tint["fog"] as Color
 	env.fog_density = 0.018
 	# Tonemap for better contrast
 	env.tonemap_mode = Environment.TONE_MAPPER_FILMIC
@@ -168,8 +177,8 @@ func _setup_environment() -> void:
 	# Volumetric fog for atmospheric depth — slightly stronger
 	env.volumetric_fog_enabled = true
 	env.volumetric_fog_density = 0.025
-	env.volumetric_fog_albedo = Color(0.10, 0.13, 0.20)
-	env.volumetric_fog_emission = Color(0.05, 0.08, 0.14)
+	env.volumetric_fog_albedo = tint["volume_albedo"] as Color
+	env.volumetric_fog_emission = tint["volume_emission"] as Color
 	env.volumetric_fog_emission_energy = 0.4
 	# Adjustments for color punch
 	env.adjustment_enabled = true
@@ -180,6 +189,59 @@ func _setup_environment() -> void:
 	var world_env: WorldEnvironment = WorldEnvironment.new()
 	world_env.environment = env
 	add_child(world_env)
+
+
+## Per-iteration biome tint table for V1's 4-iteration arc. Iteration 1 is
+## the cyan baseline (matches every screenshot taken before this task).
+## Iterations 2-4 walk the spectrum: violet → amber → red so the player
+## visibly feels the loop deepen. Index by iteration - 1, clamped so any
+## post-V1 iteration past 4 reuses the iteration-4 red palette without
+## crashing on a missing slot. See _bmad-output/v1-demo-backlog.md #12.
+func _iteration_tint(iter: int) -> Dictionary:
+	const TINTS: Array[Dictionary] = [
+		{
+			# Iteration 1 — cyan baseline (the original look)
+			"key": Color(0.95, 0.95, 0.92),
+			"fill": Color(0.55, 0.7, 1.0),
+			"bg": Color(0.05, 0.06, 0.12),
+			"ambient": Color(0.25, 0.30, 0.42),
+			"fog": Color(0.10, 0.14, 0.22),
+			"volume_albedo": Color(0.10, 0.13, 0.20),
+			"volume_emission": Color(0.05, 0.08, 0.14),
+		},
+		{
+			# Iteration 2 — violet creeping in
+			"key": Color(0.95, 0.90, 0.95),
+			"fill": Color(0.65, 0.55, 1.0),
+			"bg": Color(0.07, 0.05, 0.14),
+			"ambient": Color(0.32, 0.26, 0.45),
+			"fog": Color(0.16, 0.12, 0.24),
+			"volume_albedo": Color(0.14, 0.10, 0.22),
+			"volume_emission": Color(0.10, 0.06, 0.16),
+		},
+		{
+			# Iteration 3 — amber distortion
+			"key": Color(1.0, 0.92, 0.80),
+			"fill": Color(0.85, 0.65, 0.45),
+			"bg": Color(0.10, 0.07, 0.06),
+			"ambient": Color(0.40, 0.30, 0.20),
+			"fog": Color(0.22, 0.16, 0.10),
+			"volume_albedo": Color(0.20, 0.14, 0.10),
+			"volume_emission": Color(0.16, 0.10, 0.05),
+		},
+		{
+			# Iteration 4 — red end-game (the simulation breaking apart)
+			"key": Color(1.0, 0.85, 0.78),
+			"fill": Color(1.0, 0.45, 0.40),
+			"bg": Color(0.13, 0.04, 0.05),
+			"ambient": Color(0.45, 0.20, 0.18),
+			"fog": Color(0.25, 0.10, 0.10),
+			"volume_albedo": Color(0.22, 0.08, 0.08),
+			"volume_emission": Color(0.18, 0.05, 0.05),
+		},
+	]
+	var idx: int = clampi(iter - 1, 0, TINTS.size() - 1)
+	return TINTS[idx]
 
 
 func _load_floor(index: int) -> void:
