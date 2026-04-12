@@ -50,11 +50,13 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.is_pressed():
 		var mb: InputEventMouseButton = event as InputEventMouseButton
+		# Phase 4 #38 — read zoom speed override from settings if present
+		var step: float = float(ProjectSettings.get_setting("application/zoom_speed_override", ZOOM_STEP))
 		if mb.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_target_size = clampf(_target_size - ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+			_target_size = clampf(_target_size - step, ZOOM_MIN, ZOOM_MAX)
 			get_viewport().set_input_as_handled()
 		elif mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_target_size = clampf(_target_size + ZOOM_STEP, ZOOM_MIN, ZOOM_MAX)
+			_target_size = clampf(_target_size + step, ZOOM_MIN, ZOOM_MAX)
 			get_viewport().set_input_as_handled()
 
 

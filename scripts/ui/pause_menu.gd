@@ -170,6 +170,12 @@ func _toggle_settings() -> void:
 	var sep2: HSeparator = HSeparator.new()
 	vbox.add_child(sep2)
 
+	# Phase 4 #38 — Camera zoom speed slider
+	_add_zoom_slider(vbox)
+
+	var sep3: HSeparator = HSeparator.new()
+	vbox.add_child(sep3)
+
 	# Fullscreen toggle
 	var fs_check: CheckButton = CheckButton.new()
 	fs_check.text = "Fullscreen"
@@ -179,6 +185,16 @@ func _toggle_settings() -> void:
 	fs_check.add_theme_color_override(&"font_hover_color", Color(0.3, 0.85, 0.85))
 	fs_check.add_theme_font_size_override(&"font_size", 16)
 	vbox.add_child(fs_check)
+
+	# Phase 4 #38 — stub key rebind
+	var sep4: HSeparator = HSeparator.new()
+	vbox.add_child(sep4)
+	var rebind_lbl: Label = Label.new()
+	rebind_lbl.text = "Key Rebind — coming soon"
+	rebind_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	rebind_lbl.add_theme_color_override(&"font_color", Color(0.5, 0.55, 0.6))
+	rebind_lbl.add_theme_font_size_override(&"font_size", 13)
+	vbox.add_child(rebind_lbl)
 
 	_settings_panel.add_child(vbox)
 	_panel.add_child(_settings_panel)
@@ -245,6 +261,46 @@ func _toggle_controls() -> void:
 		_add_control_row(vbox, str(binding[0]), str(binding[1]))
 
 	_panel.add_child(_controls_panel)
+
+
+## Phase 4 #38 — camera zoom speed slider. Adjusts IsometricCamera.ZOOM_STEP.
+func _add_zoom_slider(parent: VBoxContainer) -> void:
+	var hbox: HBoxContainer = HBoxContainer.new()
+	hbox.add_theme_constant_override(&"separation", 10)
+	var lbl: Label = Label.new()
+	lbl.text = "Zoom Speed"
+	lbl.custom_minimum_size = Vector2(130, 0)
+	lbl.add_theme_color_override(&"font_color", Color(0.85, 0.9, 0.95))
+	lbl.add_theme_font_size_override(&"font_size", 15)
+	hbox.add_child(lbl)
+	var slider: HSlider = HSlider.new()
+	slider.min_value = 0.5
+	slider.max_value = 3.0
+	slider.step = 0.25
+	slider.value = 1.5
+	# Try to read from an active camera
+	var cam: Camera3D = get_viewport().get_camera_3d()
+	if cam and &"ZOOM_STEP" in cam:
+		slider.value = float(cam.get(&"ZOOM_STEP"))
+	slider.custom_minimum_size = Vector2(150, 0)
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	slider.value_changed.connect(_on_zoom_speed_changed)
+	hbox.add_child(slider)
+	var pct: Label = Label.new()
+	pct.text = "%.1f" % slider.value
+	pct.custom_minimum_size = Vector2(40, 0)
+	pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	pct.add_theme_color_override(&"font_color", Color(0.55, 0.85, 0.85))
+	pct.add_theme_font_size_override(&"font_size", 14)
+	slider.value_changed.connect(func(val: float) -> void: pct.text = "%.1f" % val)
+	hbox.add_child(pct)
+	parent.add_child(hbox)
+
+
+func _on_zoom_speed_changed(value: float) -> void:
+	# ZOOM_STEP is a const on IsometricCamera but we can't change consts at
+	# runtime. Instead use a project-level meta that the camera reads.
+	ProjectSettings.set_setting("application/zoom_speed_override", value)
 
 
 func _add_control_row(parent: VBoxContainer, action_name: String, key_text: String) -> void:
