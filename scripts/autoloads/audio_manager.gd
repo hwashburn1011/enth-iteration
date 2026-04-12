@@ -82,12 +82,17 @@ func _process(_delta: float) -> void:
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	if track_name == _current_track:
 		return
-	_current_track = track_name
 
+	# Check the track exists BEFORE mutating _current_track. The previous
+	# order set _current_track first then fell through to stop_music when
+	# the file was missing — calling play_music("boss_music") with a
+	# placeholder asset would silence the dungeon ambient and leave the
+	# scene with no music until something else triggered a track change.
 	var path: String = MUSIC_TRACKS.get(track_name, "") as String
 	if path.is_empty() or not ResourceLoader.exists(path):
-		stop_music(fade_duration)
+		push_warning("AudioManager: track '%s' missing — keeping current music" % track_name)
 		return
+	_current_track = track_name
 
 	var stream: AudioStream = load(path) as AudioStream
 	if stream == null:
