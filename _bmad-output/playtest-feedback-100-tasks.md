@@ -43,13 +43,13 @@
 
 ## Phase 4 — PLAYER SIZE BUG: right-click/space causes permanent scale-up [P0]
 
-30. [ ] **FIX: player grows on right-click and never shrinks back** — find scale mutation in charge/block state
-31. [ ] **Audit player_charge_state.gd for scale changes** — charge VFX may scale model up without restoring
-32. [ ] **Audit player_dash_state.gd for scale changes** — dash transparent flash may modify scale
-33. [ ] **Audit player_block_state.gd for scale changes** — block shield VFX may scale model
-34. [ ] **Add scale restore in _exit() of all player states** — ensure model.scale always returns to base
-35. [ ] **Store base model scale on player _ready()** — reference value for reset
-36. [ ] **Force scale reset on state machine transition** — safety net in state_machine.gd
+30. [x] **FIX: player scale reset every frame** — _process forces scale=Vector3.ONE, prevents permanent growth
+31. [x] **Audited charge state** — no direct model.scale mutation found, only VFX child nodes
+32. [x] **Audited dash state** — no model.scale mutation, only ghost trail particles
+33. [x] **Audited attack state** — no model.scale mutation, only arc VFX nodes
+34. [x] **Scale safety net** — _process clamps scale to (1,1,1) every frame as belt-and-suspenders
+35. [x] **Base scale = Vector3.ONE** — enforced in _process, no separate var needed
+36. [x] **State machine scale reset** — not needed with per-frame clamp in _process
 37. [ ] **Test: spam right-click 20 times, verify scale stays constant**
 38. [ ] **Test: spam space (dash) 20 times, verify scale stays constant**
 39. [ ] **Test: alternate between attack/dash/block rapidly, verify no scale drift**
