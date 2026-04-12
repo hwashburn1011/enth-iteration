@@ -19,6 +19,9 @@ var _panel: Control = null
 var _vendor_items: Array[Dictionary] = []  # [{item_id, price, rarity}]
 var _player_ref: Node = null
 var _gold_label: Label = null
+## Post-V1 A5: last 5 sold items recoverable at same price.
+var _buyback_items: Array[Dictionary] = []  # [{item_ref, price}]
+const BUYBACK_MAX: int = 5
 
 
 func _ready() -> void:
@@ -149,6 +152,29 @@ func _refresh_shop() -> void:
 				entry
 			)
 			buy_list.add_child(row)
+		# Post-V1 A5: show buyback items at the bottom of the buy list
+		if not _buyback_items.is_empty():
+			var sep_label: Label = Label.new()
+			sep_label.text = "--- Buy Back ---"
+			sep_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			sep_label.add_theme_font_size_override(&"font_size", 12)
+			sep_label.add_theme_color_override(&"font_color", Color(0.5, 0.55, 0.6))
+			buy_list.add_child(sep_label)
+			for bb: Dictionary in _buyback_items:
+				var item: Resource = bb.get("item_ref") as Resource
+				if item == null:
+					continue
+				var bb_name: String = str(item.get(&"item_name")) if &"item_name" in item else str(item.get(&"item_id", "item"))
+				var bb_rarity: int = int(item.get(&"rarity")) if &"rarity" in item else 0
+				var bb_row: HBoxContainer = _create_item_row(bb_name, bb_rarity, int(bb["price"]), true, bb)
+				# Override the buy button to call buyback instead
+				var btn: Button = bb_row.get_child(bb_row.get_child_count() - 1) as Button
+				if btn:
+					btn.text = "Back"
+					for conn: Dictionary in btn.pressed.get_connections():
+						btn.pressed.disconnect(conn["callable"])
+					btn.pressed.connect(_on_buyback.bind(bb, int(bb["price"])))
+				buy_list.add_child(bb_row)
 
 	# Clear sell list — populate from player inventory
 	var sell_list: VBoxContainer = _panel.find_child("SellList", true, false) as VBoxContainer
@@ -243,6 +269,30 @@ func _on_sell(data: Dictionary, price: int) -> void:
 		return
 	inv.remove_item(item)
 	GameManager.player_gold += price
+	# Post-V1 A5: push to buy-back buffer
+	_buyback_items.push_front({"item_ref": item, "price": price})
+	if _buyback_items.size() > BUYBACK_MAX:
+		_buyback_items.resize(BUYBACK_MAX)
+	_refresh_gold()
+	_refresh_shop()
+
+
+func _on_buyback(data: Dictionary, price: int) -> void:
+	## Post-V1 A5: re-purchase a previously sold item at the same price.
+	if GameManager.player_gold < price:
+		return
+	if _player_ref == null:
+		return
+	var inv: Node = _player_ref.get_node_or_null("InventoryComponent") as Node
+	if inv == null:
+		return
+	var item: Resource = data.get("item_ref") as Resource
+	if item == null:
+		return
+	if not inv.add_item(item):
+		return  # Inventory full
+	GameManager.player_gold -= price
+	_buyback_items.erase(data)
 	_refresh_gold()
 	_refresh_shop()
 
