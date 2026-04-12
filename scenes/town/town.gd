@@ -106,7 +106,7 @@ func _ready() -> void:
 		_build_east_plaza()
 		#print("[town] districts done")
 	else:
-		#print("[town] V1 minimal hub — skipping district + TownHeart build")
+		pass  # V1 minimal hub — skipping district + TownHeart build
 	# R5 round-30: clamp baked-GLB hot emissions (lantern flames at 80.0)
 	# down to a HDR-safe value to prevent bloom blowout. Discovered via the
 	# round-30 emission survey across all 3 main scenes.
