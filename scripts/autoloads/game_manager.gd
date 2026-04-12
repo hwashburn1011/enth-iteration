@@ -30,6 +30,8 @@ var play_time_seconds: float = 0.0
 var total_enemies_defeated: int = 0
 var total_deaths: int = 0
 var total_items_found: int = 0
+## Post-V1 Epic A — player gold (currency). Persisted through save/load.
+var player_gold: int = 0
 
 const AFFINITY_STRANGER: int = 0
 const AFFINITY_ACQUAINTANCE: int = 10
