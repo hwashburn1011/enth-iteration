@@ -363,14 +363,81 @@ func _show_iteration_compacted_banner(prev_iter: int, new_iter: int) -> void:
 	rule.color = Color(0.65, 0.45, 0.95, 0.8)
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.add_child(rule)
+	# T16 iteration debrief: biome name + "what changed" line so the
+	# player has something to actually READ during the compacted moment.
+	# Sourced from the same iteration table the dungeon environment tint
+	# in T12 uses, so the rendered colours and the announced biome agree.
+	var debrief: Dictionary = _iteration_debrief(new_iter)
+	var biome_label: Label = Label.new()
+	biome_label.text = debrief["biome"] as String
+	biome_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	biome_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	biome_label.offset_top = 124
+	biome_label.offset_bottom = 154
+	biome_label.add_theme_font_size_override(&"font_size", 24)
+	biome_label.add_theme_color_override(&"font_color", debrief["color"] as Color)
+	biome_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.92))
+	biome_label.add_theme_constant_override(&"outline_size", 4)
+	biome_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(biome_label)
+	var change_label: Label = Label.new()
+	change_label.text = debrief["change"] as String
+	change_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	change_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	change_label.offset_top = 156
+	change_label.offset_bottom = 184
+	change_label.add_theme_font_size_override(&"font_size", 16)
+	change_label.add_theme_color_override(&"font_color", Color(0.85, 0.88, 0.95))
+	change_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	change_label.add_theme_constant_override(&"outline_size", 3)
+	change_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(change_label)
+	# Make the holder taller to fit the new lines without overlap
+	holder.offset_top = -110
+	holder.offset_bottom = 110
 	add_child(canvas)
 	var tween: Tween = holder.create_tween()
 	tween.tween_property(holder, "modulate:a", 1.0, 0.4).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(holder, "scale", Vector2(1.08, 1.08), 0.4).set_ease(Tween.EASE_OUT)
 	tween.tween_property(holder, "scale", Vector2(1.0, 1.0), 0.15)
-	tween.tween_interval(2.2)
+	# Hold for 4.5s now (was 2.2s) so the player can actually READ the
+	# biome name and what-changed line. The total banner time is still
+	# under 6s — short enough that the player isn't stuck staring at it.
+	tween.tween_interval(4.5)
 	tween.tween_property(holder, "modulate:a", 0.0, 0.7).set_ease(Tween.EASE_IN)
 	tween.tween_callback(canvas.queue_free)
+
+
+## Per-iteration debrief data — biome name + a one-line "what changed"
+## hint shown on the compacted banner. Mirrors the tint table in
+## _iteration_tint() so the announced biome and the rendered palette
+## agree. Index by iteration - 1, clamped against the array length so
+## any post-V1 iteration past 4 reuses the iteration-4 entry.
+func _iteration_debrief(iter: int) -> Dictionary:
+	const ENTRIES: Array[Dictionary] = [
+		{
+			"biome": "BASELINE  ·  CYAN ARCHIVE",
+			"change": "The simulation is stable. For now.",
+			"color": Color(0.55, 0.85, 1.0),
+		},
+		{
+			"biome": "DRIFT  ·  VIOLET STRATA",
+			"change": "Memory pages bleed at the seams. Enemies hit harder.",
+			"color": Color(0.75, 0.55, 1.0),
+		},
+		{
+			"biome": "DECAY  ·  AMBER FAULT",
+			"change": "The kernel is leaking. The dungeon remembers you now.",
+			"color": Color(0.95, 0.75, 0.30),
+		},
+		{
+			"biome": "COLLAPSE  ·  RED HORIZON",
+			"change": "Final compaction. Whatever you're chasing — it's down here.",
+			"color": Color(1.0, 0.40, 0.35),
+		},
+	]
+	var idx: int = clampi(iter - 1, 0, ENTRIES.size() - 1)
+	return ENTRIES[idx]
 
 
 func _update_environment_for_floor(accent: Color) -> void:
