@@ -26,7 +26,8 @@ const FIRST_ITERATION: int = 1
 ## release. Tracked in _bmad-output/v1-demo-backlog.md Phase 1 #9.
 ## R2 H29: expanded from 4 to 6 iterations for the extended demo arc.
 ## R3 K4: expanded to full 9-iteration arc per GDD design.
-const FINAL_ITERATION: int = 9
+## Demo scope: 6 loops. Full game post-demo: 9.
+const FINAL_ITERATION: int = 6
 
 var current_iteration: int = FIRST_ITERATION
 

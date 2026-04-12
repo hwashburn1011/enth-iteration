@@ -444,10 +444,7 @@ func _refresh_iteration_chip(_path: String = "") -> void:
 		iter = int(im.get_current_iteration())
 	elif "current_iteration" in im:
 		iter = int(im.current_iteration)
-	var final_iter: int = 9
-	if "FINAL_ITERATION" in im:
-		final_iter = int(im.FINAL_ITERATION)
-	_iteration_label.text = "ITER %d/%d" % [iter, final_iter]
+	_iteration_label.text = "LOOP %d" % iter
 	_iteration_panel.visible = true
 
 

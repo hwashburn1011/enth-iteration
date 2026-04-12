@@ -384,9 +384,9 @@ func _show_iteration_compacted_banner(prev_iter: int, new_iter: int) -> void:
 	holder.scale = Vector2(0.65, 0.65)
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	canvas.add_child(holder)
-	# Subtitle "ITERATION N → N+1"
+	# Subtitle — show loop number without revealing total count
 	var sub: Label = Label.new()
-	sub.text = "ITERATION %d → %d" % [prev_iter, new_iter]
+	sub.text = "COMPACTION LOOP %d COMPLETE" % prev_iter
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	sub.offset_top = 0
