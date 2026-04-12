@@ -24,6 +24,8 @@ func _ready() -> void:
 	_interaction_area.body_entered.connect(_on_body_entered)
 	_interaction_area.body_exited.connect(_on_body_exited)
 	_build_npc_visual()
+	# Phase 4 #36 — quest/dialogue marker above head
+	_create_quest_marker()
 
 
 func _style_world_labels() -> void:
@@ -58,12 +60,17 @@ func _unhandled_input(event: InputEvent) -> void:
 
 var _interact_indicator: Label3D = null
 var _indicator_base_y: float = 0.0
+## Phase 4 #36 — quest/dialogue marker above the NPC's head.
+var _quest_marker: Label3D = null
 
 
 func _process(_delta: float) -> void:
 	# Pulse the interaction indicator
 	if _interact_indicator and _interact_indicator.visible:
 		_interact_indicator.position.y = _indicator_base_y + sin(Time.get_ticks_msec() * 0.005) * 0.1
+	# Phase 4 #36 — bob the quest marker gently
+	if _quest_marker and _quest_marker.visible:
+		_quest_marker.position.y = 2.9 + sin(Time.get_ticks_msec() * 0.004) * 0.12
 	# Idle breathing animation on model
 	if _model:
 		var t: float = Time.get_ticks_msec() * 0.002
@@ -101,6 +108,8 @@ func _start_conversation() -> void:
 		panel.speaker_portraits = portraits
 		panel.speaker_npc_id = npc_id
 		panel.start_dialogue(dialogue_resource.lines)
+	# Phase 4 #36 — hide quest marker after talking (quest may have progressed)
+	_update_quest_marker()
 
 
 func _find_dialogue_panel() -> Node:
@@ -115,6 +124,61 @@ func _find_dialogue_panel() -> Node:
 		get_tree().root.add_child(panel)
 		return panel
 	return null
+
+
+## Phase 4 #36 — create a floating quest/dialogue marker above the NPC.
+## Shows "!" (yellow) if this NPC is referenced in an active quest objective,
+## "?" (cyan) if the NPC has dialogue but hasn't been talked to yet.
+## Updates after each conversation.
+func _create_quest_marker() -> void:
+	_quest_marker = Label3D.new()
+	_quest_marker.font_size = 48
+	_quest_marker.outline_size = 10
+	_quest_marker.no_depth_test = true
+	_quest_marker.fixed_size = true
+	_quest_marker.pixel_size = 0.005
+	_quest_marker.position = Vector3(0, 2.9, 0)
+	_quest_marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	add_child(_quest_marker)
+	_update_quest_marker()
+	# Re-check when quests update
+	if not EventBus.quest_updated.is_connected(_on_quest_updated_marker):
+		EventBus.quest_updated.connect(_on_quest_updated_marker)
+
+
+func _on_quest_updated_marker(_qid: StringName, _status: StringName) -> void:
+	_update_quest_marker()
+
+
+func _update_quest_marker() -> void:
+	if _quest_marker == null:
+		return
+	# Check if any active quest has an objective referencing this NPC's id
+	var is_quest_target: bool = false
+	for quest: Resource in QuestManager.active_quests:
+		if quest.is_completed:
+			continue
+		for obj: Variant in quest.objectives:
+			if obj.current_count >= obj.target_count:
+				continue
+			# Quest objectives with event_filter matching our npc_id
+			if obj.event_filter == npc_id and obj.event_name in [&"npc_talked", &"dialogue_started", &"npc_recruited"]:
+				is_quest_target = true
+				break
+		if is_quest_target:
+			break
+	if is_quest_target:
+		_quest_marker.text = "!"
+		_quest_marker.modulate = Color(1.0, 0.85, 0.2)
+		_quest_marker.outline_modulate = Color(0.3, 0.2, 0, 0.9)
+		_quest_marker.visible = true
+	elif dialogue_resource != null and not has_been_talked_to:
+		_quest_marker.text = "?"
+		_quest_marker.modulate = Color(0.3, 0.9, 0.85)
+		_quest_marker.outline_modulate = Color(0, 0.15, 0.15, 0.9)
+		_quest_marker.visible = true
+	else:
+		_quest_marker.visible = false
 
 
 func _build_npc_visual() -> void:

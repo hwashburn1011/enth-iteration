@@ -37,6 +37,10 @@ var _iteration_label: Label = null
 ## Per-NPC tier cache for affinity tier-up detection. Built lazily as
 ## affinity_changed signals fire so we don't bake state into the HUD ctor.
 var _last_affinity_tier: Dictionary = {}
+## Phase 4 #35 — active quest HUD widget, top-right corner.
+var _quest_panel: PanelContainer = null
+var _quest_title_label: Label = null
+var _quest_obj_label: Label = null
 
 # Phase 3 #23 — debuff icon strip. Anchored top-left under the
 # health/compute bars; child chips are PanelContainers keyed by
@@ -68,6 +72,8 @@ func _ready() -> void:
 	_create_iteration_chip()
 	_create_controls_hint()
 	_create_debuff_strip()
+	_create_quest_widget()
+	EventBus.quest_updated.connect(_on_quest_updated)
 
 
 func _process(delta: float) -> void:
@@ -956,3 +962,69 @@ func _rebuild_debuff_strip() -> void:
 		var effect: Resource = dd.get("effect") as Resource
 		if effect != null:
 			_add_debuff_chip(effect.effect_name)
+
+
+## Phase 4 #35 — active quest HUD widget. Shows the first active quest's
+## name and current objective in a small panel at the top-right corner.
+func _create_quest_widget() -> void:
+	_quest_panel = PanelContainer.new()
+	_quest_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_quest_panel.offset_left = -280
+	_quest_panel.offset_top = 16
+	_quest_panel.offset_right = -16
+	_quest_panel.offset_bottom = 80
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.04, 0.05, 0.1, 0.75)
+	style.border_color = Color(0.15, 0.45, 0.5, 0.5)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(8)
+	_quest_panel.add_theme_stylebox_override(&"panel", style)
+	_quest_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quest_panel.add_child(vbox)
+
+	_quest_title_label = Label.new()
+	_quest_title_label.add_theme_font_size_override(&"font_size", 14)
+	_quest_title_label.add_theme_color_override(&"font_color", Color(0.3, 0.9, 0.8))
+	_quest_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(_quest_title_label)
+
+	_quest_obj_label = Label.new()
+	_quest_obj_label.add_theme_font_size_override(&"font_size", 12)
+	_quest_obj_label.add_theme_color_override(&"font_color", Color(0.7, 0.8, 0.75))
+	_quest_obj_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_quest_obj_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	vbox.add_child(_quest_obj_label)
+
+	_container.add_child(_quest_panel)
+	_refresh_quest_widget()
+
+
+func _on_quest_updated(_quest_id: StringName, _status: StringName) -> void:
+	_refresh_quest_widget()
+
+
+func _refresh_quest_widget() -> void:
+	if _quest_panel == null:
+		return
+	if QuestManager.active_quests.is_empty():
+		_quest_panel.visible = false
+		return
+	_quest_panel.visible = true
+	var quest: Resource = QuestManager.active_quests[0]
+	_quest_title_label.text = quest.quest_name
+	# Find the first incomplete objective
+	var obj_text: String = ""
+	for obj: Variant in quest.objectives:
+		if obj.current_count < obj.target_count:
+			if obj.target_count > 1:
+				obj_text = "%s (%d/%d)" % [obj.objective_text, obj.current_count, obj.target_count]
+			else:
+				obj_text = obj.objective_text
+			break
+	if obj_text == "":
+		obj_text = "Complete!"
+	_quest_obj_label.text = obj_text

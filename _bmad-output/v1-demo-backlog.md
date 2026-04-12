@@ -81,18 +81,18 @@ The dungeon → boss → return → iterate cycle has to feel tight and rewardin
 31. ✅ **Hit reactions** — enemy stagger with STUN_DURATION 0.5s, FLASH_DURATION 0.16s, procedural lean + squash via _apply_stagger.
 32. ✅ **Boss telegraph polish** — v2 circle/line telegraphs, arena circles, _play_telegraph_cue audio routing.
 
-## Phase 4 — Onboarding & UX (weeks 4-5, parallel)
+## Phase 4 — Onboarding & UX (weeks 4-5, parallel)  ✅ DONE
 
 Without these the player won't survive long enough to discover Phase 3 depth.
 
-33. **First-run intro cinematic** — Globbler wakes up, sage speaks 2-3 lines, camera pans across the hub. 30 seconds, sets the hook.
-34. **Tutorial chain** — popups for move → attack → dash → loot → prompt → enter dungeon → first kill. Exists partially; finish the chain end-to-end.
-35. **Active quest HUD widget** — show current objective + arrow / waypoint to it. Already have QuestManager (T37); needs UI.
-36. **Objective markers** — `!` over quest-relevant NPCs, `?` over ones with dialogue available.
-37. **Pause menu controls list** — show key bindings on the pause screen. Currently you have to know the bindings.
-38. **Settings menu** — volume sliders, mouse sensitivity, fullscreen toggle. Stub key rebind.
-39. **Death screen** — currently respawn is silent. Show a "SYSTEM FAILURE" panel with a tip + "Continue" button before fading back.
-40. **Damage numbers polish** — readable, not noisy. Crit numbers visually distinct.
+33. ✅ **First-run intro cinematic** — fade from black, camera zoom reveal (18→8), "THE COMPACTION LOOP / Iteration 1" title card, then auto-trigger sage dialogue.
+34. ✅ **Tutorial chain** — auto-advancing hint sequence after sage intro: WASD → LMB → Space → E → Q → "Enter the Compaction Loop". Wired via TutorialManager.
+35. ✅ **Active quest HUD widget** — top-right panel showing quest name + current objective, updates live via quest_updated signal.
+36. ✅ **Objective markers** — floating "!" (yellow) on quest-relevant NPCs, "?" (cyan) on NPCs with unread dialogue. Bobs, updates on quest progress.
+37. ✅ **Pause menu controls list** — scrollable "Controls" panel with 12 key bindings (WASD, LMB/RMB, Space, F, E, Q, 1-4, Tab, J, Esc, wheel).
+38. ✅ **Settings menu** — zoom speed slider (0.5-3.0) + stub key rebind. Volume sliders + fullscreen already existed.
+39. ✅ **Death screen** — "SYSTEM FAILURE" with random gameplay tip (8 tips) + "Continue" button. Player must click to respawn.
+40. ✅ **Damage numbers polish** — no_depth_test + fixed_size for readability, crit scale pulse (1.4x overshoot), larger crit font + warm outline.
 
 ## Phase 5 — Story beats & narrative payload (weeks 5-7)
 

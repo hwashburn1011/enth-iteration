@@ -81,6 +81,53 @@ func _spawn_death_vfx(p: CharacterBody3D) -> void:
 	sublabel.add_theme_constant_override(&"outline_size", 5)
 	sublabel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	canvas.add_child(sublabel)
+	# Phase 4 #39 — random gameplay tip below the death text
+	var tips: Array[String] = [
+		"Tip: Hold F to block — costs Compute but reduces damage by 80%.",
+		"Tip: Dash with Space for i-frames. Dash-cancel into attack for aggression.",
+		"Tip: Status effects stack — fragmented enemies take 30% more damage.",
+		"Tip: Legendary items have 2.5x stat multipliers. Worth the extra floor.",
+		"Tip: Every 3 levels grants a passive node. Check your build!",
+		"Tip: The parry window is 0.18s after pressing F. Risky but rewarding.",
+		"Tip: Combo finisher (3rd hit) applies fragmented to the target.",
+		"Tip: Q uses your Health Prompt — don't forget to stock up.",
+	]
+	var tip_label: Label = Label.new()
+	tip_label.text = tips[randi() % tips.size()]
+	tip_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	tip_label.set_anchors_preset(Control.PRESET_CENTER)
+	tip_label.offset_left = -300
+	tip_label.offset_right = 300
+	tip_label.offset_top = 80
+	tip_label.offset_bottom = 120
+	tip_label.add_theme_font_size_override(&"font_size", 16)
+	tip_label.add_theme_color_override(&"font_color", Color(0.6, 0.65, 0.7, 0.0))
+	tip_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.8))
+	tip_label.add_theme_constant_override(&"outline_size", 4)
+	tip_label.autowrap_mode = TextServer.AUTOWRAP_WORD
+	tip_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	canvas.add_child(tip_label)
+	# Continue button — waits for click before respawning
+	var continue_btn: Button = Button.new()
+	continue_btn.text = "Continue"
+	continue_btn.set_anchors_preset(Control.PRESET_CENTER)
+	continue_btn.offset_left = -80
+	continue_btn.offset_right = 80
+	continue_btn.offset_top = 140
+	continue_btn.offset_bottom = 175
+	continue_btn.add_theme_font_size_override(&"font_size", 20)
+	continue_btn.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	continue_btn.modulate.a = 0.0
+	continue_btn.process_mode = Node.PROCESS_MODE_ALWAYS
+	var death_canvas_ref: CanvasLayer = canvas
+	continue_btn.pressed.connect(func() -> void:
+		if is_instance_valid(death_canvas_ref):
+			death_canvas_ref.queue_free()
+		# Trigger respawn via scene reload
+		GameManager.change_scene_to("res://scenes/town/Town.tscn")
+	)
+	canvas.add_child(continue_btn)
+
 	p.get_tree().root.add_child(canvas)
 	# Animate: fade in dark overlay + text + glitch jitter
 	# Use process tween mode so the slow-mo doesn't drag out the fade-in
@@ -108,8 +155,18 @@ func _spawn_death_vfx(p: CharacterBody3D) -> void:
 	sub_tween.set_ignore_time_scale(true)
 	sub_tween.tween_interval(0.4)
 	sub_tween.tween_property(sublabel, "theme_override_colors/font_color:a", 1.0, 0.3)
-	# Auto-cleanup after 4 seconds (respawn system will handle scene change)
-	p.get_tree().create_timer(4.0).timeout.connect(canvas.queue_free)
+	# Phase 4 #39 — fade in tip + continue button after the main text
+	var tip_tween: Tween = tip_label.create_tween()
+	tip_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tip_tween.set_ignore_time_scale(true)
+	tip_tween.tween_interval(1.0)
+	tip_tween.tween_property(tip_label, "theme_override_colors/font_color:a", 1.0, 0.5)
+	var btn_tween: Tween = continue_btn.create_tween()
+	btn_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	btn_tween.set_ignore_time_scale(true)
+	btn_tween.tween_interval(1.5)
+	btn_tween.tween_property(continue_btn, "modulate:a", 1.0, 0.4)
+	btn_tween.tween_callback(continue_btn.grab_focus)
 
 
 func exit() -> void:
