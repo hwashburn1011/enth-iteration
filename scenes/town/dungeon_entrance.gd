@@ -280,7 +280,8 @@ func _on_yes_pressed(canvas: CanvasLayer) -> void:
 	_confirm_ui = null
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	EventBus.dungeon_entered.emit()
-	GameManager.change_scene_to(DUNGEON_SCENE_PATH)
+	# Task96: Scene fade on dungeon enter
+	CombatFeelWiring.fade_to_scene(get_tree(), DUNGEON_SCENE_PATH)
 
 
 func _on_no_pressed(canvas: CanvasLayer) -> void:
