@@ -5,13 +5,13 @@
 
 ## Phase 1 — CRASH: enemy_pool freed instance [P0]
 
-1. [ ] **FIX: enemy_pool.gd:141 "Left operand of 'is' is a previously freed instance"** — _deactivate called on already-freed enemy; add is_instance_valid guard
-2. [ ] **Audit all enemy_pool deactivate callers** — ensure no double-free path exists
-3. [ ] **Audit enemy_death_state for pool-return race** — death anim may free before pool reclaims
-4. [ ] **Add is_instance_valid check in EnemyPool._deactivate** before accessing enemy properties
-5. [ ] **Add is_instance_valid check in EnemyPool._on_enemy_defeated** before pool return
-6. [ ] **Test: complete compaction loop 1→2 without crash** — verify fix survives full playthrough
-7. [ ] **Test: complete compaction loop 2→3 without crash** — verify at higher iteration scaling
+1. [x] **FIX: enemy_pool.gd freed-instance crash** — added is_instance_valid guard at top of _deactivate
+2. [x] **Audit deactivate callers** — return_enemy (line 106) and _deactivate (line 136) both guarded
+3. [x] **Audit enemy_death_state race** — added is_instance_valid after await animation_finished
+4. [x] **is_instance_valid in _deactivate** — returns early if enemy already freed
+5. [x] **is_instance_valid in return_enemy** — returns early if enemy already freed
+6. [ ] **Test: complete compaction loop 1→2 without crash** — needs playtest after clearing breakpoints
+7. [ ] **Test: complete compaction loop 2→3 without crash** — needs playtest after clearing breakpoints
 
 ## Phase 2 — COMBAT FEEL: smooth out jank [P0]
 
