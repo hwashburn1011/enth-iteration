@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://firewall_guard01"]
+
+[ext_resource type="PackedScene" path="res://scenes/entities/enemies/EnemyBase.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/entities/enemies/firewall_guardian/firewall_guardian.gd" id="2_script"]
+
+[node name="FirewallGuardian" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+move_speed = 0.0
+patrol_radius = 0.0
+attack_range = 8.0

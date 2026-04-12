@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://null_pointer001"]
+
+[ext_resource type="PackedScene" path="res://scenes/entities/enemies/EnemyBase.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scenes/entities/enemies/null_pointer/null_pointer.gd" id="2_script"]
+
+[node name="NullPointer" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+move_speed = 3.5
+patrol_radius = 6.0
+attack_range = 1.8
