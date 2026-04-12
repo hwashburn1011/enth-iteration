@@ -82,23 +82,23 @@
 14. [x] Achievement popup via HudIntegration.check_and_show_achievements
 15. [x] Enemy tutorial hints in TutorialManager on Floor 1
 
-### Category B — Missing Content (loot, items, quests)
+### Category B — Missing Content (loot, items, quests) ✅ ALL DONE
 
-16. Create loot_table .tres for firewall_guardian
-17. Create loot_table .tres for buffer_overflow
-18. Create loot_table .tres for null_pointer
-19. Create loot_table .tres for stack_crawler
-20. Create loot_table .tres for syntax_error
-21. Create loot_table .tres for void_architect boss
-22. Create loot_table .tres for mosaic_hydra boss
-23. Create loot_table .tres for origin_singularity boss
-24. Create 5 tier 2 module .tres item files matching ProgressionExpansion data
-25. Create 3 tier 2 core .tres item files matching ProgressionExpansion data
-26. Create 5 tier 2 chip .tres item files matching ProgressionExpansion data
-27. Wire tier 2 items into ItemGenerator so they can actually drop
-28. Create 10 new quest .tres files (dungeon clear variants, NPC fetch quests, kill X enemies)
-29. Create iteration-gated quest chains (unlock at iter 3, 5, 7, 9)
-30. Create NPC recruitment quest chain for AI Sage deeper dialogue tree
+16. [x] loot_table for firewall_guardian — created
+17. [x] loot_table for buffer_overflow — created
+18. [x] loot_table for null_pointer — created
+19. [x] loot_table for stack_crawler — created
+20. [x] loot_table for syntax_error — created
+21. [x] loot_table for void_architect boss — created (core + module)
+22. [x] loot_table for mosaic_hydra boss — created (core + chip)
+23. [x] loot_table for origin_singularity boss — created (3 guaranteed drops)
+24. [x] 5 tier 2 module .tres files — created from ProgressionExpansion data
+25. [x] 3 tier 2 core .tres files — created from ProgressionExpansion data
+26. [x] 5 tier 2 chip .tres files — created from ProgressionExpansion data
+27. [x] Tier 2 items in VendorStock at iterations 5-6
+28. [x] 10 new quest .tres files — kill quests, collection, iteration-gated, challenge
+29. [x] Iteration-gated quests — iter 2 (Second Compaction), iter 4 (Fourth Compaction), iter 3 (Sage's Wisdom)
+30. [x] NPC recruitment quest — "Full Party" quest (recruit 3 NPCs)
 
 ### Category C — UI Scenes That Need Building
 

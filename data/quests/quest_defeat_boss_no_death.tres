@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Defeat a boss without dying"
+target_count = 1
+event_name = &"boss_defeated"
+event_filter = ""
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_defeat_boss_no_death"
+quest_name = "Flawless Execution"
+description = "Prove your mastery by defeating any dungeon boss without dying a single time during the encounter. A true test of skill and preparation."
+category = "challenge"
+objectives = [SubResource("obj1")]

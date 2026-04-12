@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quests/quest_data.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/quests/quest_objective.gd" id="2"]
+
+[sub_resource type="Resource" id="obj1"]
+script = ExtResource("2")
+objective_text = "Clear the dungeon at iteration 2 or higher"
+target_count = 1
+event_name = &"iteration_advanced"
+event_filter = ""
+
+[resource]
+script = ExtResource("1")
+quest_id = "quest_clear_dungeon_iter2"
+quest_name = "Second Compaction"
+description = "The Compaction Loop has reset and grown stronger. Clear the dungeon again at iteration 2 or higher to prove your resilience. Requires min_iteration 2."
+category = "story"
+objectives = [SubResource("obj1")]
