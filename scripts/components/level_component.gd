@@ -15,7 +15,8 @@ extends Node
 signal leveled_up(new_level: int)
 signal xp_changed(current_xp: int, xp_to_next: int)
 
-const MAX_LEVEL: int = 30
+## R3 M22: expanded from 30 to 60 for the full 9-iteration arc.
+const MAX_LEVEL: int = 60
 const XP_REWARD_GLITCH_BUG: int = 25
 const XP_REWARD_MEMORY_LEAK: int = 40
 const XP_REWARD_ROGUE_PROCESS: int = 60
