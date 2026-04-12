@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Volatile Compiler"
+item_id = "core_volatile_compiler"
+description = "Burns hot. Every kill restores 8 compute — turn aggression into resource."
+rarity = 3
+item_type = "core"
+core_passive = "Restore 8 compute on kill"
+core_bonus_stats = {"processing": 4.0, "memory": 3.0}
+compute_on_kill = 8.0

@@ -71,9 +71,18 @@ func enter() -> void:
 	_iframe_timer = 0.0
 	_flash_transparent(p, true)
 
-	# Start cooldown timer
+	# Start cooldown timer. Phase 3 #28: Persistent Thread core
+	# subtracts dash_cooldown_reduction seconds (clamped at 0.2s
+	# floor so the player can't permanently dash). Defensive
+	# against missing equipment / empty core slot / non-core resource.
 	p.can_dash = false
-	p.dash_cooldown_timer.start(p.dash_cooldown)
+	var cd: float = p.dash_cooldown
+	var equip: Node = p.get_node_or_null("EquipmentComponent") as Node
+	if equip:
+		var core: Resource = equip.get(&"core_slot") as Resource
+		if core != null and (&"dash_cooldown_reduction" in core):
+			cd = maxf(0.2, cd - float(core.dash_cooldown_reduction))
+	p.dash_cooldown_timer.start(cd)
 
 
 func handle_input(event: InputEvent) -> void:

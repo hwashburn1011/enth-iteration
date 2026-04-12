@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="CoreItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/core_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Quantum Processor"
+item_id = "core_quantum_processor"
+description = "Parallel-processing chip wired for ability builds. Massive memory + bandwidth pool."
+rarity = 2
+item_type = "core"
+core_passive = "Memory and bandwidth specialist — module spam build"
+core_bonus_stats = {"memory": 8.0, "bandwidth": 6.0}

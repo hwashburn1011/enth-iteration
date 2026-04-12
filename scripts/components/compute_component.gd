@@ -36,6 +36,13 @@ func _ready() -> void:
 		stats.stats_changed.connect(_on_stats_changed.bind(stats))
 		# Apply current stats immediately on spawn
 		_on_stats_changed(stats)
+	# Phase 3 #28 — Volatile Compiler core: restore compute on kill.
+	# Only the player's compute component listens; enemies don't have
+	# core slots and the kill event would be a self-payload anyway.
+	# Wired here once at _ready so it survives pool reuse / respawn.
+	if get_parent() and get_parent().is_in_group(&"player"):
+		if not EventBus.enemy_defeated.is_connected(_on_enemy_defeated_compute):
+			EventBus.enemy_defeated.connect(_on_enemy_defeated_compute)
 
 
 func _process(delta: float) -> void:
@@ -75,6 +82,27 @@ func reset() -> void:
 	current_compute = max_compute
 	_last_emitted_compute = current_compute
 	compute_changed.emit(current_compute, max_compute)
+
+
+func _on_enemy_defeated_compute(_enemy_type: StringName, _pos: Vector3, _loot: Resource) -> void:
+	## Phase 3 #28 — Volatile Compiler core: read compute_on_kill
+	## from the player's equipped core (if any) and restore. Defensive
+	## against missing equipment / empty slot / non-core resource.
+	var owner_node: Node = get_parent()
+	if owner_node == null:
+		return
+	var equip: Node = owner_node.get_node_or_null("EquipmentComponent") as Node
+	if equip == null:
+		return
+	var core: Resource = equip.get(&"core_slot") as Resource
+	if core == null or not (&"compute_on_kill" in core):
+		return
+	var amount: float = float(core.compute_on_kill)
+	if amount <= 0.0:
+		return
+	# Use the public restore() so the compute_changed signal fires
+	# and the HUD bar animates the gain.
+	restore(amount)
 
 
 func get_compute_percentage() -> float:

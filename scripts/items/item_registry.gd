@@ -22,6 +22,12 @@ const ITEM_PATHS: Dictionary = {
 	"module_refactor": "res://data/items/modules/module_refactor.tres",
 	"core_standard_cpu": "res://data/items/cores/core_standard_cpu.tres",
 	"core_overtuned_gpu": "res://data/items/cores/core_overtuned_gpu.tres",
+	# Phase 3 #28 — core roster expansion (2 → 5). Each new core
+	# carries a bespoke effect (compute_on_kill, dash_cooldown_reduction)
+	# or a distinct stat profile beyond the standard/GPU axes.
+	"core_quantum_processor": "res://data/items/cores/core_quantum_processor.tres",
+	"core_volatile_compiler": "res://data/items/cores/core_volatile_compiler.tres",
+	"core_persistent_thread": "res://data/items/cores/core_persistent_thread.tres",
 	"protocol_on_kill_heal": "res://data/items/protocols/protocol_on_kill_heal.tres",
 	"protocol_dash_damage": "res://data/items/protocols/protocol_dash_damage.tres",
 	"prompt_health_small": "res://data/items/prompts/prompt_health_small.tres",

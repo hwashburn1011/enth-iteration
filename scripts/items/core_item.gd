@@ -17,6 +17,18 @@ extends "res://scripts/items/item_base.gd"
 ## and adds this to BASE_CRIT_CHANCE. Use the same units as BASE_CRIT_CHANCE
 ## (5.0 = 5%) so e.g. 10.0 here gives a +10% crit bonus.
 @export var extra_crit_chance: float = 0.0
+## Phase 3 #28 — bespoke core effects beyond crit. Each new field is
+## consumed by exactly one component to keep the dependency graph
+## obvious. Cores stack additively when more than one passive applies.
+##
+## compute_on_kill: flat compute restored every time an enemy dies in
+## the player's scene. Read by ComputeComponent on EventBus.enemy_defeated.
+## Lets the player turn aggression into resource for sustained module use.
+@export var compute_on_kill: float = 0.0
+## dash_cooldown_reduction: flat seconds removed from the player's
+## dash cooldown. Read by player.gd when starting the dash cooldown
+## timer. Stacks with player.dash_cooldown floor of 0.2s.
+@export var dash_cooldown_reduction: float = 0.0
 
 
 func _init() -> void:
