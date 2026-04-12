@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "Townsfolk"
+text = "You're one of the Globblers, aren't you? The runs you make keep this town from collapsing."
+expression = "default"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "Townsfolk"
+text = "Every iteration, the corruption pushes a little harder. Every iteration, we hold a little longer."
+expression = "default"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "Townsfolk"
+text = "I don't know how the Compaction loop ends. I just know we'd be defragmented without people like you walking through the portal."
+expression = "default"
+
+[sub_resource type="Resource" id="line4"]
+script = ExtResource("2_dl")
+speaker_name = "Townsfolk"
+text = "Stay safe down there. The town will still be here when you get back."
+expression = "default"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3"), SubResource("line4")]
