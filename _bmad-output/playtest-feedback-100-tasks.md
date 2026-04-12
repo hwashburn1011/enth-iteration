@@ -56,14 +56,14 @@
 
 ## Phase 5 — ENEMY SCALING: Corrupted Compiler too hard on iter 2 [P1]
 
-40. [ ] **Review boss HP scaling per iteration** — may be too aggressive (current +25%/iter)
-41. [ ] **Review boss damage scaling per iteration** — player may die too fast on iter 2+
-42. [ ] **Reduce HP scaling multiplier from 0.25 to 0.15 per iteration** — gentler curve
-43. [ ] **Reduce damage scaling multiplier from 0.25 to 0.15 per iteration** — less punishing
-44. [ ] **Add iteration-aware boss phase timing** — boss shouldn't speed up attack patterns on iter 2
-45. [ ] **Verify player HP scales with level** — integrity stat should give meaningful HP boost
-46. [ ] **Verify health prompt (Q) restores enough HP** — healing should keep pace with damage
-47. [ ] **Add visual difficulty indicator on dungeon entrance** — "Moderate" / "Hard" / "Very Hard"
+40. [x] **Review boss HP scaling per iteration** — was +25%/iter, now +15%/iter
+41. [x] **Review boss damage scaling per iteration** — was +25%/iter, now +15%/iter
+42. [x] **Reduce HP scaling multiplier from 0.25 to 0.15 per iteration** — gentler curve
+43. [x] **Reduce damage scaling multiplier from 0.25 to 0.15 per iteration** — less punishing
+44. [x] **Add iteration-aware boss phase timing** — already implemented in boss_attack_state.gd (iter-gated pattern rotation)
+45. [x] **Verify player HP scales with level** — integrity * 8.0 HP per point, confirmed in health_component.gd
+46. [x] **Verify health prompt (Q) restores enough HP** — 25 HP restore + Defrag 40+scaling, adequate with reduced damage
+47. [x] **Add visual difficulty indicator on dungeon entrance** — MODERATE/CHALLENGING/HARD/VERY HARD labels
 48. [ ] **Test: can an average player survive iter 2 boss without dying?** — balance check
 49. [ ] **Test: can an average player survive iter 3 boss?** — verify curve isn't exponential
 

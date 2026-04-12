@@ -257,15 +257,21 @@ func _build_iteration_preview_line() -> String:
 		iter = int(im.current_iteration)
 	# Mirror the per-loop scaling constants from enemy_base / level_component
 	# so the displayed numbers stay in sync if those constants ever shift.
-	const HP_MULT_PER_LOOP: float = 0.25
-	const DMG_MULT_PER_LOOP: float = 0.25
-	const XP_MULT_PER_LOOP: float = 0.25
+	const HP_MULT_PER_LOOP: float = 0.15
+	const DMG_MULT_PER_LOOP: float = 0.15
+	const XP_MULT_PER_LOOP: float = 0.15
 	var hp_pct: int = int(round(float(iter - 1) * HP_MULT_PER_LOOP * 100.0))
 	var dmg_pct: int = int(round(float(iter - 1) * DMG_MULT_PER_LOOP * 100.0))
 	var xp_pct: int = int(round(float(iter - 1) * XP_MULT_PER_LOOP * 100.0))
 	if iter <= 1:
-		return "LOOP %d · base difficulty" % iter
-	return "LOOP %d · enemies +%d%% HP · +%d%% DMG · +%d%% XP" % [iter, hp_pct, dmg_pct, xp_pct]
+		return "LOOP %d · MODERATE" % iter
+	# Visual difficulty label so the player knows what they're walking into
+	var difficulty_label: String = "CHALLENGING"
+	if iter >= 5:
+		difficulty_label = "VERY HARD"
+	elif iter >= 3:
+		difficulty_label = "HARD"
+	return "LOOP %d · %s · enemies +%d%% HP · +%d%% DMG · +%d%% XP" % [iter, difficulty_label, hp_pct, dmg_pct, xp_pct]
 
 
 func _on_yes_pressed(canvas: CanvasLayer) -> void:

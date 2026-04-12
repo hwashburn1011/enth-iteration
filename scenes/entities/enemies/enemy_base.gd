@@ -40,15 +40,14 @@ var variant_tier: int = 0  ## 0=normal, 1=elite, 2=champion
 var _elite_aura: GPUParticles3D = null
 
 ## Per-iteration HP multiplier added on top of the per-enemy base.
-## Iteration 1 = 1.0x, iteration 9 = 1 + 8 * 0.25 = 3.0x. Keeps the
-## central compaction conceit mechanically meaningful: each loop the
-## player completes hands them tougher dungeon enemies on the next run.
-const ITERATION_HP_MULT_PER_LOOP: float = 0.25
+## Iteration 1 = 1.0x, iteration 6 = 1 + 5 * 0.15 = 1.75x. Reduced
+## from 0.25 (playtest feedback: boss too hard on iter 2). Gentler
+## curve lets players feel progression without hitting a wall.
+const ITERATION_HP_MULT_PER_LOOP: float = 0.15
 ## Same curve for outgoing damage so harder enemies stay relatively
-## threatening as the player's gear improves. Without this, late-game
-## fights feel flabby — 3x HP enemies still hit for iter-1 damage and
-## the player just face-tanks them down.
-const ITERATION_DAMAGE_MULT_PER_LOOP: float = 0.25
+## threatening as the player's gear improves. Reduced from 0.25 to
+## 0.15 (playtest feedback: player dies too fast on iter 2+).
+const ITERATION_DAMAGE_MULT_PER_LOOP: float = 0.15
 var damage_multiplier: float = 1.0
 ## Captured on the first iteration scaling call so re-scaling stays
 ## idempotent — without this, EnemyPool's pre-instantiated enemies were
