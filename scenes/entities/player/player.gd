@@ -532,8 +532,13 @@ func _grant_passive(node_id: String) -> void:
 	match effect_type:
 		"stat":
 			var key: String = str(node.get("effect_key", ""))
-			if key != "" and stats_component:
-				stats_component.add_passive_bonus(key, amount)
+			if stats_component:
+				if key == "all":
+					# R5 U3: Final Optimization — apply to all 4 stats
+					for stat_key: String in ["processing", "integrity", "bandwidth", "memory"]:
+						stats_component.add_passive_bonus(stat_key, amount)
+				elif key != "":
+					stats_component.add_passive_bonus(key, amount)
 		"crit":
 			var prev: float = float(get_meta(&"passive_crit_bonus", 0.0))
 			set_meta(&"passive_crit_bonus", prev + amount)
@@ -543,6 +548,14 @@ func _grant_passive(node_id: String) -> void:
 		"compute_kill":
 			var prev: float = float(get_meta(&"passive_compute_on_kill", 0.0))
 			set_meta(&"passive_compute_on_kill", prev + amount)
+		"lifesteal":
+			# R5 U1: Heal % of damage dealt
+			var prev: float = float(get_meta(&"passive_lifesteal_pct", 0.0))
+			set_meta(&"passive_lifesteal_pct", prev + amount)
+		"thorns":
+			# R5 U2: Reflect % damage to attackers
+			var prev: float = float(get_meta(&"passive_thorns_pct", 0.0))
+			set_meta(&"passive_thorns_pct", prev + amount)
 		_:
 			push_warning("Player._grant_passive: unknown effect_type '%s'" % effect_type)
 
