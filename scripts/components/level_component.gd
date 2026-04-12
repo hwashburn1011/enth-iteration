@@ -20,6 +20,12 @@ const MAX_LEVEL: int = 60
 const XP_REWARD_GLITCH_BUG: int = 25
 const XP_REWARD_MEMORY_LEAK: int = 40
 const XP_REWARD_ROGUE_PROCESS: int = 60
+## R4 R21: XP rewards for 5 new enemy types
+const XP_REWARD_FIREWALL_GUARDIAN: int = 55
+const XP_REWARD_BUFFER_OVERFLOW: int = 35
+const XP_REWARD_NULL_POINTER: int = 45
+const XP_REWARD_STACK_CRAWLER: int = 70
+const XP_REWARD_SYNTAX_ERROR: int = 40
 const XP_REWARD_DEFAULT: int = 20
 ## XP reward multiplier added per compaction loop past the first. Mirrors
 ## ITERATION_HP_MULT_PER_LOOP on enemy_base so leveling speed stays in
@@ -86,6 +92,16 @@ func _on_enemy_defeated(enemy_type: StringName, pos: Vector3, _loot: Resource) -
 			xp = XP_REWARD_MEMORY_LEAK
 		"rogue_process":
 			xp = XP_REWARD_ROGUE_PROCESS
+		"firewall_guardian":
+			xp = XP_REWARD_FIREWALL_GUARDIAN
+		"buffer_overflow":
+			xp = XP_REWARD_BUFFER_OVERFLOW
+		"null_pointer":
+			xp = XP_REWARD_NULL_POINTER
+		"stack_crawler":
+			xp = XP_REWARD_STACK_CRAWLER
+		"syntax_error":
+			xp = XP_REWARD_SYNTAX_ERROR
 	xp = int(round(float(xp) * _iteration_xp_multiplier()))
 	add_xp(xp)
 	# Spawn XP number at enemy position
