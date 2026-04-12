@@ -149,6 +149,12 @@ func _on_equipment_changed() -> void:
 	# Notify AbilityManager about module changes
 	if _ability_manager and _ability_manager.has_method(&"refresh_abilities"):
 		_ability_manager.refresh_abilities(module_slots)
+	# Task81: Apply equipment set bonuses when gear changes
+	var equipped_ids: Array[String] = []
+	for item: Resource in get_all_equipped_items():
+		if item != null and "item_id" in item:
+			equipped_ids.append(str(item.item_id))
+	SetBonusRuntime.apply_set_bonuses(get_parent(), equipped_ids)
 	equipment_changed.emit()
 
 
