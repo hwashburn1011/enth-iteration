@@ -1,8 +1,8 @@
 class_name BossDatabase
 extends RefCounted
 
-## Static catalog of all 5 new bosses with phase data, attack patterns,
-## arena hooks, and rewards.
+## Static catalog of all 8 bosses with phase data, attack patterns,
+## arena hooks, and rewards. R4 P1-P3 adds iter 6, 7, and 9 bosses.
 
 const BOSSES: Array = [
 	{
@@ -161,6 +161,90 @@ const BOSSES: Array = [
 		],
 	},
 	{
+		## P1: Iteration 6 — DECOMPRESSION biome boss
+		"id": &"void_architect",
+		"name": "The Void Architect",
+		"biome": &"white_void",
+		"iteration_unlock": 6,
+		"arena": &"void_architect_arena",
+		"music": &"boss_music_final",
+		"reward_chest": &"void_architect_chest",
+		"phases": [
+			{
+				"name": "Deconstruction",
+				"hp": 2500,
+				"speed": 3.0,
+				"attacks": [
+					{"id": &"void_beam", "telegraph": 1.5, "damage": 35, "range": 14.0, "cooldown": 5.0},
+					{"id": &"null_zone", "telegraph": 2.0, "damage": 20, "range": 8.0, "cooldown": 7.0, "leaves_hazard": true},
+					{"id": &"data_drain", "telegraph": 1.0, "damage": 15, "range": 6.0, "cooldown": 4.0, "self_heal": true},
+				],
+			},
+			{
+				"name": "Erasure",
+				"hp": 3500,
+				"speed": 4.0,
+				"attacks": [
+					{"id": &"cascade_delete", "telegraph": 2.0, "damage": 60, "range": 999.0, "cooldown": 12.0},
+					{"id": &"void_slam", "telegraph": 0.8, "damage": 45, "range": 5.0, "cooldown": 3.5},
+					{"id": &"erase_floor", "telegraph": 3.0, "damage": 0, "range": 0.0, "cooldown": 20.0},
+				],
+			},
+			{
+				"name": "White Out",
+				"hp": 4000,
+				"speed": 5.0,
+				"aura_dps": 8.0,
+				"attacks": [
+					{"id": &"total_erasure", "telegraph": 4.0, "damage": 120, "range": 999.0, "cooldown": 25.0, "interruptible": true},
+					{"id": &"void_beam", "telegraph": 0.6, "damage": 50, "range": 14.0, "cooldown": 3.0},
+				],
+			},
+		],
+	},
+	{
+		## P2: Iteration 7 — FRAGMENTATION biome boss with clone mechanics
+		"id": &"mosaic_hydra",
+		"name": "Mosaic Hydra",
+		"biome": &"glitch_mosaic",
+		"iteration_unlock": 7,
+		"arena": &"mosaic_hydra_arena",
+		"music": &"boss_music_mosaic",
+		"reward_chest": &"mosaic_hydra_chest",
+		"phases": [
+			{
+				"name": "Whole",
+				"hp": 3000,
+				"speed": 3.5,
+				"attacks": [
+					{"id": &"fragment_spray", "telegraph": 1.0, "damage": 18, "range": 10.0, "cooldown": 4.0},
+					{"id": &"head_slam", "telegraph": 1.2, "damage": 40, "range": 5.0, "cooldown": 5.0},
+					{"id": &"glitch_breath", "telegraph": 1.5, "damage": 30, "range": 8.0, "cooldown": 6.0},
+				],
+			},
+			{
+				"name": "Fragmented",
+				"hp": 2000,
+				"spawns_clones": 2,
+				"clone_hp": 1500,
+				"attacks": [
+					{"id": &"split_charge", "telegraph": 0.8, "damage": 35, "range": 6.0, "cooldown": 4.0},
+					{"id": &"mosaic_rain", "telegraph": 2.0, "damage": 15, "range": 999.0, "cooldown": 8.0},
+				],
+			},
+			{
+				"name": "Reassembled",
+				"hp": 5000,
+				"speed": 5.0,
+				"attacks": [
+					{"id": &"mosaic_storm", "telegraph": 3.0, "damage": 90, "range": 999.0, "cooldown": 15.0},
+					{"id": &"head_slam", "telegraph": 0.6, "damage": 55, "range": 5.0, "cooldown": 3.0},
+					{"id": &"kaleidoscope", "telegraph": 2.0, "damage": 40, "range": 12.0, "cooldown": 8.0},
+				],
+			},
+		],
+	},
+	{
 		"id": &"compiler_reborn",
 		"name": "The Compiler Reborn",
 		"biome": &"final_vault",
@@ -207,6 +291,52 @@ const BOSSES: Array = [
 					{"id": &"users_verdict",  "telegraph": 3.0, "damage": 100, "range": 999.0, "cooldown": 20.0},
 					{"id": &"avatar_strike",  "telegraph": 1.5, "damage": 60,  "range": 999.0, "cooldown": 8.0},
 					{"id": &"iteration_reset","telegraph": 5.0, "damage": 999, "range": 999.0, "cooldown": 999.0, "trigger_hp_pct": 0.10, "interruptible": true},
+				],
+			},
+		],
+	},
+	{
+		## P3: Iteration 9 — ORIGIN final boss, multi-phase transcendence
+		"id": &"origin_singularity",
+		"name": "The Origin Singularity",
+		"biome": &"pure_white",
+		"iteration_unlock": 9,
+		"arena": &"origin_singularity_arena",
+		"music": &"boss_music_origin",
+		"reward_chest": &"origin_chest",
+		"phases": [
+			{
+				"name": "Genesis",
+				"hp": 6000,
+				"speed": 4.0,
+				"attacks": [
+					{"id": &"origin_pulse", "telegraph": 1.5, "damage": 40, "range": 999.0, "cooldown": 8.0},
+					{"id": &"data_lance", "telegraph": 1.0, "damage": 50, "range": 16.0, "cooldown": 5.0},
+					{"id": &"create_barrier", "telegraph": 0.5, "damage": 0, "range": 0.0, "cooldown": 12.0},
+				],
+			},
+			{
+				"name": "Convergence",
+				"hp": 8000,
+				"speed": 5.0,
+				"spawns_clones": 2,
+				"clone_hp": 3000,
+				"attacks": [
+					{"id": &"singularity_pull", "telegraph": 2.0, "damage": 30, "range": 999.0, "cooldown": 10.0},
+					{"id": &"data_lance", "telegraph": 0.6, "damage": 60, "range": 16.0, "cooldown": 4.0},
+					{"id": &"rewrite_reality", "telegraph": 3.0, "damage": 0, "range": 0.0, "cooldown": 20.0},
+				],
+			},
+			{
+				"name": "Transcendence",
+				"hp": 10000,
+				"speed": 6.0,
+				"aura_dps": 10.0,
+				"attacks": [
+					{"id": &"final_decompression", "telegraph": 5.0, "damage": 200, "range": 999.0, "cooldown": 30.0, "interruptible": true},
+					{"id": &"origin_pulse", "telegraph": 0.8, "damage": 60, "range": 999.0, "cooldown": 5.0},
+					{"id": &"data_lance", "telegraph": 0.4, "damage": 75, "range": 16.0, "cooldown": 3.0},
+					{"id": &"singularity_collapse", "telegraph": 0.0, "damage": 999, "range": 999.0, "cooldown": 999.0, "trigger_hp_pct": 0.05, "interruptible": true},
 				],
 			},
 		],
