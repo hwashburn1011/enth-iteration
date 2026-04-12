@@ -61,6 +61,9 @@ func _run_all() -> void:
 	_test("passive_node_count_24", _test_passive_node_count)
 	_test("level_cap_60", _test_level_cap)
 	_test("achievement_count_20", _test_achievement_count)
+	_test("gold_drop_iter9_scaling", _test_gold_drop_iter9)
+	_test("revelation_fragments_7_8_9", _test_revelations_late)
+	_test("save_version_header", _test_save_version)
 
 
 func _test(check_name: String, fn: Callable) -> void:
@@ -277,5 +280,38 @@ func _test_level_cap() -> bool:
 func _test_achievement_count() -> bool:
 	if AchievementSystem.ACHIEVEMENTS.size() != 20:
 		_failure_msg = "AchievementSystem has %d achievements, expected 20" % AchievementSystem.ACHIEVEMENTS.size()
+		return false
+	return true
+
+
+## AM33: Verify gold drop scaling at iteration 9 returns 4.2x.
+func _test_gold_drop_iter9() -> bool:
+	var lib: Script = load("res://scripts/systems/gold_drops.gd") as Script
+	if lib == null:
+		_failure_msg = "gold_drops.gd failed to load"
+		return false
+	var mult_array: Array = lib.get(&"ITER_MULT") as Array
+	if mult_array.size() < 9:
+		_failure_msg = "ITER_MULT has %d entries, expected >= 9" % mult_array.size()
+		return false
+	if absf(float(mult_array[8]) - 4.2) > 0.01:
+		_failure_msg = "ITER_MULT[8] is %.2f, expected 4.2" % float(mult_array[8])
+		return false
+	return true
+
+
+## AM36: Verify revelation fragments exist for iterations 7, 8, 9.
+func _test_revelations_late() -> bool:
+	for iter: int in [7, 8, 9]:
+		if not RevelationMoments.has_revelation(iter):
+			_failure_msg = "RevelationMoments.has_revelation(%d) returned false" % iter
+			return false
+	return true
+
+
+## AM: Verify save version header constant exists.
+func _test_save_version() -> bool:
+	if SaveHardening.SAVE_VERSION < 8:
+		_failure_msg = "SaveHardening.SAVE_VERSION is %d, expected >= 8" % SaveHardening.SAVE_VERSION
 		return false
 	return true
