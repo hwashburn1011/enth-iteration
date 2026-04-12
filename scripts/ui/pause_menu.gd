@@ -136,8 +136,8 @@ func _quit_to_menu() -> void:
 
 
 func _quit() -> void:
-	SaveManager.save_game()
-	get_tree().quit()
+	# Task75: Show confirmation dialog before quitting
+	ReleaseUI.show_quit_dialog(self)
 
 
 ## Task71: Open statistics panel showing play stats.
