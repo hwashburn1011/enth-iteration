@@ -60,12 +60,24 @@ static func calculate(info: Resource) -> Resource:
 		if camera and camera.has_method(&"shake"):
 			var shake_amount: float = 0.08 if not info.is_critical else 0.2
 			camera.shake(shake_amount)
-		# Brief hitstop on critical hits for impact
+		# Post-V1 C28: enhanced crit VFX — longer hitstop + screen flash
 		if info.is_critical:
-			Engine.time_scale = 0.2
-			target_3d.get_tree().create_timer(0.04, true, false, true).timeout.connect(func() -> void:
+			Engine.time_scale = 0.1  # Was 0.2 — deeper freeze for impact
+			target_3d.get_tree().create_timer(0.06, true, false, true).timeout.connect(func() -> void:
 				Engine.time_scale = 1.0
 			)
+			# White screen flash on crit
+			var flash: ColorRect = ColorRect.new()
+			flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+			flash.color = Color(1, 1, 1, 0.25)
+			flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var flash_canvas: CanvasLayer = CanvasLayer.new()
+			flash_canvas.layer = 80
+			flash_canvas.add_child(flash)
+			target_3d.get_tree().root.add_child(flash_canvas)
+			var flash_tween: Tween = flash.create_tween()
+			flash_tween.tween_property(flash, "color:a", 0.0, 0.15)
+			flash_tween.tween_callback(flash_canvas.queue_free)
 
 	return info
 
