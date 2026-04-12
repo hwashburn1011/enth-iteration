@@ -88,12 +88,22 @@ func _ready() -> void:
 	_update_town_state()
 	print("[town] _add_ambient_particles()")
 	_add_ambient_particles()
-	# R6 epic-1: build East Plaza district expansion (data market)
-	# This call chains into Districts 2-9 sequentially. The last `print` you see
-	# in the Output before a crash will tell you which step failed.
-	print("[town] _build_east_plaza() — chains into D2..D9")
-	_build_east_plaza()
-	print("[town] districts done")
+	# V1 demo scope: skip the 9-district + Town Heart procedural build
+	# entirely. The base Town.tscn already has the spawn marker, dungeon
+	# entrance, portal return point, and the AI Sage NPC slot — that's
+	# enough for the V1 vertical slice. Save shrine, vendor, and training
+	# dummy will be re-added as plain scene instances in a follow-up
+	# (Phase 2 #18 explicit save shrine + Phase 3 #30 vendor with stock).
+	# Toggle: project setting `application/v1_demo_minimal_town`. Default
+	# true so V1 development just works; flip to false to see the full
+	# 9-district build for post-V1 work or screenshots.
+	# See _bmad-output/v1-demo-backlog.md Phase 1 #8.
+	if not ProjectSettings.get_setting("application/v1_demo_minimal_town", true):
+		print("[town] _build_east_plaza() — chains into D2..D9")
+		_build_east_plaza()
+		print("[town] districts done")
+	else:
+		print("[town] V1 minimal hub — skipping district + TownHeart build")
 	# R5 round-30: clamp baked-GLB hot emissions (lantern flames at 80.0)
 	# down to a HDR-safe value to prevent bloom blowout. Discovered via the
 	# round-30 emission survey across all 3 main scenes.
