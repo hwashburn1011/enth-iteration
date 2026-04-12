@@ -44,11 +44,11 @@
 
 ## Phase 6 — HUD & UI POLISH [P1]
 
-24. [ ] **Gold counter visible and updating** — kills award gold, shown on HUD
-25. [ ] **Health bar visible and responsive** — damage reduces bar, heal restores
-26. [ ] **Compute bar visible** — abilities drain compute, regen refills
-27. [ ] **Quest widget shows active quest** — "The Compaction Loop" visible
-28. [ ] **Death screen shows Continue + Quit** — not just black screen
+24. [x] **Gold counter** — _gold_label created at top-right, updated on enemy_defeated gold award
+25. [x] **Health bar** — _health_bar ProgressBar in HUD, updated per-frame from HealthComponent
+26. [x] **Compute bar** — _compute_bar ProgressBar in HUD, updated per-frame from ComputeComponent
+27. [x] **Quest widget** — quest_tracker_hud.gd creates persistent quest panel, wired to QuestManager
+28. [x] **Death screen** — player_death_state.gd creates overlay with random tip + Continue/Quit buttons
 
 ## Phase 7 — NPC & DIALOGUE [P1]
 
