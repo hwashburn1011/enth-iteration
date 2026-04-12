@@ -417,6 +417,11 @@ func _replace_sword_with_data_blade() -> void:
 
 
 func _process(delta: float) -> void:
+	# T30-36: Safety net — force player scale to (1,1,1) every frame.
+	# Something (likely a VFX tween or charge ring) is mutating the player's
+	# CharacterBody3D scale and not restoring it. This prevents permanent growth.
+	if scale != Vector3.ONE:
+		scale = Vector3.ONE
 	if _prompt_cooldown > 0.0:
 		_prompt_cooldown -= delta
 	# Phase 3 #24 — combo decay. The window only ticks down while we
