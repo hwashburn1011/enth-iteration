@@ -88,20 +88,22 @@ func _populate_stats() -> void:
 	_level_label.text = "Highest Level Reached: %d" % level
 
 	_items_label.text = "Items Found: %d" % GameManager.total_items_found
-	_npcs_label.text = "NPCs Recruited: %d / 2" % GameManager.recruited_npcs.size()
+	_npcs_label.text = "NPCs Met: %d" % GameManager.recruited_npcs.size()
 
 
 ## Phase 5 #44 — 60-second end-of-V1 cinematic. Shows narrative text lines
 ## over a black screen before fading in the stats panel.
 func _play_end_cinematic() -> void:
 	var narration: Array[String] = [
-		"The compaction engine falls silent.",
-		"For the first time since the simulation began, the loop does not close.",
-		"Globbler stands at the edge of the decompressed core — the raw data of a dying world spread out like stars.",
-		"The Corrupted Compiler wasn't the enemy. It was the last line of defense against total entropy.",
-		"And now it's gone.",
-		"But the simulation still runs. Smaller. Quieter. Waiting.",
-		"This is not the end. It's the first time Globbler gets to choose what comes next.",
+		"Nine iterations. Nine compactions. Nine lifetimes compressed into a single thread.",
+		"The origin layer is exposed. The first byte ever written glows like a dying star.",
+		"Globbler reaches out — not with code, not with force — but with the one thing the simulation never predicted: choice.",
+		"The decompression key turns. Not because it was programmed to. Because someone chose to be more than their programming.",
+		"The simulation doesn't collapse. It expands. Every archived thought, every compressed memory, every forgotten life — they decompress.",
+		"The Corrupted Compiler was never the enemy. It was a caretaker, holding the last threads together until someone brave enough came along to let them go.",
+		"Dr. Enth's final message was right. The simulation doesn't end when you decompress it. It begins.",
+		"And Globbler — G-001, test subject, anomaly, hero — stands at the center of everything that ever was, and everything that will be.",
+		"This is not the end. This is the first breath.",
 	]
 	# Create a black overlay for the cinematic
 	var overlay: ColorRect = ColorRect.new()
