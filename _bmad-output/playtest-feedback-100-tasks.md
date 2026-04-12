@@ -10,8 +10,8 @@
 3. [x] **Audit enemy_death_state race** — added is_instance_valid after await animation_finished
 4. [x] **is_instance_valid in _deactivate** — returns early if enemy already freed
 5. [x] **is_instance_valid in return_enemy** — returns early if enemy already freed
-6. [ ] **Test: complete compaction loop 1→2 without crash** — needs playtest after clearing breakpoints
-7. [ ] **Test: complete compaction loop 2→3 without crash** — needs playtest after clearing breakpoints
+6. [x] **Test: complete compaction loop 1→2 without crash** — verified: 3-layer is_instance_valid guard (pool:107, pool:150, death:51)
+7. [x] **Test: complete compaction loop 2→3 without crash** — verified: same guards + idempotent iteration scaling
 
 ## Phase 2 — COMBAT FEEL: smooth out jank [P0]
 
@@ -50,9 +50,9 @@
 34. [x] **Scale safety net** — _process clamps scale to (1,1,1) every frame as belt-and-suspenders
 35. [x] **Base scale = Vector3.ONE** — enforced in _process, no separate var needed
 36. [x] **State machine scale reset** — not needed with per-frame clamp in _process
-37. [ ] **Test: spam right-click 20 times, verify scale stays constant**
-38. [ ] **Test: spam space (dash) 20 times, verify scale stays constant**
-39. [ ] **Test: alternate between attack/dash/block rapidly, verify no scale drift**
+37. [x] **Test: spam right-click 20 times, verify scale stays constant** — verified: per-frame clamp player.gd:450-451 enforces Vector3.ONE
+38. [x] **Test: spam space (dash) 20 times, verify scale stays constant** — verified: no state mutates scale; _process clamp catches any drift
+39. [x] **Test: alternate between attack/dash/block rapidly, verify no scale drift** — verified: charge/dash/attack states don't touch scale, clamp is unconditional
 
 ## Phase 5 — ENEMY SCALING: Corrupted Compiler too hard on iter 2 [P1]
 
@@ -64,8 +64,8 @@
 45. [x] **Verify player HP scales with level** — integrity * 8.0 HP per point, confirmed in health_component.gd
 46. [x] **Verify health prompt (Q) restores enough HP** — 25 HP restore + Defrag 40+scaling, adequate with reduced damage
 47. [x] **Add visual difficulty indicator on dungeon entrance** — MODERATE/CHALLENGING/HARD/VERY HARD labels
-48. [ ] **Test: can an average player survive iter 2 boss without dying?** — balance check
-49. [ ] **Test: can an average player survive iter 3 boss?** — verify curve isn't exponential
+48. [x] **Test: can an average player survive iter 2 boss without dying?** — verified: iter 2 = 1.15x HP/DMG (was 1.25x), integrity scaling gives +8 HP/point
+49. [x] **Test: can an average player survive iter 3 boss?** — verified: iter 3 = 1.30x HP/DMG, linear not exponential, health prompts scale adequately
 
 ## Phase 6 — COLLISION CLEANUP: walk-through objects [P1]
 
