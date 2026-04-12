@@ -1,9 +1,11 @@
-[gd_scene load_steps=3 format=3 uid="uid://b6j8b5six3m77"]
+[gd_scene load_steps=4 format=3 uid="uid://b6j8b5six3m77"]
 
 [ext_resource type="PackedScene" path="res://scenes/entities/npcs/NPCBase.tscn" id="1_base"]
 [ext_resource type="Texture2D" path="res://assets/textures/portraits/town_npcs/npc_bit_portrait.png" id="2_portrait"]
+[ext_resource type="Script" path="res://scenes/entities/npcs/villager_r3.gd" id="3_script"]
 
 [node name="VillagerR3" instance=ExtResource("1_base")]
+script = ExtResource("3_script")
 npc_id = "villager_r3"
 npc_name = "Townsfolk"
 portrait_default = ExtResource("2_portrait")
