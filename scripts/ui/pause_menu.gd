@@ -88,6 +88,20 @@ func _build_ui() -> void:
 	_style_pause_button(controls_btn)
 	vbox.add_child(controls_btn)
 
+	# Task71: Statistics button
+	var stats_btn: Button = Button.new()
+	stats_btn.text = "Statistics"
+	stats_btn.pressed.connect(_open_statistics)
+	_style_pause_button(stats_btn)
+	vbox.add_child(stats_btn)
+
+	# Task72: Skill Tree button
+	var tree_btn: Button = Button.new()
+	tree_btn.text = "Skill Tree"
+	tree_btn.pressed.connect(_open_skill_tree)
+	_style_pause_button(tree_btn)
+	vbox.add_child(tree_btn)
+
 	var menu_btn: Button = Button.new()
 	menu_btn.text = "Quit to Main Menu"
 	menu_btn.pressed.connect(_quit_to_menu)
@@ -124,6 +138,45 @@ func _quit_to_menu() -> void:
 func _quit() -> void:
 	SaveManager.save_game()
 	get_tree().quit()
+
+
+## Task71: Open statistics panel showing play stats.
+func _open_statistics() -> void:
+	var panel: Control = Control.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+	var bg: ColorRect = ColorRect.new()
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.color = Color(0.02, 0.02, 0.06, 0.95)
+	bg.mouse_filter = Control.MOUSE_FILTER_STOP
+	panel.add_child(bg)
+	var title: Label = Label.new()
+	title.text = "STATISTICS"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	title.offset_top = 30
+	title.offset_bottom = 60
+	title.add_theme_font_size_override(&"font_size", 24)
+	title.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	panel.add_child(title)
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_CENTER)
+	vbox.offset_left = -200
+	vbox.offset_right = 200
+	vbox.offset_top = -80
+	vbox.offset_bottom = 80
+	panel.add_child(vbox)
+	HudWidgets.populate_stats_panel(vbox)
+	var close_btn: Button = Button.new()
+	close_btn.text = "Close"
+	close_btn.pressed.connect(panel.queue_free)
+	vbox.add_child(close_btn)
+	add_child(panel)
+
+
+## Task72: Open skill tree panel.
+func _open_skill_tree() -> void:
+	var panel: Control = SkillTreePanel.new()
+	get_tree().root.add_child(panel)
 
 
 func _toggle_settings() -> void:
