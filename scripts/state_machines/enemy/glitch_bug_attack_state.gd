@@ -31,7 +31,7 @@ func enter() -> void:
 			enemy.model.rotation.y = atan2(_lunge_dir.x, _lunge_dir.z)
 
 	enemy.velocity = Vector3.ZERO
-	enemy.hitbox_component.set_meta(&"base_damage", base_damage)
+	enemy.hitbox_component.set_meta(&"base_damage", enemy.scaled_attack_damage(base_damage))
 	enemy.hitbox_component.set_meta(&"damage_type", &"physical")
 
 	# Start telegraph — red flash

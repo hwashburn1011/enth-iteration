@@ -38,6 +38,12 @@ var _elite_aura: GPUParticles3D = null
 ## central compaction conceit mechanically meaningful: each loop the
 ## player completes hands them tougher dungeon enemies on the next run.
 const ITERATION_HP_MULT_PER_LOOP: float = 0.25
+## Same curve for outgoing damage so harder enemies stay relatively
+## threatening as the player's gear improves. Without this, late-game
+## fights feel flabby — 3x HP enemies still hit for iter-1 damage and
+## the player just face-tanks them down.
+const ITERATION_DAMAGE_MULT_PER_LOOP: float = 0.25
+var damage_multiplier: float = 1.0
 
 
 func _ready() -> void:
@@ -82,14 +88,25 @@ func _apply_iteration_scaling() -> void:
 		iter = int(im.current_iteration)
 	if iter <= 1:
 		return
-	var mult: float = 1.0 + float(iter - 1) * ITERATION_HP_MULT_PER_LOOP
+	var hp_mult: float = 1.0 + float(iter - 1) * ITERATION_HP_MULT_PER_LOOP
 	# Write to base_max_health (canonical) and mirror to max_health so
 	# the value sticks even if some future stats_changed call recalculates
 	# from the base. Pattern matches T7's enemy stat scaling audit.
 	if &"base_max_health" in health_component:
-		health_component.base_max_health *= mult
-	health_component.max_health *= mult
+		health_component.base_max_health *= hp_mult
+	health_component.max_health *= hp_mult
 	health_component.current_health = health_component.max_health
+	# Damage multiplier is read by attack states via scaled_attack_damage()
+	# at the moment they seed the hitbox base_damage meta. Storing it as a
+	# field avoids touching every attack state's _init/enter to recalc.
+	damage_multiplier = 1.0 + float(iter - 1) * ITERATION_DAMAGE_MULT_PER_LOOP
+
+
+func scaled_attack_damage(base: float) -> float:
+	## Helper used by attack states to apply iteration damage scaling.
+	## Centralised here so the four attack-state subclasses don't have to
+	## each duplicate the multiplier read.
+	return base * damage_multiplier
 
 
 func _on_detection_body_entered(body: Node3D) -> void:

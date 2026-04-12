@@ -49,7 +49,7 @@ func enter() -> void:
 
 func _do_compile_error(boss: CharacterBody3D) -> void:
 	# Telegraph
-	boss.hitbox_component.set_meta(&"base_damage", COMPILE_ERROR_DAMAGE)
+	boss.hitbox_component.set_meta(&"base_damage", boss.scaled_attack_damage(COMPILE_ERROR_DAMAGE))
 	boss.hitbox_component.set_meta(&"damage_type", &"physical")
 
 	# Apply status in later phases
@@ -105,7 +105,7 @@ func _do_memory_overflow(boss: CharacterBody3D) -> void:
 		var dir: Vector3 = base_dir.rotated(Vector3.UP, angle_offset)
 		var projectile: Node = load("res://scenes/entities/enemies/memory_leak/leak_projectile.gd").new()
 		projectile.source_node = boss
-		projectile.base_damage = 15.0
+		projectile.base_damage = boss.scaled_attack_damage(15.0)
 		projectile.direction = dir
 		# Collision shape
 		var shape: CollisionShape3D = CollisionShape3D.new()
@@ -152,7 +152,7 @@ func _do_stack_overflow(boss: CharacterBody3D) -> void:
 	if nodes.size() > 0:
 		var p: CharacterBody3D = nodes[0] as CharacterBody3D
 		if p.global_position.distance_to(safe_corner) > 4.0:
-			p.health_component.take_damage(STACK_OVERFLOW_DAMAGE)
+			p.health_component.take_damage(boss.scaled_attack_damage(STACK_OVERFLOW_DAMAGE))
 			if p.has_meta(&"damage_source_position") == false:
 				p.set_meta(&"damage_source_position", boss.global_position)
 			var hurt: Node = p.state_machine.get_node_or_null("HurtState") as Node

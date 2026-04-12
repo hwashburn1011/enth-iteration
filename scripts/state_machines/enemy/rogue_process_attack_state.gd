@@ -105,7 +105,7 @@ func _process_dash_strike(enemy: CharacterBody3D, _delta: float) -> void:
 	if action_time < 0.1 and not _hitbox_enabled:
 		# Dash teleport
 		enemy.global_position += _attack_dir * DASH_DISTANCE
-		enemy.hitbox_component.set_meta(&"base_damage", DASH_DAMAGE)
+		enemy.hitbox_component.set_meta(&"base_damage", enemy.scaled_attack_damage(DASH_DAMAGE))
 		enemy.hitbox_component.activate()
 		_hitbox_enabled = true
 
@@ -125,7 +125,7 @@ func _process_flurry(enemy: CharacterBody3D, _delta: float) -> void:
 	if _strike_count < FLURRY_STRIKES and _timer >= _next_strike_time:
 		_strike_count += 1
 		_next_strike_time = _timer + FLURRY_STRIKE_INTERVAL
-		enemy.hitbox_component.set_meta(&"base_damage", FLURRY_DAMAGE)
+		enemy.hitbox_component.set_meta(&"base_damage", enemy.scaled_attack_damage(FLURRY_DAMAGE))
 		enemy.hitbox_component.activate()
 		# Brief hitbox window
 		await enemy.get_tree().create_timer(0.1).timeout
