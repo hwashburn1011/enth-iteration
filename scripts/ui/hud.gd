@@ -49,6 +49,12 @@ func _ready() -> void:
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
 	EventBus.enemy_defeated.connect(_on_enemy_killed_streak)
 	EventBus.scene_changed.connect(_refresh_iteration_chip)
+	# game_loaded fires AFTER IterationManager.from_save_data restores the
+	# iteration value, so the chip needs to re-read on load. Without this
+	# the chip shows the pre-load iteration whenever the player loads a save
+	# without triggering a scene change. Also makes game_loaded a real
+	# listener instead of a dead signal.
+	EventBus.game_loaded.connect(_refresh_iteration_chip_no_arg)
 	EventBus.affinity_changed.connect(_on_affinity_changed)
 	_create_room_indicator()
 	_create_iteration_chip()
@@ -385,6 +391,13 @@ func _create_iteration_chip() -> void:
 		var im: Node = get_node("/root/IterationManager")
 		if im.has_signal(&"iteration_advanced") and not im.iteration_advanced.is_connected(_on_iteration_advanced):
 			im.iteration_advanced.connect(_on_iteration_advanced)
+
+
+func _refresh_iteration_chip_no_arg() -> void:
+	## Adapter for zero-arg signals (game_loaded). Godot 4 signal bindings
+	## require arity match, so we can't connect game_loaded directly to
+	## _refresh_iteration_chip's String-arg signature.
+	_refresh_iteration_chip()
 
 
 func _refresh_iteration_chip(_path: String = "") -> void:
