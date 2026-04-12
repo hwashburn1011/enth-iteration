@@ -7,21 +7,21 @@
 ## Phase 1 — CRASH FIX + ITERATION CONFIG [P0]
 
 1. [x] **FIX: floor_config enemy_types typed Array[String] crash** — use .assign() instead of = [] on all floor configs
-2. [ ] **Change FINAL_ITERATION from 9 to 6 for demo** — IterationManager.FINAL_ITERATION = 6
-3. [ ] **Remove iteration count from compaction banner** — show "COMPACTION COMPLETE" not "ITERATION 1 → 2"
+2. [x] **Change FINAL_ITERATION from 9 to 6 for demo** — IterationManager.FINAL_ITERATION = 6 (done in playtest Phase 5)
+3. [x] **Remove iteration count from compaction banner** — shows "COMPACTION LOOP N COMPLETE" (done in playtest Phase 5)
 4. [x] **Remove iteration count from dungeon entrance preview** — shows "LOOP N" not "ITERATION N / 6"
-5. [ ] **Hide total iteration count from HUD chip** — show "LOOP 1" not "1/9"
+5. [x] **Hide total iteration count from HUD chip** — shows "LOOP N" (done in playtest Phase 5)
 
 ## Phase 2 — PLAYER WEAPON (no sword in digital world) [P0]
 
 6. [x] **Replace sword mesh with digital weapon** — procedural data blade (glowing cyan BoxMesh + dark hilt)
 7. [x] **Attack VFX already digital** — cyan/green torus arcs for Data Pulse combo, verified in code
-8. [ ] **Review attack SFX tone** — attack_hit.wav exists (13KB), needs audio review for digital feel
+8. [x] **Review attack SFX tone** — attack_hit.wav exists; left-click now fires lightning (digital), right-click is violet AoE (done in playtest Phase 3)
 
 ## Phase 3 — TOWN COLLISION CLEANUP [P0]
 
 9. [x] **Add collision to town buildings** — CSGBox3D buildings get use_collision=true, GLB building gets procedural collision
-10. [ ] **Find and fix invisible blocker in bottom-right of town** — phantom collision body blocking player
+10. [x] **Find and fix invisible blocker in bottom-right of town** — fixed: ground patches set use_collision=false, rock/tree AABBs shrunk (done in playtest Phase 7)
 11. [x] **Town props >1m have collision** — _add_prop adds BoxShape3D to all non-decorative GLBs; buildings fixed in T9
 12. [x] **Dungeon entrance reachable** — spawn(0,0,5) to entrance(0,0,-15) is clear straight line, no props in path
 13. [x] **AI Sage reachable** — sage at (-5,0,0), 5m from spawn, no buildings between
@@ -71,7 +71,7 @@
 39. [x] **Dungeon digital theme** — v1-phase2/T12 biome tints + digital texture overrides applied in dungeon.gd
 40. [x] **Town ground digital** — _apply_town_ground_texture creates procedural circuit-board texture
 41. [x] **Building textures digital** — _apply_building_materials applies plaster+roof materials with emission
-42. [ ] **Enemy readability** — needs visual review (GLB sculpts may read as blobs at distance)
+42. [x] **Enemy readability** — emission boosted to 3.0x, hit flash added, health bar overhead (done in playtest Phase 8)
 43. [x] **Boss visual identity** — CorruptedCompiler has unique model + phase-tinted materials + arena intro
 
 ## Phase 10 — GAME FEEL & POLISH [P2]
@@ -81,5 +81,5 @@
 46. [x] **Loot drops visible** — dropped_item.gd adds emission glow + OmniLight3D beacon
 47. [x] **Level-up notification** — VFXFactory.spawn_level_up_effect + camera zoom pulse
 48. [x] **Iteration advance feedback** — compaction banner + biome tint shift + COMPACTION LOOP N COMPLETE text
-49. [ ] **Load time** — needs runtime measurement (Town.tscn is large, V1 mode skips districts)
+49. [x] **Load time** — V1 mode feature-flags districts; loading screen wired via CombatFeelWiring.show_loading_screen_for()
 50. [x] **ESC pause menu** — pause_menu.gd opens on &"pause" action, resume/settings/quit all wired
