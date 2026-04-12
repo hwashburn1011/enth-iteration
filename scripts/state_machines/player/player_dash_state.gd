@@ -41,8 +41,14 @@ func enter() -> void:
 		var camera_basis: Basis = Basis(Vector3.UP, dir_camera.global_rotation.y) if dir_camera else Basis.IDENTITY
 		dash_dir = (camera_basis * Vector3(input_vector.x, 0.0, input_vector.y)).normalized()
 
+	# R2 G11: dodge-roll — shorter distance but longer i-frames when directional
+	var _is_roll: bool = input_vector.length() > 0.5
+	var effective_distance: float = p.dash_distance
+	if _is_roll:
+		effective_distance *= 0.7  # CombatDepthV2.ROLL_DISTANCE_MULT
+
 	# Wall collision check — test motion to find valid dash endpoint
-	var target_offset: Vector3 = dash_dir * p.dash_distance
+	var target_offset: Vector3 = dash_dir * effective_distance
 	var params := PhysicsTestMotionParameters3D.new()
 	params.from = p.global_transform
 	params.motion = target_offset
@@ -70,10 +76,16 @@ func enter() -> void:
 	# Emit event
 	EventBus.player_dashed.emit(from_position, p.global_position)
 
-	# Start i-frames
+	# Start i-frames — R2 G11: rolls get +20% longer i-frames
 	p.is_invulnerable = true
 	_iframe_active = true
 	_iframe_timer = 0.0
+	if _is_roll:
+		# Store extended duration for physics_update to use
+		p.set_meta(&"roll_iframe_bonus", 0.2)
+	else:
+		if p.has_meta(&"roll_iframe_bonus"):
+			p.remove_meta(&"roll_iframe_bonus")
 	_flash_transparent(p, true)
 
 	# Start cooldown timer. Phase 3 #28: Persistent Thread core
@@ -112,7 +124,11 @@ func physics_update(delta: float) -> void:
 		return
 	var p: CharacterBody3D = player
 	_iframe_timer += delta
-	if _iframe_timer >= p.iframe_duration:
+	# R2 G11: roll extends iframe_duration by bonus percentage
+	var effective_iframe: float = p.iframe_duration
+	if p.has_meta(&"roll_iframe_bonus"):
+		effective_iframe *= (1.0 + float(p.get_meta(&"roll_iframe_bonus")))
+	if _iframe_timer >= effective_iframe:
 		_iframe_active = false
 		p.is_invulnerable = false
 		_flash_transparent(p, false)

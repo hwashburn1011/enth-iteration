@@ -40,6 +40,10 @@ static func calculate(info: Resource) -> Resource:
 	crit_chance += _get_core_crit_bonus(info.source)
 	# Phase 3 #26 — passive crit bonus from skill tree nodes.
 	crit_chance += _get_passive_crit_bonus(info.source)
+	# R2 G15: parry riposte — guaranteed crit if source just parried
+	if info.source and info.source.has_meta(&"parry_riposte_active"):
+		crit_chance = 100.0
+		info.source.remove_meta(&"parry_riposte_active")
 	if randf() * 100.0 < crit_chance:
 		damage *= CRIT_MULTIPLIER
 		info.is_critical = true
