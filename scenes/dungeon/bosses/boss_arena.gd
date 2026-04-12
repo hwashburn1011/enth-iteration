@@ -10,6 +10,10 @@ func _ready() -> void:
 	is_cleared = false
 	super._ready()
 	EventBus.boss_defeated.connect(_on_boss_defeated)
+	# Boss music — falls back gracefully to whatever track is currently
+	# playing if the boss_music asset isn't authored yet (audio_manager
+	# warns and keeps the current track per T54).
+	AudioManager.play_music("boss_music")
 	# R5 round-7: BossArena.tscn ships with PillarR3_1..4 GLB instances and a
 	# TreasurePileR5 prop, all wearing the placeholder white R3 baked albedo.
 	# Apply digital theme overrides so they fit the cyan/violet cyber theme.

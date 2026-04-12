@@ -53,6 +53,7 @@ func _ready() -> void:
 	EventBus.player_dashed.connect(_on_player_dashed)
 	EventBus.item_collected.connect(_on_item_collected)
 	EventBus.player_died.connect(_on_player_died)
+	EventBus.player_leveled_up.connect(_on_player_leveled_up)
 	EventBus.portal_used.connect(_on_portal_used)
 	EventBus.scene_changed.connect(_on_scene_changed)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended_audio)
@@ -82,12 +83,17 @@ func _process(_delta: float) -> void:
 func play_music(track_name: String, fade_duration: float = 1.0) -> void:
 	if track_name == _current_track:
 		return
-	_current_track = track_name
 
+	# Check the track exists BEFORE mutating _current_track. The previous
+	# order set _current_track first then fell through to stop_music when
+	# the file was missing — calling play_music("boss_music") with a
+	# placeholder asset would silence the dungeon ambient and leave the
+	# scene with no music until something else triggered a track change.
 	var path: String = MUSIC_TRACKS.get(track_name, "") as String
 	if path.is_empty() or not ResourceLoader.exists(path):
-		stop_music(fade_duration)
+		push_warning("AudioManager: track '%s' missing — keeping current music" % track_name)
 		return
+	_current_track = track_name
 
 	var stream: AudioStream = load(path) as AudioStream
 	if stream == null:
@@ -149,8 +155,16 @@ func stop_music(fade_duration: float = 1.0) -> void:
 
 # --- EventBus SFX triggers ---
 
-func _on_damage_dealt(_amount: int, _source: Node, _target: Node, _type: StringName) -> void:
-	play_sfx("attack_hit")
+func _on_damage_dealt(_amount: int, _source: Node, target: Node, _type: StringName) -> void:
+	# Differentiate "player landing a hit" from "player getting hit". Without
+	# this, both events played attack_hit and the dedicated hurt.wav cue
+	# (already authored in assets/audio/sfx/) was dead. The hurt feedback —
+	# screen shake + red vignette + knockback in player_hurt_state — had no
+	# audio anchor.
+	if target != null and target.is_in_group(&"player"):
+		play_sfx("hurt")
+	else:
+		play_sfx("attack_hit")
 
 
 func _on_player_dashed(_from: Vector3, _to: Vector3) -> void:
@@ -163,6 +177,10 @@ func _on_item_collected(_item: Resource) -> void:
 
 func _on_player_died(_pos: Vector3) -> void:
 	play_sfx("death")
+
+
+func _on_player_leveled_up(_new_level: int) -> void:
+	play_sfx("level_up")
 
 
 func _on_portal_used() -> void:

@@ -68,6 +68,11 @@ func add_xp(amount: int) -> void:
 	# only opens one stat allocation panel for the cumulative point pool.
 	if levels_gained > 0:
 		leveled_up.emit(current_level)
+		# Mirror to EventBus so global listeners (audio_manager level_up SFX,
+		# voice_manager voice cue, expression_driver facial cue) can react.
+		# All three were sitting on defensive has_signal listeners waiting
+		# for this signal to exist.
+		EventBus.player_leveled_up.emit(current_level)
 	xp_changed.emit(current_xp, xp_to_next_level)
 
 

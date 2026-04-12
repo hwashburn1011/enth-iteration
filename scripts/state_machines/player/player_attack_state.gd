@@ -114,6 +114,12 @@ func physics_update(delta: float) -> void:
 
 	if _timer >= _duration:
 		_set_hitbox_active(p, false)
+		# Whiff cue — only fires when no hit landed this swing. Successful
+		# hits already get attack_hit via audio_manager._on_damage_dealt, so
+		# stacking attack_miss on hits would double-up. attack_miss.wav was
+		# dead before this hook.
+		if _hits_landed_this_swing == 0:
+			AudioManager.play_sfx("attack_miss")
 		var input_vector: Vector2 = Input.get_vector(
 			&"move_left", &"move_right", &"move_forward", &"move_back"
 		)

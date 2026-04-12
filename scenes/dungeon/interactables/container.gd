@@ -73,6 +73,8 @@ func _open() -> void:
 
 	# Chest open VFX — golden burst + light flash
 	_spawn_open_vfx()
+	# Audio cue — container_open.wav existed in assets but was never called.
+	AudioManager.play_sfx("container_open")
 
 	# Spawn loot
 	var drop_count: int = randi_range(drop_count_min, drop_count_max)
