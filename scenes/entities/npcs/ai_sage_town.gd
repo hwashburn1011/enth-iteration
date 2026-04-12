@@ -19,6 +19,9 @@ func _ready() -> void:
 	_iteration_dialogues[2] = load("res://data/dialogue/ai_sage_iter2.tres") as Resource
 	_iteration_dialogues[3] = load("res://data/dialogue/ai_sage_iter3.tres") as Resource
 	_iteration_dialogues[4] = load("res://data/dialogue/ai_sage_iter4.tres") as Resource
+	# R2 H23+H24: iterations 5 and 6
+	_iteration_dialogues[5] = load("res://data/dialogue/ai_sage_iter5.tres") as Resource
+	_iteration_dialogues[6] = load("res://data/dialogue/ai_sage_iter6.tres") as Resource
 	dialogue_resource = _intro_dialogue
 	# R5 round-51 fix: wire up the AI Sage portrait textures. The .tscn never
 	# set portrait_default or the portraits dict, so every Sage dialogue was
