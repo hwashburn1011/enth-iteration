@@ -9,6 +9,10 @@ var charge_time: float = 0.0
 var _original_move_speed: float = 0.0
 var _charge_particles: GPUParticles3D = null
 var _charge_ring: MeshInstance3D = null
+## Pre-charge material snapshot per mesh so the emission glow doesn't
+## permanently wipe the polish materials applied by player.gd. Same
+## pattern T39/T42 used elsewhere.
+var _pre_charge_materials: Dictionary = {}
 
 
 func enter() -> void:
@@ -98,6 +102,12 @@ var _charge_material: StandardMaterial3D = null
 func _set_emission(p: CharacterBody3D, intensity: float) -> void:
 	var meshes: Array[MeshInstance3D] = p.get_mesh_instances()
 	if intensity > 0.0:
+		# Snapshot pre-charge materials on the first transition (intensity > 0
+		# arrives every physics frame while charging; only snapshot on the
+		# very first one when the dict is still empty).
+		if _pre_charge_materials.is_empty():
+			for mesh: MeshInstance3D in meshes:
+				_pre_charge_materials[mesh] = mesh.material_override
 		if _charge_material == null:
 			_charge_material = StandardMaterial3D.new()
 			_charge_material.emission_enabled = true
@@ -107,7 +117,9 @@ func _set_emission(p: CharacterBody3D, intensity: float) -> void:
 			mesh.material_override = _charge_material
 	else:
 		for mesh: MeshInstance3D in meshes:
-			mesh.material_override = null
+			if _pre_charge_materials.has(mesh):
+				mesh.material_override = _pre_charge_materials[mesh]
+		_pre_charge_materials.clear()
 		_charge_material = null
 
 
