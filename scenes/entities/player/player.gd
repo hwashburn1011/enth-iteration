@@ -377,6 +377,12 @@ func _process(delta: float) -> void:
 	# is just ignored (the action poll is skipped via the state-machine
 	# guards in the active states).
 	_tick_block(delta)
+	# R7 AE1: Gold autopickup — walk over gold drops to collect
+	IntegrationWiring.wire_gold_autopickup(self)
+	# R7 AE8: Footstep SFX — play when moving
+	if not has_meta(&"_footstep_timer"):
+		set_meta(&"_footstep_timer", {"t": 0.0})
+	AudioSceneWiring.wire_footstep(velocity.length(), delta, get_meta(&"_footstep_timer") as Dictionary)
 
 
 func _unhandled_input(event: InputEvent) -> void:

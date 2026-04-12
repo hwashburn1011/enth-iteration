@@ -49,6 +49,10 @@ func _ready() -> void:
 	EventBus.enemy_defeated.connect(_on_enemy_defeated_stat)
 	EventBus.player_died.connect(_on_player_died_stat)
 	EventBus.item_collected.connect(_on_item_collected_stat)
+	# R7 AE2: Wire gamepad inputs on startup
+	IntegrationWiring.wire_gamepad_on_startup()
+	# R7 AE3: Wire kill counter on enemy defeat
+	EventBus.enemy_defeated.connect(IntegrationWiring.on_enemy_defeated_count)
 
 
 func _process(delta: float) -> void:
