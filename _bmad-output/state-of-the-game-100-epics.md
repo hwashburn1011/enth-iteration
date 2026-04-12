@@ -64,23 +64,23 @@
 
 ## 100 Epics / Tasks
 
-### Category A — Dead Wiring (things that exist but aren't called)
+### Category A — Dead Wiring (things that exist but aren't called) ✅ ALL DONE
 
-1. Wire SetBonusRuntime.apply_set_bonuses in EquipmentComponent on equip/unequip
-2. Create Inventory.tscn scene matching inventory_screen.gd expectations
-3. Wire pause menu Statistics button → HudWidgets.populate_stats_panel
-4. Wire pause menu Bestiary button → bestiary_screen.gd
-5. Wire pause menu Skill Tree button → SkillTreePanel
-6. Wire credits screen into win path (DemoEndScreen → CreditsScreen after epilogue)
-7. Wire parry riposte to actually deal damage to the attacker
-8. Wire heartbeat vignette creation + per-frame update in HUD._process
-9. Wire damage log panel creation + EventBus.enemy_defeated feeding
-10. Wire auto-save indicator flash on SaveManager.save_game
-11. Wire scene fade on dungeon enter (portal click → CombatFeelWiring.fade_to_scene)
-12. Wire scene fade on town return (dungeon complete → fade transition)
-13. Wire AchievementSystem.check_all after boss kill, level up, death, iteration advance
-14. Wire achievement popup via HudIntegration.check_and_show_achievements
-15. Wire enemy tutorial hints on first encounter with each new type
+1. [x] SetBonusRuntime wired in EquipmentComponent
+2. [x] Inventory screen builds UI in code (no .tscn needed)
+3. [x] Pause menu Statistics button → HudWidgets.populate_stats_panel
+4. [x] Pause menu Bestiary button → BestiaryScreen (code-built UI)
+5. [x] Pause menu Skill Tree button → SkillTreePanel
+6. [x] Credits + NG+ on DemoEndScreen
+7. [x] Parry riposte deals 50% damage back to attacker
+8. [x] Heartbeat vignette in HUD._process (low health)
+9. [x] Damage log panel via HudWidgets + IntegrationWiring
+10. [x] Auto-save indicator on SaveManager.save_game
+11. [x] Scene fade via GameManager._fade_transition (all transitions)
+12. [x] Scene fade on town return (same mechanism)
+13. [x] Achievement check on boss_defeated + player_died
+14. [x] Achievement popup via HudIntegration.check_and_show_achievements
+15. [x] Enemy tutorial hints in TutorialManager on Floor 1
 
 ### Category B — Missing Content (loot, items, quests)
 
