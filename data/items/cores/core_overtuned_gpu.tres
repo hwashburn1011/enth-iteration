@@ -11,3 +11,4 @@ rarity = 2
 item_type = "core"
 core_passive = "10% critical hit bonus"
 core_bonus_stats = {"processing": 6.0, "memory": 4.0}
+extra_crit_chance = 10.0

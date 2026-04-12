@@ -12,6 +12,11 @@ extends "res://scripts/items/item_base.gd"
 
 @export var core_passive: String = ""
 @export var core_bonus_stats: Dictionary = {}
+## Flat percentage points added to the player's critical hit chance when this
+## core is equipped. damage_calculator reads source.equipment_component.core_slot
+## and adds this to BASE_CRIT_CHANCE. Use the same units as BASE_CRIT_CHANCE
+## (5.0 = 5%) so e.g. 10.0 here gives a +10% crit bonus.
+@export var extra_crit_chance: float = 0.0
 
 
 func _init() -> void:
