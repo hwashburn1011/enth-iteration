@@ -1,6 +1,9 @@
 class_name TutorialManagerClass
 extends Node
 ## Tracks completed tutorials and shows contextual hints during Floor 1.
+## Phase 4 #34: auto-chain mode triggers hints in sequence during the
+## first playthrough so the player learns controls without entering
+## the dedicated tutorial rooms. Each completion advances the chain.
 
 var completed_tutorials: Array[String] = []
 var _active_hint: Control = null
@@ -9,6 +12,8 @@ var _movement_distance: float = 0.0
 var _last_player_pos: Vector3 = Vector3.ZERO
 var _tracking_movement: bool = false
 var _all_complete_shown: bool = false
+## Phase 4 #34 — when true the chain auto-advances on each completion.
+var _chain_active: bool = false
 
 
 func _ready() -> void:
@@ -18,6 +23,9 @@ func _ready() -> void:
 	# Connect signals for tutorial triggers
 	EventBus.enemy_defeated.connect(_on_enemy_defeated)
 	EventBus.item_collected.connect(_on_item_collected)
+	# Phase 4 #34 — start the chain after the sage intro dialogue completes.
+	if not EventBus.dialogue_ended.is_connected(_on_dialogue_ended_tutorial_chain):
+		EventBus.dialogue_ended.connect(_on_dialogue_ended_tutorial_chain)
 
 
 func _process(_delta: float) -> void:
@@ -43,7 +51,12 @@ func complete_tutorial(tutorial_id: String) -> void:
 	completed_tutorials.append(tutorial_id)
 	_dismiss_hint()
 
-	# Check if all 5 tutorials are done
+	# Phase 4 #34 — if the chain is active, advance to the next step
+	if _chain_active:
+		_advance_chain.call_deferred()
+		return
+
+	# Check if all 5 tutorials are done (non-chain fallback for tutorial rooms)
 	var all_done: Array[String] = ["movement", "basic_attack", "dash", "loot", "prompt"]
 	var complete: bool = true
 	for t: String in all_done:
@@ -174,3 +187,54 @@ func _find_player() -> Node:
 	if nodes.size() > 0:
 		return nodes[0]
 	return null
+
+
+## Phase 4 #34 — start the auto-chain when the sage intro dialogue
+## finishes on first run. Only fires once (disconnects after).
+func _on_dialogue_ended_tutorial_chain() -> void:
+	if not GameManager.first_run:
+		return
+	# Only chain after the sage intro is complete
+	if not GameManager.first_sage_dialogue_complete:
+		return
+	if _chain_active:
+		return
+	_chain_active = true
+	EventBus.dialogue_ended.disconnect(_on_dialogue_ended_tutorial_chain)
+	# Start the first step after a short delay
+	_advance_chain.call_deferred()
+
+
+## Phase 4 #34 — advance to the next uncompleted tutorial in order.
+## Chain order: movement → basic_attack → dash → loot → prompt → dungeon_enter.
+const _CHAIN_ORDER: Array[String] = [
+	"movement", "basic_attack", "dash", "loot", "prompt",
+]
+
+func _advance_chain() -> void:
+	if not _chain_active:
+		return
+	# Small delay between chain steps so the player isn't overwhelmed
+	await get_tree().create_timer(1.5).timeout
+	for step: String in _CHAIN_ORDER:
+		if step not in completed_tutorials:
+			_trigger_chain_step(step)
+			return
+	# All chain steps done — show the "enter the dungeon" message
+	if not _all_complete_shown:
+		_all_complete_shown = true
+		show_hint("You're ready. Enter the Compaction Loop.", 4.0)
+
+
+func _trigger_chain_step(step: String) -> void:
+	match step:
+		"movement":
+			start_movement_tracking()
+		"basic_attack":
+			show_hint("Left Click to attack nearby enemies")
+		"dash":
+			start_dash_hint()
+		"loot":
+			show_hint("Press E near items or NPCs to interact")
+		"prompt":
+			start_prompt_hint()
