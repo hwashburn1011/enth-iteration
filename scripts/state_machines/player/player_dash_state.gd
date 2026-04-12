@@ -13,6 +13,10 @@ const DASH_SHAKE_DECAY: float = 10.0
 
 var _iframe_timer: float = 0.0
 var _iframe_active: bool = false
+## Snapshot of pre-dash material_override per mesh so _flash_transparent
+## doesn't permanently wipe the polish materials applied by player.gd
+## (orb body, eyes, antenna, etc). Same pattern T39 used for enemies.
+var _pre_dash_materials: Dictionary = {}
 
 
 func _ready() -> void:
@@ -175,11 +179,15 @@ func _spawn_dash_trail(p: CharacterBody3D, from: Vector3, to: Vector3) -> void:
 func _flash_transparent(p: CharacterBody3D, transparent: bool) -> void:
 	var meshes: Array[MeshInstance3D] = p.get_mesh_instances()
 	if transparent:
+		_pre_dash_materials.clear()
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		mat.albedo_color = Color(1.0, 1.0, 1.0, 0.3)
 		for mesh: MeshInstance3D in meshes:
+			_pre_dash_materials[mesh] = mesh.material_override
 			mesh.material_override = mat
 	else:
 		for mesh: MeshInstance3D in meshes:
-			mesh.material_override = null
+			if _pre_dash_materials.has(mesh):
+				mesh.material_override = _pre_dash_materials[mesh]
+		_pre_dash_materials.clear()
