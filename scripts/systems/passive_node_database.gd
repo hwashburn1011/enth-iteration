@@ -2,7 +2,7 @@ class_name PassiveNodeDatabase
 extends RefCounted
 ## Phase 3 #26 — V1 passive node database.
 ##
-## A flat list of 12 passive nodes the player unlocks every 3 levels
+## A flat list of 24 passive nodes the player unlocks every 3 levels
 ## (level 3, 6, 9, 12, etc.). Each node has:
 ##
 ##   id          — stable string for save/load
@@ -21,8 +21,8 @@ extends RefCounted
 ## ORDER MATTERS: PassiveProgression rotates through this list in
 ## order so the first node a new player unlocks is always reproducible
 ## (Reinforced Hull at level 3, then Quick Cycle at level 6, etc.).
-## A 12-node tree gives the player ~36 levels of allocation runway
-## before the rotation wraps, which covers the full v1 demo arc.
+## R3 M21: expanded to 24 nodes with new effect types (lifesteal, thorns).
+## A 24-node tree gives ~72 levels of allocation runway before wrapping.
 
 const NODES: Array[Dictionary] = [
 	{
@@ -120,6 +120,103 @@ const NODES: Array[Dictionary] = [
 		"effect_type": "crit",
 		"effect_key": "",
 		"amount": 5.0,
+	},
+	# --- R3 M21: 12 new nodes (13-24) with lifesteal and thorns ---
+	{
+		"id": "data_siphon",
+		"name": "Data Siphon",
+		"description": "Heal 3% of damage dealt",
+		"effect_type": "lifesteal",
+		"effect_key": "",
+		"amount": 3.0,
+	},
+	{
+		"id": "thorned_firewall",
+		"name": "Thorned Firewall",
+		"description": "Reflect 8% damage to attackers",
+		"effect_type": "thorns",
+		"effect_key": "",
+		"amount": 8.0,
+	},
+	{
+		"id": "overclocked_hull",
+		"name": "Overclocked Hull",
+		"description": "+8 Integrity",
+		"effect_type": "stat",
+		"effect_key": "integrity",
+		"amount": 8.0,
+	},
+	{
+		"id": "turbo_bandwidth",
+		"name": "Turbo Bandwidth",
+		"description": "+8 Bandwidth",
+		"effect_type": "stat",
+		"effect_key": "bandwidth",
+		"amount": 8.0,
+	},
+	{
+		"id": "expanded_memory",
+		"name": "Expanded Memory",
+		"description": "+8 Memory",
+		"effect_type": "stat",
+		"effect_key": "memory",
+		"amount": 8.0,
+	},
+	{
+		"id": "neural_accelerator",
+		"name": "Neural Accelerator",
+		"description": "+8 Processing",
+		"effect_type": "stat",
+		"effect_key": "processing",
+		"amount": 8.0,
+	},
+	{
+		"id": "killing_edge_3",
+		"name": "Killing Edge III",
+		"description": "+8% Critical Hit Chance",
+		"effect_type": "crit",
+		"effect_key": "",
+		"amount": 8.0,
+	},
+	{
+		"id": "combat_mastery",
+		"name": "Combat Mastery",
+		"description": "Dash cooldown −0.4s",
+		"effect_type": "dash_cd",
+		"effect_key": "",
+		"amount": 0.4,
+	},
+	{
+		"id": "recursive_siphon",
+		"name": "Recursive Siphon",
+		"description": "Restore 8 Compute on kill",
+		"effect_type": "compute_kill",
+		"effect_key": "",
+		"amount": 8.0,
+	},
+	{
+		"id": "vampiric_code",
+		"name": "Vampiric Code",
+		"description": "Heal 5% of damage dealt",
+		"effect_type": "lifesteal",
+		"effect_key": "",
+		"amount": 5.0,
+	},
+	{
+		"id": "razor_firewall",
+		"name": "Razor Firewall",
+		"description": "Reflect 15% damage to attackers",
+		"effect_type": "thorns",
+		"effect_key": "",
+		"amount": 15.0,
+	},
+	{
+		"id": "final_optimization",
+		"name": "Final Optimization",
+		"description": "+10 to all stats",
+		"effect_type": "stat",
+		"effect_key": "all",
+		"amount": 10.0,
 	},
 ]
 
