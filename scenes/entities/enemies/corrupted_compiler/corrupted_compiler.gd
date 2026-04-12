@@ -21,6 +21,16 @@ func _ready() -> void:
 	stats_component.base_bandwidth = 5.0
 	stats_component.base_integrity = 10.0
 	model.scale = Vector3(2.0, 2.0, 2.0)
+	# One-shot signal wiring. Previously these connect() calls lived inside
+	# reset(), which the EnemyPool fires every time the boss is pulled out
+	# of the pool — so by iteration 3 health_changed had three duplicate
+	# handlers and _on_boss_health_changed ran three times per HP tick.
+	# The _phase_checked guards prevented triple phase transitions but the
+	# duplicates still wasted work and caused weird ordering across the
+	# tween + add-spawn logic. _ready() runs once at pool warm-up, so the
+	# wiring only happens once per instance regardless of reuse count.
+	health_component.health_changed.connect(_on_boss_health_changed)
+	tree_entered.connect(_on_tree_entered_retry_hud)
 
 
 func reset() -> void:
@@ -44,16 +54,10 @@ func reset() -> void:
 	if atk_state and atk_state.has_method(&"reset_pattern"):
 		atk_state.reset_pattern()
 
-	health_component.health_changed.connect(_on_boss_health_changed)
 	# Dramatic HUD boss bar — defer so the EnemyPool guard runs after
 	# the boss is in its final parent (either EnemyPool at startup or
 	# the live scene after EnemyPool.get_enemy() reparents it).
 	call_deferred(&"_register_with_hud")
-	# R5 round-11: when the boss is pulled out of EnemyPool and parented
-	# into a live scene, retry the HUD registration. The first call from
-	# _ready() bails because we're still under EnemyPool; this catches the
-	# second parenting after EnemyPool.get_enemy() reparents to the scene.
-	tree_entered.connect(_on_tree_entered_retry_hud)
 
 
 func _on_tree_entered_retry_hud() -> void:
