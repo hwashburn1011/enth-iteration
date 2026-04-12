@@ -11,6 +11,11 @@ const GOLD_BY_TYPE: Dictionary = {
 	"memory_leak": 4,
 	"rogue_process": 5,
 	"corrupted_compiler": 50,
+	"firewall_guardian": 6,
+	"buffer_overflow": 4,
+	"null_pointer": 5,
+	"stack_crawler": 8,
+	"syntax_error": 5,
 }
 
 ## Iteration multiplier — gold rewards grow so the economy stays meaningful.

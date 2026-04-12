@@ -6,6 +6,11 @@ extends Node
 	"memory_leak": 5,
 	"rogue_process": 5,
 	"corrupted_compiler": 1,
+	"firewall_guardian": 3,
+	"buffer_overflow": 5,
+	"null_pointer": 3,
+	"stack_crawler": 2,
+	"syntax_error": 4,
 }
 
 const ENEMY_SCENES: Dictionary = {
@@ -13,6 +18,11 @@ const ENEMY_SCENES: Dictionary = {
 	"memory_leak": "res://scenes/entities/enemies/memory_leak/MemoryLeak.tscn",
 	"rogue_process": "res://scenes/entities/enemies/rogue_process/RogueProcess.tscn",
 	"corrupted_compiler": "res://scenes/entities/enemies/corrupted_compiler/CorruptedCompiler.tscn",
+	"firewall_guardian": "res://scenes/entities/enemies/firewall_guardian/FirewallGuardian.tscn",
+	"buffer_overflow": "res://scenes/entities/enemies/buffer_overflow/BufferOverflow.tscn",
+	"null_pointer": "res://scenes/entities/enemies/null_pointer/NullPointer.tscn",
+	"stack_crawler": "res://scenes/entities/enemies/stack_crawler/StackCrawler.tscn",
+	"syntax_error": "res://scenes/entities/enemies/syntax_error/SyntaxError.tscn",
 }
 
 var _pools: Dictionary = {}  # type -> Array[CharacterBody3D]
@@ -158,4 +168,9 @@ func _get_type(enemy: CharacterBody3D) -> String:
 		"MemoryLeak": return "memory_leak"
 		"RogueProcess": return "rogue_process"
 		"CorruptedCompiler": return "corrupted_compiler"
+		"FirewallGuardian": return "firewall_guardian"
+		"BufferOverflow": return "buffer_overflow"
+		"NullPointer": return "null_pointer"
+		"StackCrawler": return "stack_crawler"
+		"SyntaxError": return "syntax_error"
 		_: return ""
