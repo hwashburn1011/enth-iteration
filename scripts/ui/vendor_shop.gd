@@ -248,13 +248,20 @@ func _on_sell(data: Dictionary, price: int) -> void:
 
 
 func _get_sell_price(item: Resource) -> int:
+	## Post-V1 A4: sell price = rarity base + affix bonus.
+	## Each affix on the item adds +5g so well-rolled gear sells for more.
 	var base: int = 5
 	var rarity: int = int(item.get(&"rarity")) if &"rarity" in item else 0
 	match rarity:
 		1: base = 10
 		2: base = 25
 		3: base = 75
-	return base
+	# Affix bonus: stat_modifiers dict size approximates affix count
+	var affix_count: int = 0
+	if &"stat_modifiers" in item:
+		var mods: Dictionary = item.get(&"stat_modifiers") as Dictionary
+		affix_count = mods.size()
+	return base + affix_count * 5
 
 
 func _refresh_gold() -> void:
