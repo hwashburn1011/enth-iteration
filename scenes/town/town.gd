@@ -58,6 +58,11 @@ func _ready() -> void:
 		# 1 with empty inventories on every load.
 		SaveManager.apply_to_player(player_node)
 
+	# Seed the main story quest the first time the player arrives in town.
+	# QuestManager.add_quest is idempotent (skips active + completed quests),
+	# so it's safe to call on every town entry.
+	_seed_starter_quests()
+
 	# Spawn isometric camera targeting player
 	var cam_script: GDScript = load("res://scripts/components/isometric_camera.gd") as GDScript
 	var camera: Camera3D = Camera3D.new()
@@ -97,6 +102,15 @@ func _ready() -> void:
 	# Narrative: auto-trigger AI Sage on first visit — delay 5s so player sees the world
 	elif GameManager.first_run and not GameManager.first_sage_dialogue_complete:
 		_auto_trigger_sage_dialogue.call_deferred()
+
+
+## Add the always-on starter quest. Called every town entry but
+## QuestManager.add_quest skips quests that are already active or completed,
+## so this is a no-op after the first arrival.
+func _seed_starter_quests() -> void:
+	var clear_dungeon: Resource = load("res://data/quests/quest_clear_dungeon.tres") as Resource
+	if clear_dungeon != null:
+		QuestManager.add_quest(clear_dungeon)
 
 
 func _populate_npcs() -> void:

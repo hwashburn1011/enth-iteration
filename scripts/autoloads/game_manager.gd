@@ -193,7 +193,7 @@ func _on_dungeon_entered() -> void:
 	first_dungeon_entered = true
 
 
-func _on_boss_defeated(boss_id: StringName) -> void:
+func _on_boss_defeated(boss_id: StringName, _pos: Vector3, _loot: Resource) -> void:
 	if boss_id == &"corrupted_compiler":
 		boss_defeated = true
 
