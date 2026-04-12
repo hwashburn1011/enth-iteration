@@ -94,15 +94,15 @@ Without these the player won't survive long enough to discover Phase 3 depth.
 39. ✅ **Death screen** — "SYSTEM FAILURE" with random gameplay tip (8 tips) + "Continue" button. Player must click to respawn.
 40. ✅ **Damage numbers polish** — no_depth_test + fixed_size for readability, crit scale pulse (1.4x overshoot), larger crit font + warm outline.
 
-## Phase 5 — Story beats & narrative payload (weeks 5-7)
+## Phase 5 — Story beats & narrative payload (weeks 5-7)  ✅ DONE
 
 The compact loop has to *mean* something.
 
-41. **Per-iteration sage dialogue** — sage speaks a different scripted line set at the start of each iteration, hinting at what's wrong with the simulation.
-42. **Per-iteration revelation moment** — at iterations 2, 4, 6 the world drops a piece of lore (data shard, glitch room, environmental story). Three hand-built moments.
-43. **Final iteration climax** — the last iteration ends with a boss fight that resolves the V1 narrative hook. Doesn't have to be the full game's ending — leave room for the post-V1 arc.
-44. **End-of-V1 cinematic** — 60 seconds. Globbler reaches the truth at the end of iteration 4-6, screen-to-credits with a teaser for what's next.
-45. **Dialogue portrait passes** — 3-4 expressions per major NPC (currently most have 1). Even simple alternates make conversations feel alive.
+41. ✅ **Per-iteration sage dialogue** — 3 unique dialogue sets for iter 2/3/4. Iter 2: loop was designed, enemies adapting. Iter 3: Globbler was never meant to be aware. Iter 4: final loop, compression limit reached.
+42. ✅ **Per-iteration revelation moment** — data fragments at iter 2 and 4. Recovered Project Enth logs revealing Globbler is a test subject and the loop is life support. Cinematic text overlays with fade in/out.
+43. ✅ **Final iteration climax** — demo end gates on iteration 4 (was gating on first boss kill). Full 4-iteration narrative arc must complete before credits.
+44. ✅ **End-of-V1 cinematic** — 7-line narrative epilogue (~60s) over black before stats screen. Compaction engine falls silent, Globbler confronts truth about the Compiler.
+45. ✅ **Dialogue portrait passes** — sage has 5 expression variants (default, smile, sad, surprise, wisdom) used across per-iteration dialogue. Expression routing wired in dialogue panel.
 
 ## Phase 6 — V1 ship polish (weeks 6-8)
 
