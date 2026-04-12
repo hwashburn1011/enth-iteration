@@ -73,6 +73,10 @@ func _build_entrance_visual() -> void:
 		archway.position = Vector3.ZERO
 		# Apply digital theme material to the GLB structural meshes
 		_apply_archway_textures(archway)
+		# T54: Add collision to the portal frame arch so the player can't
+		# walk through the pillars. Two box colliders for the left and right
+		# pillars, leaving the center passage open for interaction.
+		_add_archway_collision()
 	# Add portal particles (use position since global_position may not be set yet in _ready)
 	VFXFactory.spawn_portal_particles(Vector3(0, 1.5, 0), self)
 	# Glow light
@@ -345,6 +349,22 @@ func _style_confirm_button(btn: Button, is_confirm: bool) -> void:
 	btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
 	btn.add_theme_color_override(&"font_hover_color", accent)
 	btn.add_theme_font_size_override(&"font_size", 18)
+
+
+func _add_archway_collision() -> void:
+	## T54: Two box colliders for the left and right pillars of the portal
+	## archway. The center passage stays open so the interaction area works.
+	for side: float in [-1.2, 1.2]:
+		var body: StaticBody3D = StaticBody3D.new()
+		body.collision_layer = 1
+		body.collision_mask = 0
+		var col_shape: CollisionShape3D = CollisionShape3D.new()
+		var box: BoxShape3D = BoxShape3D.new()
+		box.size = Vector3(0.5, 3.5, 0.5)
+		col_shape.shape = box
+		col_shape.position = Vector3(side, 1.75, 0)
+		body.add_child(col_shape)
+		add_child(body)
 
 
 func _apply_archway_textures(root: Node) -> void:

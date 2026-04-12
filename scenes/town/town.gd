@@ -750,6 +750,7 @@ func _add_ground_patches(parent: Node3D) -> void:
 		patch.size = Vector3(8, 0.01, 7)
 		patch.position = pos
 		patch.material = dark_mat
+		patch.use_collision = false  # T66: ground patches must not block movement
 		parent.add_child(patch)
 	# Light patches in open areas
 	for pos: Vector3 in [Vector3(-12, 0.005, 12), Vector3(12, 0.005, -14), Vector3(0, 0.005, 8)]:
@@ -757,6 +758,7 @@ func _add_ground_patches(parent: Node3D) -> void:
 		patch.size = Vector3(5, 0.01, 5)
 		patch.position = pos
 		patch.material = light_mat
+		patch.use_collision = false  # T66: ground patches must not block movement
 		parent.add_child(patch)
 	# Textured stone rock clusters
 	var rock_mat: StandardMaterial3D = _make_pebble_rock_material()
@@ -832,12 +834,17 @@ func _add_prop(parent: Node3D, path: String, pos: Vector3, prop_scale: Vector3) 
 			or "bridge" in stem or "signpost" in stem or "lantern" in stem
 		)
 		if not skip_collision:
-			_add_prop_collision(instance)
+			_add_prop_collision(instance, stem)
 
 
-static func _add_prop_collision(prop_root: Node3D) -> void:
+static func _add_prop_collision(prop_root: Node3D, override_name: String = "") -> void:
 	## Walk the prop tree, find the biggest mesh AABB, and add a
 	## procedural StaticBody3D + BoxShape3D under the prop root.
+	## T62/T64/T65: Irregular shapes (rocks, trees, formations) get a
+	## tighter 60% shrink. Trees only collide at trunk height to avoid
+	## canopy blocking. GPUParticles3D nodes never get collision (T67).
+	if prop_root is GPUParticles3D:
+		return
 	var biggest_size: float = 0.0
 	var biggest_aabb: AABB
 	var st: Array = [prop_root]
@@ -855,23 +862,43 @@ static func _add_prop_collision(prop_root: Node3D) -> void:
 		return
 	var prop_scale: Vector3 = prop_root.scale
 	var body: StaticBody3D = StaticBody3D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
 	var shape: CollisionShape3D = CollisionShape3D.new()
-	var box: BoxShape3D = BoxShape3D.new()
-	# Shrink collision to 80% of AABB to reduce phantom blockers from
-	# irregular GLB meshes whose bounding box extends past visible geometry
-	var shrink: float = 0.80
-	box.size = Vector3(
-		biggest_aabb.size.x * prop_scale.x * shrink,
-		biggest_aabb.size.y * prop_scale.y,
-		biggest_aabb.size.z * prop_scale.z * shrink
-	)
-	shape.shape = box
-	var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5
-	shape.position = Vector3(
-		center.x * prop_scale.x,
-		center.y * prop_scale.y,
-		center.z * prop_scale.z
-	)
+	# T62/T64/T65: Determine shrink factor based on prop type.
+	# Irregular shapes (rocks, formations) get 60% to avoid phantom blockers.
+	# Trees get a narrow trunk-only cylinder instead of a full AABB box.
+	var prop_name: String = override_name if not override_name.is_empty() else prop_root.name.to_lower()
+	var is_tree: bool = "tree" in prop_name or "hero_tree" in prop_name
+	var is_irregular: bool = "rock" in prop_name or "formation" in prop_name
+	if is_tree:
+		# T65: Tree collision = narrow cylinder at trunk, not the whole canopy
+		var cyl: CylinderShape3D = CylinderShape3D.new()
+		cyl.radius = 0.3 * prop_scale.x
+		cyl.height = biggest_aabb.size.y * prop_scale.y * 0.5  # trunk only
+		shape.shape = cyl
+		var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5
+		shape.position = Vector3(
+			center.x * prop_scale.x,
+			biggest_aabb.size.y * prop_scale.y * 0.25,
+			center.z * prop_scale.z
+		)
+	else:
+		var box: BoxShape3D = BoxShape3D.new()
+		# Shrink collision to reduce phantom blockers from irregular meshes
+		var shrink: float = 0.60 if is_irregular else 0.80
+		box.size = Vector3(
+			biggest_aabb.size.x * prop_scale.x * shrink,
+			biggest_aabb.size.y * prop_scale.y,
+			biggest_aabb.size.z * prop_scale.z * shrink
+		)
+		shape.shape = box
+		var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5
+		shape.position = Vector3(
+			center.x * prop_scale.x,
+			center.y * prop_scale.y,
+			center.z * prop_scale.z
+		)
 	body.add_child(shape)
 	prop_root.add_child(body)
 
@@ -1001,8 +1028,9 @@ func _add_tree(parent: Node3D, pos: Vector3, canopy_radius: float, trunk_height:
 		tree.global_position = pos
 		_apply_tree_textures(tree)
 		# R5 round-44: trees are solid props but ship without collision —
-		# add a procedural BoxShape3D so the player can't walk through trunks
-		_add_prop_collision(tree)
+		# add a procedural collision so the player can't walk through trunks.
+		# T65: pass "tree" hint so _add_prop_collision uses trunk-only cylinder.
+		_add_prop_collision(tree, "tree")
 	else:
 		# Fallback to CSG
 		var tree: Node3D = Node3D.new()

@@ -454,6 +454,24 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_inventory()
 	elif event.is_action_pressed(&"toggle_quest_log"):
 		_toggle_quest_log()
+	# T68: F3 debug toggle — cycle viewport debug draw to show collision shapes
+	elif event is InputEventKey and (event as InputEventKey).keycode == KEY_F3 and event.is_pressed() and not event.is_echo():
+		_toggle_debug_collision()
+
+
+func _toggle_debug_collision() -> void:
+	## T68: Press F3 to cycle through debug draw modes. Wireframe mode
+	## makes collision shapes visible at runtime for debugging.
+	var vp: Viewport = get_viewport()
+	if vp.debug_draw == Viewport.DEBUG_DRAW_DISABLED:
+		vp.debug_draw = Viewport.DEBUG_DRAW_WIREFRAME
+		push_warning("Debug draw: WIREFRAME (collision shapes visible)")
+	elif vp.debug_draw == Viewport.DEBUG_DRAW_WIREFRAME:
+		vp.debug_draw = Viewport.DEBUG_DRAW_OVERDRAW
+		push_warning("Debug draw: OVERDRAW")
+	else:
+		vp.debug_draw = Viewport.DEBUG_DRAW_DISABLED
+		push_warning("Debug draw: DISABLED")
 
 
 func _try_use_prompt() -> void:
