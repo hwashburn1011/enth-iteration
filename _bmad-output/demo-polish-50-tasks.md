@@ -14,8 +14,8 @@
 
 ## Phase 2 — PLAYER WEAPON (no sword in digital world) [P0]
 
-6. [ ] **Replace sword mesh with digital weapon** — data blade / energy pulse emitter, not medieval sword
-7. [ ] **Update attack VFX to match digital theme** — cyan/violet energy slash, not metal swing arc
+6. [x] **Replace sword mesh with digital weapon** — procedural data blade (glowing cyan BoxMesh + dark hilt)
+7. [x] **Attack VFX already digital** — cyan/green torus arcs for Data Pulse combo, verified in code
 8. [ ] **Update attack SFX concept** — electronic zap/pulse, not metal clang (stub if no audio file)
 
 ## Phase 3 — TOWN COLLISION CLEANUP [P0]
