@@ -518,6 +518,8 @@ func _build_town_decorations() -> void:
 	# --- Boundary collision + ground collision ---
 	_add_boundary_collision()
 	_add_ground_collision()
+	# Task 9: Enable collision on CSG buildings + GLB building instance
+	_add_building_collision(geom)
 
 	# --- Dirt paths ---
 	_add_path(geom, Vector3(0, 0.01, 0), Vector3(3, 0.02, 30))
@@ -1129,6 +1131,20 @@ func _add_boundary_collision() -> void:
 		body.add_child(shape)
 		body.position = data[0] as Vector3
 		add_child(body)
+
+
+func _add_building_collision(geom: Node3D) -> void:
+	## Task 9: The Town.tscn CSGBox3D buildings and GLB building instance
+	## ship without collision — the player walks right through them.
+	## Enable use_collision on CSG buildings and add procedural collision
+	## to any GLB building instances.
+	if geom == null:
+		return
+	for child: Node in geom.get_children():
+		if child is CSGBox3D and child.name.begins_with("Building"):
+			(child as CSGBox3D).use_collision = true
+		elif child is Node3D and child.name.begins_with("Building") and child.name.contains("R3"):
+			_add_prop_collision(child as Node3D)
 
 
 func _apply_town_ground_texture() -> void:

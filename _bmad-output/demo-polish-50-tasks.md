@@ -20,7 +20,7 @@
 
 ## Phase 3 — TOWN COLLISION CLEANUP [P0]
 
-9. [ ] **Audit town for walk-through objects** — tent and other props missing collision; add StaticBody3D
+9. [x] **Add collision to town buildings** — CSGBox3D buildings get use_collision=true, GLB building gets procedural collision
 10. [ ] **Find and fix invisible blocker in bottom-right of town** — phantom collision body blocking player
 11. [ ] **Survey all town props >1m for missing collision** — anything large enough to look solid needs a body
 12. [ ] **Verify dungeon entrance is reachable** — no invisible blockers between spawn and dungeon portal
