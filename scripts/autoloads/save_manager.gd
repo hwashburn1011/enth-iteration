@@ -25,7 +25,25 @@ func _ready() -> void:
 	EventBus.portal_used.connect(_on_auto_save_trigger_no_arg)
 	EventBus.dungeon_entered.connect(_on_auto_save_trigger_no_arg)
 	EventBus.game_saved.connect(_show_save_indicator)
+	# Iteration advance is the single most precious progress milestone in
+	# the game — the player just cleared a 5-floor run and the central
+	# compaction conceit advanced. If we let the rate limiter swallow this
+	# save, the next crash or alt-F4 wipes the loop they earned. Force-save
+	# unconditionally on every advance.
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_signal(&"iteration_advanced") and not im.iteration_advanced.is_connected(_on_iteration_advanced_force_save):
+			im.iteration_advanced.connect(_on_iteration_advanced_force_save)
 	_create_save_indicator()
+
+
+func _on_iteration_advanced_force_save(_new_iteration: int) -> void:
+	## Bypasses MIN_SAVE_INTERVAL because iteration advances are
+	## permanent, player-earned progress that we can never lose. Skips the
+	## in-combat queue too — the dungeon clear flow has already
+	## transitioned out of combat by the time iteration_advanced fires.
+	last_save_time = Time.get_ticks_msec() / 1000.0
+	save_game()
 
 
 func _on_auto_save_trigger(_arg: Variant = null) -> void:
