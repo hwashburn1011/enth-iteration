@@ -31,7 +31,7 @@ func enter() -> void:
 	if enemy.animation_player.has_animation(&"attack"):
 		enemy.animation_player.play(&"attack")
 
-	enemy.hitbox_component.set_meta(&"base_damage", base_damage)
+	enemy.hitbox_component.set_meta(&"base_damage", enemy.scaled_attack_damage(base_damage))
 	enemy.hitbox_component.set_meta(&"damage_type", &"physical")
 
 	# Attack telegraph: show ground indicator during wind-up

@@ -74,7 +74,7 @@ func _fire_projectile(enemy: CharacterBody3D) -> void:
 		return
 	var projectile: Node = load("res://scenes/entities/enemies/memory_leak/leak_projectile.gd").new()
 	projectile.source_node = enemy
-	projectile.base_damage = base_damage
+	projectile.base_damage = enemy.scaled_attack_damage(base_damage)
 	var dir: Vector3 = (enemy.target_player.global_position - enemy.global_position).normalized()
 	dir.y = 0.0
 	projectile.direction = dir
