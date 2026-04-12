@@ -20,6 +20,11 @@ const XP_REWARD_GLITCH_BUG: int = 25
 const XP_REWARD_MEMORY_LEAK: int = 40
 const XP_REWARD_ROGUE_PROCESS: int = 60
 const XP_REWARD_DEFAULT: int = 20
+## XP reward multiplier added per compaction loop past the first. Mirrors
+## ITERATION_HP_MULT_PER_LOOP on enemy_base so leveling speed stays in
+## sync with the difficulty curve — enemies at iter 9 have 3.0x HP, this
+## constant gives them 3.0x XP too.
+const ITERATION_XP_MULT_PER_LOOP: float = 0.25
 
 @export var xp_per_level_base: int = 100
 @export var stat_points_per_level: int = 3
@@ -75,10 +80,28 @@ func _on_enemy_defeated(enemy_type: StringName, pos: Vector3, _loot: Resource) -
 			xp = XP_REWARD_MEMORY_LEAK
 		"rogue_process":
 			xp = XP_REWARD_ROGUE_PROCESS
+	xp = int(round(float(xp) * _iteration_xp_multiplier()))
 	add_xp(xp)
 	# Spawn XP number at enemy position
 	if get_parent() and get_parent().is_inside_tree():
 		_spawn_xp_number(pos, xp)
+
+
+func _iteration_xp_multiplier() -> float:
+	## Mirror of enemy_base._apply_iteration_scaling. Defensive feature-
+	## detect ladder so missing-autoload setups (legacy saves, test
+	## harnesses) fall back to 1.0x cleanly instead of crashing.
+	if not has_node("/root/IterationManager"):
+		return 1.0
+	var im: Node = get_node("/root/IterationManager")
+	var iter: int = 1
+	if im.has_method(&"get_current_iteration"):
+		iter = int(im.get_current_iteration())
+	elif "current_iteration" in im:
+		iter = int(im.current_iteration)
+	if iter <= 1:
+		return 1.0
+	return 1.0 + float(iter - 1) * ITERATION_XP_MULT_PER_LOOP
 
 
 func _spawn_xp_number(pos: Vector3, xp: int) -> void:

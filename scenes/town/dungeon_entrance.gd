@@ -204,6 +204,21 @@ func _show_confirmation() -> void:
 	subtitle.add_theme_font_size_override(&"font_size", 13)
 	vbox.add_child(subtitle)
 
+	# Iteration preview line — show the player which loop they're entering
+	# and the rough difficulty bump that comes with it. Defensive feature-
+	# detect on IterationManager so the line just hides when the autoload
+	# isn't present.
+	var iter_line: String = _build_iteration_preview_line()
+	if iter_line != "":
+		var iter_label: Label = Label.new()
+		iter_label.text = iter_line
+		iter_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		iter_label.add_theme_color_override(&"font_color", Color(0.78, 0.62, 1.0))
+		iter_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+		iter_label.add_theme_constant_override(&"outline_size", 2)
+		iter_label.add_theme_font_size_override(&"font_size", 14)
+		vbox.add_child(iter_label)
+
 	var hbox: HBoxContainer = HBoxContainer.new()
 	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	hbox.add_theme_constant_override(&"separation", 20)
@@ -226,6 +241,32 @@ func _show_confirmation() -> void:
 	_confirm_ui.add_child(vbox)
 	fullscreen.add_child(_confirm_ui)
 	yes_btn.grab_focus()
+
+
+func _build_iteration_preview_line() -> String:
+	## Compose the "ITERATION N · enemies +X% HP / +X% XP" line for the
+	## confirm panel. Returns "" if IterationManager isn't present so the
+	## caller knows to skip the label entirely.
+	if not has_node("/root/IterationManager"):
+		return ""
+	var im: Node = get_node("/root/IterationManager")
+	var iter: int = 1
+	if im.has_method(&"get_current_iteration"):
+		iter = int(im.get_current_iteration())
+	elif "current_iteration" in im:
+		iter = int(im.current_iteration)
+	var final_iter: int = 9
+	if "FINAL_ITERATION" in im:
+		final_iter = int(im.FINAL_ITERATION)
+	# Mirror the per-loop scaling constants from enemy_base / level_component
+	# so the displayed numbers stay in sync if those constants ever shift.
+	const HP_MULT_PER_LOOP: float = 0.25
+	const XP_MULT_PER_LOOP: float = 0.25
+	var bonus_pct: int = int(round(float(iter - 1) * HP_MULT_PER_LOOP * 100.0))
+	var xp_bonus_pct: int = int(round(float(iter - 1) * XP_MULT_PER_LOOP * 100.0))
+	if iter <= 1:
+		return "ITERATION %d / %d · base difficulty" % [iter, final_iter]
+	return "ITERATION %d / %d · enemies +%d%% HP · +%d%% XP" % [iter, final_iter, bonus_pct, xp_bonus_pct]
 
 
 func _on_yes_pressed(canvas: CanvasLayer) -> void:
