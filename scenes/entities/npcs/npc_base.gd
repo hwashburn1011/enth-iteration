@@ -7,6 +7,8 @@ extends CharacterBody3D
 @export var dialogue_resource: Resource
 @export var portrait_default: Texture2D
 @export var portraits: Dictionary = {}  # expression name -> Texture2D
+## R2 F1: if true, opens vendor shop after dialogue ends.
+@export var is_vendor: bool = false
 
 var has_been_talked_to: bool = false
 var _player_in_range: bool = false
@@ -108,8 +110,35 @@ func _start_conversation() -> void:
 		panel.speaker_portraits = portraits
 		panel.speaker_npc_id = npc_id
 		panel.start_dialogue(dialogue_resource.lines)
+		# R2 F1: open vendor shop after dialogue ends if this is a vendor NPC
+		if is_vendor and not EventBus.dialogue_ended.is_connected(_on_vendor_dialogue_ended):
+			EventBus.dialogue_ended.connect(_on_vendor_dialogue_ended, CONNECT_ONE_SHOT)
 	# Phase 4 #36 — hide quest marker after talking (quest may have progressed)
 	_update_quest_marker()
+
+
+## R2 F1: after vendor dialogue ends, open the VendorShop UI.
+func _on_vendor_dialogue_ended() -> void:
+	var player_nodes: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if player_nodes.is_empty():
+		return
+	var player: Node = player_nodes[0]
+	var stock_lib: Script = load("res://scripts/systems/vendor_stock.gd") as Script
+	if stock_lib == null:
+		return
+	var iter: int = 1
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"get_current_iteration"):
+			iter = int(im.get_current_iteration())
+	var stock: Array[Dictionary] = stock_lib.get_stock_for_iteration(iter)
+	var shop_script: GDScript = load("res://scripts/ui/vendor_shop.gd") as GDScript
+	if shop_script == null:
+		return
+	var shop: CanvasLayer = CanvasLayer.new()
+	shop.set_script(shop_script)
+	get_tree().root.add_child(shop)
+	shop.open(stock, player)
 
 
 func _find_dialogue_panel() -> Node:
