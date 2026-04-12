@@ -261,12 +261,14 @@ func _build_iteration_preview_line() -> String:
 	# Mirror the per-loop scaling constants from enemy_base / level_component
 	# so the displayed numbers stay in sync if those constants ever shift.
 	const HP_MULT_PER_LOOP: float = 0.25
+	const DMG_MULT_PER_LOOP: float = 0.25
 	const XP_MULT_PER_LOOP: float = 0.25
-	var bonus_pct: int = int(round(float(iter - 1) * HP_MULT_PER_LOOP * 100.0))
-	var xp_bonus_pct: int = int(round(float(iter - 1) * XP_MULT_PER_LOOP * 100.0))
+	var hp_pct: int = int(round(float(iter - 1) * HP_MULT_PER_LOOP * 100.0))
+	var dmg_pct: int = int(round(float(iter - 1) * DMG_MULT_PER_LOOP * 100.0))
+	var xp_pct: int = int(round(float(iter - 1) * XP_MULT_PER_LOOP * 100.0))
 	if iter <= 1:
 		return "ITERATION %d / %d · base difficulty" % [iter, final_iter]
-	return "ITERATION %d / %d · enemies +%d%% HP · +%d%% XP" % [iter, final_iter, bonus_pct, xp_bonus_pct]
+	return "ITERATION %d / %d · enemies +%d%% HP · +%d%% DMG · +%d%% XP" % [iter, final_iter, hp_pct, dmg_pct, xp_pct]
 
 
 func _on_yes_pressed(canvas: CanvasLayer) -> void:
