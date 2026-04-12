@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ChipItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/chip_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Assault Processor"
+item_id = "chip_assault_processor"
+description = "Tuned for raw damage output. Heavy processing boost — pairs with combo finishers."
+rarity = 2
+item_type = "chip"
+stat_modifiers = {"processing": 5.0}
+chip_slot_type = "offense"

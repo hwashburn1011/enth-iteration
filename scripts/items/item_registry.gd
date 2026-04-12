@@ -9,6 +9,16 @@ const ITEM_PATHS: Dictionary = {
 	"chip_overclocker": "res://data/items/chips/chip_overclocker.tres",
 	"chip_firewall": "res://data/items/chips/chip_firewall.tres",
 	"chip_bandwidth_booster": "res://data/items/chips/chip_bandwidth_booster.tres",
+	# Phase 3 #29 — chip roster expansion (3 → 8). Two of the new chips
+	# carry moveset-altering passives (Kinetic Dash damages enemies in
+	# the dash path; Counterstrike turns parries into AoE Fragmented).
+	# The other three are pure stat sticks for the assault / utility /
+	# tank build axes.
+	"chip_kinetic_dash": "res://data/items/chips/chip_kinetic_dash.tres",
+	"chip_counterstrike": "res://data/items/chips/chip_counterstrike.tres",
+	"chip_assault_processor": "res://data/items/chips/chip_assault_processor.tres",
+	"chip_threat_analyzer": "res://data/items/chips/chip_threat_analyzer.tres",
+	"chip_armor_plating": "res://data/items/chips/chip_armor_plating.tres",
 	"module_logic_bomb": "res://data/items/modules/module_logic_bomb.tres",
 	"module_packet_storm": "res://data/items/modules/module_packet_storm.tres",
 	"module_defrag_pulse": "res://data/items/modules/module_defrag_pulse.tres",

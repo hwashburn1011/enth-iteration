@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ChipItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/chip_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Threat Analyzer Chip"
+item_id = "chip_threat_analyzer"
+description = "Pattern recognition co-processor. Boosts memory + bandwidth for the module-spam build."
+rarity = 2
+item_type = "chip"
+stat_modifiers = {"memory": 3.0, "bandwidth": 2.0}
+chip_slot_type = "utility"

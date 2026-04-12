@@ -72,6 +72,24 @@ func _on_area_entered(area: Area3D) -> void:
 					var effect: Resource = load("res://scripts/combat/status_effect_library.gd").make_fragmented()
 					if effect != null:
 						sm.apply_effect(effect)
+			# Phase 3 #29 — Counterstrike chip: extend the parry
+			# payoff into an AoE. Every enemy within 5m of the
+			# parrying player gets the same Fragmented tag, so the
+			# parry becomes a setup for a follow-up sweep instead
+			# of just a single-target counter.
+			var equip: Node = owner_entity.get_node_or_null("EquipmentComponent") as Node
+			if equip and equip.has_method(&"has_chip_passive") and equip.has_chip_passive("parry_counterstrike"):
+				var center: Vector3 = (owner_entity as Node3D).global_position
+				for enemy: Node in owner_entity.get_tree().get_nodes_in_group(&"enemies"):
+					if enemy == info.source or not enemy is Node3D:
+						continue
+					if (enemy as Node3D).global_position.distance_to(center) > 5.0:
+						continue
+					var esm: Node = enemy.get_node_or_null("StatusEffectManager") as Node
+					if esm and esm.has_method(&"apply_effect"):
+						var aoe_effect: Resource = load("res://scripts/combat/status_effect_library.gd").make_fragmented()
+						if aoe_effect != null:
+							esm.apply_effect(aoe_effect)
 		else:
 			# 80% mitigation — readable as "I'm absorbing it but it
 			# still chips through". The const lives on player.gd.
