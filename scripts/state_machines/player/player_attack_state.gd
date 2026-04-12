@@ -19,8 +19,8 @@ const ENERGY_BURST_COOLDOWN: float = 1.5
 # Hit-confirm feedback tuning
 const HIT_SHAKE_AMP: float = 0.07
 const HIT_SHAKE_DECAY: float = 14.0
-const HIT_STOP_REAL_SECONDS: float = 0.04
-const HIT_STOP_TIME_SCALE: float = 0.05
+const HIT_STOP_REAL_SECONDS: float = 0.06
+const HIT_STOP_TIME_SCALE: float = 0.2
 const BASE_DATA_PULSE_DAMAGE: float = 5.0
 const PROCESSING_DAMAGE_SCALE: float = 1.5
 
@@ -485,7 +485,7 @@ func _spawn_burst_shockwave(p: CharacterBody3D) -> void:
 		camera.shake(0.2, 6.0)
 
 	# Brief hitstop
-	Engine.time_scale = 0.15
-	p.get_tree().create_timer(0.05, true, false, true).timeout.connect(func() -> void:
+	Engine.time_scale = 0.25
+	p.get_tree().create_timer(0.04, true, false, true).timeout.connect(func() -> void:
 		Engine.time_scale = 1.0
 	)

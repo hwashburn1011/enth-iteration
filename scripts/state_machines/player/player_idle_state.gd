@@ -6,7 +6,7 @@ extends "res://scripts/state_machines/state.gd"
 func enter() -> void:
 	var p = player
 	if p and p.animation_player.has_animation(&"idle"):
-		p.animation_player.play(&"idle")
+		p.animation_player.play(&"idle", 0.15)
 
 
 func handle_input(event: InputEvent) -> void:
