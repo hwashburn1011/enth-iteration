@@ -21,6 +21,20 @@ func _ready() -> void:
 	stats_component.base_integrity = 10.0
 	model.scale = Vector3(2.0, 2.0, 2.0)
 
+
+func reset() -> void:
+	## Pool re-activation hook. EnemyPool only holds 1 boss instance and
+	## reuses it across every iteration's dungeon clear, so per-fight
+	## state has to be wiped manually each time the boss comes back out
+	## of the pool — otherwise the second fight has stale phase flags
+	## (skipping all transitions) and stale HUD-registered flag
+	## (suppressing the dramatic boss bar).
+	super.reset()
+	current_phase = 1
+	is_transitioning = false
+	_phase_checked = [false, false, false]
+	_hud_registered = false
+
 	health_component.health_changed.connect(_on_boss_health_changed)
 	# Dramatic HUD boss bar — defer so the EnemyPool guard runs after
 	# the boss is in its final parent (either EnemyPool at startup or
