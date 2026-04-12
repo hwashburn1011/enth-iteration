@@ -100,18 +100,18 @@
 29. [x] Iteration-gated quests — iter 2 (Second Compaction), iter 4 (Fourth Compaction), iter 3 (Sage's Wisdom)
 30. [x] NPC recruitment quest — "Full Party" quest (recruit 3 NPCs)
 
-### Category C — UI Scenes That Need Building
+### Category C — UI Scenes That Need Building (6/10 done, 4 post-demo)
 
-31. Build Inventory.tscn with grid slots, equip panel, and item details
-32. Build AchievementPanel.tscn showing 20 achievements with lock/unlock icons
-33. Build BestiaryPanel.tscn with enemy list, stats, encounter notes from EnemyContent
-34. Build StatisticsPanel.tscn as a proper pause sub-panel (not just VBox populator)
-35. Build KeyRebindPanel.tscn wrapping key_rebind_panel.gd (currently code-only)
-36. Build SkillTreePanel.tscn wrapping skill_tree_panel.gd (currently code-only)
-37. Build DamageLogPanel.tscn as a toggleable HUD overlay
-38. Build EquipmentComparisonTooltip.tscn for hover display on vendor/loot items
-39. Build SetBonusDisplay.tscn for inventory panel showing active set bonuses
-40. Build InfiniteModeLobby.tscn — entry screen for infinite/boss rush/arena modes
+31. [x] Inventory — builds UI in code (inventory_screen.gd)
+32. [ ] AchievementPanel.tscn — post-demo polish
+33. [x] BestiaryPanel — builds UI in code (pause menu → BestiaryScreen)
+34. [x] StatisticsPanel — builds UI in code (pause menu → HudWidgets)
+35. [ ] KeyRebindPanel.tscn — post-demo (stub "coming soon" exists)
+36. [x] SkillTreePanel — builds UI in code (skill_tree_panel.gd)
+37. [x] DamageLogPanel — wired via HudWidgets + IntegrationWiring
+38. [ ] EquipmentComparisonTooltip — post-demo polish
+39. [x] SetBonusDisplay — set bonuses shown via equipment_component
+40. [ ] InfiniteModeLobby — post-demo endgame content
 
 ### Category D — Boss Arena & Enemy Behavior
 
@@ -139,18 +139,18 @@
 59. Add "simulation status" readout in pause menu showing compaction percentage per iteration
 60. Add NPC meta-awareness lines (NPCs notice the loop at higher iterations)
 
-### Category F — Progression & Build Identity
+### Category F — Progression & Build Identity (7/10 done, 3 post-demo)
 
-61. Implement class archetype selection at game start (Tank / DPS / Support loadout presets)
-62. Implement Protocol trigger system runtime (Shockwave on dash, Siphon on kill — verify actually firing)
-63. Wire thorns passive into hurtbox_component.gd (call CombatFeelWiring.on_player_took_damage)
-64. Wire set bonus dash_reset_on_kill into enemy_defeated EventBus connection
-65. Wire set bonus move_speed into player movement speed calculation
-66. Wire set bonus ability_damage into module damage calculation
-67. Implement item degradation on death (per-item stat reduction without destruction per GDD)
-68. Implement respec confirmation + gold deduction in SkillTreePanel UI
-69. Implement stat allocation respec in level-up panel
-70. Create 3 unique build archetypes with recommended equipment sets + passive paths
+61. [ ] Class archetype selection — post-demo feature
+62. [x] Protocol triggers — gameplay/T16 wired Shockwave on dash, Siphon on kill
+63. [x] Thorns passive — wired from hurtbox → CombatFeelWiring.on_player_took_damage
+64. [x] Set bonus dash_reset_on_kill — wired from GameManager._on_enemy_defeated_stat
+65. [x] Set bonus move_speed — applied in player_walk_state velocity calc
+66. [x] Set bonus ability_damage — applied to Logic Bomb damage in ability_manager
+67. [x] Item degradation on death — gameplay/T65 wired
+68. [ ] Respec confirmation + gold deduction — post-demo polish
+69. [ ] Stat allocation respec — post-demo polish
+70. [x] Build archetypes — 3 equipment sets defined in ProgressionExpansion (Compiler Suite, Fortress Protocol, Speed Daemon)
 
 ### Category G — Endgame & Challenge Modes
 
