@@ -1287,6 +1287,39 @@ func _build_th_save_shrine(geom: Node) -> void:
 	var fpulse: Tween = pivot.create_tween().set_loops()
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 9.0, 0.4).set_ease(Tween.EASE_IN_OUT)
 	fpulse.tween_property(flame_mat, "emission_energy_multiplier", 6.5, 0.4).set_ease(Tween.EASE_IN_OUT)
+	# Phase 2 #18: SaveShrine interaction zone wired below.
+	_attach_save_shrine_interact(pivot)
+
+
+func _attach_save_shrine_interact(pivot: Node3D) -> void:
+	## Phase 2 #18: turn the Epic-10 T7 visual shrine into a real
+	## interactable. The Area3D below is the runtime consumer that
+	## restores HP/compute and force-saves on [E].
+	var shrine_script: Script = load("res://scenes/town/interactables/save_shrine.gd") as Script
+	if shrine_script == null:
+		return
+	var shrine_area: Area3D = Area3D.new()
+	shrine_area.name = "SaveShrineInteract"
+	shrine_area.set_script(shrine_script)
+	var area_cs: CollisionShape3D = CollisionShape3D.new()
+	var area_shape: CylinderShape3D = CylinderShape3D.new()
+	area_shape.radius = 1.6
+	area_shape.height = 2.4
+	area_cs.shape = area_shape
+	shrine_area.add_child(area_cs)
+	shrine_area.position = Vector3(0, 1.2, 1.85)
+	var prompt: Label3D = Label3D.new()
+	prompt.name = "RestLabel"
+	prompt.text = "[E] Rest at the Shrine"
+	prompt.font_size = 36
+	prompt.outline_size = 8
+	prompt.modulate = Color(1.0, 0.95, 0.75)
+	prompt.outline_modulate = Color(0.05, 0.05, 0.10, 0.95)
+	prompt.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	prompt.set_draw_flag(Label3D.FLAG_DISABLE_DEPTH_TEST, true)
+	prompt.position = Vector3(0, 1.6, 0)
+	shrine_area.add_child(prompt)
+	pivot.add_child(shrine_area)
 
 
 func _build_th_quest_board(geom: Node) -> void:
