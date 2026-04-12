@@ -172,6 +172,9 @@ func _build_player_extras() -> void:
 			instance.scale = Vector3(0.45, 0.45, 0.45)
 			model.add_child(instance)
 
+	# Task 6: Replace medieval sword with digital data blade
+	_replace_sword_with_data_blade()
+
 	# v4 hero ships with its own visor, eyes, nameplate, antenna, and
 	# materials baked in. Skip the legacy R3 orb-material override + procedural
 	# eye/antenna code below (kept for reference but gated off).
@@ -360,6 +363,57 @@ func _on_died() -> void:
 	var death_state: Node = state_machine.get_node_or_null("DeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)
+
+
+## Task 6: Replace medieval sword GLB with a procedural digital energy blade.
+## Finds any HeroSword* child in Model and replaces its meshes with a glowing
+## cyan/violet BoxMesh "data blade" that fits the digital simulation theme.
+func _replace_sword_with_data_blade() -> void:
+	var sword_root: Node = null
+	for child: Node in model.get_children():
+		if child.name.begins_with("HeroSword"):
+			sword_root = child
+			break
+	if sword_root == null:
+		return
+	# Hide all original sword meshes
+	var stack: Array[Node] = [sword_root]
+	while stack.size() > 0:
+		var n: Node = stack.pop_back()
+		if n is MeshInstance3D:
+			(n as MeshInstance3D).visible = false
+		for c: Node in n.get_children():
+			stack.append(c)
+	# Create a procedural energy blade
+	var blade: MeshInstance3D = MeshInstance3D.new()
+	blade.name = "DataBlade"
+	var blade_mesh: BoxMesh = BoxMesh.new()
+	blade_mesh.size = Vector3(0.06, 0.8, 0.02)
+	blade.mesh = blade_mesh
+	blade.position = Vector3(0, 0.4, 0)
+	var blade_mat: StandardMaterial3D = StandardMaterial3D.new()
+	blade_mat.albedo_color = Color(0.1, 0.7, 0.9, 0.85)
+	blade_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	blade_mat.emission_enabled = true
+	blade_mat.emission = Color(0.2, 0.8, 1.0)
+	blade_mat.emission_energy_multiplier = 2.5
+	blade_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	blade.material_override = blade_mat
+	sword_root.add_child(blade)
+	# Hilt — small dark grip
+	var hilt: MeshInstance3D = MeshInstance3D.new()
+	hilt.name = "DataHilt"
+	var hilt_mesh: BoxMesh = BoxMesh.new()
+	hilt_mesh.size = Vector3(0.1, 0.12, 0.04)
+	hilt.mesh = hilt_mesh
+	hilt.position = Vector3(0, -0.02, 0)
+	var hilt_mat: StandardMaterial3D = StandardMaterial3D.new()
+	hilt_mat.albedo_color = Color(0.08, 0.12, 0.18)
+	hilt_mat.emission_enabled = true
+	hilt_mat.emission = Color(0.05, 0.3, 0.4)
+	hilt_mat.emission_energy_multiplier = 0.5
+	hilt.material_override = hilt_mat
+	sword_root.add_child(hilt)
 
 
 func _process(delta: float) -> void:
