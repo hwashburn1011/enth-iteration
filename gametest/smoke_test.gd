@@ -55,6 +55,7 @@ func _run_all() -> void:
 	_test("quest_manager_save_load", _test_quest_manager_save_load)
 	_test("game_manager_recruited_npcs", _test_game_manager_recruited_npcs)
 	_test("save_backup_rotation", _test_save_backup_rotation)
+	_test("gold_persistence_round_trip", _test_gold_persistence_round_trip)
 
 
 func _test(check_name: String, fn: Callable) -> void:
@@ -189,4 +190,24 @@ func _test_save_backup_rotation() -> bool:
 	# Do a save, check no crash
 	sm.save_game()
 	sm.save_game()  # second save triggers rotation
+	return true
+
+
+## O47: Gold persistence round-trip — set gold, save, stomp, load, verify.
+func _test_gold_persistence_round_trip() -> bool:
+	var gm: Node = get_node("/root/GameManager")
+	if not "player_gold" in gm:
+		_failure_msg = "GameManager missing player_gold property"
+		return false
+	var original_gold: int = int(gm.player_gold)
+	gm.player_gold = 42
+	var sm: Node = get_node("/root/SaveManager")
+	sm.save_game()
+	gm.player_gold = 0
+	sm.load_game()
+	if int(gm.player_gold) != 42:
+		gm.player_gold = original_gold
+		_failure_msg = "gold round-trip lost: expected 42, got %d" % int(gm.player_gold)
+		return false
+	gm.player_gold = original_gold
 	return true
