@@ -41,6 +41,8 @@ var _last_affinity_tier: Dictionary = {}
 var _quest_panel: PanelContainer = null
 var _quest_title_label: Label = null
 var _quest_obj_label: Label = null
+## R2 F3 — gold display label.
+var _gold_label: Label = null
 
 # Phase 3 #23 — debuff icon strip. Anchored top-left under the
 # health/compute bars; child chips are PanelContainers keyed by
@@ -74,6 +76,8 @@ func _ready() -> void:
 	_create_debuff_strip()
 	_create_quest_widget()
 	EventBus.quest_updated.connect(_on_quest_updated)
+	_create_gold_display()
+	EventBus.enemy_defeated.connect(_on_enemy_defeated_gold)
 
 
 func _process(delta: float) -> void:
@@ -1028,3 +1032,26 @@ func _refresh_quest_widget() -> void:
 	if obj_text == "":
 		obj_text = "Complete!"
 	_quest_obj_label.text = obj_text
+
+
+## R2 F3 — gold display below quest widget, top-right corner.
+func _create_gold_display() -> void:
+	_gold_label = Label.new()
+	_gold_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_gold_label.offset_left = -140
+	_gold_label.offset_top = 90
+	_gold_label.offset_right = -16
+	_gold_label.offset_bottom = 110
+	_gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_gold_label.add_theme_font_size_override(&"font_size", 16)
+	_gold_label.add_theme_color_override(&"font_color", Color(1.0, 0.85, 0.2))
+	_gold_label.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	_gold_label.add_theme_constant_override(&"outline_size", 3)
+	_gold_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_gold_label.text = "%d Gold" % GameManager.player_gold
+	_container.add_child(_gold_label)
+
+
+func _on_enemy_defeated_gold(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
+	if _gold_label:
+		_gold_label.text = "%d Gold" % GameManager.player_gold
