@@ -34,6 +34,9 @@ var _prompt_indicator_root: Control = null
 var _room_panel: PanelContainer = null
 var _iteration_panel: PanelContainer = null
 var _iteration_label: Label = null
+## Per-NPC tier cache for affinity tier-up detection. Built lazily as
+## affinity_changed signals fire so we don't bake state into the HUD ctor.
+var _last_affinity_tier: Dictionary = {}
 
 
 func _ready() -> void:
@@ -46,6 +49,7 @@ func _ready() -> void:
 	EventBus.dialogue_ended.connect(_on_dialogue_ended)
 	EventBus.enemy_defeated.connect(_on_enemy_killed_streak)
 	EventBus.scene_changed.connect(_refresh_iteration_chip)
+	EventBus.affinity_changed.connect(_on_affinity_changed)
 	_create_room_indicator()
 	_create_iteration_chip()
 	_create_controls_hint()
@@ -655,6 +659,75 @@ func _update_xp_display(lc: Node) -> void:
 	_level_label.text = "Lv. %d" % lc.current_level
 	_xp_bar.max_value = lc.xp_to_next_level
 	_xp_bar.value = lc.current_xp
+
+
+# --- Affinity tier feedback ---
+# Detects when an NPC crosses an affinity tier boundary and shows a small
+# banner. Without this, EventBus.affinity_changed had no listeners — the
+# whole tier system was invisible to the player.
+func _on_affinity_changed(npc_id: StringName, _new_value: int) -> void:
+	var id_str: String = String(npc_id)
+	var new_tier: String = GameManager.get_affinity_tier(id_str)
+	var old_tier: String = _last_affinity_tier.get(id_str, "Stranger")
+	_last_affinity_tier[id_str] = new_tier
+	if new_tier != old_tier and _tier_rank(new_tier) > _tier_rank(old_tier):
+		_show_affinity_tier_banner(id_str, new_tier)
+
+
+func _tier_rank(tier_name: String) -> int:
+	match tier_name:
+		"Trusted": return 3
+		"Ally": return 2
+		"Acquaintance": return 1
+		_: return 0
+
+
+func _show_affinity_tier_banner(npc_id: String, tier_name: String) -> void:
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	holder.offset_left = -260
+	holder.offset_right = 260
+	holder.offset_top = 320  # below the level-up banner slot
+	holder.offset_bottom = 400
+	holder.pivot_offset = Vector2(260, 40)
+	holder.modulate.a = 0.0
+	holder.scale = Vector2(0.7, 0.7)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var sub: Label = Label.new()
+	sub.text = "BOND DEEPENED"
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	sub.offset_top = 0
+	sub.offset_bottom = 22
+	sub.add_theme_font_size_override(&"font_size", 14)
+	sub.add_theme_color_override(&"font_color", Color(0.7, 0.95, 0.85))
+	sub.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.85))
+	sub.add_theme_constant_override(&"outline_size", 4)
+	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(sub)
+
+	var banner: Label = Label.new()
+	banner.text = "%s — %s" % [npc_id.capitalize(), tier_name.to_upper()]
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	banner.offset_top = 24
+	banner.offset_bottom = 70
+	banner.add_theme_font_size_override(&"font_size", 28)
+	banner.add_theme_color_override(&"font_color", Color(0.4, 1.0, 0.7))
+	banner.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	banner.add_theme_constant_override(&"outline_size", 6)
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(banner)
+
+	_container.add_child(holder)
+	var tween: Tween = holder.create_tween()
+	tween.tween_property(holder, "modulate:a", 1.0, 0.25).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(holder, "scale", Vector2(1.05, 1.05), 0.25).set_ease(Tween.EASE_OUT)
+	tween.tween_property(holder, "scale", Vector2(1.0, 1.0), 0.12)
+	tween.tween_interval(1.6)
+	tween.tween_property(holder, "modulate:a", 0.0, 0.5).set_ease(Tween.EASE_IN)
+	tween.tween_callback(holder.queue_free)
 
 
 func _on_enemy_killed_streak(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
