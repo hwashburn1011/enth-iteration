@@ -13,6 +13,7 @@ var _hud_registered: bool = false
 
 
 func _ready() -> void:
+	enemy_type = &"corrupted_compiler"
 	super._ready()
 	health_component.max_health = 500.0
 	health_component.current_health = 500.0

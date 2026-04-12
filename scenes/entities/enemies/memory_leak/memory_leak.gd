@@ -7,6 +7,7 @@ const FLEE_DISTANCE: float = 4.0
 
 
 func _ready() -> void:
+	enemy_type = &"memory_leak"
 	super._ready()
 	health_component.max_health = 20.0
 	health_component.current_health = 20.0

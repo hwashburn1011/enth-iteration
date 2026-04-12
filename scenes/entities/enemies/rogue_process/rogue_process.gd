@@ -17,6 +17,7 @@ var _pre_enrage_materials: Dictionary = {}
 
 
 func _ready() -> void:
+	enemy_type = &"rogue_process"
 	super._ready()
 	_base_move_speed = move_speed
 	health_component.max_health = 25.0

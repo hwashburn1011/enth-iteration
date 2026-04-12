@@ -32,8 +32,14 @@ func enter() -> void:
 	if enemy.loot_dropper:
 		enemy.loot_dropper.drop_loot(enemy.global_position)
 
+	# Prefer the stable enemy_type id (snake_case) over the node name
+	# (PascalCase, sometimes numbered like GlitchBug2). LevelComponent's
+	# XP table and QuestManager objective filters both key on enemy_type;
+	# emitting the node name silently broke both — every kill returned
+	# XP_REWARD_DEFAULT regardless of enemy class.
+	var type_id: StringName = enemy.enemy_type if enemy.enemy_type != &"" else StringName(enemy.name)
 	EventBus.enemy_defeated.emit(
-		StringName(enemy.name),
+		type_id,
 		enemy.global_position,
 		enemy.loot_dropper.loot_table if enemy.loot_dropper else null
 	)

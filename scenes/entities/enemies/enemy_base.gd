@@ -6,6 +6,12 @@ extends CharacterBody3D
 @export var patrol_radius: float = 5.0
 @export var attack_range: float = 2.0
 @export var leash_time: float = 5.0
+## Stable snake_case identifier emitted with EventBus.enemy_defeated.
+## Used by LevelComponent's XP table and QuestManager objective filters.
+## Subclasses must override this in _ready() — without it, the death
+## state falls back to the PascalCase node name and the tiered XP table
+## (and any quest filtering by enemy type) silently breaks.
+@export var enemy_type: StringName = &""
 
 @onready var state_machine: Node = %StateMachine
 @onready var health_component: Node = %HealthComponent
