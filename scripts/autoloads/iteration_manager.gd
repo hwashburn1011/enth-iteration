@@ -19,7 +19,12 @@ signal iteration_advanced(new_iteration: int)
 signal iteration_reset
 
 const FIRST_ITERATION: int = 1
-const FINAL_ITERATION: int = 9
+## V1 demo cap. The full game's design lands at 9 iterations (see GDD)
+## but the V1 vertical slice ships 4 — enough to demonstrate the loop
+## arc with biome shifts, boss variants, and a story climax without
+## needing 9x the content of Phases 2-5. Bump back to 9 for the post-V1
+## release. Tracked in _bmad-output/v1-demo-backlog.md Phase 1 #9.
+const FINAL_ITERATION: int = 4
 
 var current_iteration: int = FIRST_ITERATION
 

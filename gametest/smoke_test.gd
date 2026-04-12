@@ -129,13 +129,18 @@ func _test_save_stages_pending_metas() -> bool:
 
 func _test_iteration_manager_save_load() -> bool:
 	# Direct check on IterationManager.to_save_data / from_save_data.
+	# Use FIRST_ITERATION + 1 so the assertion stays valid no matter how
+	# tight FINAL_ITERATION gets — V1 has it at 4, the full game ships
+	# with 9. The clamp inside from_save_data would silently rewrite a
+	# hardcoded 5 if we ever drop below that, masking real regressions.
 	var im: Node = get_node("/root/IterationManager")
 	var saved: Dictionary = im.to_save_data() as Dictionary
 	if not saved.has("current_iteration"):
 		_failure_msg = "IterationManager.to_save_data missing current_iteration"
 		return false
-	im.from_save_data({"current_iteration": 5})
-	if int(im.current_iteration) != 5:
+	var test_value: int = int(im.FIRST_ITERATION) + 1  # always within range
+	im.from_save_data({"current_iteration": test_value})
+	if int(im.current_iteration) != test_value:
 		_failure_msg = "from_save_data did not apply current_iteration"
 		return false
 	# Restore.
