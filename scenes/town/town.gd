@@ -853,10 +853,13 @@ static func _add_prop_collision(prop_root: Node3D) -> void:
 	var body: StaticBody3D = StaticBody3D.new()
 	var shape: CollisionShape3D = CollisionShape3D.new()
 	var box: BoxShape3D = BoxShape3D.new()
+	# Shrink collision to 80% of AABB to reduce phantom blockers from
+	# irregular GLB meshes whose bounding box extends past visible geometry
+	var shrink: float = 0.80
 	box.size = Vector3(
-		biggest_aabb.size.x * prop_scale.x,
+		biggest_aabb.size.x * prop_scale.x * shrink,
 		biggest_aabb.size.y * prop_scale.y,
-		biggest_aabb.size.z * prop_scale.z
+		biggest_aabb.size.z * prop_scale.z * shrink
 	)
 	shape.shape = box
 	var center: Vector3 = biggest_aabb.position + biggest_aabb.size * 0.5

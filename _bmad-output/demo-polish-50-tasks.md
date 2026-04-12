@@ -9,14 +9,14 @@
 1. [x] **FIX: floor_config enemy_types typed Array[String] crash** — use .assign() instead of = [] on all floor configs
 2. [ ] **Change FINAL_ITERATION from 9 to 6 for demo** — IterationManager.FINAL_ITERATION = 6
 3. [ ] **Remove iteration count from compaction banner** — show "COMPACTION COMPLETE" not "ITERATION 1 → 2"
-4. [ ] **Remove iteration count from dungeon entrance preview** — show difficulty tier, not raw number out of total
+4. [x] **Remove iteration count from dungeon entrance preview** — shows "LOOP N" not "ITERATION N / 6"
 5. [ ] **Hide total iteration count from HUD chip** — show "LOOP 1" not "1/9"
 
 ## Phase 2 — PLAYER WEAPON (no sword in digital world) [P0]
 
 6. [x] **Replace sword mesh with digital weapon** — procedural data blade (glowing cyan BoxMesh + dark hilt)
 7. [x] **Attack VFX already digital** — cyan/green torus arcs for Data Pulse combo, verified in code
-8. [ ] **Update attack SFX concept** — electronic zap/pulse, not metal clang (stub if no audio file)
+8. [ ] **Review attack SFX tone** — attack_hit.wav exists (13KB), needs audio review for digital feel
 
 ## Phase 3 — TOWN COLLISION CLEANUP [P0]
 
