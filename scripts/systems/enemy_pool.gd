@@ -104,6 +104,8 @@ func get_enemy(type: String) -> CharacterBody3D:
 
 
 func return_enemy(enemy: CharacterBody3D) -> void:
+	if not is_instance_valid(enemy):
+		return
 	_ensure_init()
 	var enemy_type: String = _get_type(enemy)
 	if enemy_type.is_empty():
@@ -134,6 +136,8 @@ func _activate(enemy: CharacterBody3D) -> void:
 
 
 func _deactivate(enemy: CharacterBody3D) -> void:
+	if not is_instance_valid(enemy):
+		return
 	# Clean up any active projectiles/pools owned by this enemy
 	if enemy.has_meta(&"active_projectiles"):
 		var projectiles: Array = enemy.get_meta(&"active_projectiles") as Array

@@ -47,6 +47,9 @@ func enter() -> void:
 	# Wait for death animation then return to pool
 	if enemy.animation_player.has_animation(&"death"):
 		await enemy.animation_player.animation_finished
+	# Guard: scene change may have freed the enemy during the await
+	if not is_instance_valid(enemy):
+		return
 	EnemyPool.return_enemy(enemy)
 
 
