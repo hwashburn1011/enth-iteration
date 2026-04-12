@@ -10,8 +10,8 @@
 3. [x] **Audit enemy_death_state race** — added is_instance_valid after await animation_finished
 4. [x] **is_instance_valid in _deactivate** — returns early if enemy already freed
 5. [x] **is_instance_valid in return_enemy** — returns early if enemy already freed
-6. [ ] **Test: complete compaction loop 1→2 without crash** — verify fix survives full playthrough
-7. [ ] **Test: complete compaction loop 2→3 without crash** — verify at higher iteration scaling
+6. [ ] **Test: complete compaction loop 1→2 without crash** — needs playtest after clearing breakpoints
+7. [ ] **Test: complete compaction loop 2→3 without crash** — needs playtest after clearing breakpoints
 
 ## Phase 2 — COMBAT FEEL: smooth out jank [P0]
 
