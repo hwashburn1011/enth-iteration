@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Seven iterations. The simulation was never designed to survive this many compactions. The data isn't just compressed anymore — it's fragmenting. Splitting into contradictory copies of itself."
+expression = "sad"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Look around you. The walls are mosaics of everything that used to exist here — faces, places, memories — all smeared together like a kaleidoscope made of someone's life."
+expression = "wisdom"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "The dungeon will try to confuse you. Rooms that look familiar but aren't. Enemies wearing fragments of old allies. Stay sharp, Globbler. Trust what you feel, not what you see."
+expression = "default"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]

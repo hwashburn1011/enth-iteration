@@ -32,6 +32,26 @@ const TIER_STOCK: Array[Dictionary] = [
 	{"item_id": "core_persistent_thread", "name": "Persistent Thread", "price": 200, "rarity": 3, "min_iter": 4},
 	{"item_id": "module_deadlock", "name": "Deadlock", "price": 140, "rarity": 2, "min_iter": 4},
 	{"item_id": "module_refactor", "name": "Refactor", "price": 160, "rarity": 3, "min_iter": 4},
+	# Iteration 5 stock
+	{"item_id": "chip_overclock", "name": "Overclock", "price": 150, "rarity": 2, "min_iter": 5},
+	{"item_id": "core_entropy_engine", "name": "Entropy Engine", "price": 250, "rarity": 3, "min_iter": 5},
+	{"item_id": "module_stack_overflow", "name": "Stack Overflow", "price": 180, "rarity": 2, "min_iter": 5},
+	# Iteration 6 stock
+	{"item_id": "chip_void_shield", "name": "Void Shield", "price": 200, "rarity": 3, "min_iter": 6},
+	{"item_id": "core_decompressor", "name": "Decompressor", "price": 320, "rarity": 3, "min_iter": 6},
+	{"item_id": "module_null_wave", "name": "Null Wave", "price": 220, "rarity": 3, "min_iter": 6},
+	# Iteration 7 stock
+	{"item_id": "chip_mosaic_lens", "name": "Mosaic Lens", "price": 260, "rarity": 3, "min_iter": 7},
+	{"item_id": "core_fragment_weaver", "name": "Fragment Weaver", "price": 400, "rarity": 4, "min_iter": 7},
+	{"item_id": "module_glitch_storm", "name": "Glitch Storm", "price": 280, "rarity": 3, "min_iter": 7},
+	# Iteration 8 stock
+	{"item_id": "chip_mirror_protocol", "name": "Mirror Protocol", "price": 340, "rarity": 4, "min_iter": 8},
+	{"item_id": "core_recursion_engine", "name": "Recursion Engine", "price": 500, "rarity": 4, "min_iter": 8},
+	{"item_id": "module_infinite_loop", "name": "Infinite Loop", "price": 360, "rarity": 4, "min_iter": 8},
+	# Iteration 9 stock — endgame
+	{"item_id": "chip_origin_spark", "name": "Origin Spark", "price": 450, "rarity": 4, "min_iter": 9},
+	{"item_id": "core_enth_key", "name": "Enth Key", "price": 666, "rarity": 5, "min_iter": 9},
+	{"item_id": "module_decompression", "name": "Decompression", "price": 500, "rarity": 5, "min_iter": 9},
 ]
 
 

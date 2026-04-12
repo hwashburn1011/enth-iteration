@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "This is it. The origin point. Everything that ever was — every iteration, every compaction, every life archived in this simulation — it all began here. And it ends here."
+expression = "wisdom"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "I won't pretend I know what happens next. Decompression could restore everything. Or it could erase the last thread holding reality together. Either way... the loop breaks today."
+expression = "sad"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Goodbye, Globbler. Not because this is the end. Because whatever comes next — you won't need a sage to tell you what you already know. You were always the key. Now turn it."
+expression = "smile"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]

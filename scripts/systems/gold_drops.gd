@@ -14,7 +14,7 @@ const GOLD_BY_TYPE: Dictionary = {
 }
 
 ## Iteration multiplier — gold rewards grow so the economy stays meaningful.
-const ITER_MULT: Array[float] = [1.0, 1.0, 1.3, 1.6, 2.0]
+const ITER_MULT: Array[float] = [1.0, 1.0, 1.3, 1.6, 2.0, 2.4, 2.9, 3.5, 4.2]
 
 ## Container gold range (min, max).
 const CONTAINER_GOLD_MIN: int = 2

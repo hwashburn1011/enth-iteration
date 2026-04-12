@@ -92,7 +92,10 @@ func _current_iter_for_promo() -> int:
 ##   ---- | ---------------------
 ##    2   | 12%
 ##    3   | 22%
-##    4   | 35%
+##   4-6  | 35%
+##    7   | 45%
+##    8   | 55%
+##    9   | 65%
 func _maybe_promote(enemy: CharacterBody3D, type: String, iter: int, rng: RandomNumberGenerator) -> void:
 	var chance: float = 0.0
 	match iter:
@@ -100,9 +103,15 @@ func _maybe_promote(enemy: CharacterBody3D, type: String, iter: int, rng: Random
 			chance = 0.12
 		3:
 			chance = 0.22
+		4, 5, 6:
+			chance = 0.35
+		7:
+			chance = 0.45
+		8:
+			chance = 0.55
 		_:
-			if iter >= 4:
-				chance = 0.35
+			if iter >= 9:
+				chance = 0.65
 	if rng.randf() >= chance:
 		return
 	var lib_script: Script = load("res://scripts/systems/enemy_promotion.gd") as Script
