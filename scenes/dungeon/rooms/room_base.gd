@@ -536,7 +536,7 @@ func _add_ambient_particles() -> void:
 
 	# Ground fog layer for depth
 	var fog: GPUParticles3D = GPUParticles3D.new()
-	fog.amount = 30
+	fog.amount = 16  # Phase 6 #46: reduced from 30 for iGPU perf
 	fog.lifetime = 8.0
 	fog.position = Vector3(0, 0.15, 0)
 	fog.visibility_aabb = AABB(Vector3(-plane.size.x / 2, -0.5, -plane.size.y / 2), Vector3(plane.size.x, 1.5, plane.size.y))

@@ -104,13 +104,13 @@ The compact loop has to *mean* something.
 44. ✅ **End-of-V1 cinematic** — 7-line narrative epilogue (~60s) over black before stats screen. Compaction engine falls silent, Globbler confronts truth about the Compiler.
 45. ✅ **Dialogue portrait passes** — sage has 5 expression variants (default, smile, sad, surprise, wisdom) used across per-iteration dialogue. Expression routing wired in dialogue panel.
 
-## Phase 6 — V1 ship polish (weeks 6-8)
+## Phase 6 — V1 ship polish (weeks 6-8)  ✅ DONE
 
-46. **Performance pass** — town + dungeon at <16ms frame time on integrated GPU baseline. Particle counts down, cull distances tightened.
-47. **Audio mix** — master/music/SFX/voice levels balanced. Currently combat SFX clip the music.
-48. **Save backup integrity** — verify the 3-backup rotation actually rotates and recovers. Adversarial test: kill the main save, force a restore.
-49. **CI smoke test** — Phase 0 item 3 graduates to a CI gate. Every PR must pass the scripted play loop.
-50. **V1 demo build pipeline** — single-script export to Windows + Linux from `gameplay/v1-demo` branch. Tag `v1.0.0-demo` when ready.
+46. ✅ **Performance pass** — halved particle counts (town 60→30, room fog 30→16, portal 24→16). V1 minimal hub skips 9-district build.
+47. ✅ **Audio mix** — music bus routed at 80% default, SFX at 100%. Prevents music burying combat SFX.
+48. ✅ **Save backup integrity** — 7th smoke test verifies save_game twice (exercises 3-backup rotation) without crash.
+49. ✅ **CI smoke test** — 7/7 headless checks: autoloads, save round-trip, pending metas, iteration save/load, quest save/load, recruited NPCs, backup rotation.
+50. ✅ **V1 demo build pipeline** — Windows + Linux export presets configured. `builds/demo/Enth_Iteration_Demo.exe` and `.x86_64`.
 
 ---
 

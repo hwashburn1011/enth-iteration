@@ -36,9 +36,15 @@ func _ready() -> void:
 
 	# Music player — PROCESS_MODE_ALWAYS so it plays during dialogue pause
 	_music_player = AudioStreamPlayer.new()
-	_music_player.bus = &"Master"
+	# Phase 6 #47: route music to Music bus if it exists, otherwise Master
+	var music_bus: StringName = &"Music" if AudioServer.get_bus_index(&"Music") >= 0 else &"Master"
+	_music_player.bus = music_bus
 	_music_player.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_music_player)
+
+	# Phase 6 #47: set default bus volumes — music slightly below SFX so
+	# combat SFX don't get buried. Master 100%, Music 80%, SFX 100%.
+	_apply_default_bus_volumes()
 
 	# SFX pool
 	var sfx_bus: StringName = &"SFX" if AudioServer.get_bus_index(&"SFX") >= 0 else &"Master"
@@ -198,3 +204,14 @@ func _on_scene_changed(path: String) -> void:
 		play_music("town_ambient")
 	elif "dungeon" in path.to_lower():
 		play_music("dungeon_ambient")
+
+
+## Phase 6 #47 — apply balanced default bus volumes on startup.
+## Music at 80% prevents combat SFX from being buried by the soundtrack.
+func _apply_default_bus_volumes() -> void:
+	var music_idx: int = AudioServer.get_bus_index(&"Music")
+	if music_idx >= 0:
+		AudioServer.set_bus_volume_db(music_idx, linear_to_db(0.8))
+	var sfx_idx: int = AudioServer.get_bus_index(&"SFX")
+	if sfx_idx >= 0:
+		AudioServer.set_bus_volume_db(sfx_idx, linear_to_db(1.0))

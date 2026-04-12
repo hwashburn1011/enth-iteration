@@ -149,7 +149,7 @@ static func spawn_portal_particles(position: Vector3, parent: Node) -> GPUPartic
 	## Rotating particle ring for portals (persistent until freed)
 	# Primary orbiting ring
 	var particles: GPUParticles3D = GPUParticles3D.new()
-	particles.amount = 24
+	particles.amount = 16  # Phase 6 #46: reduced from 24
 	particles.lifetime = 2.0
 	particles.position = position + Vector3(0, 1, 0)
 	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()

@@ -442,7 +442,7 @@ func _show_location_label(location: String) -> void:
 func _add_ambient_particles() -> void:
 	# Warm floating dust motes / fireflies
 	var particles: GPUParticles3D = GPUParticles3D.new()
-	particles.amount = 60  # More fireflies for richer atmosphere
+	particles.amount = 30  # Phase 6 #46: halved from 60 for iGPU perf
 	particles.lifetime = 7.0
 	particles.visibility_aabb = AABB(Vector3(-20, 0, -20), Vector3(40, 6, 40))
 	particles.position = Vector3(0, 2, 0)
