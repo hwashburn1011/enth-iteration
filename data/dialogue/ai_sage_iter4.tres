@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "This is the final iteration, Globbler. I can see the core now — the heart of the compaction engine. It's been here all along, hidden beneath every loop."
+expression = "wisdom"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "I was wrong about one thing. The Corrupted Compiler wasn't rewriting the simulation to destroy it. It was trying to preserve it — the only way it knew how. By making it smaller. Denser. Compressed."
+expression = "surprise"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "But compression has a limit. After this cycle, there won't be enough data left to sustain the world. This is it. Go into the loop one last time. End the compaction — or let the simulation collapse forever."
+expression = "sad"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]

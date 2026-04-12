@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "You've felt it, haven't you? The compaction. The world is... smaller than it was. Tighter. The simulation is collapsing inward."
+expression = "wisdom"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "The Corrupted Compiler grows stronger with each cycle. It's learning from you — adapting. The enemies you face now are not the same ones you fought before."
+expression = "sad"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "I found something in the old data streams. Fragments of a message... 'The loop was not an accident.' Someone built this. Someone wanted us trapped here."
+expression = "surprise"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]

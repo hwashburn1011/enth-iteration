@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Three cycles deep now. I can feel the edges of the simulation fraying. There are holes in the data — places where reality simply... stops."
+expression = "sad"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "The message fragments are clearer now. 'Globbler is the key. The observer that was never meant to observe.' You weren't supposed to be aware, Globbler. You weren't supposed to fight back."
+expression = "surprise"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "The Corrupted Compiler isn't the disease — it's a symptom. Something deeper is driving the compaction. And it knows you're getting close to the truth."
+expression = "wisdom"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]

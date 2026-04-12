@@ -1,9 +1,13 @@
 extends "res://scenes/entities/npcs/npc_base.gd"
 ## AI Sage town variant — always present, switches dialogue after first talk.
+## Phase 5 #41: per-iteration dialogue — sage delivers different lines at
+## each iteration, hinting at the simulation's collapse and the narrative arc.
 
 var _intro_dialogue: Resource = null
 var _subsequent_dialogue: Resource = null
 var _has_had_intro: bool = false
+## Phase 5 #41 — per-iteration dialogue resources keyed by iteration number.
+var _iteration_dialogues: Dictionary = {}
 
 
 func _ready() -> void:
@@ -11,6 +15,10 @@ func _ready() -> void:
 	npc_name = "The AI Sage"
 	_intro_dialogue = load("res://data/dialogue/ai_sage_intro.tres") as Resource
 	_subsequent_dialogue = load("res://data/dialogue/ai_sage_subsequent.tres") as Resource
+	# Phase 5 #41 — load per-iteration dialogue
+	_iteration_dialogues[2] = load("res://data/dialogue/ai_sage_iter2.tres") as Resource
+	_iteration_dialogues[3] = load("res://data/dialogue/ai_sage_iter3.tres") as Resource
+	_iteration_dialogues[4] = load("res://data/dialogue/ai_sage_iter4.tres") as Resource
 	dialogue_resource = _intro_dialogue
 	# R5 round-51 fix: wire up the AI Sage portrait textures. The .tscn never
 	# set portrait_default or the portraits dict, so every Sage dialogue was
@@ -33,5 +41,15 @@ func _start_conversation() -> void:
 		dialogue_resource = _intro_dialogue
 		_has_had_intro = true
 	else:
-		dialogue_resource = _subsequent_dialogue
+		# Phase 5 #41 — pick iteration-specific dialogue if available,
+		# otherwise fall back to the generic subsequent lines.
+		var iter: int = 1
+		if has_node("/root/IterationManager"):
+			var im: Node = get_node("/root/IterationManager")
+			if im.has_method(&"get_current_iteration"):
+				iter = int(im.get_current_iteration())
+		if _iteration_dialogues.has(iter):
+			dialogue_resource = _iteration_dialogues[iter]
+		else:
+			dialogue_resource = _subsequent_dialogue
 	super._start_conversation()
