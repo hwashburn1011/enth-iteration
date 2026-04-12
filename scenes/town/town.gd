@@ -78,8 +78,11 @@ func _ready() -> void:
 	add_child(camera)
 
 	GameManager.set_state(GameManager.GameState.PLAYING)
-	# Start town music directly (AudioManager scene_changed may fail during transitions)
-	AudioManager.play_music("town_ambient")
+	# Z3: Wire per-iteration town music
+	var _town_iter: int = 1
+	if has_node("/root/IterationManager"):
+		_town_iter = int(get_node("/root/IterationManager").current_iteration)
+	AudioSceneWiring.wire_town_music(_town_iter)
 	#print("[town] _build_town_decorations()")
 	_build_town_decorations()
 	#print("[town] _populate_npcs()")
