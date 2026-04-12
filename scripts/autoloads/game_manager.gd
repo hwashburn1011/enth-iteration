@@ -97,6 +97,10 @@ func increase_affinity(npc_id: String, amount: int) -> void:
 	var current: int = npc_affinity.get(npc_id, 0) as int
 	npc_affinity[npc_id] = current + amount
 	EventBus.affinity_changed.emit(StringName(npc_id), npc_affinity[npc_id] as int)
+	# Post-V1 B11: check for affinity tier reward
+	var reward_lib: Script = load("res://scripts/systems/affinity_rewards.gd") as Script
+	if reward_lib:
+		reward_lib.check_and_apply(npc_id, npc_affinity[npc_id] as int)
 
 
 func get_affinity(npc_id: String) -> int:
