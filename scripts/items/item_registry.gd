@@ -12,6 +12,14 @@ const ITEM_PATHS: Dictionary = {
 	"module_logic_bomb": "res://data/items/modules/module_logic_bomb.tres",
 	"module_packet_storm": "res://data/items/modules/module_packet_storm.tres",
 	"module_defrag_pulse": "res://data/items/modules/module_defrag_pulse.tres",
+	# Phase 3 #27 — module roster expansion (5 new modules taking the
+	# active-ability roster from 3 to 8). Each one shares the inline
+	# dispatch path in ability_manager.gd; no ability_scene field needed.
+	"module_fork_bomb": "res://data/items/modules/module_fork_bomb.tres",
+	"module_garbage_collect": "res://data/items/modules/module_garbage_collect.tres",
+	"module_recursion": "res://data/items/modules/module_recursion.tres",
+	"module_deadlock": "res://data/items/modules/module_deadlock.tres",
+	"module_refactor": "res://data/items/modules/module_refactor.tres",
 	"core_standard_cpu": "res://data/items/cores/core_standard_cpu.tres",
 	"core_overtuned_gpu": "res://data/items/cores/core_overtuned_gpu.tres",
 	"protocol_on_kill_heal": "res://data/items/protocols/protocol_on_kill_heal.tres",

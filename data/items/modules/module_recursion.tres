@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Recursion"
+item_id = "module_recursion"
+description = "Chain damage that bounces between up to 5 enemies, dealing reduced damage per hop."
+rarity = 2
+item_type = "module"
+compute_cost = 22.0
+cooldown = 8.0
+ability_name = "Recursion"
+ability_description = "Chain lightning — bounces 5x with falloff."

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Garbage Collect"
+item_id = "module_garbage_collect"
+description = "Pulls every nearby enemy toward you, setting up an AoE punish."
+rarity = 2
+item_type = "module"
+compute_cost = 16.0
+cooldown = 7.0
+ability_name = "Garbage Collect"
+ability_description = "Vacuum pull — drags enemies in a 7m radius to your feet."

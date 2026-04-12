@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ModuleItem" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/module_item.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+item_name = "Deadlock"
+item_id = "module_deadlock"
+description = "Slams every enemy in a small radius with a hard Throttled stun."
+rarity = 2
+item_type = "module"
+compute_cost = 14.0
+cooldown = 9.0
+ability_name = "Deadlock"
+ability_description = "AoE stun — applies extended Throttled to nearby enemies."
