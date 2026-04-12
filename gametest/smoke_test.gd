@@ -58,6 +58,9 @@ func _run_all() -> void:
 	_test("gold_persistence_round_trip", _test_gold_persistence_round_trip)
 	_test("enemy_pool_all_types", _test_enemy_pool_all_types)
 	_test("boss_database_count", _test_boss_database_count)
+	_test("passive_node_count_24", _test_passive_node_count)
+	_test("level_cap_60", _test_level_cap)
+	_test("achievement_count_20", _test_achievement_count)
 
 
 func _test(check_name: String, fn: Callable) -> void:
@@ -244,5 +247,35 @@ func _test_boss_database_count() -> bool:
 	var bosses: Array = BossDatabase.get_all()
 	if bosses.size() < 8:
 		_failure_msg = "BossDatabase has %d bosses, expected >= 8" % bosses.size()
+		return false
+	return true
+
+
+## AH39: Verify passive node tree has 24 entries.
+func _test_passive_node_count() -> bool:
+	var nodes: Array = PassiveNodeDatabase.NODES
+	if nodes.size() != 24:
+		_failure_msg = "PassiveNodeDatabase has %d nodes, expected 24" % nodes.size()
+		return false
+	return true
+
+
+## AH40: Verify level cap is 60.
+func _test_level_cap() -> bool:
+	var lib: Script = load("res://scripts/components/level_component.gd") as Script
+	if lib == null:
+		_failure_msg = "level_component.gd failed to load"
+		return false
+	var max_level: int = int(lib.get(&"MAX_LEVEL"))
+	if max_level != 60:
+		_failure_msg = "MAX_LEVEL is %d, expected 60" % max_level
+		return false
+	return true
+
+
+## AF: Verify achievement database has 20 entries.
+func _test_achievement_count() -> bool:
+	if AchievementSystem.ACHIEVEMENTS.size() != 20:
+		_failure_msg = "AchievementSystem has %d achievements, expected 20" % AchievementSystem.ACHIEVEMENTS.size()
 		return false
 	return true
