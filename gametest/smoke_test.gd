@@ -56,6 +56,8 @@ func _run_all() -> void:
 	_test("game_manager_recruited_npcs", _test_game_manager_recruited_npcs)
 	_test("save_backup_rotation", _test_save_backup_rotation)
 	_test("gold_persistence_round_trip", _test_gold_persistence_round_trip)
+	_test("enemy_pool_all_types", _test_enemy_pool_all_types)
+	_test("boss_database_count", _test_boss_database_count)
 
 
 func _test(check_name: String, fn: Callable) -> void:
@@ -210,4 +212,37 @@ func _test_gold_persistence_round_trip() -> bool:
 		_failure_msg = "gold round-trip lost: expected 42, got %d" % int(gm.player_gold)
 		return false
 	gm.player_gold = original_gold
+	return true
+
+
+## Y43: Verify all 8+1 enemy types have scenes registered in EnemyPool.
+func _test_enemy_pool_all_types() -> bool:
+	var pool: Node = get_node_or_null("/root/EnemyPool")
+	if pool == null:
+		_failure_msg = "EnemyPool autoload missing"
+		return false
+	var expected_types: Array[String] = [
+		"glitch_bug", "memory_leak", "rogue_process", "corrupted_compiler",
+		"firewall_guardian", "buffer_overflow", "null_pointer", "stack_crawler", "syntax_error",
+	]
+	var scenes: Dictionary = pool.get(&"ENEMY_SCENES") as Dictionary if &"ENEMY_SCENES" in pool else {}
+	for t: String in expected_types:
+		if t not in scenes:
+			_failure_msg = "EnemyPool missing scene for type '%s'" % t
+			return false
+	return true
+
+
+## Y44: Verify BossDatabase has 8 bosses covering all iterations.
+func _test_boss_database_count() -> bool:
+	var lib: Script = load("res://scripts/systems/boss_database.gd") as Script
+	if lib == null:
+		_failure_msg = "boss_database.gd failed to load"
+		return false
+	var count_method: Variant = lib.get(&"count")
+	# Static method access — call via the class
+	var bosses: Array = BossDatabase.get_all()
+	if bosses.size() < 8:
+		_failure_msg = "BossDatabase has %d bosses, expected >= 8" % bosses.size()
+		return false
 	return true
