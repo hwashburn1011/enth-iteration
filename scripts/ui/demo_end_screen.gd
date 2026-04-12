@@ -1,6 +1,9 @@
 extends Control
 ## Demo end screen — shows stats summary and thank-you message.
 
+var _cinematic_overlay: ColorRect = null
+var _cinematic_skip_label: Label = null
+
 @onready var _time_label: Label = %TimeLabel
 @onready var _enemies_label: Label = %EnemiesLabel
 @onready var _deaths_label: Label = %DeathsLabel
@@ -17,6 +20,22 @@ func _ready() -> void:
 	_populate_stats()
 	# Phase 5 #44 — play the end-of-V1 cinematic before showing stats
 	_play_end_cinematic()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _cinematic_overlay != null and event.is_action_pressed(&"pause"):
+		_skip_cinematic()
+		get_viewport().set_input_as_handled()
+
+
+func _skip_cinematic() -> void:
+	if _cinematic_overlay == null:
+		return
+	_cinematic_overlay.queue_free()
+	_cinematic_overlay = null
+	_cinematic_skip_label = null
+	# Reveal the stats panel immediately
+	modulate.a = 1.0
 
 
 func _apply_theme() -> void:
@@ -73,11 +92,22 @@ func _apply_theme() -> void:
 		credits_btn.add_theme_stylebox_override(&"hover", btn_hover)
 		credits_btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
 		credits_btn.add_theme_font_size_override(&"font_size", 18)
+		# E56: New Game Plus button
+		var ngp_btn: Button = Button.new()
+		ngp_btn.text = "New Game+"
+		ngp_btn.pressed.connect(_on_ng_plus_pressed)
+		ngp_btn.add_theme_stylebox_override(&"normal", btn_normal)
+		ngp_btn.add_theme_stylebox_override(&"hover", btn_hover)
+		ngp_btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
+		ngp_btn.add_theme_font_size_override(&"font_size", 18)
 		# Insert before QuitButton
 		var quit: Node = vbox.get_node_or_null("QuitButton")
 		if quit:
 			vbox.move_child(credits_btn, quit.get_index())
 		vbox.add_child(credits_btn)
+		vbox.add_child(ngp_btn)
+		if quit:
+			vbox.move_child(ngp_btn, quit.get_index())
 	# Fade in
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 1.0)
@@ -127,6 +157,20 @@ func _play_end_cinematic() -> void:
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(overlay)
 	overlay.z_index = 100
+	_cinematic_overlay = overlay
+
+	# I96: Skip hint
+	var skip_hint: Label = Label.new()
+	skip_hint.text = "Press ESC to skip"
+	skip_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	skip_hint.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	skip_hint.offset_left = -200.0
+	skip_hint.offset_top = -30.0
+	skip_hint.add_theme_font_size_override(&"font_size", 14)
+	skip_hint.add_theme_color_override(&"font_color", Color(0.5, 0.55, 0.6, 0.6))
+	skip_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.add_child(skip_hint)
+	_cinematic_skip_label = skip_hint
 
 	var line_label: Label = Label.new()
 	line_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -158,7 +202,11 @@ func _play_end_cinematic() -> void:
 			return
 		var fade: Tween = overlay.create_tween()
 		fade.tween_property(overlay, "color:a", 0.0, 1.5)
-		fade.tween_callback(overlay.queue_free)
+		fade.tween_callback(func() -> void:
+			_cinematic_overlay = null
+			_cinematic_skip_label = null
+			overlay.queue_free()
+		)
 	)
 
 
@@ -182,6 +230,16 @@ func _on_return_pressed() -> void:
 func _on_credits_pressed() -> void:
 	var credits: Control = CreditsScreen.new()
 	get_tree().root.add_child(credits)
+
+
+## E56: Start New Game Plus after credits
+func _on_ng_plus_pressed() -> void:
+	var ngp: Script = load("res://scripts/systems/newgame_plus.gd") as Script
+	if ngp and ngp.has_method(&"start_ng_plus"):
+		ngp.start_ng_plus()
+	else:
+		# Fallback: just return to town
+		GameManager.change_scene_to("res://scenes/town/Town.tscn")
 
 
 func _on_quit_pressed() -> void:
