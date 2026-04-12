@@ -51,6 +51,13 @@ func _ready() -> void:
 		else:
 			player_node.global_position = player_spawn_point.global_position
 
+		# Restore any pending save data onto the freshly spawned player.
+		# Without this call a loaded save effectively never activates until
+		# the player enters the dungeon (which was the only other site that
+		# called apply_to_player). Players were spawning into town at level
+		# 1 with empty inventories on every load.
+		SaveManager.apply_to_player(player_node)
+
 	# Spawn isometric camera targeting player
 	var cam_script: GDScript = load("res://scripts/components/isometric_camera.gd") as GDScript
 	var camera: Camera3D = Camera3D.new()
