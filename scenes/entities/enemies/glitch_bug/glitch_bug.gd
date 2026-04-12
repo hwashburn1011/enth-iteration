@@ -6,6 +6,7 @@ const XP_REWARD: int = 10
 
 
 func _ready() -> void:
+	enemy_type = &"glitch_bug"
 	super._ready()
 	# Override base stats
 	health_component.max_health = 30.0

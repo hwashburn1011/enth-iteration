@@ -18,6 +18,15 @@ func _init() -> void:
 	attack_cooldown = 0.5
 
 
+## Called from CorruptedCompiler.reset() so the attack rotation and add-spawn
+## timer start fresh on every pool re-activation. Without this, iter 2's boss
+## fight inherits whatever counter values the iter 1 fight ended on, jumping
+## straight to a stack_overflow if _attack_count happened to land at 7.
+func reset_pattern() -> void:
+	_attack_count = 0
+	_spawn_timer = 0.0
+
+
 func enter() -> void:
 	var boss = player
 	if boss.is_transitioning:

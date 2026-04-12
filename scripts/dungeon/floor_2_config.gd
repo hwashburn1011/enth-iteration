@@ -41,26 +41,39 @@ static func _setup_elite_after_spawn(spawner: Node) -> void:
 
 
 static func _buff_elite(_spawner: Node) -> void:
-	# Find rogue processes in the scene and buff the first one as elite
+	# Find an unbuffed rogue process in the scene and buff it as elite.
+	# Skip any pool-reused instance that's still flagged as elite from a
+	# previous iteration — the meta is cleared on reset() but as a safety
+	# net we also use capture_pre_variant_baseline + absolute scale assignment
+	# so the buff is idempotent even if it does fire on a buffed instance.
 	var tree: SceneTree = Engine.get_main_loop() as SceneTree
 	if tree == null:
 		return
 	for node: Node in tree.get_nodes_in_group(&"enemies"):
-		if node.get_script().get_global_name() == "RogueProcess":
-			var elite: CharacterBody3D = node
-			# Write to base_max_health (canonical field) and mirror to
-			# max_health so the value sticks even if stat scaling is later
-			# re-enabled on enemies.
-			elite.health_component.base_max_health *= 3.0
-			elite.health_component.max_health *= 3.0
-			elite.health_component.current_health = elite.health_component.max_health
-			elite.model.scale = Vector3(1.5, 1.5, 1.5)
-			var mesh: MeshInstance3D = elite.model.get_child(0) as MeshInstance3D
-			if mesh:
-				var mat: StandardMaterial3D = StandardMaterial3D.new()
-				mat.albedo_color = Color(0.6, 0.2, 0.9)
-				mat.emission_enabled = true
-				mat.emission = Color(0.5, 0.1, 0.8)
-				mat.emission_energy_multiplier = 1.0
-				mesh.material_override = mat
-			return  # Only buff the first one
+		if node.get_script().get_global_name() != "RogueProcess":
+			continue
+		var elite: CharacterBody3D = node
+		if elite.has_meta(&"_floor2_elite"):
+			continue  # Already an elite from this round — try the next candidate
+		# Snapshot the un-buffed baseline FIRST so reset() can restore it on
+		# pool return; without this the buff compounds across iterations.
+		elite.capture_pre_variant_baseline()
+		elite.set_meta(&"_floor2_elite", true)
+		# Compute from the captured baseline rather than current values so
+		# this works even if the snapshot was already stale.
+		var base_hp: float = elite._pre_variant_max_health
+		elite.health_component.base_max_health = base_hp * 3.0
+		elite.health_component.max_health = base_hp * 3.0
+		elite.health_component.current_health = elite.health_component.max_health
+		elite.model.scale = elite._pre_variant_model_scale * 1.5
+		# Visual tint — walk every mesh in the model rather than casting
+		# get_child(0), which fails silently for GLB-wrapped enemies (the
+		# first child is a Node3D wrapper, not a MeshInstance3D).
+		var mat: StandardMaterial3D = StandardMaterial3D.new()
+		mat.albedo_color = Color(0.6, 0.2, 0.9)
+		mat.emission_enabled = true
+		mat.emission = Color(0.5, 0.1, 0.8)
+		mat.emission_energy_multiplier = 1.0
+		for mesh: MeshInstance3D in elite.get_mesh_instances():
+			mesh.material_override = mat
+		return
