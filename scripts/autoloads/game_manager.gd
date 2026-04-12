@@ -77,6 +77,10 @@ func _process(delta: float) -> void:
 
 func _on_enemy_defeated_stat(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
 	total_enemies_defeated += 1
+	# F64: Check set bonus dash_reset_on_kill
+	var players: Array[Node] = get_tree().get_nodes_in_group(&"player")
+	if players.size() > 0:
+		CombatFeelWiring.check_dash_reset_on_kill(players[0])
 	# Post-V1 Epic A #3 — award gold on enemy kill
 	var iter: int = 1
 	if has_node("/root/IterationManager"):

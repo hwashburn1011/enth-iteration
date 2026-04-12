@@ -68,6 +68,8 @@ func physics_update(delta: float) -> void:
 	# the slow concentrated to the moments the player is actively
 	# moving — no need to mutate p.move_speed.
 	var speed: float = p.move_speed
+	# F65: Apply set bonus move speed
+	speed *= (1.0 + CombatFeelWiring.get_move_speed_bonus(p))
 	if p.has_meta(&"status_throttled"):
 		var slow_frac: float = float(p.get_meta(&"status_throttled"))
 		speed *= clampf(1.0 - slow_frac, 0.1, 1.0)

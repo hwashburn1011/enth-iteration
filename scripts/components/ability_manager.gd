@@ -154,7 +154,7 @@ func _do_logic_bomb() -> void:
 	if not _player.is_inside_tree():
 		return
 	var origin: Vector3 = (_player as Node3D).global_position
-	var dmg: float = LOGIC_BOMB_DAMAGE + _processing_stat() * LOGIC_BOMB_PROCESSING_SCALE
+	var dmg: float = (LOGIC_BOMB_DAMAGE + _processing_stat() * LOGIC_BOMB_PROCESSING_SCALE) * CombatFeelWiring.get_ability_damage_mult(_player)
 	var tree: SceneTree = _player.get_tree()
 	for enemy: Node in tree.get_nodes_in_group(&"enemies"):
 		if not enemy is Node3D:
