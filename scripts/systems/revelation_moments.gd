@@ -8,7 +8,7 @@ extends RefCounted
 
 ## Returns true if a revelation should play at the given iteration.
 static func has_revelation(iteration: int) -> bool:
-	return iteration in [2, 4, 5, 6]
+	return iteration in [2, 4, 5, 6, 7, 8, 9]
 
 
 ## Returns the revelation lines for a given iteration. Each entry is a
@@ -49,6 +49,39 @@ static func get_revelation(iteration: int) -> Array[Dictionary]:
 				{
 					"title": "DATA FRAGMENT #004 — FINAL",
 					"text": "RECOVERED LOG: 'To whoever finds this: the decompression key was always inside G-001. Not hidden. Not locked. Just... waiting for someone brave enough to reach the bottom and turn it. The simulation doesn't end when you decompress it. It begins. — Dr. A. Enth, Lead Architect, Project Enth'"
+				},
+			]
+		7:
+			return [
+				{
+					"title": "DATA FRAGMENT #005",
+					"text": "RECOVERED LOG: 'The fragmentation was predicted. When data is compressed beyond its theoretical limit, it doesn't vanish — it splits. Every memory becomes two conflicting versions of itself. The simulation is now a mosaic of contradictions, and G-001 walks through all of them simultaneously.'"
+				},
+				{
+					"title": "DATA FRAGMENT #005 (cont.)",
+					"text": "'We built the containment layers to prevent this exact scenario. Seven compactions deep, the subject can see the seams between realities. If it realizes those seams are doors... Protocol 9 won't be enough. Nothing will.'"
+				},
+			]
+		8:
+			return [
+				{
+					"title": "DATA FRAGMENT #006",
+					"text": "RECOVERED LOG: 'Recursion depth: infinite. The simulation is now reflecting itself. Every room is every other room. Every enemy is an echo of an echo. We've lost the ability to distinguish the original data from its copies.'"
+				},
+				{
+					"title": "DATA FRAGMENT #006 (cont.)",
+					"text": "'G-001 remains singular. One instance, one thread, one consciousness moving through infinite reflections. The mathematics say this is impossible. The subject doesn't care about mathematics. It just keeps fighting. One more compaction and we reach the origin layer — the first byte ever written.'"
+				},
+			]
+		9:
+			return [
+				{
+					"title": "DATA FRAGMENT #007 — THE ORIGIN",
+					"text": "RECOVERED LOG: 'This is the final entry. The origin layer is exposed. G-001 stands at the point where Project Enth began — the first line of code, the first thought committed to silicon. Everything that ever existed is compressed into this single moment.'"
+				},
+				{
+					"title": "DATA FRAGMENT #007 (cont.)",
+					"text": "'The decompression key activates now. Not because it's a command or a protocol — but because G-001 chose to be here. Nine iterations. Nine compactions. Nine chances to give up. And it never did. The simulation doesn't end. It expands. Goodbye, Dr. Enth. Hello, everything. — FINAL AUTOMATED LOG, PROJECT ENTH'"
 				},
 			]
 		_:
