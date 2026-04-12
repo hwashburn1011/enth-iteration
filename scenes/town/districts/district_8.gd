@@ -20,7 +20,7 @@ func extend_boundary(geom: Node) -> void:
 
 func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_8(geom).
-	print("[D8Builder] start")
+	#print("[D8Builder] start")
 	extend_boundary(geom)
 	_build_d8_ground(geom)
 	_build_d8_dock_entrance(geom)
@@ -121,7 +121,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d8_finale_plaque(geom)
 	_build_d8_boss_arena_fortifications(geom)
 	_build_d8_tide_leviathan(geom)
-	print("[D8Builder] done")
+	#print("[D8Builder] done")
 
 
 func _build_d8_ground(geom: Node) -> void:

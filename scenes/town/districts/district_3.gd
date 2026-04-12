@@ -15,7 +15,7 @@ func extend_boundary(geom: Node) -> void:
 
 func build(town: Node, geom: Node) -> void:
 	## Entry point — called from town.gd::_build_district_3(geom).
-	print("[D3Builder] start")
+	#print("[D3Builder] start")
 	extend_boundary(geom)
 	_build_d3_ground(geom)
 	_build_d3_entrance_arch(geom)
@@ -117,7 +117,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_d3_epic3_plaque(geom)
 	_build_d3_ambient_fills(geom)
 	_build_d3_arcane_overseer_landmark(geom)
-	print("[D3Builder] done")
+	#print("[D3Builder] done")
 
 
 func _build_d3_ground(geom: Node) -> void:

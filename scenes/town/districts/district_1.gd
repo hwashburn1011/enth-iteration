@@ -8,7 +8,7 @@ const EAST_PLAZA_CENTER := Vector3(32, 0, 0)
 
 
 func build(town: Node, geom: Node) -> void:
-	print("[D1Builder] start")
+	#print("[D1Builder] start")
 	# Step 1: extend the playable boundary east.
 	var east_wall: CSGBox3D = geom.get_node_or_null("BoundaryEast") as CSGBox3D
 	if east_wall:
@@ -121,7 +121,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_plaza_ambient_lighting(geom)
 	_build_epic1_plaque(geom)
 	_build_central_globbler_landmark(geom)
-	print("[D1Builder] done")
+	#print("[D1Builder] done")
 
 
 func _build_east_plaza_ground(geom: Node) -> void:

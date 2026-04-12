@@ -43,7 +43,7 @@ func _scan_initial() -> void:
 			var path: String = shader_dir + file_name
 			_file_mtimes[path] = FileAccess.get_modified_time(path)
 	dir.list_dir_end()
-	print("ShaderHotReload: watching %d shader files" % _file_mtimes.size())
+	#print("ShaderHotReload: watching %d shader files" % _file_mtimes.size())
 
 
 func _scan_for_changes() -> void:
@@ -63,7 +63,7 @@ func _reload_shader(path: String) -> void:
 	# Walk active scene tree and find ShaderMaterials using this shader
 	var root: Node = get_tree().root
 	var count: int = _refresh_materials_in_node(root, shader, path)
-	print("ShaderHotReload: reloaded %s — refreshed %d materials" % [path.get_file(), count])
+	#print("ShaderHotReload: reloaded %s — refreshed %d materials" % [path.get_file(), count])
 
 
 func _refresh_materials_in_node(node: Node, shader: Shader, path: String) -> int:

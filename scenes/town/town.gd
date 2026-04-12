@@ -80,13 +80,13 @@ func _ready() -> void:
 	GameManager.set_state(GameManager.GameState.PLAYING)
 	# Start town music directly (AudioManager scene_changed may fail during transitions)
 	AudioManager.play_music("town_ambient")
-	print("[town] _build_town_decorations()")
+	#print("[town] _build_town_decorations()")
 	_build_town_decorations()
-	print("[town] _populate_npcs()")
+	#print("[town] _populate_npcs()")
 	_populate_npcs()
-	print("[town] _update_town_state()")
+	#print("[town] _update_town_state()")
 	_update_town_state()
-	print("[town] _add_ambient_particles()")
+	#print("[town] _add_ambient_particles()")
 	_add_ambient_particles()
 	# V1 demo scope: skip the 9-district + Town Heart procedural build
 	# entirely. The base Town.tscn already has the spawn marker, dungeon
@@ -99,15 +99,15 @@ func _ready() -> void:
 	# 9-district build for post-V1 work or screenshots.
 	# See _bmad-output/v1-demo-backlog.md Phase 1 #8.
 	if not ProjectSettings.get_setting("application/v1_demo_minimal_town", true):
-		print("[town] _build_east_plaza() — chains into D2..D9")
+		#print("[town] _build_east_plaza() — chains into D2..D9")
 		_build_east_plaza()
-		print("[town] districts done")
+		#print("[town] districts done")
 	else:
-		print("[town] V1 minimal hub — skipping district + TownHeart build")
+		#print("[town] V1 minimal hub — skipping district + TownHeart build")
 	# R5 round-30: clamp baked-GLB hot emissions (lantern flames at 80.0)
 	# down to a HDR-safe value to prevent bloom blowout. Discovered via the
 	# round-30 emission survey across all 3 main scenes.
-	print("[town] _clamp_hot_emissions()")
+	#print("[town] _clamp_hot_emissions()")
 	_clamp_hot_emissions(get_node_or_null("Geometry"))
 	# Show "TOWN" location label briefly
 	_show_location_label("TOWN")
@@ -1436,15 +1436,15 @@ func _build_east_plaza() -> void:
 	var geom: Node = get_node_or_null("Geometry")
 	if geom == null:
 		return
-	print("[town] entering D1 east plaza")
+	#print("[town] entering D1 east plaza")
 	var _b1 := D1Builder.new()
 	add_child(_b1)
 	_b1.build(self, geom)
-	print("[town] D1 east plaza done")
+	#print("[town] D1 east plaza done")
 	# === EPIC 2: District 2 — Stack Overflow Outskirts ===
-	print("[town] entering D2")
+	#print("[town] entering D2")
 	_build_district_2(geom)
-	print("[town] D2 done")
+	#print("[town] D2 done")
 
 
 func _build_district_2(geom: Node) -> void:
@@ -1455,9 +1455,9 @@ func _build_district_2(geom: Node) -> void:
 	add_child(_b2)
 	_b2.build(self, geom)
 	# === EPIC 3: Memory Vault — The Datacore Depths ===
-	print("[town] entering D3")
+	#print("[town] entering D3")
 	_build_district_3(geom)
-	print("[town] D3 done")
+	#print("[town] D3 done")
 
 
 func _build_district_3(geom: Node) -> void:
@@ -1466,25 +1466,25 @@ func _build_district_3(geom: Node) -> void:
 	add_child(_b3)
 	_b3.build(self, geom)
 	# === EPIC 4: Bloom Cluster — The Sandbox Greenhouse ===
-	print("[town] entering D4")
+	#print("[town] entering D4")
 	_build_district_4(geom)
-	print("[town] D4 done")
+	#print("[town] D4 done")
 	# === EPIC 5: Frozen Cache — The Cryogenic Archive ===
-	print("[town] entering D5")
+	#print("[town] entering D5")
 	_build_district_5(geom)
-	print("[town] D5 done")
+	#print("[town] D5 done")
 	# === EPIC 6: Neon Bazaar — The All-Night Market ===
-	print("[town] entering D6")
+	#print("[town] entering D6")
 	_build_district_6(geom)
-	print("[town] D6 done")
+	#print("[town] D6 done")
 	# === EPIC 7: Ascension Spires — The High Sandstone Monastery ===
-	print("[town] entering D7")
+	#print("[town] entering D7")
 	_build_district_7(geom)
-	print("[town] D7 done")
+	#print("[town] D7 done")
 	# === EPIC 8: Tidal Harbor — The Working Seaside Port ===
-	print("[town] entering D8")
+	#print("[town] entering D8")
 	_build_district_8(geom)
-	print("[town] D8 done")
+	#print("[town] D8 done")
 
 
 func _build_district_4(geom: Node) -> void:
@@ -1533,9 +1533,9 @@ func _build_district_8(geom: Node) -> void:
 	add_child(_b8)
 	_b8.build(self, geom)
 	# === EPIC 9: District 9 — Volcanic Forge ===
-	print("[town] entering D9")
+	#print("[town] entering D9")
 	_build_district_9(geom)
-	print("[town] D9 done")
+	#print("[town] D9 done")
 
 
 func _build_district_9(geom: Node) -> void:
@@ -1546,9 +1546,9 @@ func _build_district_9(geom: Node) -> void:
 	add_child(_b9)
 	_b9.build(self, geom)
 	# === EPIC 10: Town Heart Plaza — central hub at world origin ===
-	print("[town] entering Town Heart")
+	#print("[town] entering Town Heart")
 	_build_town_heart(geom)
-	print("[town] Town Heart done")
+	#print("[town] Town Heart done")
 
 
 func _build_town_heart(geom: Node) -> void:

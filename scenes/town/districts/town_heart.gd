@@ -16,7 +16,7 @@ const TOWN_CENTER: Vector3 = Vector3(0, 0, 0)
 
 
 func build(town: Node, geom: Node) -> void:
-	print("[TownHeartBuilder] start")
+	#print("[TownHeartBuilder] start")
 	_build_th_beacon_monument(geom)
 	_build_th_compass_plaza(geom)
 	_build_th_district_nameplates(geom)
@@ -95,7 +95,7 @@ func build(town: Node, geom: Node) -> void:
 	_build_th_plaza_visitor_trio(town)
 	_build_th_inner_glyph_mosaic_tiles(geom)
 	_build_th_hover_holo_books(geom)
-	print("[TownHeartBuilder] done")
+	#print("[TownHeartBuilder] done")
 
 
 func _build_th_beacon_monument(geom: Node) -> void:
