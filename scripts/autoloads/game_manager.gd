@@ -53,6 +53,21 @@ func _ready() -> void:
 	IntegrationWiring.wire_gamepad_on_startup()
 	# R7 AE3: Wire kill counter on enemy defeat
 	EventBus.enemy_defeated.connect(IntegrationWiring.on_enemy_defeated_count)
+	# Task86-88: Check achievements on key events + show popup
+	EventBus.boss_defeated.connect(func(_b: StringName) -> void:
+		set_meta(StringName("boss_defeated_%s" % String(_b)), true)
+		_check_achievements_deferred()
+	)
+	EventBus.player_died.connect(func() -> void: _check_achievements_deferred())
+
+
+func _check_achievements_deferred() -> void:
+	# Defer so game state settles before checking conditions
+	call_deferred(&"_check_achievements_now")
+
+
+func _check_achievements_now() -> void:
+	HudIntegration.check_and_show_achievements(get_tree().current_scene)
 
 
 func _process(delta: float) -> void:

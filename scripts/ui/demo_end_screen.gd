@@ -63,6 +63,21 @@ func _apply_theme() -> void:
 			btn.add_theme_stylebox_override(&"hover", btn_hover)
 			btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
 			btn.add_theme_font_size_override(&"font_size", 18)
+	# Task74: Add Credits button dynamically
+	var vbox: Node = get_node_or_null("VBoxContainer")
+	if vbox:
+		var credits_btn: Button = Button.new()
+		credits_btn.text = "Credits"
+		credits_btn.pressed.connect(_on_credits_pressed)
+		credits_btn.add_theme_stylebox_override(&"normal", btn_normal)
+		credits_btn.add_theme_stylebox_override(&"hover", btn_hover)
+		credits_btn.add_theme_color_override(&"font_color", Color(0.8, 0.85, 0.9))
+		credits_btn.add_theme_font_size_override(&"font_size", 18)
+		# Insert before QuitButton
+		var quit: Node = vbox.get_node_or_null("QuitButton")
+		if quit:
+			vbox.move_child(credits_btn, quit.get_index())
+		vbox.add_child(credits_btn)
 	# Fade in
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 1.0)
@@ -161,6 +176,12 @@ func _schedule_narration_line(label: Label, text: String, start: float, hold: fl
 
 func _on_return_pressed() -> void:
 	GameManager.change_scene_to("res://scenes/town/Town.tscn")
+
+
+## Task74: Show credits after demo end
+func _on_credits_pressed() -> void:
+	var credits: Control = CreditsScreen.new()
+	get_tree().root.add_child(credits)
 
 
 func _on_quit_pressed() -> void:
