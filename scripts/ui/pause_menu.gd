@@ -4,6 +4,7 @@ extends CanvasLayer
 
 var _panel: Control = null
 var _settings_panel: PanelContainer = null
+var _controls_panel: PanelContainer = null
 
 static var _instance: Node = null
 
@@ -80,6 +81,12 @@ func _build_ui() -> void:
 	settings_btn.pressed.connect(_toggle_settings)
 	_style_pause_button(settings_btn)
 	vbox.add_child(settings_btn)
+
+	var controls_btn: Button = Button.new()
+	controls_btn.text = "Controls"
+	controls_btn.pressed.connect(_toggle_controls)
+	_style_pause_button(controls_btn)
+	vbox.add_child(controls_btn)
 
 	var menu_btn: Button = Button.new()
 	menu_btn.text = "Quit to Main Menu"
@@ -175,6 +182,86 @@ func _toggle_settings() -> void:
 
 	_settings_panel.add_child(vbox)
 	_panel.add_child(_settings_panel)
+
+
+## Phase 4 #37 — controls list panel showing all key bindings.
+func _toggle_controls() -> void:
+	# Close settings if open
+	if _settings_panel:
+		_settings_panel.queue_free()
+		_settings_panel = null
+	if _controls_panel:
+		_controls_panel.queue_free()
+		_controls_panel = null
+		return
+
+	_controls_panel = PanelContainer.new()
+	_controls_panel.set_anchors_preset(Control.PRESET_CENTER)
+	_controls_panel.offset_left = 200.0
+	_controls_panel.offset_top = -220.0
+	_controls_panel.offset_right = 560.0
+	_controls_panel.offset_bottom = 220.0
+	var style: StyleBoxFlat = StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.06, 0.12, 0.96)
+	style.border_color = Color(0.15, 0.45, 0.55, 0.8)
+	style.set_border_width_all(2)
+	style.set_corner_radius_all(8)
+	style.set_content_margin_all(16)
+	_controls_panel.add_theme_stylebox_override(&"panel", style)
+
+	var scroll: ScrollContainer = ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(320, 400)
+	_controls_panel.add_child(scroll)
+
+	var vbox: VBoxContainer = VBoxContainer.new()
+	vbox.add_theme_constant_override(&"separation", 4)
+	scroll.add_child(vbox)
+
+	var ctitle: Label = Label.new()
+	ctitle.text = "CONTROLS"
+	ctitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	ctitle.add_theme_color_override(&"font_color", Color(0.3, 0.85, 0.8))
+	ctitle.add_theme_font_size_override(&"font_size", 22)
+	vbox.add_child(ctitle)
+
+	var sep: HSeparator = HSeparator.new()
+	vbox.add_child(sep)
+
+	var bindings: Array[Array] = [
+		["Move", "W A S D"],
+		["Attack", "Left Click"],
+		["Heavy Attack", "Right Click (hold)"],
+		["Dash", "Space"],
+		["Block / Parry", "F"],
+		["Interact / Talk", "E"],
+		["Use Health Prompt", "Q"],
+		["Ability 1-4", "1 2 3 4"],
+		["Inventory", "Tab / I"],
+		["Quest Log", "J"],
+		["Pause", "Escape"],
+		["Zoom In/Out", "Mouse Wheel"],
+	]
+	for binding: Array in bindings:
+		_add_control_row(vbox, str(binding[0]), str(binding[1]))
+
+	_panel.add_child(_controls_panel)
+
+
+func _add_control_row(parent: VBoxContainer, action_name: String, key_text: String) -> void:
+	var hbox: HBoxContainer = HBoxContainer.new()
+	hbox.add_theme_constant_override(&"separation", 8)
+	var action_lbl: Label = Label.new()
+	action_lbl.text = action_name
+	action_lbl.custom_minimum_size = Vector2(160, 0)
+	action_lbl.add_theme_color_override(&"font_color", Color(0.85, 0.9, 0.95))
+	action_lbl.add_theme_font_size_override(&"font_size", 14)
+	hbox.add_child(action_lbl)
+	var key_lbl: Label = Label.new()
+	key_lbl.text = key_text
+	key_lbl.add_theme_color_override(&"font_color", Color(0.4, 0.85, 0.8))
+	key_lbl.add_theme_font_size_override(&"font_size", 14)
+	hbox.add_child(key_lbl)
+	parent.add_child(hbox)
 
 
 func _add_slider(parent: VBoxContainer, label_text: String, bus_index: int, callback: Callable) -> void:
