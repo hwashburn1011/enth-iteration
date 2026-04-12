@@ -88,16 +88,19 @@ func _on_enemy_defeated_compute(_enemy_type: StringName, _pos: Vector3, _loot: R
 	## Phase 3 #28 — Volatile Compiler core: read compute_on_kill
 	## from the player's equipped core (if any) and restore. Defensive
 	## against missing equipment / empty slot / non-core resource.
+	## Phase 3 #26 — also reads passive_compute_on_kill from skill tree.
 	var owner_node: Node = get_parent()
 	if owner_node == null:
 		return
+	var amount: float = 0.0
 	var equip: Node = owner_node.get_node_or_null("EquipmentComponent") as Node
-	if equip == null:
-		return
-	var core: Resource = equip.get(&"core_slot") as Resource
-	if core == null or not (&"compute_on_kill" in core):
-		return
-	var amount: float = float(core.compute_on_kill)
+	if equip:
+		var core: Resource = equip.get(&"core_slot") as Resource
+		if core != null and (&"compute_on_kill" in core):
+			amount += float(core.compute_on_kill)
+	# Phase 3 #26 — passive compute_on_kill from skill tree nodes.
+	if owner_node.has_meta(&"passive_compute_on_kill"):
+		amount += float(owner_node.get_meta(&"passive_compute_on_kill"))
 	if amount <= 0.0:
 		return
 	# Use the public restore() so the compute_changed signal fires

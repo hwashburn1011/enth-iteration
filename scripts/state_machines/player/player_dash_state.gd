@@ -86,7 +86,11 @@ func enter() -> void:
 	if equip:
 		var core: Resource = equip.get(&"core_slot") as Resource
 		if core != null and (&"dash_cooldown_reduction" in core):
-			cd = maxf(0.2, cd - float(core.dash_cooldown_reduction))
+			cd -= float(core.dash_cooldown_reduction)
+	# Phase 3 #26 — passive dash cooldown reduction from skill tree nodes.
+	if p.has_meta(&"passive_dash_cd_reduction"):
+		cd -= float(p.get_meta(&"passive_dash_cd_reduction"))
+	cd = maxf(0.2, cd)
 	p.dash_cooldown_timer.start(cd)
 
 

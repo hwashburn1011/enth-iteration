@@ -40,6 +40,14 @@ var combo_count: int = 0
 var combo_window_left: float = 0.0
 const COMBO_WINDOW: float = 1.10  # ~2x DATA_PULSE_COOLDOWN, gives breathing room
 
+# Phase 3 #26 — skill tree / passive nodes. The player unlocks
+# 1 passive every 3 levels (level 3, 6, 9, 12, ...). Auto-allocated
+# in deterministic rotation order from PassiveNodeDatabase. The
+# unlocked_passives list serializes to save data so progression
+# survives reload. Effect application lives in _grant_passive.
+var unlocked_passives: Array[String] = []
+const PASSIVE_GRANT_LEVEL_INTERVAL: int = 3
+
 # Phase 3 #25 — block / parry. Holding `block` (F by default) drains
 # compute and mitigates incoming damage by BLOCK_DAMAGE_REDUCTION. The
 # first BLOCK_PARRY_WINDOW seconds of a fresh block are a perfect parry
@@ -499,6 +507,44 @@ func _on_leveled_up(_new_level: int) -> void:
 	var panel: Node = load("res://scripts/ui/stat_allocation_panel.gd").new()
 	get_tree().root.add_child(panel)
 	panel.show_panel(self)
+	# Phase 3 #26 — passive node grant every PASSIVE_GRANT_LEVEL_INTERVAL levels.
+	# The rotation index equals the number of passives already unlocked, so
+	# reloading a save and re-granting produces the same sequence.
+	if _new_level > 0 and _new_level % PASSIVE_GRANT_LEVEL_INTERVAL == 0:
+		var idx: int = unlocked_passives.size()
+		var node_id: String = PassiveNodeDatabase.get_id_at_index(idx)
+		if node_id != "":
+			unlocked_passives.append(node_id)
+			_grant_passive(node_id)
+
+
+## Phase 3 #26 — apply a single passive node's effect. Called on level-up
+## and on save-load replay. For "stat" nodes, delegates to StatsComponent.
+## For behavior nodes (crit / dash_cd / compute_kill), stacks into player
+## metas that the respective consumers read each frame / event.
+func _grant_passive(node_id: String) -> void:
+	var node: Dictionary = PassiveNodeDatabase.get_by_id(node_id)
+	if node.is_empty():
+		push_warning("Player._grant_passive: unknown node '%s'" % node_id)
+		return
+	var effect_type: String = str(node.get("effect_type", ""))
+	var amount: float = float(node.get("amount", 0.0))
+	match effect_type:
+		"stat":
+			var key: String = str(node.get("effect_key", ""))
+			if key != "" and stats_component:
+				stats_component.add_passive_bonus(key, amount)
+		"crit":
+			var prev: float = float(get_meta(&"passive_crit_bonus", 0.0))
+			set_meta(&"passive_crit_bonus", prev + amount)
+		"dash_cd":
+			var prev: float = float(get_meta(&"passive_dash_cd_reduction", 0.0))
+			set_meta(&"passive_dash_cd_reduction", prev + amount)
+		"compute_kill":
+			var prev: float = float(get_meta(&"passive_compute_on_kill", 0.0))
+			set_meta(&"passive_compute_on_kill", prev + amount)
+		_:
+			push_warning("Player._grant_passive: unknown effect_type '%s'" % effect_type)
 
 
 func _apply_level_up_hitstop() -> void:
