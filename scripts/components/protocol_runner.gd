@@ -12,8 +12,14 @@ extends Node
 ## type-safe instead of building a string-effect parser for two items.
 
 ## Shockwave Protocol — radius and damage of the post-dash AOE pulse.
+## SHOCKWAVE_DAMAGE is the flat base; the player's processing stat
+## adds SHOCKWAVE_PROCESSING_SCALE per point on top so this stays
+## relevant as the player levels. Without the per-stat term, the
+## protocol becomes irrelevant by mid-game compared to scaled basic
+## attacks.
 const SHOCKWAVE_RADIUS: float = 4.0
 const SHOCKWAVE_DAMAGE: float = 15.0
+const SHOCKWAVE_PROCESSING_SCALE: float = 1.5
 ## Siphon Protocol — fraction of max HP healed on kill.
 const SIPHON_HEAL_PCT: float = 0.05
 
@@ -65,9 +71,13 @@ func _dispatch(protocol: Resource, position: Vector3) -> void:
 
 func _fire_shockwave(origin: Vector3) -> void:
 	## AOE pulse around the dash destination — hits everything in
-	## SHOCKWAVE_RADIUS for SHOCKWAVE_DAMAGE.
+	## SHOCKWAVE_RADIUS for SHOCKWAVE_DAMAGE plus a per-processing term.
 	if not _player.is_inside_tree():
 		return
+	var dmg: float = SHOCKWAVE_DAMAGE
+	var stats: Node = _player.get_node_or_null("StatsComponent") as Node
+	if stats and stats.has_method(&"get_stat"):
+		dmg += stats.get_stat("processing") * SHOCKWAVE_PROCESSING_SCALE
 	var tree: SceneTree = _player.get_tree()
 	for enemy: Node in tree.get_nodes_in_group(&"enemies"):
 		if not enemy is Node3D:
@@ -77,7 +87,7 @@ func _fire_shockwave(origin: Vector3) -> void:
 			continue
 		var hp: Node = enemy.get_node_or_null("HealthComponent") as Node
 		if hp and hp.has_method(&"take_damage"):
-			hp.take_damage(SHOCKWAVE_DAMAGE)
+			hp.take_damage(dmg)
 
 
 func _fire_siphon() -> void:

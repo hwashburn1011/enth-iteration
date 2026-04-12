@@ -14,13 +14,23 @@ extends Node
 signal ability_used(slot_index: int, module: Resource)
 signal ability_ready(slot_index: int)
 
+## Ability damage formulas all share the per-processing scaling pattern
+## from the basic attack so build payoff modules stay relevant as the
+## player levels. Without the *_PROCESSING_SCALE term, the constants
+## become irrelevant against scaled basic attacks by mid-game.
 const LOGIC_BOMB_RADIUS: float = 5.0
 const LOGIC_BOMB_DAMAGE: float = 35.0
+const LOGIC_BOMB_PROCESSING_SCALE: float = 2.5
 const PACKET_STORM_PROJECTILES: int = 5
 const PACKET_STORM_DAMAGE: float = 8.0
+const PACKET_STORM_PROCESSING_SCALE: float = 0.8
 const PACKET_STORM_RANGE: float = 12.0
 const PACKET_STORM_CONE_DEG: float = 30.0
 const DEFRAG_HEAL_AMOUNT: float = 40.0
+## Defrag scales the heal off integrity so a tanky build self-sustains
+## harder than a glass cannon — symmetric with how processing drives
+## offensive abilities.
+const DEFRAG_HEAL_INTEGRITY_SCALE: float = 1.5
 
 var ability_slots: Array[Dictionary] = [{}, {}, {}, {}]
 
@@ -105,10 +115,11 @@ func _execute_ability(module: Resource) -> void:
 
 func _do_logic_bomb() -> void:
 	## AoE explosion centered on the player — damages every enemy in
-	## LOGIC_BOMB_RADIUS for LOGIC_BOMB_DAMAGE.
+	## LOGIC_BOMB_RADIUS for LOGIC_BOMB_DAMAGE plus processing scaling.
 	if not _player.is_inside_tree():
 		return
 	var origin: Vector3 = (_player as Node3D).global_position
+	var dmg: float = LOGIC_BOMB_DAMAGE + _processing_stat() * LOGIC_BOMB_PROCESSING_SCALE
 	var tree: SceneTree = _player.get_tree()
 	for enemy: Node in tree.get_nodes_in_group(&"enemies"):
 		if not enemy is Node3D:
@@ -118,7 +129,21 @@ func _do_logic_bomb() -> void:
 			continue
 		var hp: Node = enemy.get_node_or_null("HealthComponent") as Node
 		if hp and hp.has_method(&"take_damage"):
-			hp.take_damage(LOGIC_BOMB_DAMAGE)
+			hp.take_damage(dmg)
+
+
+func _processing_stat() -> float:
+	var stats: Node = _player.get_node_or_null("StatsComponent") as Node
+	if stats == null or not stats.has_method(&"get_stat"):
+		return 0.0
+	return stats.get_stat("processing")
+
+
+func _integrity_stat() -> float:
+	var stats: Node = _player.get_node_or_null("StatsComponent") as Node
+	if stats == null or not stats.has_method(&"get_stat"):
+		return 0.0
+	return stats.get_stat("integrity")
 
 
 func _do_packet_storm() -> void:
@@ -153,17 +178,19 @@ func _do_packet_storm() -> void:
 			continue
 		candidates.append({"enemy": enemy, "dist": dist})
 	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["dist"]) < float(b["dist"]))
+	var per_hit: float = PACKET_STORM_DAMAGE + _processing_stat() * PACKET_STORM_PROCESSING_SCALE
 	var hits: int = mini(PACKET_STORM_PROJECTILES, candidates.size())
 	for i: int in hits:
 		var enemy: Node = (candidates[i] as Dictionary)["enemy"] as Node
 		var hp: Node = enemy.get_node_or_null("HealthComponent") as Node
 		if hp and hp.has_method(&"take_damage"):
-			hp.take_damage(PACKET_STORM_DAMAGE)
+			hp.take_damage(per_hit)
 
 
 func _do_defrag_pulse() -> void:
-	## Burst self-heal. The hand-tuned amount is intentionally large because
-	## the 8s cooldown and 15 compute cost gate the spam.
+	## Burst self-heal scaled by integrity so a tanky build sustains
+	## harder. 8s cooldown and 15 compute cost gate the spam.
 	var hp: Node = _player.get_node_or_null("HealthComponent") as Node
 	if hp and hp.has_method(&"heal"):
-		hp.heal(DEFRAG_HEAL_AMOUNT)
+		var amount: float = DEFRAG_HEAL_AMOUNT + _integrity_stat() * DEFRAG_HEAL_INTEGRITY_SCALE
+		hp.heal(amount)
