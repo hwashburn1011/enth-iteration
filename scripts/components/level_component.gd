@@ -29,9 +29,9 @@ const XP_REWARD_SYNTAX_ERROR: int = 40
 const XP_REWARD_DEFAULT: int = 20
 ## XP reward multiplier added per compaction loop past the first. Mirrors
 ## ITERATION_HP_MULT_PER_LOOP on enemy_base so leveling speed stays in
-## sync with the difficulty curve — enemies at iter 9 have 3.0x HP, this
-## constant gives them 3.0x XP too.
-const ITERATION_XP_MULT_PER_LOOP: float = 0.25
+## sync with the difficulty curve. Reduced from 0.25 to 0.15 alongside
+## HP/DMG scaling (playtest feedback: gentler progression curve).
+const ITERATION_XP_MULT_PER_LOOP: float = 0.15
 
 @export var xp_per_level_base: int = 100
 @export var stat_points_per_level: int = 3
