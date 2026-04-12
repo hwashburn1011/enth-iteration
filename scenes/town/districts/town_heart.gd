@@ -163,8 +163,7 @@ func _build_th_beacon_monument(geom: Node) -> void:
 	ped_sb.position = Vector3(0, 0.70, 0)
 	var ped_cs: CollisionShape3D = CollisionShape3D.new()
 	var ped_cyl: CylinderShape3D = CylinderShape3D.new()
-	ped_cyl.top_radius = 2.55
-	ped_cyl.bottom_radius = 4.40
+	ped_cyl.radius = maxf(2.55, 4.40)
 	ped_cyl.height = 1.40
 	ped_cs.shape = ped_cyl
 	ped_sb.add_child(ped_cs)
@@ -194,8 +193,7 @@ func _build_th_beacon_monument(geom: Node) -> void:
 	sp_sb.position = Vector3(0, 5.45, 0)
 	var sp_cs: CollisionShape3D = CollisionShape3D.new()
 	var sp_cyl: CylinderShape3D = CylinderShape3D.new()
-	sp_cyl.top_radius = 0.20
-	sp_cyl.bottom_radius = 0.55
+	sp_cyl.radius = maxf(0.20, 0.55)
 	sp_cyl.height = 8.00
 	sp_cs.shape = sp_cyl
 	sp_sb.add_child(sp_cs)
@@ -364,8 +362,7 @@ func _build_th_compass_plaza(geom: Node) -> void:
 	plaza_sb.position = Vector3(0, 0.05, 0)
 	var plaza_cs: CollisionShape3D = CollisionShape3D.new()
 	var plaza_cyl: CylinderShape3D = CylinderShape3D.new()
-	plaza_cyl.top_radius = 14.00
-	plaza_cyl.bottom_radius = 14.20
+	plaza_cyl.radius = maxf(14.00, 14.20)
 	plaza_cyl.height = 0.20
 	plaza_cs.shape = plaza_cyl
 	plaza_sb.add_child(plaza_cs)
@@ -976,8 +973,7 @@ func _build_th_perimeter_lampposts(geom: Node) -> void:
 		shaft_sb.position = Vector3(0, 2.75, 0)
 		var shaft_cs: CollisionShape3D = CollisionShape3D.new()
 		var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
-		shaft_cyl.top_radius = 0.10
-		shaft_cyl.bottom_radius = 0.14
+		shaft_cyl.radius = maxf(0.10, 0.14)
 		shaft_cyl.height = 4.50
 		shaft_cs.shape = shaft_cyl
 		shaft_sb.add_child(shaft_cs)
@@ -1371,8 +1367,7 @@ func _build_th_quest_board(geom: Node) -> void:
 		post_sb.position = Vector3(px, 1.95, 0)
 		var post_cs: CollisionShape3D = CollisionShape3D.new()
 		var post_cyl: CylinderShape3D = CylinderShape3D.new()
-		post_cyl.top_radius = 0.10
-		post_cyl.bottom_radius = 0.10
+		post_cyl.radius = maxf(0.10, 0.10)
 		post_cyl.height = 3.20
 		post_cs.shape = post_cyl
 		post_sb.add_child(post_cs)
@@ -1907,8 +1902,7 @@ func _build_th_data_fountain(geom: Node) -> void:
 	rim_sb.position = Vector3(0, 0.30, 0)
 	var rim_cs: CollisionShape3D = CollisionShape3D.new()
 	var rim_cyl: CylinderShape3D = CylinderShape3D.new()
-	rim_cyl.top_radius = 2.40
-	rim_cyl.bottom_radius = 2.40
+	rim_cyl.radius = maxf(2.40, 2.40)
 	rim_cyl.height = 0.50
 	rim_cs.shape = rim_cyl
 	rim_sb.add_child(rim_cs)
@@ -3993,8 +3987,7 @@ func _build_th_planter_ring(geom: Node) -> void:
 		pot_sb.position = Vector3(0, 0.32, 0)
 		var pot_cs: CollisionShape3D = CollisionShape3D.new()
 		var pot_cyl: CylinderShape3D = CylinderShape3D.new()
-		pot_cyl.top_radius = 0.55
-		pot_cyl.bottom_radius = 0.50
+		pot_cyl.radius = maxf(0.55, 0.50)
 		pot_cyl.height = 0.65
 		pot_cs.shape = pot_cyl
 		pot_sb.add_child(pot_cs)
@@ -4764,8 +4757,7 @@ func _build_th_archive_tower(geom: Node) -> void:
 	shaft_sb.position = Vector3(0, 8.40, 0)
 	var shaft_cs: CollisionShape3D = CollisionShape3D.new()
 	var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
-	shaft_cyl.top_radius = 1.20
-	shaft_cyl.bottom_radius = 1.20
+	shaft_cyl.radius = maxf(1.20, 1.20)
 	shaft_cyl.height = 14.00
 	shaft_cs.shape = shaft_cyl
 	shaft_sb.add_child(shaft_cs)
@@ -5214,8 +5206,7 @@ func _build_th_observatory_dome(geom: Node) -> void:
 	plat_sb.position = Vector3(0, 0.60, 0)
 	var plat_cs: CollisionShape3D = CollisionShape3D.new()
 	var plat_cyl: CylinderShape3D = CylinderShape3D.new()
-	plat_cyl.top_radius = 2.50
-	plat_cyl.bottom_radius = 3.50
+	plat_cyl.radius = maxf(2.50, 3.50)
 	plat_cyl.height = 1.20
 	plat_cs.shape = plat_cyl
 	plat_sb.add_child(plat_cs)
@@ -7441,8 +7432,7 @@ func _build_th_east_approach_road(geom: Node) -> void:
 			shaft_sb.position = Vector3(0, 2.20, 0)
 			var shaft_cs: CollisionShape3D = CollisionShape3D.new()
 			var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
-			shaft_cyl.top_radius = 0.10
-			shaft_cyl.bottom_radius = 0.12
+			shaft_cyl.radius = maxf(0.10, 0.12)
 			shaft_cyl.height = 3.80
 			shaft_cs.shape = shaft_cyl
 			shaft_sb.add_child(shaft_cs)
@@ -7597,8 +7587,7 @@ func _build_th_north_approach_road(geom: Node) -> void:
 			shaft_sb.position = Vector3(0, 2.20, 0)
 			var shaft_cs: CollisionShape3D = CollisionShape3D.new()
 			var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
-			shaft_cyl.top_radius = 0.10
-			shaft_cyl.bottom_radius = 0.12
+			shaft_cyl.radius = maxf(0.10, 0.12)
 			shaft_cyl.height = 3.80
 			shaft_cs.shape = shaft_cyl
 			shaft_sb.add_child(shaft_cs)
@@ -7749,8 +7738,7 @@ func _build_th_west_approach_road(geom: Node) -> void:
 			shaft_sb.position = Vector3(0, 2.20, 0)
 			var shaft_cs: CollisionShape3D = CollisionShape3D.new()
 			var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
-			shaft_cyl.top_radius = 0.10
-			shaft_cyl.bottom_radius = 0.12
+			shaft_cyl.radius = maxf(0.10, 0.12)
 			shaft_cyl.height = 3.80
 			shaft_cs.shape = shaft_cyl
 			shaft_sb.add_child(shaft_cs)
@@ -7893,8 +7881,7 @@ func _build_th_south_approach_road(geom: Node) -> void:
 			shaft_sb.position = Vector3(0, 2.20, 0)
 			var shaft_cs: CollisionShape3D = CollisionShape3D.new()
 			var shaft_cyl: CylinderShape3D = CylinderShape3D.new()
-			shaft_cyl.top_radius = 0.10
-			shaft_cyl.bottom_radius = 0.12
+			shaft_cyl.radius = maxf(0.10, 0.12)
 			shaft_cyl.height = 3.80
 			shaft_cs.shape = shaft_cyl
 			shaft_sb.add_child(shaft_cs)
@@ -8279,8 +8266,7 @@ func _build_th_data_tree_grove(geom: Node) -> void:
 		mound_sb.position = Vector3(0, 0.20, 0)
 		var mound_cs: CollisionShape3D = CollisionShape3D.new()
 		var mound_cyl: CylinderShape3D = CylinderShape3D.new()
-		mound_cyl.top_radius = 0.40
-		mound_cyl.bottom_radius = 0.55
+		mound_cyl.radius = maxf(0.40, 0.55)
 		mound_cyl.height = 0.40
 		mound_cs.shape = mound_cyl
 		mound_sb.add_child(mound_cs)
@@ -8300,8 +8286,7 @@ func _build_th_data_tree_grove(geom: Node) -> void:
 		trunk_sb.position = Vector3(0, 1.85, 0)
 		var trunk_cs: CollisionShape3D = CollisionShape3D.new()
 		var trunk_cyl: CylinderShape3D = CylinderShape3D.new()
-		trunk_cyl.top_radius = 0.15
-		trunk_cyl.bottom_radius = 0.22
+		trunk_cyl.radius = maxf(0.15, 0.22)
 		trunk_cyl.height = 3.20
 		trunk_cs.shape = trunk_cyl
 		trunk_sb.add_child(trunk_cs)
@@ -8413,8 +8398,7 @@ func _build_th_corner_mini_fountains(geom: Node) -> void:
 		rim_sb.position = Vector3(0, 0.20, 0)
 		var rim_cs: CollisionShape3D = CollisionShape3D.new()
 		var rim_cyl: CylinderShape3D = CylinderShape3D.new()
-		rim_cyl.top_radius = 1.20
-		rim_cyl.bottom_radius = 1.20
+		rim_cyl.radius = maxf(1.20, 1.20)
 		rim_cyl.height = 0.40
 		rim_cs.shape = rim_cyl
 		rim_sb.add_child(rim_cs)
@@ -8570,8 +8554,7 @@ func _build_th_open_pavilion(geom: Node) -> void:
 	found_sb.position = Vector3(0, 0.30, 0)
 	var found_cs: CollisionShape3D = CollisionShape3D.new()
 	var found_cyl: CylinderShape3D = CylinderShape3D.new()
-	found_cyl.top_radius = 2.10
-	found_cyl.bottom_radius = 2.55
+	found_cyl.radius = maxf(2.10, 2.55)
 	found_cyl.height = 0.55
 	found_cs.shape = found_cyl
 	found_sb.add_child(found_cs)
@@ -8604,8 +8587,7 @@ func _build_th_open_pavilion(geom: Node) -> void:
 		post_sb.position = Vector3(px, 2.15, pz)
 		var post_cs: CollisionShape3D = CollisionShape3D.new()
 		var post_cyl: CylinderShape3D = CylinderShape3D.new()
-		post_cyl.top_radius = 0.13
-		post_cyl.bottom_radius = 0.13
+		post_cyl.radius = maxf(0.13, 0.13)
 		post_cyl.height = 3.20
 		post_cs.shape = post_cyl
 		post_sb.add_child(post_cs)
@@ -8803,8 +8785,7 @@ func _build_th_hex_gazebo(geom: Node) -> void:
 	floor_sb.position = Vector3(0, 0.15, 0)
 	var floor_cs: CollisionShape3D = CollisionShape3D.new()
 	var floor_cyl: CylinderShape3D = CylinderShape3D.new()
-	floor_cyl.top_radius = 2.10
-	floor_cyl.bottom_radius = 2.10
+	floor_cyl.radius = maxf(2.10, 2.10)
 	floor_cyl.height = 0.30
 	floor_cs.shape = floor_cyl
 	floor_sb.add_child(floor_cs)
@@ -8837,8 +8818,7 @@ func _build_th_hex_gazebo(geom: Node) -> void:
 		post_sb.position = Vector3(px, 1.95, pz)
 		var post_cs: CollisionShape3D = CollisionShape3D.new()
 		var post_cyl: CylinderShape3D = CylinderShape3D.new()
-		post_cyl.top_radius = 0.13
-		post_cyl.bottom_radius = 0.13
+		post_cyl.radius = maxf(0.13, 0.13)
 		post_cyl.height = 3.20
 		post_cs.shape = post_cyl
 		post_sb.add_child(post_cs)
@@ -9029,8 +9009,7 @@ func _build_th_road_junctions(geom: Node) -> void:
 		disc_sb.position = Vector3(0, 0.05, 0)
 		var disc_cs: CollisionShape3D = CollisionShape3D.new()
 		var disc_cyl: CylinderShape3D = CylinderShape3D.new()
-		disc_cyl.top_radius = 2.50
-		disc_cyl.bottom_radius = 2.50
+		disc_cyl.radius = maxf(2.50, 2.50)
 		disc_cyl.height = 0.20
 		disc_cs.shape = disc_cyl
 		disc_sb.add_child(disc_cs)
@@ -9389,8 +9368,7 @@ func _build_th_road_planters(geom: Node) -> void:
 			pot_sb.position = Vector3(0, 0.27, 0)
 			var pot_cs: CollisionShape3D = CollisionShape3D.new()
 			var pot_cyl: CylinderShape3D = CylinderShape3D.new()
-			pot_cyl.top_radius = 0.45
-			pot_cyl.bottom_radius = 0.42
+			pot_cyl.radius = maxf(0.45, 0.42)
 			pot_cyl.height = 0.55
 			pot_cs.shape = pot_cyl
 			pot_sb.add_child(pot_cs)
