@@ -24,6 +24,27 @@ const HIT_STOP_TIME_SCALE: float = 0.05
 const BASE_DATA_PULSE_DAMAGE: float = 5.0
 const PROCESSING_DAMAGE_SCALE: float = 1.5
 
+# Phase 3 #24 — light combo system tuning. Each step in the chain
+# bumps damage and (on the finisher) hitbox + screen shake. The
+# combo step is read from player.combo_count, set in enter() before
+# any swing-specific state, and applied through these multipliers.
+# Step 1 is the unmodified baseline so a single attack still feels
+# the same as it did pre-T24.
+const COMBO_DAMAGE_MULTS: Array[float] = [1.0, 1.15, 1.60]
+const COMBO_HITBOX_SIZES: Array[Vector3] = [
+	Vector3(1.5, 1.0, 1.5),
+	Vector3(1.7, 1.0, 1.7),
+	Vector3(2.0, 1.0, 2.0),
+]
+const COMBO_SHAKE_BONUS: Array[float] = [0.0, 0.02, 0.08]
+# Inner-arc tint per step: cool cyan → warm cyan-yellow → hot orange-yellow.
+# Outer arcs derive from the inner color and are slightly desaturated.
+const COMBO_INNER_COLORS: Array[Color] = [
+	Color(0.30, 0.90, 0.85, 0.7),
+	Color(0.55, 0.95, 0.70, 0.78),
+	Color(1.00, 0.85, 0.30, 0.85),
+]
+
 var _timer: float = 0.0
 var _hitbox_enabled: bool = false
 var _has_hit: Dictionary = {}
@@ -33,6 +54,8 @@ var _active_start: float = 0.0
 var _active_end: float = 0.0
 var _duration: float = 0.0
 var _hits_landed_this_swing: int = 0
+# Phase 3 #24 — combo step for the current swing (0/1/2 = hit 1/2/3).
+var _combo_step: int = 0
 
 
 func enter() -> void:
@@ -57,6 +80,13 @@ func enter() -> void:
 		p.remove_meta(&"energy_burst_charge_multiplier")
 		p.can_attack = false
 		p.attack_cooldown_timer.start(ENERGY_BURST_COOLDOWN)
+		# Phase 3 #24 — energy burst breaks the data-pulse chain
+		# entirely. Burst is its own beat, and trying to thread it
+		# into the combo would either over-reward bursts or
+		# under-reward chained pulses.
+		p.combo_count = 0
+		p.combo_window_left = 0.0
+		_combo_step = 0
 		if p.animation_player.has_animation(&"energy_burst"):
 			p.animation_player.play(&"energy_burst")
 		elif p.animation_player.has_animation(&"attack_primary"):
@@ -66,8 +96,20 @@ func enter() -> void:
 		_active_start = DATA_PULSE_ACTIVE_START
 		_active_end = DATA_PULSE_ACTIVE_END
 		_duration = DATA_PULSE_DURATION
-		# Restore default hitbox size
-		_set_hitbox_size(p, Vector3(1.5, 1.0, 1.5))
+		# Phase 3 #24 — advance the chain. combo_count is the count of
+		# the LAST landed swing; we increment it for the new swing and
+		# refresh the decay window so the next attack within COMBO_WINDOW
+		# seconds chains. After hit 3 we wrap back to 1 (a 4th tap is
+		# the start of a new chain, not a 4-hit combo).
+		var next_step: int = clampi(p.combo_count, 0, 2) + 1
+		if next_step > 3:
+			next_step = 1
+		p.combo_count = next_step
+		p.combo_window_left = p.COMBO_WINDOW
+		_combo_step = next_step - 1  # 0, 1, or 2 → array index
+		# Per-step hitbox size — bigger on the finisher so the AoE feels
+		# proportional to the slower wind-down.
+		_set_hitbox_size(p, COMBO_HITBOX_SIZES[_combo_step])
 		p.can_attack = false
 		p.attack_cooldown_timer.start(DATA_PULSE_COOLDOWN)
 		if p.animation_player.has_animation(&"attack_primary"):
@@ -96,7 +138,10 @@ func physics_update(delta: float) -> void:
 				p.hitbox_component.set_meta(&"base_damage", _burst_damage)
 				p.hitbox_component.set_meta(&"damage_type", &"energy")
 			else:
-				var dmg: float = BASE_DATA_PULSE_DAMAGE + p.stats_component.get_stat("processing") * PROCESSING_DAMAGE_SCALE
+				# Phase 3 #24 — combo damage multiplier. Step 1 is 1.0x
+				# so a single attack is unchanged from pre-T24.
+				var base: float = BASE_DATA_PULSE_DAMAGE + p.stats_component.get_stat("processing") * PROCESSING_DAMAGE_SCALE
+				var dmg: float = base * COMBO_DAMAGE_MULTS[_combo_step]
 				p.hitbox_component.set_meta(&"base_damage", dmg)
 				p.hitbox_component.set_meta(&"damage_type", &"data")
 			_set_hitbox_active(p, true)
@@ -172,8 +217,13 @@ func _on_hit_landed(p: CharacterBody3D) -> void:
 	if _hits_landed_this_swing == 1:
 		var camera: Camera3D = p.get_viewport().get_camera_3d()
 		if camera and camera.has_method(&"shake"):
-			camera.shake(HIT_SHAKE_AMP, HIT_SHAKE_DECAY)
+			# Phase 3 #24 — finisher gets a meatier shake (+0.08 amp)
+			# so step 3 reads as a different beat than steps 1/2.
+			camera.shake(HIT_SHAKE_AMP + COMBO_SHAKE_BONUS[_combo_step], HIT_SHAKE_DECAY)
 		_apply_hitstop(p)
+		# Finisher audio sting — silent fallback when the clip is missing.
+		if _combo_step == 2:
+			AudioManager.play_sfx("combo_finisher")
 
 
 func _apply_hitstop(p: CharacterBody3D) -> void:
@@ -236,9 +286,14 @@ func _spawn_attack_arc(p: CharacterBody3D) -> void:
 		outer_color = Color(0.2, 0.4, 0.9, 0.4)
 		base_scale = Vector3(1.5, 1.5, 0.3)
 	else:
-		inner_color = Color(0.3, 0.9, 0.85, 0.7)
-		outer_color = Color(0.15, 0.6, 0.6, 0.35)
-		base_scale = Vector3(1.0, 1.0, 0.2)
+		# Phase 3 #24 — combo step picks the arc tint. Step 3 (finisher)
+		# is hot orange-yellow so the moment reads as a different beat
+		# even at distance. Outer arc desaturates the inner color.
+		inner_color = COMBO_INNER_COLORS[_combo_step]
+		outer_color = Color(inner_color.r * 0.55, inner_color.g * 0.65, inner_color.b * 0.65, 0.35)
+		# Finisher gets a slightly bigger arc to match the bigger hitbox.
+		var finisher_scale: float = 1.0 + (0.25 if _combo_step == 2 else (0.10 if _combo_step == 1 else 0.0))
+		base_scale = Vector3(finisher_scale, finisher_scale, 0.2)
 
 	# Layer 1: Bright inner arc
 	var arc_inner: MeshInstance3D = MeshInstance3D.new()

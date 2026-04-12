@@ -31,6 +31,15 @@ var can_dash: bool = true
 var can_attack: bool = true
 var _prompt_cooldown: float = 0.0
 
+# Phase 3 #24 — light combo system. Each basic attack increments
+# combo_count (1 → 2 → 3 → reset to 1). The chain decays back to 0
+# when combo_window_left runs out of time, which physics_process
+# decrements while the player isn't mid-attack. Energy Burst breaks
+# the chain entirely. PlayerAttackState reads + updates these.
+var combo_count: int = 0
+var combo_window_left: float = 0.0
+const COMBO_WINDOW: float = 1.10  # ~2x DATA_PULSE_COOLDOWN, gives breathing room
+
 
 func get_mesh_instances() -> Array[MeshInstance3D]:
 	## Walk the model subtree and collect every MeshInstance3D so visual
@@ -334,6 +343,13 @@ func _on_died() -> void:
 func _process(delta: float) -> void:
 	if _prompt_cooldown > 0.0:
 		_prompt_cooldown -= delta
+	# Phase 3 #24 — combo decay. The window only ticks down while we
+	# aren't actively swinging; PlayerAttackState refreshes the window
+	# on every basic-attack enter() so chained hits keep the count.
+	if combo_window_left > 0.0:
+		combo_window_left -= delta
+		if combo_window_left <= 0.0:
+			combo_count = 0
 
 
 func _unhandled_input(event: InputEvent) -> void:
