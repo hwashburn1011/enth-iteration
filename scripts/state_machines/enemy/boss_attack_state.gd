@@ -18,6 +18,22 @@ func _init() -> void:
 	attack_cooldown = 0.5
 
 
+## Phase 2 #14 — boss variant per iteration. Pulls the current
+## compaction iteration so the rotation can tighten as the loop
+## advances. Defensive against the autoload being absent (test
+## scenes / pre-init pool warm-ups). Returns 1 as the floor.
+func _current_iter() -> int:
+	if Engine.has_singleton("IterationManager"):
+		var im_a: Object = Engine.get_singleton("IterationManager")
+		if im_a.has_method("get_current_iteration"):
+			return int(im_a.call("get_current_iteration"))
+	if state_machine and state_machine.is_inside_tree():
+		var im_b: Node = state_machine.get_node_or_null("/root/IterationManager")
+		if im_b and im_b.has_method(&"get_current_iteration"):
+			return int(im_b.get_current_iteration())
+	return 1
+
+
 ## Called from CorruptedCompiler.reset() so the attack rotation and add-spawn
 ## timer start fresh on every pool re-activation. Without this, iter 2's boss
 ## fight inherits whatever counter values the iter 1 fight ended on, jumping
@@ -46,11 +62,40 @@ func enter() -> void:
 
 	boss.velocity = Vector3.ZERO
 
-	# Select attack based on phase and pattern
+	# Phase 2 #14 — iteration-aware attack rotation. The base table
+	# (iter 1) keeps the original gating so the first run is the
+	# learn-the-fight version. As the loop deepens, attacks unlock
+	# earlier and the rotation tightens.
+	#
+	#   iter | stack_overflow | memory_overflow | spawn_timer
+	#   ---- | -------------- | --------------- | -----------
+	#    1   | phase 3, %8    | phase 2, %3     | 15.0s
+	#    2   | phase 3, %6    | phase 2, %3     | 12.0s
+	#    3   | phase 2, %6    | phase 1, %3     | 10.0s
+	#    4   | phase 1, %5    | phase 1, %3     |  8.0s
+	#
+	# Phase-gating is the dominant lever — by iter 4 the player
+	# faces every pattern from the moment the bar starts dropping.
 	var phase: int = boss.current_phase
-	if phase >= 3 and _attack_count % 8 == 0:
+	var iter: int = _current_iter()
+	var stack_phase_min: int = 3
+	var stack_mod: int = 8
+	var mem_phase_min: int = 2
+	match iter:
+		2:
+			stack_mod = 6
+		3:
+			stack_phase_min = 2
+			stack_mod = 6
+			mem_phase_min = 1
+		_:
+			if iter >= 4:
+				stack_phase_min = 1
+				stack_mod = 5
+				mem_phase_min = 1
+	if phase >= stack_phase_min and _attack_count % stack_mod == 0:
 		_do_stack_overflow(boss)
-	elif phase >= 2 and _attack_count % 3 == 0:
+	elif phase >= mem_phase_min and _attack_count % 3 == 0:
 		_do_memory_overflow(boss)
 	else:
 		_do_compile_error(boss)
@@ -109,8 +154,18 @@ func _do_memory_overflow(boss: CharacterBody3D) -> void:
 	var base_dir: Vector3 = (boss.target_player.global_position - boss.global_position).normalized()
 	base_dir.y = 0.0
 
-	for i: int in OVERFLOW_PROJECTILE_COUNT:
-		var angle_offset: float = (float(i) - 1.0) * 0.3
+	# Phase 2 #14 — iter 3+ adds a 4th projectile, iter 4 adds a 5th.
+	# Center index shifts so the spread stays symmetric. The base
+	# constant stays at 3 so iter 1/2 fights are unchanged.
+	var iter_proj: int = _current_iter()
+	var proj_count: int = OVERFLOW_PROJECTILE_COUNT
+	if iter_proj >= 4:
+		proj_count = 5
+	elif iter_proj >= 3:
+		proj_count = 4
+	var center_idx: float = float(proj_count - 1) * 0.5
+	for i: int in proj_count:
+		var angle_offset: float = (float(i) - center_idx) * 0.3
 		var dir: Vector3 = base_dir.rotated(Vector3.UP, angle_offset)
 		var projectile: Node = load("res://scenes/entities/enemies/memory_leak/leak_projectile.gd").new()
 		projectile.source_node = boss
@@ -176,12 +231,27 @@ func _do_stack_overflow(boss: CharacterBody3D) -> void:
 
 
 func physics_update(delta: float) -> void:
-	# Spawn Glitch Bugs periodically in phase 1+
+	# Spawn Glitch Bugs periodically in phase 1+. Phase 2 #14: the
+	# spawn cadence tightens with the iteration so by iter 4 the boss
+	# refreshes its add pool every 8s instead of every 15s. Add count
+	# also bumps up by 1 at iter 4 to feed the more aggressive rotation.
 	var boss = player
 	_spawn_timer += delta
-	if _spawn_timer >= 15.0:
+	var iter_phys: int = _current_iter()
+	var spawn_threshold: float = 15.0
+	var add_count: int = 3
+	match iter_phys:
+		2:
+			spawn_threshold = 12.0
+		3:
+			spawn_threshold = 10.0
+		_:
+			if iter_phys >= 4:
+				spawn_threshold = 8.0
+				add_count = 4
+	if _spawn_timer >= spawn_threshold:
 		_spawn_timer = 0.0
-		for i: int in 3:
+		for i: int in add_count:
 			var enemy: CharacterBody3D = EnemyPool.get_enemy("glitch_bug")
 			if enemy:
 				enemy.global_position = boss.global_position + Vector3(randf_range(-8, 8), 0, randf_range(-8, 8))

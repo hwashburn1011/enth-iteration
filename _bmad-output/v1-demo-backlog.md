@@ -49,19 +49,19 @@ Decide what's in vs. out and remove the dead weight so the team isn't maintainin
 9. **Iteration cap to 4-6** — `IterationManager.FINAL_ITERATION = 4` (or 6) for V1. Update HUD chip + difficulty preview text.
 10. **Update GDD + epics doc** — mark which existing epics ship in V1 and which are post-V1. Keep the work, label the scope.
 
-## Phase 2 — Compact loop tightening (weeks 2-3)
+## Phase 2 — Compact loop tightening (weeks 2-3)  ✅ DONE
 
 The dungeon → boss → return → iterate cycle has to feel tight and rewarding.
 
-11. **Floor pacing** — current floors are 4-7 rooms each. Validate by stopwatch: a full dungeon clear should be 25-40 minutes at iteration 1, growing to 60-90 minutes by iteration 6.
-12. **Per-iteration biome shift** — each iteration repaints the dungeon with a different palette + ambient effect (cyan → violet → amber → red). Cheap, high impact.
-13. **Per-iteration enemy mix** — each iteration unlocks one new enemy type or variant. By iteration 6 the player faces all 4-6 enemy archetypes.
-14. **Boss variant per iteration** — Corrupted Compiler grows new attack patterns each loop, not just HP. At iteration 4-6 it's mechanically distinct from iteration 1.
-15. **Mid-floor mini-boss** — one elite encounter per dungeon at floor 3, distinct from the floor 5 final boss. Art exists; encounter doesn't.
-16. **Iteration debrief screen** — after each compaction, show "what changed" — new enemies, new dungeon palette, new dialogue line from the sage, stat / loot summary.
-17. **Boss arena cinematic intro** — drop-in shot, name banner, music sting. Makes each iteration's boss feel like an event.
-18. **Post-iteration save shrine** — explicit "rest" interaction in town between runs that recovers HP/compute and locks in the autosave. Currently respawn does this implicitly.
-19. **Compaction portal polish** — the final-floor portal needs better VFX + an audible cue. It's the moment the loop closes; it should land.
+11. **Floor pacing** — current floors are 4-7 rooms each. Validate by stopwatch: a full dungeon clear should be 25-40 minutes at iteration 1, growing to 60-90 minutes by iteration 6. _(deferred — needs human playtest, not code)_
+12. ✅ **Per-iteration biome shift** — each iteration repaints the dungeon with a different palette + ambient effect (cyan → violet → amber → red). Cheap, high impact.
+13. ✅ **Per-iteration enemy mix** — each iteration unlocks one new enemy type or variant. By iteration 6 the player faces all 4-6 enemy archetypes.
+14. ✅ **Boss variant per iteration** — Corrupted Compiler grows new attack patterns each loop, not just HP. At iteration 4-6 it's mechanically distinct from iteration 1.
+15. ✅ **Mid-floor mini-boss** — one elite encounter per dungeon at floor 3, distinct from the floor 5 final boss. Art exists; encounter doesn't.
+16. ✅ **Iteration debrief screen** — after each compaction, show "what changed" — new enemies, new dungeon palette, new dialogue line from the sage, stat / loot summary.
+17. ✅ **Boss arena cinematic intro** — drop-in shot, name banner, music sting. Makes each iteration's boss feel like an event.
+18. ✅ **Post-iteration save shrine** — explicit "rest" interaction in town between runs that recovers HP/compute and locks in the autosave. Currently respawn does this implicitly.
+19. ✅ **Compaction portal polish** — the final-floor portal needs better VFX + an audible cue. It's the moment the loop closes; it should land.
 
 ## Phase 3 — Combat & build depth (weeks 3-5)
 
