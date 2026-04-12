@@ -224,7 +224,25 @@ func _on_dialogue_ended_narrative() -> void:
 
 
 func should_trigger_demo_end() -> bool:
-	return returned_from_first_run and not demo_ended
+	## Phase 5 #43 — demo end triggers after the final iteration's boss
+	## is defeated and the player returns to town. Previously fired after
+	## the very first boss kill; now requires iteration == FINAL_ITERATION.
+	if demo_ended:
+		return false
+	if not returned_from_first_run:
+		return false
+	# Check if the final iteration has been reached
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"is_final_iteration") and im.is_final_iteration():
+			return true
+		# Also trigger if we've passed the final iteration
+		if im.has_method(&"get_current_iteration"):
+			var iter: int = int(im.get_current_iteration())
+			var final: int = int(im.get(&"FINAL_ITERATION")) if &"FINAL_ITERATION" in im else 4
+			if iter >= final:
+				return true
+	return false
 
 
 func trigger_demo_end() -> void:

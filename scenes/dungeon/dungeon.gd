@@ -307,6 +307,8 @@ func _advance_compaction_iteration() -> void:
 	var prev_iter: int = int(im.get_current_iteration()) if im.has_method(&"get_current_iteration") else 1
 	im.advance_iteration()
 	var new_iter: int = int(im.get_current_iteration()) if im.has_method(&"get_current_iteration") else prev_iter + 1
+	# Phase 5 #42 — tag the completed iteration so town.gd can play revelations
+	GameManager.set_meta(&"just_completed_iteration", prev_iter)
 	_show_iteration_compacted_banner(prev_iter, new_iter)
 
 
