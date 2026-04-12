@@ -28,6 +28,9 @@ func _ready() -> void:
 	_build_npc_visual()
 	# Phase 4 #36 — quest/dialogue marker above head
 	_create_quest_marker()
+	# T55: NPC collision body — player can't overlap NPCs. Uses layer 1
+	# (world geometry) so NPCs act as solid obstacles, NOT layer 2 (enemies).
+	_add_npc_collision()
 
 
 func _style_world_labels() -> void:
@@ -361,6 +364,22 @@ func _build_npc_visual() -> void:
 			_add_sprite_sparkles()
 
 	_create_interact_indicator()
+
+
+func _add_npc_collision() -> void:
+	## T55: Add a StaticBody3D with CapsuleShape3D so the player bounces off
+	## NPC bodies instead of overlapping them. Collision layer 1 = world.
+	var body: StaticBody3D = StaticBody3D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
+	var col_shape: CollisionShape3D = CollisionShape3D.new()
+	var capsule: CapsuleShape3D = CapsuleShape3D.new()
+	capsule.radius = 0.3
+	capsule.height = 1.5
+	col_shape.shape = capsule
+	col_shape.position = Vector3(0, 0.75, 0)
+	body.add_child(col_shape)
+	add_child(body)
 
 
 func _create_interact_indicator() -> void:

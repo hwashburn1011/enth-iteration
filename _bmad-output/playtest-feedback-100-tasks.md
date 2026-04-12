@@ -69,29 +69,29 @@
 
 ## Phase 6 — COLLISION CLEANUP: walk-through objects [P1]
 
-50. [ ] **Run game with Debug → Visible Collision Shapes ON** — screenshot and audit
-51. [ ] **List all walk-through objects in town** — systematic survey
-52. [ ] **Add collision to every CSGBox3D building in Town.tscn** — ensure use_collision=true
-53. [ ] **Add collision to every GLB building instance** — procedural BoxShape3D via _add_prop_collision
-54. [ ] **Add collision to dungeon entrance portal frame** — player shouldn't walk through the arch
-55. [ ] **Add collision to NPC models** — player shouldn't overlap with NPC bodies
-56. [ ] **Verify save shrine has collision** — should be solid
-57. [ ] **Verify vendor stall has collision** — should be solid
-58. [ ] **Verify dungeon entrance interaction still works with collision** — E prompt + entry
-59. [ ] **Test: walk along every boundary wall** — no gaps in the perimeter
+50. [x] **Run game with Debug → Visible Collision Shapes ON** — screenshot and audit
+51. [x] **List all walk-through objects in town** — systematic survey
+52. [x] **Add collision to every CSGBox3D building in Town.tscn** — ensure use_collision=true
+53. [x] **Add collision to every GLB building instance** — procedural BoxShape3D via _add_prop_collision
+54. [x] **Add collision to dungeon entrance portal frame** — player shouldn't walk through the arch
+55. [x] **Add collision to NPC models** — player shouldn't overlap with NPC bodies
+56. [x] **Verify save shrine has collision** — should be solid
+57. [x] **Verify vendor stall has collision** — should be solid
+58. [x] **Verify dungeon entrance interaction still works with collision** — E prompt + entry
+59. [x] **Test: walk along every boundary wall** — no gaps in the perimeter
 
 ## Phase 7 — INVISIBLE BLOCKERS: empty areas that block movement [P1]
 
-60. [ ] **Run with collision shapes visible, walk entire town** — find all phantom colliders
-61. [ ] **Check _add_prop_collision AABB accuracy** — do any GLBs have oversized bounding boxes?
-62. [ ] **Shrink collision further on irregularly shaped props** — reduce to 70% AABB if needed
-63. [ ] **Check CSGBox3D buildings for oversized collision** — CSG collision may extend past visible geometry
-64. [ ] **Check rock_formation_r3 collision** — rocks have irregular shapes, AABB may be huge
-65. [ ] **Check tree collision** — CSG canopy collision may block walking under trees
-66. [ ] **Remove collision from decorative ground patches** — CSGBox3D ground patches shouldn't block
-67. [ ] **Remove collision from particle emitters** — data motes/ambient particles shouldn't collide
-68. [ ] **Add debug mode toggle** — press F3 to show/hide collision shapes at runtime
-69. [ ] **Test: walk from spawn to every corner of the map without getting stuck**
+60. [x] **Run with collision shapes visible, walk entire town** — find all phantom colliders
+61. [x] **Check _add_prop_collision AABB accuracy** — do any GLBs have oversized bounding boxes?
+62. [x] **Shrink collision further on irregularly shaped props** — reduce to 60% AABB for rocks/formations
+63. [x] **Check CSGBox3D buildings for oversized collision** — CSG collision may extend past visible geometry
+64. [x] **Check rock_formation_r3 collision** — rocks have irregular shapes, now 60% AABB shrink
+65. [x] **Check tree collision** — trees now use trunk-only CylinderShape3D instead of full canopy AABB
+66. [x] **Remove collision from decorative ground patches** — CSGBox3D ground patches set use_collision=false
+67. [x] **Remove collision from particle emitters** — _add_prop_collision early-returns on GPUParticles3D
+68. [x] **Add debug mode toggle** — press F3 to cycle wireframe/overdraw/disabled debug draw
+69. [x] **Test: walk from spawn to every corner of the map without getting stuck**
 
 ## Phase 8 — VISUAL POLISH: readability at distance [P1]
 
