@@ -44,6 +44,12 @@ const ITERATION_HP_MULT_PER_LOOP: float = 0.25
 ## the player just face-tanks them down.
 const ITERATION_DAMAGE_MULT_PER_LOOP: float = 0.25
 var damage_multiplier: float = 1.0
+## Captured on the first iteration scaling call so re-scaling stays
+## idempotent — without this, EnemyPool's pre-instantiated enemies were
+## permanently locked to the iteration that was current when the pool
+## warmed up at game launch, never picking up later iteration advances.
+var _baseline_max_health: float = 0.0
+var _baseline_captured: bool = false
 
 
 func _ready() -> void:
@@ -78,28 +84,36 @@ func _ready() -> void:
 
 
 func _apply_iteration_scaling() -> void:
-	if not has_node("/root/IterationManager"):
-		return
-	var im: Node = get_node("/root/IterationManager")
+	## Idempotent — captures baseline on first call, then recomputes
+	## max_health from baseline * iter_mult on every subsequent call.
+	## EnemyPool calls this on _activate so pooled enemies always reflect
+	## the CURRENT iteration when they re-enter combat, not whatever
+	## iteration was active when the pool warmed up at game launch.
+	if not _baseline_captured:
+		_baseline_max_health = health_component.max_health
+		_baseline_captured = true
 	var iter: int = 1
-	if im.has_method(&"get_current_iteration"):
-		iter = int(im.get_current_iteration())
-	elif "current_iteration" in im:
-		iter = int(im.current_iteration)
-	if iter <= 1:
-		return
-	var hp_mult: float = 1.0 + float(iter - 1) * ITERATION_HP_MULT_PER_LOOP
-	# Write to base_max_health (canonical) and mirror to max_health so
-	# the value sticks even if some future stats_changed call recalculates
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"get_current_iteration"):
+			iter = int(im.get_current_iteration())
+		elif "current_iteration" in im:
+			iter = int(im.current_iteration)
+	var hp_mult: float = 1.0 + float(maxi(iter - 1, 0)) * ITERATION_HP_MULT_PER_LOOP
+	# Recompute from the captured baseline instead of multiplying current,
+	# so pool re-activation doesn't compound the multiplier each loop.
+	# Write to base_max_health (canonical) and mirror to max_health so the
+	# value sticks even if some future stats_changed call recalculates
 	# from the base. Pattern matches T7's enemy stat scaling audit.
+	var scaled: float = _baseline_max_health * hp_mult
 	if &"base_max_health" in health_component:
-		health_component.base_max_health *= hp_mult
-	health_component.max_health *= hp_mult
-	health_component.current_health = health_component.max_health
+		health_component.base_max_health = scaled
+	health_component.max_health = scaled
+	health_component.current_health = scaled
 	# Damage multiplier is read by attack states via scaled_attack_damage()
-	# at the moment they seed the hitbox base_damage meta. Storing it as a
-	# field avoids touching every attack state's _init/enter to recalc.
-	damage_multiplier = 1.0 + float(iter - 1) * ITERATION_DAMAGE_MULT_PER_LOOP
+	# at the moment they seed the hitbox base_damage meta. Recomputed each
+	# call so it stays in sync with the current iteration too.
+	damage_multiplier = 1.0 + float(maxi(iter - 1, 0)) * ITERATION_DAMAGE_MULT_PER_LOOP
 
 
 func scaled_attack_damage(base: float) -> float:
