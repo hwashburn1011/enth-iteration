@@ -386,3 +386,25 @@ static func spawn_level_up_effect(position: Vector3, parent: Node) -> void:
 	tween.parallel().tween_property(ring_mat, "albedo_color:a", 0.0, 0.5)
 	tween.tween_callback(ring.queue_free)
 	parent.get_tree().create_timer(1.5).timeout.connect(particles.queue_free)
+
+
+## R2 F4 — floating gold pickup number "+Xg" in gold color.
+static func spawn_gold_number(position: Vector3, amount: int, parent: Node) -> void:
+	var label: Label3D = Label3D.new()
+	label.text = "+%dg" % amount
+	label.font_size = 22
+	label.modulate = Color(1.0, 0.85, 0.2)
+	label.outline_modulate = Color(0.3, 0.2, 0, 0.8)
+	label.outline_size = 4
+	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.no_depth_test = true
+	label.fixed_size = true
+	label.pixel_size = 0.004
+	label.position = position + Vector3(randf_range(-0.3, 0.3), 1.5, randf_range(-0.2, 0.2))
+	parent.add_child(label)
+	label.scale = Vector3(0.5, 0.5, 0.5)
+	var tween: Tween = label.create_tween()
+	tween.tween_property(label, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+	tween.tween_property(label, "position:y", label.position.y + 1.2, 0.7).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.7).set_delay(0.25)
+	tween.tween_callback(label.queue_free)

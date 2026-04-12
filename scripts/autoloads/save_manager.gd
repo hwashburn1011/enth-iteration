@@ -170,6 +170,8 @@ func save_game() -> bool:
 			current_data["player"]["unspent_stat_points"] = player.level_component.unspent_stat_points
 		# Phase 3 #26 — persist unlocked passive nodes for replay on load.
 		current_data["player"]["unlocked_passives"] = player.unlocked_passives.duplicate()
+		# R2 F5: persist gold
+		current_data["player"]["gold"] = GameManager.player_gold
 	# Save current scene path
 	var scene_path: String = get_tree().current_scene.scene_file_path
 	if scene_path != "":
@@ -480,6 +482,9 @@ func apply_to_player(player: Node) -> void:
 		var node_id: String = str(pid)
 		player.unlocked_passives.append(node_id)
 		player._grant_passive(node_id)
+
+	# R2 F5: restore gold
+	GameManager.player_gold = int(pdata.get("gold", 0))
 
 	# Inventory
 	var inv_data: Dictionary = get_meta(&"pending_inventory_data", {}) as Dictionary
