@@ -113,7 +113,7 @@ func _set_emission(p: CharacterBody3D, intensity: float) -> void:
 		if _charge_material == null:
 			_charge_material = StandardMaterial3D.new()
 			_charge_material.emission_enabled = true
-			_charge_material.emission = Color(0.4, 0.7, 1.0)
+			_charge_material.emission = Color(0.7, 0.25, 0.85)
 		_charge_material.emission_energy_multiplier = intensity * 3.0
 		for mesh: MeshInstance3D in meshes:
 			mesh.material_override = _charge_material
@@ -141,7 +141,7 @@ func _create_charge_vfx(p: CharacterBody3D) -> void:
 	pmat.gravity = Vector3(0, 0.5, 0)
 	pmat.orbit_velocity_min = 1.5
 	pmat.orbit_velocity_max = 2.5
-	pmat.color = Color(0.3, 0.6, 1.0, 0.6)
+	pmat.color = Color(0.7, 0.25, 0.85, 0.6)
 	pmat.scale_min = 0.3
 	pmat.scale_max = 0.8
 	_charge_particles.process_material = pmat
@@ -149,10 +149,10 @@ func _create_charge_vfx(p: CharacterBody3D) -> void:
 	mesh.size = Vector3(0.03, 0.03, 0.03)
 	_charge_particles.draw_pass_1 = mesh
 	var vis: StandardMaterial3D = StandardMaterial3D.new()
-	vis.albedo_color = Color(0.4, 0.7, 1.0, 0.6)
+	vis.albedo_color = Color(0.75, 0.3, 0.9, 0.6)
 	vis.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	vis.emission_enabled = true
-	vis.emission = Color(0.3, 0.6, 0.95)
+	vis.emission = Color(0.65, 0.2, 0.85)
 	vis.emission_energy_multiplier = 2.0
 	vis.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_charge_particles.material_override = vis
@@ -161,17 +161,17 @@ func _create_charge_vfx(p: CharacterBody3D) -> void:
 	# Ground AoE preview ring
 	_charge_ring = MeshInstance3D.new()
 	var ring_mesh: TorusMesh = TorusMesh.new()
-	ring_mesh.inner_radius = 0.8
-	ring_mesh.outer_radius = 0.9
+	ring_mesh.inner_radius = 1.2
+	ring_mesh.outer_radius = 1.35
 	ring_mesh.rings = 12
 	ring_mesh.ring_segments = 16
 	_charge_ring.mesh = ring_mesh
 	_charge_ring.position = Vector3(0, 0.03, 0)
 	var ring_mat: StandardMaterial3D = StandardMaterial3D.new()
-	ring_mat.albedo_color = Color(0.3, 0.5, 1.0, 0.0)
+	ring_mat.albedo_color = Color(0.7, 0.2, 0.85, 0.0)
 	ring_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	ring_mat.emission_enabled = true
-	ring_mat.emission = Color(0.25, 0.45, 0.9)
+	ring_mat.emission = Color(0.65, 0.15, 0.8)
 	ring_mat.emission_energy_multiplier = 1.5
 	ring_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_charge_ring.material_override = ring_mat
@@ -186,18 +186,18 @@ func _update_charge_vfx(_p: CharacterBody3D, charge_pct: float) -> void:
 		pmat.orbit_velocity_max = 2.5 + charge_pct * 4.0
 		# At full charge, shift toward bright white-cyan
 		if charge_pct >= 0.95:
-			pmat.color = Color(0.85, 0.95, 1.0, 0.95)
+			pmat.color = Color(0.95, 0.85, 1.0, 0.95)
 		else:
-			pmat.color = Color(0.3 + charge_pct * 0.2, 0.6 + charge_pct * 0.2, 1.0, 0.4 + charge_pct * 0.4)
+			pmat.color = Color(0.7 + charge_pct * 0.15, 0.25 - charge_pct * 0.1, 0.85 + charge_pct * 0.1, 0.4 + charge_pct * 0.4)
 	# Visible material on particles too (drawn pass material)
 	if _charge_particles and _charge_particles.material_override is StandardMaterial3D:
 		var vis_mat: StandardMaterial3D = _charge_particles.material_override as StandardMaterial3D
 		if charge_pct >= 0.95:
 			vis_mat.emission_energy_multiplier = 4.5
-			vis_mat.emission = Color(0.95, 0.98, 1.0)
+			vis_mat.emission = Color(0.95, 0.85, 1.0)
 		else:
 			vis_mat.emission_energy_multiplier = 2.0 + charge_pct * 1.5
-			vis_mat.emission = Color(0.3, 0.6, 0.95)
+			vis_mat.emission = Color(0.65, 0.2, 0.85)
 	if _charge_ring and _charge_ring.material_override is StandardMaterial3D:
 		var rmat: StandardMaterial3D = _charge_ring.material_override as StandardMaterial3D
 		rmat.albedo_color.a = charge_pct * 0.35

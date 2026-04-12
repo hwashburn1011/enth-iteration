@@ -28,18 +28,18 @@
 
 ## Phase 3 — ATTACK VARIETY: ranged left-click + bigger AoE right-click [P0]
 
-18. [ ] **Replace left-click melee with ranged digital lightning projectile** — fire a bolt in facing direction
-19. [ ] **Create lightning projectile scene** — glowing cyan bolt that travels forward, hits first enemy
-20. [ ] **Wire lightning projectile damage** — use same BASE_DATA_PULSE_DAMAGE + processing scaling
-21. [ ] **Add lightning projectile VFX** — trail particles, impact flash on hit
-22. [ ] **Keep 3-hit combo on lightning** — rapid-fire 3 bolts with escalating damage
-23. [ ] **Make right-click AoE larger and more impactful** — increase radius from current size
-24. [ ] **Add wind-up animation/VFX for right-click AoE** — charge circle appears on ground before blast
-25. [ ] **Increase right-click AoE damage** — should feel like a powerful area nuke
-26. [ ] **Add screen shake on right-click AoE release** — sell the impact
-27. [ ] **Differentiate VFX colors** — left-click cyan lightning, right-click violet/magenta explosion
-28. [ ] **Update attack SFX** — left-click zap/crackle, right-click boom/pulse (electronic sounds)
-29. [ ] **Ensure both attacks work during movement** — player can walk and shoot/AoE
+18. [x] **Replace left-click melee with ranged digital lightning projectile** — fire a bolt in facing direction
+19. [x] **Create lightning projectile scene** — glowing cyan bolt that travels forward, hits first enemy
+20. [x] **Wire lightning projectile damage** — use same BASE_DATA_PULSE_DAMAGE + processing scaling
+21. [x] **Add lightning projectile VFX** — trail particles, impact flash on hit
+22. [x] **Keep 3-hit combo on lightning** — rapid-fire 3 bolts with escalating damage
+23. [x] **Make right-click AoE larger and more impactful** — increase radius from current size
+24. [x] **Add wind-up animation/VFX for right-click AoE** — charge circle appears on ground before blast
+25. [x] **Increase right-click AoE damage** — should feel like a powerful area nuke
+26. [x] **Add screen shake on right-click AoE release** — sell the impact
+27. [x] **Differentiate VFX colors** — left-click cyan lightning, right-click violet/magenta explosion
+28. [x] **Update attack SFX** — left-click zap/crackle, right-click boom/pulse (electronic sounds)
+29. [x] **Ensure both attacks work during movement** — player can walk and shoot/AoE
 
 ## Phase 4 — PLAYER SIZE BUG: right-click/space causes permanent scale-up [P0]
 
