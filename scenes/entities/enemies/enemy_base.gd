@@ -56,6 +56,15 @@ var damage_multiplier: float = 1.0
 ## warmed up at game launch, never picking up later iteration advances.
 var _baseline_max_health: float = 0.0
 var _baseline_captured: bool = false
+## Snapshot of base_max_health + model.scale taken BEFORE any one-shot
+## elite/variant buff (e.g. floor_2_config._buff_elite). reset() restores
+## from these on pool return so the buff doesn't compound across iterations.
+## Without this, the same RogueProcess instance buffed on iter 1 came out of
+## the pool on iter 2 already 3x HP, then the buff stacked to 9x HP and 2.25x
+## scale, etc.
+var _pre_variant_max_health: float = 0.0
+var _pre_variant_model_scale: Vector3 = Vector3.ONE
+var _variant_buff_captured: bool = false
 
 
 func _ready() -> void:
@@ -213,7 +222,31 @@ func _on_hit_received(damage_info: Resource) -> void:
 		state_machine.force_transition_to(hurt_state)
 
 
+## Called by one-shot variant buffers (floor_2_config._buff_elite, etc.)
+## BEFORE they multiply HP/scale so reset() can restore the baseline on
+## pool return. Idempotent — only captures the first call so re-buffing
+## the same instance in a single fight doesn't lose the original baseline.
+func capture_pre_variant_baseline() -> void:
+	if _variant_buff_captured:
+		return
+	_pre_variant_max_health = health_component.base_max_health
+	_pre_variant_model_scale = model.scale
+	_variant_buff_captured = true
+
+
 func reset() -> void:
+	# Restore pre-variant baseline FIRST so any iteration scaling that runs
+	# after reset() recomputes from the un-buffed base_max_health, not the
+	# 3x-elite-stacked one.
+	if _variant_buff_captured:
+		health_component.base_max_health = _pre_variant_max_health
+		health_component.max_health = _pre_variant_max_health
+		model.scale = _pre_variant_model_scale
+		_variant_buff_captured = false
+		# Force the next iteration scaling call to recapture the baseline
+		# from this restored value rather than the stale stacked value.
+		_baseline_captured = false
+		remove_meta(&"_floor2_elite")
 	health_component.reset()
 	is_invulnerable = false
 	target_player = null
