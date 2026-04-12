@@ -30,6 +30,8 @@ var play_time_seconds: float = 0.0
 var total_enemies_defeated: int = 0
 var total_deaths: int = 0
 var total_items_found: int = 0
+## Post-V1 Epic A — player gold (currency). Persisted through save/load.
+var player_gold: int = 0
 
 const AFFINITY_STRANGER: int = 0
 const AFFINITY_ACQUAINTANCE: int = 10
@@ -56,6 +58,16 @@ func _process(delta: float) -> void:
 
 func _on_enemy_defeated_stat(_type: StringName, _pos: Vector3, _loot: Resource) -> void:
 	total_enemies_defeated += 1
+	# Post-V1 Epic A #3 — award gold on enemy kill
+	var iter: int = 1
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"get_current_iteration"):
+			iter = int(im.get_current_iteration())
+	var gold_lib: Script = load("res://scripts/systems/gold_drops.gd") as Script
+	if gold_lib:
+		var gold: int = gold_lib.gold_for_enemy(String(_type), iter) as int
+		player_gold += gold
 
 
 func _on_player_died_stat(_pos: Vector3) -> void:
