@@ -84,6 +84,32 @@ func unequip(item_type: String, slot_index: int) -> Resource:
 	return removed
 
 
+## Returns the item that WOULD be displaced if equip(item, slot_index) were
+## called now, without mutating any slot. Use this to pre-check whether a
+## swap would have somewhere to put the displaced item before committing.
+## Mirrors the slot-selection logic of equip() exactly.
+func peek_displaced(item: Resource, slot_index: int = -1) -> Resource:
+	match item.item_type:
+		"module":
+			var idx: int = slot_index if slot_index >= 0 and slot_index < 4 else _first_empty_slot_index(module_slots)
+			if idx < 0:
+				idx = 0
+			return module_slots[idx]
+		"core":
+			return core_slot
+		"chip":
+			var idx: int = slot_index if slot_index >= 0 and slot_index < 4 else _first_empty_slot_index(chip_slots)
+			if idx < 0:
+				idx = 0
+			return chip_slots[idx]
+		"protocol":
+			var idx: int = slot_index if slot_index >= 0 and slot_index < 3 else _first_empty_slot_index(protocol_slots)
+			if idx < 0:
+				idx = 0
+			return protocol_slots[idx]
+	return null
+
+
 func get_all_equipped_items() -> Array[Resource]:
 	var items: Array[Resource] = []
 	for m: Resource in module_slots:

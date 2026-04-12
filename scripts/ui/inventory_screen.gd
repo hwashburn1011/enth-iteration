@@ -313,14 +313,21 @@ func _show_tooltip(item: Resource) -> void:
 
 
 func _on_equip_item(item: Resource) -> void:
-	var previous: Resource = _player.equipment_component.equip(item)
-	_player.inventory_component.remove_item(item)
-	if previous:
-		if not _player.inventory_component.add_item(previous):
-			# Inventory full — re-equip the old item and put new one back
-			_player.equipment_component.equip(previous)
-			_player.inventory_component.add_item(item)
-			push_warning("Inventory full — cannot swap equipment")
+	var ec: Node = _player.equipment_component
+	var inv: Node = _player.inventory_component
+	# Pre-flight: if the swap would displace an item, make sure the inventory
+	# can hold it BEFORE we mutate. The previous rollback path tried to undo
+	# a partial mutation by calling equip(previous), which placed it in the
+	# first empty slot (not its original slot) and could silently drop the
+	# new item if add_item failed too.
+	var displaced: Resource = ec.peek_displaced(item)
+	if displaced != null and not inv.has_space_for(displaced):
+		push_warning("Inventory full — cannot swap equipment")
+		return
+	var previous: Resource = ec.equip(item)
+	inv.remove_item(item)
+	if previous != null:
+		inv.add_item(previous)
 	_rebuild()
 
 
