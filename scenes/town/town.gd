@@ -115,9 +115,10 @@ func _ready() -> void:
 	# Narrative: demo end check after returning from boss
 	if GameManager.should_trigger_demo_end():
 		_setup_demo_end_trigger()
-	# Narrative: auto-trigger AI Sage on first visit — delay 5s so player sees the world
+	# Phase 4 #33 — first-run intro cinematic: fade from black, slow camera
+	# zoom-in reveal, title card, then auto-trigger AI Sage dialogue.
 	elif GameManager.first_run and not GameManager.first_sage_dialogue_complete:
-		_auto_trigger_sage_dialogue.call_deferred()
+		_play_intro_cinematic.call_deferred(player_node, camera)
 
 
 ## Add the always-on starter quest. Called every town entry but
@@ -265,6 +266,121 @@ func _auto_trigger_sage_dialogue() -> void:
 		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
 			child._start_conversation()
 			return
+
+
+## Phase 4 #33 — first-run intro cinematic. Plays once on new game:
+## 1. Full-screen black fade overlay
+## 2. Camera starts zoomed far out (size 18), slowly zooms in to normal (8)
+## 3. Black fades away over 2 seconds revealing the hub
+## 4. Title card: "THE COMPACTION LOOP" with subtitle
+## 5. After the reveal, auto-trigger the sage dialogue
+## Total duration ~8s before dialogue starts.
+func _play_intro_cinematic(player_node: Node3D, camera: Camera3D) -> void:
+	if not is_instance_valid(self):
+		return
+	# Lock player input during cinematic
+	GameManager.set_state(GameManager.GameState.DIALOGUE)
+
+	# 1. Black fade overlay
+	var fade_layer: CanvasLayer = CanvasLayer.new()
+	fade_layer.layer = 100
+	var fade_rect: ColorRect = ColorRect.new()
+	fade_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fade_rect.color = Color(0, 0, 0, 1)
+	fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fade_layer.add_child(fade_rect)
+	add_child(fade_layer)
+
+	# 2. Start camera zoomed out wide
+	if camera and camera.has_method(&"zoom_to"):
+		camera.size = 18.0
+		# Slow zoom in over 6 seconds to normal size
+		camera.zoom_to(8.0, 6.0)
+
+	# 3. Wait a beat in darkness, then fade from black
+	await get_tree().create_timer(1.0).timeout
+	if not is_instance_valid(self):
+		return
+	var fade_tween: Tween = fade_rect.create_tween()
+	fade_tween.tween_property(fade_rect, "color:a", 0.0, 2.5).set_ease(Tween.EASE_OUT)
+	fade_tween.tween_callback(fade_layer.queue_free)
+
+	# 4. Title card after fade begins
+	await get_tree().create_timer(0.5).timeout
+	if not is_instance_valid(self):
+		return
+	_show_intro_title_card()
+
+	# 5. Wait for the cinematic reveal to finish, then trigger sage
+	await get_tree().create_timer(5.0).timeout
+	if not is_instance_valid(self):
+		return
+	GameManager.set_state(GameManager.GameState.PLAYING)
+	# Now trigger the sage dialogue (same as the old path)
+	for child: Node in get_children():
+		if child.has_method(&"_start_conversation") and child.get(&"npc_id") == "ai_sage":
+			child._start_conversation()
+			return
+
+
+## Phase 4 #33 — cinematic title card: "THE COMPACTION LOOP" with subtitle.
+func _show_intro_title_card() -> void:
+	var canvas: CanvasLayer = CanvasLayer.new()
+	canvas.layer = 90
+	var holder: Control = Control.new()
+	holder.set_anchors_preset(Control.PRESET_CENTER)
+	holder.offset_left = -320
+	holder.offset_right = 320
+	holder.offset_top = -80
+	holder.offset_bottom = 80
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.modulate.a = 0.0
+	canvas.add_child(holder)
+	# Main title
+	var title: Label = Label.new()
+	title.text = "THE COMPACTION LOOP"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	title.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	title.offset_top = 0
+	title.offset_bottom = 60
+	title.add_theme_font_size_override(&"font_size", 52)
+	title.add_theme_color_override(&"font_color", Color(0.3, 0.95, 0.85))
+	title.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.9))
+	title.add_theme_constant_override(&"outline_size", 8)
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(title)
+	# Decorative underline
+	var rule: ColorRect = ColorRect.new()
+	rule.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	rule.offset_left = 60
+	rule.offset_right = -60
+	rule.offset_top = 65
+	rule.offset_bottom = 67
+	rule.color = Color(0.3, 0.85, 0.75, 0.7)
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(rule)
+	# Subtitle
+	var subtitle: Label = Label.new()
+	subtitle.text = "Iteration 1"
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	subtitle.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	subtitle.offset_top = 75
+	subtitle.offset_bottom = 110
+	subtitle.add_theme_font_size_override(&"font_size", 24)
+	subtitle.add_theme_color_override(&"font_color", Color(0.7, 0.85, 0.8, 0.8))
+	subtitle.add_theme_color_override(&"font_outline_color", Color(0, 0, 0, 0.7))
+	subtitle.add_theme_constant_override(&"outline_size", 4)
+	subtitle.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(subtitle)
+	add_child(canvas)
+	# Cinematic: fade in, hold, fade out
+	var tween: Tween = holder.create_tween()
+	tween.tween_property(holder, "modulate:a", 1.0, 0.8).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(3.0)
+	tween.tween_property(holder, "modulate:a", 0.0, 1.0).set_ease(Tween.EASE_IN)
+	tween.tween_callback(canvas.queue_free)
 
 
 func _show_location_label(location: String) -> void:
