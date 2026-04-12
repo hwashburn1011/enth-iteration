@@ -37,6 +37,10 @@ func enter() -> void:
 	enemy.velocity = Vector3.ZERO
 	enemy.hitbox_component.set_meta(&"base_damage", enemy.scaled_attack_damage(base_damage))
 	enemy.hitbox_component.set_meta(&"damage_type", &"physical")
+	# Phase 3 #22 — Glitch Bug signature: throttled. The lunge that
+	# connects snares the player so swarms of bugs feel like a real
+	# crowd-control threat instead of a damage trickle.
+	enemy.hitbox_component.set_meta(&"apply_status", &"throttled")
 
 	# Start telegraph — red flash
 	_set_telegraph_flash(enemy, true)

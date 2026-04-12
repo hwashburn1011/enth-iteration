@@ -55,3 +55,17 @@ func _on_area_entered(area: Area3D) -> void:
 	var health: Node = owner_entity.get_node_or_null("HealthComponent") as Node
 	if health:
 		health.take_damage(info.final_damage)
+
+	# Phase 3 #22 — status effect routing. The source's hitbox can
+	# tag the swing with `apply_status = "<name>"` and we'll route a
+	# fresh StatusEffect onto the target's StatusEffectManager. The
+	# library returns null on unknown names so this no-ops cleanly
+	# for hits that don't carry a status payload.
+	if hitbox.has_meta(&"apply_status"):
+		var sm: Node = owner_entity.get_node_or_null("StatusEffectManager") as Node
+		if sm and sm.has_method(&"apply_effect"):
+			var effect: Resource = load("res://scripts/combat/status_effect_library.gd").make_by_name(
+				hitbox.get_meta(&"apply_status") as StringName
+			)
+			if effect != null:
+				sm.apply_effect(effect)

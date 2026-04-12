@@ -144,6 +144,15 @@ func physics_update(delta: float) -> void:
 				var dmg: float = base * COMBO_DAMAGE_MULTS[_combo_step]
 				p.hitbox_component.set_meta(&"base_damage", dmg)
 				p.hitbox_component.set_meta(&"damage_type", &"data")
+				# Phase 3 #22 — combo finisher (step 3) tags the target
+				# with `fragmented` so subsequent hits punch +30%. The
+				# clear-on-step-1/2 path is the player's "build up the
+				# mark on the squishy enemy" loop. Steps 1/2 explicitly
+				# clear the meta so we don't drift between swings.
+				if _combo_step == 2:
+					p.hitbox_component.set_meta(&"apply_status", &"fragmented")
+				elif p.hitbox_component.has_meta(&"apply_status"):
+					p.hitbox_component.remove_meta(&"apply_status")
 			_set_hitbox_active(p, true)
 			_hitbox_enabled = true
 			_spawn_attack_arc(p)

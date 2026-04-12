@@ -56,6 +56,18 @@ func _on_area_entered(area: Area3D) -> void:
 	if health:
 		health.take_damage(info.final_damage)
 
+	# Phase 3 #22 — Memory Leak signature: corrupted DoT. The leak
+	# projectile bypasses HurtboxComponent's apply_status routing
+	# (it goes directly to take_damage), so we apply the effect
+	# inline here. The leak_pool that spawns on impact already does
+	# zone damage, so the corrupted DoT gives the player a reason
+	# to actually move OUT of melee range against memory leaks.
+	var sm: Node = hurtbox.owner_entity.get_node_or_null("StatusEffectManager") as Node
+	if sm and sm.has_method(&"apply_effect"):
+		var effect: Resource = load("res://scripts/combat/status_effect_library.gd").make_corrupted()
+		if effect != null:
+			sm.apply_effect(effect)
+
 	_spawn_pool()
 	queue_free()
 
