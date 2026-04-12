@@ -49,4 +49,9 @@ static func get_stock_for_iteration(iteration: int) -> Array[Dictionary]:
 			var cleaned: Dictionary = entry.duplicate()
 			cleaned.erase("min_iter")
 			stock.append(cleaned)
+	# Post-V1 A10: scale prices by iteration — 10% per iteration past 1
+	if iteration > 1:
+		var price_mult: float = 1.0 + (iteration - 1) * 0.1
+		for entry: Dictionary in stock:
+			entry["price"] = int(ceil(float(entry["price"]) * price_mult))
 	return stock
