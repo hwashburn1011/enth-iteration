@@ -9,6 +9,11 @@ const ENRAGE_CD_MULT: float = 0.7
 
 var is_enraged: bool = false
 var _base_move_speed: float = 6.0
+## Snapshot of each mesh's polish material captured BEFORE the first
+## enrage so reset() can restore them on pool re-activation. Wiping
+## material_override blindly would also clear the
+## _polish_r3_enemy() result from _build_enemy_visual.
+var _pre_enrage_materials: Dictionary = {}
 
 
 func _ready() -> void:
@@ -94,13 +99,17 @@ func _on_health_changed(current: float, maximum: float) -> void:
 	if not is_enraged and current / maximum <= ENRAGE_THRESHOLD and current > 0.0:
 		is_enraged = true
 		move_speed = _base_move_speed * ENRAGE_SPEED_MULT
-		# Visual indicator — blue glow intensifies on every mesh in the model
+		# Visual indicator — blue glow intensifies on every mesh in the model.
+		# Snapshot the existing polish material first so reset() can put it
+		# back when the enemy returns to the pool.
 		var mat: StandardMaterial3D = StandardMaterial3D.new()
 		mat.albedo_color = Color(0.3, 0.3, 1.0)
 		mat.emission_enabled = true
 		mat.emission = Color(0.2, 0.2, 1.0)
 		mat.emission_energy_multiplier = 2.0
+		_pre_enrage_materials.clear()
 		for mesh: MeshInstance3D in get_mesh_instances():
+			_pre_enrage_materials[mesh] = mesh.material_override
 			mesh.material_override = mat
 
 
@@ -108,3 +117,24 @@ func _on_died() -> void:
 	var death_state: Node = state_machine.get_node_or_null("EnemyDeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)
+
+
+func reset() -> void:
+	## Pool re-activation hook. is_enraged + the enrage speed boost +
+	## the blue glow material override all persist across pool reuse.
+	## Without this override, the second rogue process you fight is
+	## already enraged (with the speed bonus) but the trigger never
+	## re-fires because is_enraged is already true, AND the blue glow
+	## material override is permanently stuck on every mesh in the
+	## model. Same pattern T32 used for the boss.
+	super.reset()
+	if is_enraged:
+		# Restore the polish materials snapshotted before enrage so the
+		# cold blue + procedural eyes from _build_enemy_visual come back
+		# instead of getting wiped to the default GLB material.
+		for mesh: Variant in _pre_enrage_materials:
+			if is_instance_valid(mesh):
+				(mesh as MeshInstance3D).material_override = _pre_enrage_materials[mesh]
+		_pre_enrage_materials.clear()
+	is_enraged = false
+	move_speed = _base_move_speed
