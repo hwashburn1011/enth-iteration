@@ -30,6 +30,8 @@ signal scene_changed(path: String)
 # Player
 @warning_ignore("unused_signal")
 signal player_dashed(from_position: Vector3, to_position: Vector3)
+@warning_ignore("unused_signal")
+signal player_leveled_up(new_level: int)
 
 # Combat
 @warning_ignore("unused_signal")

@@ -53,6 +53,7 @@ func _ready() -> void:
 	EventBus.player_dashed.connect(_on_player_dashed)
 	EventBus.item_collected.connect(_on_item_collected)
 	EventBus.player_died.connect(_on_player_died)
+	EventBus.player_leveled_up.connect(_on_player_leveled_up)
 	EventBus.portal_used.connect(_on_portal_used)
 	EventBus.scene_changed.connect(_on_scene_changed)
 	EventBus.dialogue_ended.connect(_on_dialogue_ended_audio)
@@ -176,6 +177,10 @@ func _on_item_collected(_item: Resource) -> void:
 
 func _on_player_died(_pos: Vector3) -> void:
 	play_sfx("death")
+
+
+func _on_player_leveled_up(_new_level: int) -> void:
+	play_sfx("level_up")
 
 
 func _on_portal_used() -> void:
