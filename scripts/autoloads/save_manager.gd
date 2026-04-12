@@ -255,6 +255,17 @@ func save_game() -> bool:
 		return false
 	file.store_string(JSON.stringify(current_data, "\t"))
 	file.close()
+	# Stage pending metas from the just-saved snapshot. apply_to_player only
+	# applies state when these metas exist; previously they were *only*
+	# populated in _apply_loaded_data (i.e. load_game), so an autosave on
+	# dungeon_entered → change_scene_to(dungeon) would write the file but
+	# the new dungeon scene's player respawn would still see no pending data
+	# and stay at default level 1 with empty equipment. Mirror the load
+	# population here so save → scene swap → apply_to_player carries the
+	# freshly-saved player forward instead of resetting them.
+	set_meta(&"pending_player_data", current_data.get("player", {}))
+	set_meta(&"pending_inventory_data", current_data.get("inventory", {}))
+	set_meta(&"pending_equipment_data", current_data.get("equipment", {}))
 	EventBus.game_saved.emit()
 	return true
 
