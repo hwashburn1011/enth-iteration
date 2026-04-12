@@ -6,7 +6,7 @@
 script = ExtResource("1")
 item_name = "Bandwidth Booster"
 item_id = "chip_bandwidth_booster"
-description = "Expands data throughput for faster movement."
+description = "Expands data throughput for faster compute regeneration."
 rarity = 2
 item_type = "chip"
 stat_modifiers = {"bandwidth": 5.0}

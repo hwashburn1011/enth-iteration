@@ -16,7 +16,7 @@ const STAT_COLORS: Dictionary = {
 }
 const STAT_DESCRIPTIONS: Dictionary = {
 	"processing": "Damage output",
-	"bandwidth": "Movement speed",
+	"bandwidth": "Compute regen rate",
 	"memory": "Compute pool",
 	"integrity": "Health & defense",
 }

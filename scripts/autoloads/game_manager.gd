@@ -135,9 +135,18 @@ func set_state(new_state: GameState) -> void:
 
 
 var _transition_overlay: CanvasLayer = null
+## Re-entry guard for change_scene_to. Without this, two paths firing on the
+## same frame (e.g. dungeon.gd's auto-return after the final boss + the player
+## walking into the CompactionPortal in the same window) both run through the
+## fade + threaded load + swap pipeline and race — stacked fade overlays,
+## zombie scene state, occasional crashes.
+var _scene_change_in_progress: bool = false
 
 
 func change_scene_to(path: String) -> void:
+	if _scene_change_in_progress:
+		return
+	_scene_change_in_progress = true
 	EventBus.scene_changing.emit()
 
 	# Fade to black
@@ -148,6 +157,7 @@ func change_scene_to(path: String) -> void:
 		push_error("GameManager: failed to request scene load for '%s' (error %d)" % [path, err])
 		set_state(GameState.PLAYING)
 		await _fade_transition(false)
+		_scene_change_in_progress = false
 		return
 	var status: ResourceLoader.ThreadLoadStatus = ResourceLoader.load_threaded_get_status(path)
 	while status == ResourceLoader.THREAD_LOAD_IN_PROGRESS:
@@ -157,6 +167,7 @@ func change_scene_to(path: String) -> void:
 		push_error("GameManager: scene load failed for '%s' (status %d)" % [path, status])
 		set_state(GameState.PLAYING)
 		await _fade_transition(false)
+		_scene_change_in_progress = false
 		return
 	var scene: PackedScene = ResourceLoader.load_threaded_get(path)
 	get_tree().change_scene_to_packed(scene)
@@ -165,6 +176,7 @@ func change_scene_to(path: String) -> void:
 
 	# Fade from black
 	await _fade_transition(false)
+	_scene_change_in_progress = false
 
 
 func _fade_transition(to_black: bool) -> void:

@@ -4,7 +4,7 @@ extends PanelContainer
 
 const STAT_DESCRIPTIONS: Dictionary = {
 	"processing": "Increases damage output",
-	"bandwidth": "Increases movement speed",
+	"bandwidth": "Increases compute regen rate",
 	"memory": "Increases compute pool",
 	"integrity": "Increases health and defense",
 }
@@ -90,13 +90,14 @@ func populate(player: CharacterBody3D) -> void:
 
 	var integrity: float = stats_comp.get_stat("integrity")
 	var processing: float = stats_comp.get_stat("processing")
-	var memory: float = stats_comp.get_stat("memory")
-	var bandwidth: float = stats_comp.get_stat("bandwidth")
 
+	# Move Speed used to be listed here but it's just player.move_speed —
+	# a static export that bandwidth never touches. Replaced with Compute
+	# Regen so the actual bandwidth contribution is visible to the player.
 	var derived: Array[Array] = [
 		["Max Health", "%d" % int(player.health_component.max_health)],
 		["Max Compute", "%d" % int(player.compute_component.max_compute)],
-		["Move Speed", "%.1f" % player.move_speed],
+		["Compute Regen", "%.1f /s" % player.compute_component.regen_rate],
 		["Damage Bonus", "+%.0f%%" % (processing * 10.0)],
 		["Defense", "%.1f" % (integrity * 0.5)],
 		["Crit Chance", "%.1f%%" % (5.0 + processing * 0.5)],

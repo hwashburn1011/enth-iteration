@@ -34,6 +34,10 @@ static func calculate(info: Resource) -> Resource:
 	var crit_chance: float = BASE_CRIT_CHANCE
 	if source_stats:
 		crit_chance += source_stats.get_stat("processing") * 0.5
+	# Equipped core's extra_crit_chance — finally wires up the GPU core's
+	# advertised "10% critical hit bonus" passive (was dead data — the
+	# core_passive field was a flavor string nothing read).
+	crit_chance += _get_core_crit_bonus(info.source)
 	if randf() * 100.0 < crit_chance:
 		damage *= CRIT_MULTIPLIER
 		info.is_critical = true
@@ -68,6 +72,23 @@ static func _get_stats(node: Node) -> Node:
 	if node == null:
 		return null
 	return node.get_node_or_null("StatsComponent") as Node
+
+
+## Pull extra_crit_chance from the source's equipped core (if any). Returns 0.0
+## for enemies, missing equipment components, empty core slots, or cores
+## without the new field set.
+static func _get_core_crit_bonus(source: Node) -> float:
+	if source == null:
+		return 0.0
+	var equip: Node = source.get_node_or_null("EquipmentComponent") as Node
+	if equip == null:
+		return 0.0
+	var core: Resource = equip.get(&"core_slot") as Resource
+	if core == null:
+		return 0.0
+	if not (&"extra_crit_chance" in core):
+		return 0.0
+	return float(core.extra_crit_chance)
 
 
 static func _apply_status_modifiers(damage: float, info: Resource) -> float:
