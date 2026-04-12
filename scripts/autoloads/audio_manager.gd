@@ -154,8 +154,16 @@ func stop_music(fade_duration: float = 1.0) -> void:
 
 # --- EventBus SFX triggers ---
 
-func _on_damage_dealt(_amount: int, _source: Node, _target: Node, _type: StringName) -> void:
-	play_sfx("attack_hit")
+func _on_damage_dealt(_amount: int, _source: Node, target: Node, _type: StringName) -> void:
+	# Differentiate "player landing a hit" from "player getting hit". Without
+	# this, both events played attack_hit and the dedicated hurt.wav cue
+	# (already authored in assets/audio/sfx/) was dead. The hurt feedback —
+	# screen shake + red vignette + knockback in player_hurt_state — had no
+	# audio anchor.
+	if target != null and target.is_in_group(&"player"):
+		play_sfx("hurt")
+	else:
+		play_sfx("attack_hit")
 
 
 func _on_player_dashed(_from: Vector3, _to: Vector3) -> void:
