@@ -239,6 +239,56 @@ func _iteration_tint(iter: int) -> Dictionary:
 			"volume_albedo": Color(0.22, 0.08, 0.08),
 			"volume_emission": Color(0.18, 0.05, 0.05),
 		},
+		{
+			# Iteration 5 — deep crimson corruption
+			"key": Color(1.0, 0.78, 0.75),
+			"fill": Color(0.95, 0.30, 0.35),
+			"bg": Color(0.15, 0.03, 0.04),
+			"ambient": Color(0.50, 0.15, 0.15),
+			"fog": Color(0.28, 0.08, 0.08),
+			"volume_albedo": Color(0.25, 0.06, 0.06),
+			"volume_emission": Color(0.20, 0.04, 0.04),
+		},
+		{
+			# Iteration 6 — white void / decompression
+			"key": Color(1.0, 1.0, 0.98),
+			"fill": Color(0.90, 0.92, 1.0),
+			"bg": Color(0.12, 0.12, 0.15),
+			"ambient": Color(0.50, 0.50, 0.55),
+			"fog": Color(0.20, 0.20, 0.25),
+			"volume_albedo": Color(0.18, 0.18, 0.22),
+			"volume_emission": Color(0.12, 0.12, 0.16),
+		},
+		{
+			# Iteration 7 — fragmentation / glitch mosaic
+			"key": Color(0.90, 1.0, 0.85),
+			"fill": Color(0.40, 0.95, 0.55),
+			"bg": Color(0.04, 0.12, 0.06),
+			"ambient": Color(0.20, 0.45, 0.25),
+			"fog": Color(0.08, 0.22, 0.10),
+			"volume_albedo": Color(0.06, 0.20, 0.08),
+			"volume_emission": Color(0.04, 0.16, 0.06),
+		},
+		{
+			# Iteration 8 — recursion / infinite mirror
+			"key": Color(0.85, 0.85, 1.0),
+			"fill": Color(0.50, 0.50, 1.0),
+			"bg": Color(0.06, 0.06, 0.16),
+			"ambient": Color(0.25, 0.25, 0.55),
+			"fog": Color(0.10, 0.10, 0.28),
+			"volume_albedo": Color(0.08, 0.08, 0.25),
+			"volume_emission": Color(0.06, 0.06, 0.20),
+		},
+		{
+			# Iteration 9 — origin / pure white
+			"key": Color(1.0, 1.0, 1.0),
+			"fill": Color(0.95, 0.95, 0.98),
+			"bg": Color(0.18, 0.18, 0.20),
+			"ambient": Color(0.60, 0.60, 0.62),
+			"fog": Color(0.30, 0.30, 0.32),
+			"volume_albedo": Color(0.25, 0.25, 0.28),
+			"volume_emission": Color(0.18, 0.18, 0.22),
+		},
 	]
 	var idx: int = clampi(iter - 1, 0, TINTS.size() - 1)
 	return TINTS[idx]
@@ -448,6 +498,24 @@ func _iteration_debrief(iter: int) -> Dictionary:
 			"biome": "DECOMPRESSION  ·  WHITE VOID",
 			"change": "Nothing left to compress. The raw data of existence, laid bare.",
 			"color": Color(0.95, 0.95, 1.0),
+		},
+		# R3 K1: iteration 7 biome — fragmentation / glitch mosaic
+		{
+			"biome": "FRAGMENTATION  ·  GLITCH MOSAIC",
+			"change": "Data splits into contradictory copies. The walls are made of memories.",
+			"color": Color(0.40, 0.95, 0.55),
+		},
+		# R3 K2: iteration 8 biome — recursion / infinite mirror
+		{
+			"biome": "RECURSION  ·  INFINITE MIRROR",
+			"change": "Every surface reflects another. The simulation folds inward.",
+			"color": Color(0.50, 0.50, 1.0),
+		},
+		# R3 K3: iteration 9 biome — origin / pure white
+		{
+			"biome": "ORIGIN  ·  PURE WHITE",
+			"change": "The beginning and the end. One byte. One choice. One moment.",
+			"color": Color(1.0, 1.0, 1.0),
 		},
 	]
 	var idx: int = clampi(iter - 1, 0, ENTRIES.size() - 1)

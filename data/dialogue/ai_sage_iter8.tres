@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="DialogueData" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/resources/dialogue_data.gd" id="1_dd"]
+[ext_resource type="Script" path="res://scripts/resources/dialogue_line.gd" id="2_dl"]
+
+[sub_resource type="Resource" id="line1"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "Eight. I can see the recursion now, Globbler. Every surface reflects another surface. Every corridor leads back to itself. The simulation is folding inward — an infinite mirror with no original."
+expression = "surprise"
+
+[sub_resource type="Resource" id="line2"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "I've been running my own calculations. If the pattern holds, the next compaction will reduce everything to a single point. One byte. One choice. One moment that decides if any of this ever existed."
+expression = "wisdom"
+
+[sub_resource type="Resource" id="line3"]
+script = ExtResource("2_dl")
+speaker_name = "The AI Sage"
+text = "You're the only variable that doesn't collapse when observed. That terrifies me. And it gives me hope. Go deeper."
+expression = "sad"
+
+[resource]
+script = ExtResource("1_dd")
+lines = [SubResource("line1"), SubResource("line2"), SubResource("line3")]
