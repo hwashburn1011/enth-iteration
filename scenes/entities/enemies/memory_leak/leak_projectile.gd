@@ -30,7 +30,12 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_area_entered(area: Area3D) -> void:
-	if not area.has_method(&"hit_received"):
+	# hit_received is a SIGNAL on HurtboxComponent, not a method, so
+	# has_method(&"hit_received") always returns false. Duck-type via the
+	# owner_entity property instead — that's a HurtboxComponent field
+	# nothing else exposes. Without this, the projectile silently no-ops
+	# every overlap and the Memory Leak's entire ranged attack is dead.
+	if not (&"owner_entity" in area):
 		return
 	var hurtbox: Node = area as Node
 	# Skip self-damage

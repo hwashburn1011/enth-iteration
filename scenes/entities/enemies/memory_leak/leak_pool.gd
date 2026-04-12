@@ -98,7 +98,10 @@ func _process(delta: float) -> void:
 	if _damage_timer >= 1.0:
 		_damage_timer = 0.0
 		for area: Area3D in get_overlapping_areas():
-			if not area.has_method(&"hit_received"):
+			# hit_received is a SIGNAL on HurtboxComponent, not a method —
+			# has_method() always returned false here, silently zeroing out
+			# all pool damage. Duck-type via owner_entity instead.
+			if not (&"owner_entity" in area):
 				continue
 			var hurtbox: Node = area as Node
 			if hurtbox.owner_entity == source_node:
