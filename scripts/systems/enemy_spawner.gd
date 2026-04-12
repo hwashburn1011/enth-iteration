@@ -32,6 +32,14 @@ func _spawn_from_config(types: Array[String], count: int) -> void:
 	# iter 1 returns the original list verbatim — anything past that
 	# rolls per-slot swaps against the broader enemy roster.
 	var resolved: Array[String] = _apply_iteration_mix(types, count)
+	# Phase 3 #20: enemy roster expansion via promotions. Each spawn
+	# slot rolls a promotion chance scaling with iteration. Charger /
+	# Shielder / Sniper / Bomber / Summoner archetypes are stat +
+	# behavior overlays on the existing 3 base enemies — see
+	# enemy_promotion.gd for the full table.
+	var iter_for_promo: int = _current_iter_for_promo()
+	var promo_rng: RandomNumberGenerator = RandomNumberGenerator.new()
+	promo_rng.randomize()
 	for i: int in count:
 		var type: String = resolved[i % resolved.size()]
 		var enemy: CharacterBody3D = EnemyPool.get_enemy(type)
@@ -51,10 +59,60 @@ func _spawn_from_config(types: Array[String], count: int) -> void:
 		if enemy.get_parent() != get_tree().current_scene:
 			enemy.reparent(get_tree().current_scene)
 
+		# Roll promotion AFTER reparent so the enemy is in the live
+		# scene tree when its baseline gets snapshotted. Promotions
+		# only fire on iter 2+; the boss type is exempt because
+		# corrupted_compiler has its own set of mechanics that don't
+		# play well with stat overlays.
+		if iter_for_promo >= 2 and type != "corrupted_compiler":
+			_maybe_promote(enemy, type, iter_for_promo, promo_rng)
+
 		_alive_count += 1
 
 	if not EventBus.enemy_defeated.is_connected(_on_enemy_defeated):
 		EventBus.enemy_defeated.connect(_on_enemy_defeated)
+
+
+## Phase 3 #20 — promotion gating. Returns the current iteration
+## via IterationManager, defensively. Mirrors _apply_iteration_mix
+## reading pattern. Returns 1 as the floor.
+func _current_iter_for_promo() -> int:
+	if has_node("/root/IterationManager"):
+		var im: Node = get_node("/root/IterationManager")
+		if im.has_method(&"get_current_iteration"):
+			return int(im.get_current_iteration())
+	return 1
+
+
+## Phase 3 #20 — promotion roll. Each slot has a per-iteration
+## chance to be promoted to a random eligible variant for its
+## base type. The eligible table lives in enemy_promotion.gd.
+##
+##   iter | promo chance per slot
+##   ---- | ---------------------
+##    2   | 12%
+##    3   | 22%
+##    4   | 35%
+func _maybe_promote(enemy: CharacterBody3D, type: String, iter: int, rng: RandomNumberGenerator) -> void:
+	var chance: float = 0.0
+	match iter:
+		2:
+			chance = 0.12
+		3:
+			chance = 0.22
+		_:
+			if iter >= 4:
+				chance = 0.35
+	if rng.randf() >= chance:
+		return
+	var lib_script: Script = load("res://scripts/systems/enemy_promotion.gd") as Script
+	if lib_script == null:
+		return
+	var eligible: Array = lib_script.ELIGIBLE_BY_TYPE.get(type, []) as Array
+	if eligible.is_empty():
+		return
+	var promotion_id: StringName = eligible[rng.randi() % eligible.size()] as StringName
+	lib_script.apply(enemy, promotion_id)
 
 
 ## Phase 2 #13 — per-iteration roster mix.

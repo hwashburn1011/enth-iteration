@@ -375,6 +375,37 @@ func _process(delta: float) -> void:
 	if model and visible:
 		var t: float = Time.get_ticks_msec() * 0.003
 		model.position.y = sin(t) * 0.03
+	# Phase 3 #20 — Summoner promotion: periodically spawn an add.
+	# Meta is set by enemy_promotion._apply_summoner. The timer
+	# lives in a separate meta key so reset() doesn't need to
+	# touch it (it ticks down freshly on each pool reuse).
+	if has_meta(&"summon_interval") and visible and not health_component.is_dead:
+		var timer_left: float = float(get_meta(&"_summon_timer", 0.0))
+		timer_left -= delta
+		if timer_left <= 0.0:
+			timer_left = float(get_meta(&"summon_interval"))
+			_summoner_spawn_add()
+		set_meta(&"_summon_timer", timer_left)
+
+
+func _summoner_spawn_add() -> void:
+	## Spawn 1 add of the summoner's configured type. Skipped if the
+	## EnemyPool autoload is unavailable. New add inherits the same
+	## scene parent so it joins the active enemy pool.
+	if not has_node("/root/EnemyPool"):
+		return
+	var pool: Node = get_node("/root/EnemyPool")
+	if not pool.has_method(&"get_enemy"):
+		return
+	var summon_type: String = String(get_meta(&"summon_type", "glitch_bug"))
+	var add: CharacterBody3D = pool.get_enemy(summon_type)
+	if add == null:
+		return
+	add.global_position = global_position + Vector3(randf_range(-1.5, 1.5), 0, randf_range(-1.5, 1.5))
+	if add.is_in_group(&"enemies"):
+		add.spawn_position = add.global_position
+	if add.get_parent() != get_tree().current_scene:
+		add.reparent(get_tree().current_scene)
 
 
 func _build_enemy_visual() -> void:
@@ -605,6 +636,53 @@ func _spawn_pixel_pop() -> void:
 
 
 func _on_died() -> void:
+	# Phase 3 #20 — Bomber promotion: deal AoE damage to the player
+	# (and any other enemies caught in the blast) on death. The meta
+	# is set by enemy_promotion._apply_bomber. Fires once on death,
+	# safe against double-trigger because the death state guards
+	# against re-entry.
+	if has_meta(&"death_explode_damage"):
+		_explode_on_death()
 	var death_state: Node = state_machine.get_node_or_null("EnemyDeathState") as Node
 	if death_state:
 		state_machine.force_transition_to(death_state)
+
+
+func _explode_on_death() -> void:
+	## Phase 3 #20 — Bomber promotion AoE on death. Damage applies
+	## to the player only (so bombers don't friendly-fire each other
+	## in chain explosions). VFX is a quick orange ring shockwave.
+	if not is_inside_tree():
+		return
+	var dmg: float = float(get_meta(&"death_explode_damage"))
+	var radius: float = float(get_meta(&"death_explode_radius", 4.0))
+	var origin: Vector3 = global_position
+	for p_node: Node in get_tree().get_nodes_in_group(&"player"):
+		if not p_node is Node3D:
+			continue
+		if (p_node as Node3D).global_position.distance_to(origin) > radius:
+			continue
+		var hp: Node = p_node.get_node_or_null("HealthComponent") as Node
+		if hp and hp.has_method(&"take_damage"):
+			hp.take_damage(dmg)
+	# Quick visual: orange shockwave ring at the bomber's position
+	var ring: MeshInstance3D = MeshInstance3D.new()
+	var torus: TorusMesh = TorusMesh.new()
+	torus.inner_radius = 0.2
+	torus.outer_radius = 0.4
+	ring.mesh = torus
+	ring.scale = Vector3(0.5, 0.5, 0.5)
+	var mat: StandardMaterial3D = StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.55, 0.10, 0.85)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.30, 0.0)
+	mat.emission_energy_multiplier = 4.0
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	ring.material_override = mat
+	get_tree().current_scene.add_child(ring)
+	ring.global_position = origin + Vector3(0, 0.15, 0)
+	var tw: Tween = ring.create_tween()
+	tw.tween_property(ring, "scale", Vector3(radius * 2.0, 1.0, radius * 2.0), 0.45).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(mat, "albedo_color:a", 0.0, 0.55)
+	tw.tween_callback(ring.queue_free)
