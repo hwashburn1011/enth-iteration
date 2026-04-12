@@ -35,6 +35,14 @@ func reset() -> void:
 	is_transitioning = false
 	_phase_checked = [false, false, false]
 	_hud_registered = false
+	# BossAttackState carries _attack_count and _spawn_timer that persist
+	# across pool reuse — clear them so iter 2's fight starts mid-rotation
+	# at the same point iter 1 began (compile_error) instead of jumping
+	# straight to a stack_overflow because the counter happened to land
+	# on a multiple of 8.
+	var atk_state: Node = state_machine.get_node_or_null("EnemyAttackState") as Node
+	if atk_state and atk_state.has_method(&"reset_pattern"):
+		atk_state.reset_pattern()
 
 	health_component.health_changed.connect(_on_boss_health_changed)
 	# Dramatic HUD boss bar — defer so the EnemyPool guard runs after
