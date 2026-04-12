@@ -38,6 +38,11 @@ const ELIGIBLE_BY_TYPE: Dictionary = {
 	"glitch_bug": [PROMOTION_CHARGER, PROMOTION_SHIELDER],
 	"memory_leak": [PROMOTION_SNIPER, PROMOTION_BOMBER],
 	"rogue_process": [PROMOTION_SUMMONER],
+	"firewall_guardian": [PROMOTION_SHIELDER],
+	"buffer_overflow": [PROMOTION_CHARGER],
+	"null_pointer": [PROMOTION_SNIPER],
+	"stack_crawler": [PROMOTION_SHIELDER],
+	"syntax_error": [PROMOTION_SUMMONER, PROMOTION_BOMBER],
 }
 
 

@@ -142,7 +142,12 @@ func _maybe_promote(enemy: CharacterBody3D, type: String, iter: int, rng: Random
 ##
 ## RNG is seeded per-call so two simultaneous spawners don't collapse
 ## into the same substitution sequence.
+## Base roster for iterations 1-4. Extended roster adds 5 new types from iter 5+.
 const _MIX_ROSTER: Array[String] = ["glitch_bug", "memory_leak", "rogue_process"]
+const _MIX_ROSTER_EXTENDED: Array[String] = [
+	"glitch_bug", "memory_leak", "rogue_process",
+	"firewall_guardian", "buffer_overflow", "null_pointer", "stack_crawler", "syntax_error",
+]
 
 
 func _apply_iteration_mix(types: Array[String], count: int) -> Array[String]:
@@ -176,8 +181,9 @@ func _apply_iteration_mix(types: Array[String], count: int) -> Array[String]:
 		var src: String = types[i % types.size()]
 		var should_swap: bool = (force_first and i == 0) or rng.randf() < swap_chance
 		if should_swap:
+			var roster: Array[String] = _MIX_ROSTER_EXTENDED if iter >= 5 else _MIX_ROSTER
 			var pool: Array[String] = []
-			for t: String in _MIX_ROSTER:
+			for t: String in roster:
 				if t != src:
 					pool.append(t)
 			if pool.is_empty():
