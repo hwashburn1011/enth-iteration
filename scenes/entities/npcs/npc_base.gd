@@ -161,11 +161,11 @@ func _find_dialogue_panel() -> Node:
 ## Updates after each conversation.
 func _create_quest_marker() -> void:
 	_quest_marker = Label3D.new()
-	_quest_marker.font_size = 48
-	_quest_marker.outline_size = 10
+	_quest_marker.font_size = 64
+	_quest_marker.outline_size = 14
 	_quest_marker.no_depth_test = true
 	_quest_marker.fixed_size = true
-	_quest_marker.pixel_size = 0.005
+	_quest_marker.pixel_size = 0.008
 	_quest_marker.position = Vector3(0, 2.9, 0)
 	_quest_marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	add_child(_quest_marker)

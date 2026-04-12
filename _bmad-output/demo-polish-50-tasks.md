@@ -32,7 +32,7 @@
 15. [ ] **Scale up tiny props to minimum 0.5m** — anything under 0.5m is invisible from camera height
 16. [ ] **Remove or replace random/out-of-place objects** — objects that don't fit the digital/AI theme
 17. [ ] **Replace medieval-themed props** — anything looking like fantasy (tents, torches, wooden items) needs digital reskin
-18. [ ] **Ensure NPC markers (! and ?) are visible** — scale up if too small at isometric zoom
+18. [x] **NPC markers scaled up** — font_size 48→64, pixel_size 0.005→0.008, outline 10→14 for isometric visibility
 
 ## Phase 5 — COMBAT ROOM POLISH [P1]
 
